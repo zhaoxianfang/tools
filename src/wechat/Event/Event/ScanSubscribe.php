@@ -1,0 +1,25 @@
+<?php
+
+namespace zxf\Wechat\Event\Event;
+
+use zxf\Wechat\Event\Event;
+
+class ScanSubscribe extends Event
+{
+    /**
+     * 扫描带参数的二维码时，提交参数格式为 "qrscene_参数值"，
+     * 为了方便获取参数值，手动添加了一个参数叫 "EventKeyValue"
+     * 该参数仅在 EventScanSubscribe 和 EventScanSubscribed 事件中可用.
+     */
+    public function __construct(array $options = [])
+    {
+        parent::__construct($options);
+    }
+
+    public function isValid()
+    {
+        return ('event' === $this['MsgType'])
+            && ('subscribe' === $this['Event'])
+            && !empty($this['EventKey']);
+    }
+}

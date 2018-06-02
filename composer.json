@@ -1,0 +1,29 @@
+{
+  "name": "zxf/xftools",
+  "description": "zxf code",
+  "keywords": [
+    "php",
+    "zxf",
+    "zhaoxianfang",
+    "tools",
+    "code"
+  ],
+  "homepage": "http://www.itzxf.com",
+  "type": "ahacode",
+  "license": "Apache-2.0",
+  "support": {
+    "source": "https://github.com/zhaoxianfang/xf"
+  },
+  "authors": [
+    {
+      "name": "zhaoxianfang",
+      "email": "1748331509@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.6.0"
+  },
+  "config": {
+    "process-timeout": 300
+  }
+}

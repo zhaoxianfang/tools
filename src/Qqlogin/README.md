@@ -6,7 +6,7 @@
 
     <?php
 
-	use zxf\qqlogin\QC;
+	use zxf\Qqlogin\QC;
 
 	……
 

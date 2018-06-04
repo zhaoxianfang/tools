@@ -21,7 +21,8 @@
     }
   ],
   "require": {
-    "php": ">=5.6.0"
+    "php": ">=7.0.0",
+    "twig/twig": "~1.16"
   },
   "autoload": {
     "psr-4": {

@@ -150,7 +150,7 @@ abstract class AbstractRequest
     public function setMethod($method)
     {
         $method     = strtoupper($method);
-        $reflection = new \ReflectionClass('\JonnyW\PhantomJs\Http\RequestInterface');
+        $reflection = new \ReflectionClass('zxf\JonnyW\PhantomJs\Http\RequestInterface');
 
         if (!$reflection->hasConstant('METHOD_' . $method)) {
             throw new InvalidMethodException(sprintf('Invalid method provided: %s', $method));

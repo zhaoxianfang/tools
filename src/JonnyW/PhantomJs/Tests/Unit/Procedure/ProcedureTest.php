@@ -88,7 +88,7 @@ class ProcedureTest extends \PHPUnit_Framework_TestCase
      */
     public function testNotWritableExceptionIsThrownIfProcedureScriptCannotBeWrittenToFile()
     {
-        $this->setExpectedException('\JonnyW\PhantomJs\Exception\NotWritableException');
+        $this->setExpectedException('zxf\JonnyW\PhantomJs\Exception\NotWritableException');
 
         $engne    = $this->getEngine();
         $parser   = $this->getParser();
@@ -112,7 +112,7 @@ class ProcedureTest extends \PHPUnit_Framework_TestCase
      */
     public function testProcedureFailedExceptionIsThrownIfProcedureCannotBeRun()
     {
-        $this->setExpectedException('\JonnyW\PhantomJs\Exception\ProcedureFailedException');
+        $this->setExpectedException('zxf\JonnyW\PhantomJs\Exception\ProcedureFailedException');
 
         $parser   = $this->getParser();
         $cache    = $this->getCache();
@@ -232,7 +232,7 @@ class ProcedureTest extends \PHPUnit_Framework_TestCase
      */
     protected function getEngine()
     {
-        $engine = $this->getMock('\JonnyW\PhantomJs\Engine');
+        $engine = $this->getMock('zxf\JonnyW\PhantomJs\Engine');
 
         return $engine;
     }

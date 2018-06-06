@@ -38,7 +38,7 @@ class ProcedureValidatorTest extends \PHPUnit_Framework_TestCase
      */
     public function testProcedureSyntaxExceptionIsThrownIfProcedureContainsSyntaxError()
     {
-        $this->setExpectedException('\JonnyW\PhantomJs\Exception\SyntaxException');
+        $this->setExpectedException('zxf\JonnyW\PhantomJs\Exception\SyntaxException');
 
         $procedureLoader = $this->getProcedureLoader();
         $esprima         = $this->getEsprima();
@@ -78,7 +78,7 @@ class ProcedureValidatorTest extends \PHPUnit_Framework_TestCase
      */
     public function testRequirementExceptionIsThrownIfProcedureDoesNotContainPhanomtExitStatement()
     {
-        $this->setExpectedException('\JonnyW\PhantomJs\Exception\RequirementException');
+        $this->setExpectedException('zxf\JonnyW\PhantomJs\Exception\RequirementException');
 
         $procedureLoader = $this->getProcedureLoader();
         $esprima         = $this->getEsprima();

@@ -104,7 +104,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
      */
     public function testInvalidMethodIsThrownIfMethodIsInvalid()
     {
-        $this->setExpectedException('\JonnyW\PhantomJs\Exception\InvalidMethodException');
+        $this->setExpectedException('zxf\JonnyW\PhantomJs\Exception\InvalidMethodException');
 
         $request = $this->getRequest();
         $request->setMethod('INVALID_METHOD');

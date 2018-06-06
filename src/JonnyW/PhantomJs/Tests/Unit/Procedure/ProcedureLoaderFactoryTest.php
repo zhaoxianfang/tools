@@ -60,7 +60,7 @@ class ProcedureLoaderFactoryTest extends \PHPUnit_Framework_TestCase
         $procedureLoaderFactory = $this->getProcedureLoaderFactory($procedureFactory);
         $procedureLoader = $procedureLoaderFactory->createProcedureLoader($this->directory);
 
-        $this->assertInstanceOf('\JonnyW\PhantomJs\Procedure\ProcedureLoaderInterface', $procedureLoader);
+        $this->assertInstanceOf('zxf\JonnyW\PhantomJs\Procedure\ProcedureLoaderInterface', $procedureLoader);
     }
 
 /** +++++++++++++++++++++++++++++++++++ **/
@@ -93,7 +93,7 @@ class ProcedureLoaderFactoryTest extends \PHPUnit_Framework_TestCase
      */
     protected function getProcedureFactory()
     {
-        $procedureFactory = $this->getMock('\JonnyW\PhantomJs\Procedure\ProcedureFactoryInterface');
+        $procedureFactory = $this->getMock('zxf\JonnyW\PhantomJs\Procedure\ProcedureFactoryInterface');
 
         return $procedureFactory;
     }

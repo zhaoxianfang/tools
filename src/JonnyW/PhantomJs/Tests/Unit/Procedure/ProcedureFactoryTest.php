@@ -47,7 +47,7 @@ class ProcedureFactoryTest extends \PHPUnit_Framework_TestCase
 
         $procedureFactory = $this->getProcedureFactory($engine, $parser, $cache, $renderer);
 
-        $this->assertInstanceOf('\JonnyW\PhantomJs\Procedure\Procedure', $procedureFactory->createProcedure());
+        $this->assertInstanceOf('zxf\JonnyW\PhantomJs\Procedure\Procedure', $procedureFactory->createProcedure());
     }
 
 /** +++++++++++++++++++++++++++++++++++ **/

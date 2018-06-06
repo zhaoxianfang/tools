@@ -60,7 +60,7 @@ class ProcedureCompilerTest extends \PHPUnit_Framework_TestCase
         $request = $this->getRequest();
         $request->setUrl('http://test.com');
 
-        $renderer = $this->getMock('\JonnyW\PhantomJs\Template\TemplateRendererInterface');
+        $renderer = $this->getMock('zxf\JonnyW\PhantomJs\Template\TemplateRendererInterface');
         $renderer->expects($this->exactly(1))
             ->method('render')
             ->will($this->returnValue('var test=1; phantom.exit(1);'));
@@ -94,7 +94,7 @@ class ProcedureCompilerTest extends \PHPUnit_Framework_TestCase
         $request = $this->getRequest();
         $request->setUrl('http://test.com');
 
-        $renderer = $this->getMock('\JonnyW\PhantomJs\Template\TemplateRendererInterface');
+        $renderer = $this->getMock('zxf\JonnyW\PhantomJs\Template\TemplateRendererInterface');
         $renderer->expects($this->exactly(2))
             ->method('render')
             ->will($this->returnValue('var test=1; phantom.exit(1);'));
@@ -127,7 +127,7 @@ class ProcedureCompilerTest extends \PHPUnit_Framework_TestCase
         $request = $this->getRequest();
         $request->setUrl('http://test.com');
 
-        $renderer = $this->getMock('\JonnyW\PhantomJs\Template\TemplateRendererInterface');
+        $renderer = $this->getMock('zxf\JonnyW\PhantomJs\Template\TemplateRendererInterface');
         $renderer->expects($this->exactly(2))
             ->method('render')
             ->will($this->returnValue('var test=1; phantom.exit(1);'));
@@ -155,7 +155,7 @@ class ProcedureCompilerTest extends \PHPUnit_Framework_TestCase
      */
     public function testSyntaxExceptionIsThrownIfCompiledTemplateIsNotValid()
     {
-        $this->setExpectedException('\JonnyW\PhantomJs\Exception\SyntaxException');
+        $this->setExpectedException('zxf\JonnyW\PhantomJs\Exception\SyntaxException');
 
         $template = <<<EOF
     console.log(;

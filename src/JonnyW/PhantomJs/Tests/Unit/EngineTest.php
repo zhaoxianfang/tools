@@ -31,7 +31,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testInvalidExecutableExceptionIsThrownIfPhantomJSPathIsInvalid()
     {
-        $this->setExpectedException('\JonnyW\PhantomJs\Exception\InvalidExecutableException');
+        $this->setExpectedException('zxf\JonnyW\PhantomJs\Exception\InvalidExecutableException');
 
         $engine = $this->getEngine();
         $engine->setPath('/invalid/phantomjs/path');
@@ -115,7 +115,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
      */
     public function testInvalidExecutableExceptionIsThrownWhenBuildingCommandIfPathToPhantomJSIsInvalid()
     {
-        $this->setExpectedException('\JonnyW\PhantomJs\Exception\InvalidExecutableException');
+        $this->setExpectedException('zxf\JonnyW\PhantomJs\Exception\InvalidExecutableException');
 
         $engine = $this->getEngine();
 

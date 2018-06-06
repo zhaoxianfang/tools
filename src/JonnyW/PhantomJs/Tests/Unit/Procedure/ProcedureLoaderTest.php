@@ -79,7 +79,7 @@ class ProcedureLoaderTest extends \PHPUnit_Framework_TestCase
      */
     public function testNotExistsExceptionIsThrownIfProcedureFileDoesNotExist()
     {
-        $this->setExpectedException('\JonnyW\PhantomJs\Exception\NotExistsException');
+        $this->setExpectedException('zxf\JonnyW\PhantomJs\Exception\NotExistsException');
 
         $procedureFactory = $this->getProcedureFactory();
         $fileLocator      = $this->getFileLocator();
@@ -110,7 +110,7 @@ class ProcedureLoaderTest extends \PHPUnit_Framework_TestCase
 
         $procedureLoader = $this->getProcedureLoader($procedureFactory, $fileLocator);
 
-        $this->assertInstanceOf('\JonnyW\PhantomJs\Procedure\ProcedureInterface', $procedureLoader->load('test'));
+        $this->assertInstanceOf('zxf\JonnyW\PhantomJs\Procedure\ProcedureInterface', $procedureLoader->load('test'));
     }
 
     /**

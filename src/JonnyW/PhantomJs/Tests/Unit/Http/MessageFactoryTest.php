@@ -30,7 +30,7 @@ class MessageFactoryTest extends \PHPUnit_Framework_TestCase
      */
     public function testFactoryMethodCreatesMessageFactory()
     {
-        $this->assertInstanceOf('\JonnyW\PhantomJs\Http\MessageFactory', MessageFactory::getInstance());
+        $this->assertInstanceOf('zxf\JonnyW\PhantomJs\Http\MessageFactory', MessageFactory::getInstance());
     }
 
     /**
@@ -43,7 +43,7 @@ class MessageFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $messageFactory = $this->getMessageFactory();
 
-        $this->assertInstanceOf('\JonnyW\PhantomJs\Http\Request', $messageFactory->createRequest());
+        $this->assertInstanceOf('zxf\JonnyW\PhantomJs\Http\Request', $messageFactory->createRequest());
     }
 
     /**
@@ -104,7 +104,7 @@ class MessageFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $messageFactory = $this->getMessageFactory();
 
-        $this->assertInstanceOf('\JonnyW\PhantomJs\Http\CaptureRequest', $messageFactory->createCaptureRequest());
+        $this->assertInstanceOf('zxf\JonnyW\PhantomJs\Http\CaptureRequest', $messageFactory->createCaptureRequest());
     }
 
     /**
@@ -166,7 +166,7 @@ class MessageFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $messageFactory = $this->getMessageFactory();
 
-        $this->assertInstanceOf('\JonnyW\PhantomJs\Http\Response', $messageFactory->createResponse());
+        $this->assertInstanceOf('zxf\JonnyW\PhantomJs\Http\Response', $messageFactory->createResponse());
     }
 
 /** +++++++++++++++++++++++++++++++++++ **/

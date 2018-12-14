@@ -5,7 +5,9 @@
  * @copyright © 2013, Tencent Corporation. All rights reserved.
  */
 namespace zxf\Qqlogin;
+
 use Exception;
+
 // require_once(CLASS_PATH."Recorder.class.php");
 // require_once(CLASS_PATH."URL.class.php");
 // require_once(CLASS_PATH."ErrorCase.class.php");
@@ -18,9 +20,8 @@ class Oauth
     const GET_ACCESS_TOKEN_URL = "https://graph.qq.com/oauth2.0/token";
     const GET_OPENID_URL       = "https://graph.qq.com/oauth2.0/me";
 
-    
     public $urlUtils;
-    
+
     public $state;
     public $appid    = "";
     public $appkey   = "";
@@ -31,7 +32,7 @@ class Oauth
     public $errorMsg = array(
         "20001" => "配置文件损坏或无法读取，请重新执行intall",
         "30001" => "The state does not match. You may be a victim of CSRF.",
-        "50001" => "可能是服务器无法请求https协议</h2>可能未开启curl支持,请尝试开启curl支持，重启web服务器，如果问题仍未解决，请联系我们"
+        "50001" => "可能是服务器无法请求https协议</h2>可能未开启curl支持,请尝试开启curl支持，重启web服务器，如果问题仍未解决，请联系我们",
     );
 
     /**
@@ -42,15 +43,15 @@ class Oauth
      */
     public function __construct($config = array())
     {
-        if(!$config['appid'] || !$config['appkey'] || !$config['callbackUrl']){
+        if (!$config['appid'] || !$config['appkey'] || !$config['callbackUrl']) {
             throw new Exception("缺少必要的参数： appid、appkey、callbackUrl");
         }
-        $this->appid = $config['appid'];
+        $this->appid  = $config['appid'];
         $this->appkey = $config['appkey'];
         // $this->callback = urlencode($config['callbackUrl']);
         $this->callback = $config['callbackUrl'];
         $this->urlUtils = new URL();
-        
+
     }
 
     /**
@@ -86,7 +87,7 @@ class Oauth
 
         //--------验证state防止CSRF攻击
         // if(!$state || $_GET['state'] != $state){
-        if (input('state') != session('state')) {
+        if ((input('state') != session('state') && !request()->isMobile()) || (request()->isMobile() && !empty(session('state')))) {
             // exit('30001');
             throw new Exception($this->errorMsg['30001']);
         }
@@ -112,8 +113,8 @@ class Oauth
             $msg      = json_decode($response);
 
             if (isset($msg->error)) {
-                throw new Exception($msg->error."：".$msg->error_description);
-                
+                throw new Exception($msg->error . "：" . $msg->error_description);
+
                 // $this->error->showError($msg->error, $msg->error_description);
             }
         }
@@ -149,7 +150,7 @@ class Oauth
         $user = json_decode($response);
         if (isset($user->error)) {
             // $this->error->showError($user->error, $user->error_description);
-            throw new Exception($msg->error."：".$msg->error_description);
+            throw new Exception($msg->error . "：" . $msg->error_description);
         }
 
         //------记录openid

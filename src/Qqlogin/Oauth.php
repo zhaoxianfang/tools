@@ -86,8 +86,9 @@ class Oauth
     {
 
         //--------验证state防止CSRF攻击
-        // if(!$state || $_GET['state'] != $state){
-        if ((input('state') != session('state') && !request()->isMobile()) || (request()->isMobile() && !empty(session('state')))) {
+         if(!input('state') || input('state') != session('state')){
+//        if ((input('state') != session('state') && !request()->isMobile()) || (request()->isMobile() && !empty(session('state')))) {
+
             // exit('30001');
             throw new Exception($this->errorMsg['30001']);
         }

@@ -30,8 +30,8 @@ class Oauth
 
     //错误提示
     public $errorMsg = array(
-        "20001" => "配置文件损坏或无法读取，请重新执行intall",
-        "30001" => "The state does not match. You may be a victim of CSRF.",
+        "20001" => "读取配置失败", //"配置文件损坏或无法读取，请重新执行intall",
+        "30001" => "数据验证失败，可能存在CSRF攻击", //"The state does not match. You may be a victim of CSRF.",
         "50001" => "可能是服务器无法请求https协议</h2>可能未开启curl支持,请尝试开启curl支持，重启web服务器，如果问题仍未解决，请联系我们",
     );
 
@@ -44,8 +44,14 @@ class Oauth
     public function __construct($config = array())
     {
         if (!$config['appid'] || !$config['appkey'] || !$config['callbackUrl']) {
-            throw new Exception("缺少必要的参数： appid、appkey、callbackUrl");
+            // throw new Exception("缺少必要的参数： appid、appkey、callbackUrl");
+            throw new Exception($this->errorMsg['20001']);
         }
+
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
         $this->appid  = $config['appid'];
         $this->appkey = $config['appkey'];
         // $this->callback = urlencode($config['callbackUrl']);
@@ -58,15 +64,15 @@ class Oauth
      * QQ登录
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-31
-     * @param    string       $jump [跳转地址]
-     * @return   [type]             [description]
+     * @param    string       $state [可选参数]
+     * @return   [type]              [description]
      */
-    public function qq_login()
+    public function qq_login($state = '')
     {
-
-        //-------生成唯一随机串防CSRF攻击
-        $state = md5(uniqid(rand(), true));
-        session('state', $state);
+        if (!$state) {
+            //-------生成唯一随机串防CSRF攻击
+            $state = md5(uniqid(rand(), true));
+        }
 
         //-------构造请求参数列表
         $keysArr = array(
@@ -82,13 +88,11 @@ class Oauth
         // header("Location:$login_url");
     }
 
-    public function qq_callback()
+    public function qq_callback($checkSessionState = true)
     {
 
         //--------验证state防止CSRF攻击
-         if(!input('state') || input('state') != session('state')){
-//        if ((input('state') != session('state') && !request()->isMobile()) || (request()->isMobile() && !empty(session('state')))) {
-
+        if ($checkSessionState && (empty($_REQUEST['state']) || ($_REQUEST['state'] != $_SESSION['state']))) {
             // exit('30001');
             throw new Exception($this->errorMsg['30001']);
         }
@@ -125,7 +129,8 @@ class Oauth
 
         // $this->recorder->write("access_token", $params["access_token"]);
         // return $params["access_token"];
-        session('access_token', $params["access_token"]);
+        // session('access_token', $params["access_token"]);
+        $_SESSION['access_token'] = $params["access_token"];
 
     }
 
@@ -134,7 +139,8 @@ class Oauth
 
         //-------请求参数列表
         $keysArr = array(
-            "access_token" => session('access_token'),
+            // "access_token" => session('access_token'),
+            "access_token" => $_SESSION['access_token'],
         );
 
         $graph_url = $this->urlUtils->combineURL(self::GET_OPENID_URL, $keysArr);
@@ -156,7 +162,8 @@ class Oauth
 
         //------记录openid
         // $this->recorder->write("openid", $user->openid);
-        session("openid", $user->openid);
+        // session("openid", $user->openid);
+        $_SESSION['openid'] = $user->openid;
         return $user->openid;
 
     }

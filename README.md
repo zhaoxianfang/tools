@@ -20,7 +20,28 @@
 |  截图  |  JonnyW、Psr、Symfony  |
 |  微博登录  |  sina  |
 |  QueryList  |  QueryList  |
+|  图片验证码  |  ImgCode  |
 
+### 图片验证码
+>前端js、css 放置在 demo 文件夹中
+
+``` php
+use zxf\verify\ImgCode;
+/**
+ * 输出图片
+ */
+ImgCode::instance()->setOptions($file_path)->make();
+/**
+ * 验证图片
+ */
+$res = ImgCode::instance()->check($offset);
+if ($res) {
+    echo json_encode(['code' => 200, 'msg' => '成功']);
+} else {
+    echo json_encode(['code' => 403, 'msg' => '失败']);
+}
+
+```
 
 ### 截图功能
 >参考[安装php-phantomjs](https://segmentfault.com/a/1190000008234820) 改装

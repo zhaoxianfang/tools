@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>滑动验证码</title>
+	<script type="text/javascript" src="tn_code.js?v=35"></script>
+    <link rel="stylesheet" type="text/css" href="style.css?v=27" />
+</head>
+<body>
+	<div class="tncode tncode_test" style="text-align: center;margin: 100px auto;"></div>
+	<div class="tncode" style="text-align: center;margin: 100px auto;"></div>
+</body>
+<script type="text/javascript">
+
+window.onload = function(){
+    tncode.init({
+    	el_class_name:'tncode_test',
+    	img_url:'./tn_code.php',
+    	verify_url:'./check.php'
+    });
+
+    $TN.onsuccess(function(){
+		// 验证通过
+		console.log('验证通过')
+	});
+};
+
+</script>
+</html>

@@ -48,7 +48,7 @@ class Oauth
             throw new Exception($this->errorMsg['20001']);
         }
 
-        if (session_status() !== PHP_SESSION_ACTIVE) {
+        if (!isset($_SESSION) || session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
 

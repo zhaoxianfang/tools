@@ -49,7 +49,10 @@ class Oauth
         }
 
         if (!isset($_SESSION) || session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
+            try {
+                session_start();
+            } catch (Exception $e) {
+            }
         }
 
         $this->appid  = $config['appid'];

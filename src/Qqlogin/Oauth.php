@@ -48,11 +48,8 @@ class Oauth
             throw new Exception($this->errorMsg['20001']);
         }
 
-        if (!isset($_SESSION) || session_status() !== PHP_SESSION_ACTIVE) {
-            try {
-                session_start();
-            } catch (Exception $e) {
-            }
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            // session_start();
         }
 
         $this->appid  = $config['appid'];

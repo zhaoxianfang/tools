@@ -22,6 +22,10 @@ class Oauth
 
     public $urlUtils;
 
+    public $youDomainStr = 'youdomain.com';
+
+    private static $data;
+
     public $state;
     public $appid    = "";
     public $appkey   = "";
@@ -48,10 +52,6 @@ class Oauth
             throw new Exception($this->errorMsg['20001']);
         }
 
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            // session_start();
-        }
-
         $this->appid  = $config['appid'];
         $this->appkey = $config['appkey'];
         // $this->callback = urlencode($config['callbackUrl']);
@@ -61,18 +61,42 @@ class Oauth
     }
 
     /**
+     * 字符串加解密
+     * @Author   ZhaoXianFang
+     * @DateTime 2019-04-01
+     * @param    [type]       $string [字符串]
+     * @param    string       $action [en:加密；de:解密]
+     * @return   [type]               []
+     */
+    private function strCode($string, $action = 'en')
+    {
+        $action != 'en' && $string = base64_decode($string);
+        $code                      = '';
+        $key                       = 'str_en_de_code';
+        $keyLen                    = strlen($key);
+        $strLen                    = strlen($string);
+        for ($i = 0; $i < $strLen; $i++) {
+            $k = $i % $keyLen;
+            $code .= $string[$i] ^ $key[$k];
+        }
+        return ($action != 'de' ? base64_encode($code) : $code);
+    }
+
+    /**
      * QQ登录
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-31
-     * @param    string       $state [可选参数]
+     * @stateSys [可选] [可以为字符串或者数组]用于callback回调的数据
      * @return   [type]              [description]
      */
-    public function qq_login($state = '')
+    public function qq_login($stateSys = '')
     {
-        if (!$state) {
-            //-------生成唯一随机串防CSRF攻击
-            $state = md5(uniqid(rand(), true));
-        }
+
+        //-------生成唯一随机串防CSRF攻击
+        // $state = md5(uniqid(rand(), true));
+
+        $state = $this->strCode($this->youDomainStr . date("Ymd"), 'en');
+        $state = $stateSys ? $state . '|qq|' . base64_encode(json_encode($stateSys)) : $state . '|qq|null';
 
         //-------构造请求参数列表
         $keysArr = array(
@@ -88,12 +112,27 @@ class Oauth
         // header("Location:$login_url");
     }
 
-    public function qq_callback($checkSessionState = true)
+    public function qq_callback()
     {
 
         //--------验证state防止CSRF攻击
-        if ($checkSessionState && (empty($_REQUEST['state']) || ($_REQUEST['state'] != $_SESSION['state']))) {
+        if (empty($_REQUEST['state'])) {
             // exit('30001');
+            throw new Exception($this->errorMsg['30001']);
+        }
+
+        $state = $_REQUEST['state'];
+        // 进行解密 验证是否为本站发出的state
+        // if ($this->youDomainStr . date("Ymd") != $this->strCode($state, 'de')) {
+        $decodeStr = $this->strCode($state, 'de');
+        $checkArr  = explode("|qq|", $decodeStr);
+        if ($checkArr['0'] != $this->youDomainStr . date("Ymd")) {
+            throw new Exception($this->errorMsg['30001']);
+        }
+
+        try {
+            $userParam = json_decode(base64_decode($checkArr['1']));
+        } catch (Exception $e) {
             throw new Exception($this->errorMsg['30001']);
         }
 
@@ -119,8 +158,6 @@ class Oauth
 
             if (isset($msg->error)) {
                 throw new Exception($msg->error . "：" . $msg->error_description);
-
-                // $this->error->showError($msg->error, $msg->error_description);
             }
         }
 
@@ -129,8 +166,9 @@ class Oauth
 
         // $this->recorder->write("access_token", $params["access_token"]);
         // return $params["access_token"];
-        // session('access_token', $params["access_token"]);
-        $_SESSION['access_token'] = $params["access_token"];
+        self::$data['access_token'] = $params["access_token"];
+        // return $params["access_token"];
+        return $userParam;
 
     }
 
@@ -139,8 +177,7 @@ class Oauth
 
         //-------请求参数列表
         $keysArr = array(
-            // "access_token" => session('access_token'),
-            "access_token" => $_SESSION['access_token'],
+            "access_token" => self::$data['access_token'];,
         );
 
         $graph_url = $this->urlUtils->combineURL(self::GET_OPENID_URL, $keysArr);
@@ -162,8 +199,7 @@ class Oauth
 
         //------记录openid
         // $this->recorder->write("openid", $user->openid);
-        // session("openid", $user->openid);
-        $_SESSION['openid'] = $user->openid;
+        self::$data['openid'] = $user->openid;
         return $user->openid;
 
     }

@@ -32,9 +32,8 @@ class QC extends Oauth
         parent::__construct($config);
 
         $this->keysArr = array(
-            "oauth_consumer_key" => (int) $this->appid,
-            "access_token"       => isset($_SESSION['access_token']) ? $_SESSION['access_token'] : '',
-            "openid"             => isset($_SESSION['openid']) ? $_SESSION['openid'] : '',
+            "access_token"       => parent::$data['access_token']?parent::$data['access_token']:'',
+            "openid"             => parent::$data['openid']?parent::$data['openid']:'',
         );
 
         //初始化APIMap

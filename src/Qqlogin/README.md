@@ -30,12 +30,9 @@ class Tencent extends ControllerBase
     {
         try {
             $qq  = new QC(config('callback.qq'));
-            $url = $qq->qq_login();
+            $url = $qq->qq_login($jumpUrl); //可以选传一个字符串或者数组的参数传入 在qq_callback() 处调用
         } catch (\Exception $e) {
             return $this->error('出错啦: ' . $e->getMessage());
-        }
-        if($jumpUrl){
-            session('qq_callback',$jumpUrl);
         }
         $this->redirect($url);
     }
@@ -45,7 +42,8 @@ class Tencent extends ControllerBase
     {
         try {
             $qq = new QC(config('callback.qq'));
-            $qq->qq_callback();
+            // 如果在调用qq_login()时候传入了自己的参数 则返回给$res 做自己的业务逻辑
+            $res = $qq->qq_callback();
             $openId = $qq->get_openid();
             $data   = $qq->get_user_info();
         } catch (\Exception $e) {
@@ -56,7 +54,7 @@ class Tencent extends ControllerBase
         // 快速登录
         $loginUserInfo = $this->logicUser->fastLogin($openId, $data, 'qq');
         //回调地址
-        $callUrl = session('qq_callback');
+        $callUrl = $res;
         if($callUrl){
             $this->redirect($callUrl);
         }

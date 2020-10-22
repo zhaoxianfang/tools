@@ -8,8 +8,6 @@ namespace zxf\Qqlogin;
 
 use Exception;
 
-// require_once(CLASS_PATH."Oauth.class.php");
-
 /*
  * @brief QC类，api外部对象，调用接口全部依赖于此对象
  * */
@@ -32,9 +30,11 @@ class QC extends Oauth
         parent::__construct($config);
 
         $this->keysArr = array(
-            "access_token"       => parent::$data['access_token']?parent::$data['access_token']:'',
-            "openid"             => parent::$data['openid']?parent::$data['openid']:'',
+            "oauth_consumer_key" => (int) $this->appid,
+            "access_token"       => isset($_SESSION['access_token']) ? $_SESSION['access_token'] : '',
+            "openid"             => isset($_SESSION['openid']) ? $_SESSION['openid'] : '',
         );
+
 
         //初始化APIMap
         /*
@@ -43,7 +43,7 @@ class QC extends Oauth
          */
         $this->APIMap = array(
 
-            /*                       qzone                    */
+            /* qzone */
             "add_blog"        => array(
                 "https://graph.qq.com/blog/add_one_blog",
                 array("title", "format" => "json", "content" => null),
@@ -173,7 +173,7 @@ class QC extends Oauth
             if (!isset($arr[$tmpKey]) || $arr[$tmpKey] === "") {
 
                 if ($tmpVal == $pre) {
-//则使用默认的值
+                    //则使用默认的值
                     continue;
                 } else if ($tmpVal) {
                     $arr[$tmpKey] = $tmpVal;
@@ -260,7 +260,6 @@ class QC extends Oauth
             return $responseArr;
         } else {
             throw new Exception($response->ret . ":" . $response->msg);
-            // $this->error->showError($response->ret, $response->msg);
         }
 
     }

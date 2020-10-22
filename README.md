@@ -16,7 +16,7 @@
 |  模块  |  需要包含的文件夹  |
 | --- | --- |
 |  QQ登录  |  Qqlogin  |
-|  微信  |  wechat  |
+|  微信  |  wechat(未完成)  |
 |  截图  |  JonnyW、Psr、Symfony  |
 |  微博登录  |  sina  |
 |  QueryList  |  QueryList  |
@@ -40,6 +40,191 @@ if ($res) {
 } else {
     echo json_encode(['code' => 403, 'msg' => '失败']);
 }
+
+```
+
+```php
+<?php
+/**
+ * 第三方登录回调配置参数
+ */
+return [
+    //微博
+    'sina'   => [
+        'wb_akey'         => '',
+        'wb_skey'         => '',
+        'wb_callback_url' => '', //回调
+    ],
+    //QQ
+    'qq'     => [
+        'appid'       => '',
+        'appkey'      => '',
+        'callbackUrl' => '',
+    ],
+    //微信
+    'wechat' => [
+        'token'                  => '', //填写你设定的key
+        'encodingaeskey'         => '', //填写加密用的EncodingAESKey
+        'appid'                  => '', //填写高级调用功能的app id
+        'appsecret'              => '', //填写高级调用功能的密钥
+        'GetAccessTokenCallback' => '', //回调地址
+        'cache_path'             => '', //插件 缓存目录
+    ],
+
+];
+
+```
+### QQ登录
+>说明:基于 ThinkPHP6 开发，其他框架可适量修改
+
+``` php
+<?php
+// +---------------------------------------------------------------------
+// | 腾讯QQ 登录
+// +---------------------------------------------------------------------
+// | Licensed   | http://www.apache.org/licenses/LICENSE-2.0 )
+// +---------------------------------------------------------------------
+// | Author     | ZhaoXianFang <1748331509@qq.com>
+// +---------------------------------------------------------------------
+// | 版权       | http://www.itzxf.com
+// +---------------------------------------------------------------------
+// | Date       | 2019-07-30
+// +---------------------------------------------------------------------
+namespace app\callback\controller;
+
+use app\common\controller\Base;
+use zxf\Qqlogin\QC;
+
+class Tencent extends Base
+{
+    public function index()
+    {
+        die('非法请求');
+    }
+
+    /**
+     * 处理qq登录
+     * @Author   ZhaoXianFang
+     * @DateTime 2018-06-05
+     * @param    string       $jumpUrl      [登录完成后跳转的地址]
+     * @return   [type]                     [description]
+     */
+    public function login($jumpUrl = '')
+    {
+        try {
+            $qq  = new QC(config('callback.qq'));
+            // $url = $qq->qq_login(); // 不传值方式
+            $url = $qq->qq_login($jumpUrl); // 传入的数据 $jumpUrl 将会在 qq_callback 回调中返回得到
+        } catch (\Exception $e) {
+            return $this->error('出错啦: ' . $e->getMessage());
+        }
+
+        return redirect($url);
+    }
+
+    // qq登录回调函数
+    public function callback()
+    {
+        try {
+            $qq     	= new QC(config('callback.qq'));
+            $res    	= $qq->qq_callback(); // 如果 qq_login 传入了值则 $res 的值为传入数据；如果 qq_login 没有传值则 $res 的值为 null
+            $openId 	= $qq->get_openid();
+            $userInfo   = $qq->get_user_info();
+        } catch (\Exception $e) {
+            return $this->error('..出错啦: ' . $e->getMessage());
+        }
+        // 得到 $res 的传入值和 用户数据$userInfo
+        // TODO ...
+
+    }
+}
+
+```
+
+### 新浪微博登录
+>说明:基于 ThinkPHP6 开发，其他框架可适量修改
+``` php
+<?php
+// +---------------------------------------------------------------------
+// | 新浪微博 登录
+// +---------------------------------------------------------------------
+// | Licensed   | http://www.apache.org/licenses/LICENSE-2.0 )
+// +---------------------------------------------------------------------
+// | Author     | ZhaoXianFang <1748331509@qq.com>
+// +---------------------------------------------------------------------
+// | 版权       | http://www.itzxf.com
+// +---------------------------------------------------------------------
+// | Date       | 2019-07-30
+// +---------------------------------------------------------------------
+namespace app\callback\controller;
+
+use app\common\controller\Base;
+use zxf\sina\SaeTOAuthV2;
+
+class Sina extends Base
+{
+
+    public function index()
+    {
+        die('非法请求');
+    }
+
+    /**
+     * 微博回调
+     * @Author   ZhaoXianFang
+     * @DateTime 2018-06-06
+     * @param    string       $value [description]
+     */
+    public function callback()
+    {
+
+        if (!isset($_REQUEST['code'])) {
+            return $this->error('非法请求');
+        }
+
+        $wbConfig = config('callback.sina');
+        
+        try {
+            $o   = new SaeTOAuthV2($wbConfig);
+            $res = $o->sina_callback(); // 自定义
+        } catch (\Exception $e) {
+            return $this->error('出错啦: ' . $e->getMessage());
+        }
+        // $res['user_info']  // 微信用户信息
+        // $res['uid'] // 微博uid 类似于 open_id
+        // $res['customize_data']// getAuthorizeURL 的第二个自定义数据,不传时候为 NULL
+        // TODO ...
+
+    }
+
+    /**
+     * 登录
+     * @Author   ZhaoXianFang
+     * @DateTime 2018-06-06
+     * @param    string       $jumpUrl      [登录成功后跳转地址]
+     * @param    string       $loginModel   [登录作用的模块、不同模块session名称不同]
+     * @return   [type]                     [description]
+     */
+    public function login($jumpUrl = '')
+    {
+        try {
+            $wbConfig = config('callback.sina');
+            $o        = new SaeTOAuthV2($wbConfig);
+            $code_url = $o->getAuthorizeURL($jumpUrl); // 如果传入数据 会在 sina_callback 中返回在 customize_data 值中
+        } catch (\Exception $e) {
+            return $this->error('出错啦: ' . $e->getMessage());
+        }
+        //跳转到授权页面
+        return redirect($code_url);
+    }
+
+    // 回调函数
+    public function unauth()
+    {
+        die("取消授权");
+    }
+}
+
 
 ```
 

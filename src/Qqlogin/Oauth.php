@@ -22,15 +22,14 @@ class Oauth
 
     public $urlUtils;
 
-    public $youDomainStr = 'youdomain.com';
-
-    private static $data;
-
     public $state;
     public $appid    = "";
     public $appkey   = "";
     public $callback = "";
     public $scope    = "get_user_info";
+
+    // 存储token等 的数据仓库
+    // public $wareroom    = array();
 
     //错误提示
     public $errorMsg = array(
@@ -52,6 +51,10 @@ class Oauth
             throw new Exception($this->errorMsg['20001']);
         }
 
+        if (!isset($_SESSION) || session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
         $this->appid  = $config['appid'];
         $this->appkey = $config['appkey'];
         // $this->callback = urlencode($config['callbackUrl']);
@@ -61,42 +64,17 @@ class Oauth
     }
 
     /**
-     * 字符串加解密
-     * @Author   ZhaoXianFang
-     * @DateTime 2019-04-01
-     * @param    [type]       $string [字符串]
-     * @param    string       $action [en:加密；de:解密]
-     * @return   [type]               []
-     */
-    private function strCode($string, $action = 'en')
-    {
-        $action != 'en' && $string = base64_decode($string);
-        $code                      = '';
-        $key                       = 'str_en_de_code';
-        $keyLen                    = strlen($key);
-        $strLen                    = strlen($string);
-        for ($i = 0; $i < $strLen; $i++) {
-            $k = $i % $keyLen;
-            $code .= $string[$i] ^ $key[$k];
-        }
-        return ($action != 'de' ? base64_encode($code) : $code);
-    }
-
-    /**
      * QQ登录
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-31
-     * @stateSys [可选] [可以为字符串或者数组]用于callback回调的数据
-     * @return   [type]              [description]
+     * @param    string       $stateSys [可选] [可以为字符串或者数组]用于callback回调的数据
+     * @return   [type]                 [description]
      */
     public function qq_login($stateSys = '')
     {
 
-        //-------生成唯一随机串防CSRF攻击
-        // $state = md5(uniqid(rand(), true));
-
-        $state = $this->strCode($this->youDomainStr . date("Ymd"), 'en');
-        $state = $stateSys ? $state . '|qq|' . base64_encode(json_encode($stateSys)) : $state . '|qq|null';
+        $state = $stateSys ? base64_encode(json_encode($stateSys)) : base64_encode(json_encode('null'));
+        $state = $this->strCode($state, 'en');
 
         //-------构造请求参数列表
         $keysArr = array(
@@ -114,7 +92,6 @@ class Oauth
 
     public function qq_callback()
     {
-
         //--------验证state防止CSRF攻击
         if (empty($_REQUEST['state'])) {
             // exit('30001');
@@ -123,15 +100,10 @@ class Oauth
 
         $state = $_REQUEST['state'];
         // 进行解密 验证是否为本站发出的state
-        // if ($this->youDomainStr . date("Ymd") != $this->strCode($state, 'de')) {
         $decodeStr = $this->strCode($state, 'de');
-        $checkArr  = explode("|qq|", $decodeStr);
-        if ($checkArr['0'] != $this->youDomainStr . date("Ymd")) {
-            throw new Exception($this->errorMsg['30001']);
-        }
 
         try {
-            $userParam = json_decode(base64_decode($checkArr['1']));
+            $userParam = json_decode(base64_decode($decodeStr));
         } catch (Exception $e) {
             throw new Exception($this->errorMsg['30001']);
         }
@@ -164,10 +136,8 @@ class Oauth
         $params = array();
         parse_str($response, $params);
 
-        // $this->recorder->write("access_token", $params["access_token"]);
-        // return $params["access_token"];
-        self::$data['access_token'] = $params["access_token"];
-        // return $params["access_token"];
+        $_SESSION['access_token'] = $params["access_token"];
+
         return $userParam;
 
     }
@@ -177,7 +147,7 @@ class Oauth
 
         //-------请求参数列表
         $keysArr = array(
-            "access_token" => self::$data['access_token'];,
+            "access_token" => $_SESSION['access_token'],
         );
 
         $graph_url = $this->urlUtils->combineURL(self::GET_OPENID_URL, $keysArr);
@@ -193,14 +163,34 @@ class Oauth
 
         $user = json_decode($response);
         if (isset($user->error)) {
-            // $this->error->showError($user->error, $user->error_description);
             throw new Exception($msg->error . "：" . $msg->error_description);
         }
 
         //------记录openid
-        // $this->recorder->write("openid", $user->openid);
-        self::$data['openid'] = $user->openid;
+        $_SESSION['openid'] = $user->openid;
         return $user->openid;
 
+    }
+
+    /**
+     * 字符串加解密
+     * @Author   ZhaoXianFang
+     * @DateTime 2019-04-01
+     * @param    [type]       $string [字符串]
+     * @param    string       $action [en:加密；de:解密]
+     * @return   [type]               []
+     */
+    private function strCode($string, $action = 'en')
+    {
+        $action != 'en' && $string = base64_decode($string);
+        $code                      = '';
+        $key                       = 'str_en_de_code';
+        $keyLen                    = strlen($key);
+        $strLen                    = strlen($string);
+        for ($i = 0; $i < $strLen; $i++) {
+            $k = $i % $keyLen;
+            $code .= $string[$i] ^ $key[$k];
+        }
+        return ($action != 'de' ? base64_encode($code) : $code);
     }
 }

@@ -179,7 +179,7 @@ class SaeTOAuthV2
     public function getAuthorizeURL($state = '', $response_type = 'code', $display = null)
     {
         $state = $state ? base64_encode(json_encode($state)) : base64_encode(json_encode('NULL'));
-        $state = $this->strCode($state, 'en');
+        $state = urlencode($this->strCode($state, 'en'));
 
         $params                  = array();
         $params['client_id']     = $this->client_id;
@@ -188,28 +188,6 @@ class SaeTOAuthV2
         $params['state']         = $state;
         $params['display']       = $display;
         return $this->authorizeURL() . "?" . http_build_query($params);
-    }
-
-    /**
-     * 字符串加解密
-     * @Author   ZhaoXianFang
-     * @DateTime 2019-04-01
-     * @param    [type]       $string [字符串]
-     * @param    string       $action [en:加密；de:解密]
-     * @return   [type]               []
-     */
-    private function strCode($string, $action = 'en')
-    {
-        $action != 'en' && $string = base64_decode($string);
-        $code                      = '';
-        $key                       = 'str_en_de_code';
-        $keyLen                    = strlen($key);
-        $strLen                    = strlen($string);
-        for ($i = 0; $i < $strLen; $i++) {
-            $k = $i % $keyLen;
-            $code .= $string[$i] ^ $key[$k];
-        }
-        return ($action != 'de' ? base64_encode($code) : $code);
     }
 
     /**
@@ -249,9 +227,11 @@ class SaeTOAuthV2
 
         // 进行解密 验证是否为本站发出的state
         try {
-            $state          = $_REQUEST['state'];
-            $decodeStr      = $this->strCode($state, 'de');
-            $customizeParam = json_decode(base64_decode($decodeStr));
+        	$state          = $_REQUEST['state'];
+        	// $state = urldecode($state);
+			$decodeStr      = $this->strCode($state, 'de');
+			$customizeParam = json_decode(base64_decode($decodeStr), true);
+            // base64_encode(json_encode('NULL'));
         } catch (Exception $e) {
             $customizeParam = "NULL";
         }
@@ -262,6 +242,28 @@ class SaeTOAuthV2
             'customize_data' => $customizeParam, // getAuthorizeURL 的第二个自定义数据,不传时候为 NULL
             'is_real_name'   => $token['isRealName'],
         );
+    }
+
+    /**
+     * 字符串加解密
+     * @Author   ZhaoXianFang
+     * @DateTime 2019-04-01
+     * @param    [type]       $string [字符串]
+     * @param    string       $action [en:加密；de:解密]
+     * @return   [type]               []
+     */
+    private function strCode($string, $action = 'en')
+    {
+        $action != 'en' && $string = base64_decode($string);
+        $code                      = '';
+        $key                       = 'str_en_de_code';
+        $keyLen                    = strlen($key);
+        $strLen                    = strlen($string);
+        for ($i = 0; $i < $strLen; $i++) {
+            $k = $i % $keyLen;
+            $code .= $string[$i] ^ $key[$k];
+        }
+        return ($action != 'de' ? base64_encode($code) : $code);
     }
 
     /**

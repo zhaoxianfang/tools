@@ -103,7 +103,7 @@ class Oauth
         $decodeStr = $this->strCode($state, 'de');
 
         try {
-            $userParam = json_decode(base64_decode($decodeStr));
+            $userParam = json_decode(base64_decode($decodeStr),true);
         } catch (Exception $e) {
             throw new Exception($this->errorMsg['30001']);
         }

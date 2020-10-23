@@ -5,14 +5,23 @@
 ##调用示例
 ``` php
 <?php
+// +---------------------------------------------------------------------
+// | 腾讯QQ 登录
+// +---------------------------------------------------------------------
+// | Licensed   | http://www.apache.org/licenses/LICENSE-2.0 )
+// +---------------------------------------------------------------------
+// | Author     | ZhaoXianFang <1748331509@qq.com>
+// +---------------------------------------------------------------------
+// | 版权       | http://www.itzxf.com
+// +---------------------------------------------------------------------
+// | Date       | 2019-07-30
+// +---------------------------------------------------------------------
+namespace app\callback\controller;
 
-use app\common\controller\ControllerBase;
+use app\common\controller\Base;
 use zxf\Qqlogin\QC;
 
-/**
- * 腾讯QQ 登录
- */
-class Tencent extends ControllerBase
+class Tencent extends Base
 {
     public function index()
     {
@@ -23,18 +32,19 @@ class Tencent extends ControllerBase
      * 处理qq登录
      * @Author   ZhaoXianFang
      * @DateTime 2018-06-05
-     * @param    string       $jumpUrl [登录完成后跳转的地址]
-     * @return   [type]                [description]
+     * @param    string       $jumpUrl      [登录完成后跳转的地址]
+     * @return   [type]                     [description]
      */
     public function login($jumpUrl = '')
     {
         try {
             $qq  = new QC(config('callback.qq'));
-            $url = $qq->qq_login($jumpUrl); //可以选传一个字符串或者数组的参数传入 在qq_callback() 处调用
+            // $url = $qq->qq_login(); // 不传值方式
+            $url = $qq->qq_login($jumpUrl); // 传入的数据 $jumpUrl 将会在 qq_callback 回调中返回得到
         } catch (\Exception $e) {
             return $this->error('出错啦: ' . $e->getMessage());
         }
-        // $this->redirect($url);
+
         return redirect($url);
     }
 
@@ -42,25 +52,16 @@ class Tencent extends ControllerBase
     public function callback()
     {
         try {
-            $qq = new QC(config('callback.qq'));
-            // 如果在调用qq_login()时候传入了自己的参数 则返回给$res 做自己的业务逻辑
-            $res = $qq->qq_callback();
-            $openId = $qq->get_openid();
-            $data   = $qq->get_user_info();
+            $qq         = new QC(config('callback.qq'));
+            $res        = $qq->qq_callback(); // 如果 qq_login 传入了值则 $res 的值为传入数据；如果 qq_login 没有传值则 $res 的值为 null
+            $openId     = $qq->get_openid();
+            $userInfo   = $qq->get_user_info();
         } catch (\Exception $e) {
+            return $this->error('..出错啦: ' . $e->getMessage());
+        }
+        // 得到 $res 的传入值和 用户数据$userInfo
+        // TODO ...
 
-            return $this->error('出错啦: ' . $e->getMessage());
-        }
-        // 拿到用户信息后的处理
-        // 快速登录
-        $loginUserInfo = $this->logicUser->fastLogin($openId, $data, 'qq');
-        //回调地址
-        $callUrl = $res;
-        if($callUrl){
-            // $this->redirect($callUrl);
-            return redirect($callUrl);
-        }
-        return json(['msg'=>'登录成功','code'=>0,'data'=>$loginUserInfo]);
     }
 }
 ```

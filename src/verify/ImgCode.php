@@ -1,5 +1,6 @@
 <?php
 namespace zxf\verify;
+
 use Exception;
 
 /**
@@ -26,7 +27,9 @@ class ImgCode
     protected $markImgPath     = ""; // 背景图卡口图片地址
     protected $moveMarkImgPath = ""; // 用户滑动的卡口图片地址
     //容错象素 越大体验越好，越小破解难道越高
-    protected $_fault = 3;
+    protected $_fault      = 3;
+    protected $requestTime = null; //API请求者请求时间
+    protected $cachePrefix = 'none'; //为API请求者设置附加缓存前缀
 
     public function __construct()
     {
@@ -38,7 +41,6 @@ class ImgCode
             } catch (Exception $e) {
                 throw new Exception('session 未启用');
             }
-
         }
     }
     /**
@@ -47,7 +49,7 @@ class ImgCode
      * @param array $options 参数
      * @return Auth
      */
-    public static function instance($options = [])
+    public static function instance($options = [], $init = true)
     {
         if (is_null(self::$instance)) {
             self::$instance = new static($options);
@@ -65,16 +67,20 @@ class ImgCode
     public function setOptions($imgPath = '', $markPath = '', $moveMarkPath = '')
     {
         if (!$imgPath) {
-            throw new Exception('图片地址不能为空');
+            throw new \Exception('图片地址不能为空');
         }
         $this->bgImgPath       = $imgPath;
         $this->markImgPath     = $markPath ? $markPath : dirname(__FILE__) . '/img/mark.png';
         $this->moveMarkImgPath = $moveMarkPath ? $moveMarkPath : dirname(__FILE__) . '/img/mark2.png';
+
         return $this;
     }
 
     public function make()
     {
+        // 先设置验证码为false
+        $this->clear();
+        $this->_setRequesterCode();
         $this->_init();
         $this->_createSlide();
         $this->_createBg();
@@ -82,41 +88,106 @@ class ImgCode
         $this->_imgout();
         $this->_destroy();
     }
-
-    public function check($offset = '')
+    /**
+     * 验证验证码
+     * @Author   ZhaoXianFang
+     * @DateTime 2019-11-19
+     * @param    boolean      $isFirst [是否为第一次验证，第一次发生在图片滑动验证，第二次发生在表单提交验证，没有第三次]
+     * @param    string       $offset  [验证码偏移量]
+     * @return   [type]                [description]
+     */
+    public function check($isFirst = true, $offset = '')
     {
-        if (!$_SESSION['imgcode_x']) {
-            return false;
-        }
+        $this->_setRequesterCode();
+
         if (!$offset) {
             $offset = $_REQUEST['check_x'];
         }
-        $ret = abs($_SESSION['imgcode_x'] - $offset) <= $this->_fault;
+        if (!$_SESSION[$this->cacheImgX]) {
+            if (!$offset) {
+                // 验证成功后的再次确认 要求3分钟内
+                $checkTime = $this->requestTime - $_SESSION[$this->cacheCheckSuccessTime];
+                if ($_SESSION[$this->cacheCheckSuccess] == 1 && $checkTime <= 180 && $checkTime > 0) {
+                    if (!$isFirst) {
+                        $this->clear();
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        $ret = abs($_SESSION[$this->cacheImgX] - $offset) <= $this->_fault;
         if ($ret) {
-            unset($_SESSION['imgcode_x']);
+            $_SESSION[$this->cacheImgX]             = null;
+            $_SESSION[$this->cacheCheckSuccess]     = 1; //验证通过
+            $_SESSION[$this->cacheCheckSuccessTime] = $this->requestTime; //验证通过时间
+            if (!$isFirst) {
+                $this->clear();
+            }
+            return true;
         } else {
-            $_SESSION['imgcode_err']++;
-            if ($_SESSION['imgcode_err'] > 10) {
+            $_SESSION[$this->cacheErr] = $_SESSION[$this->cacheErr] + 1;
+            if ($_SESSION[$this->cacheErr] > 10) {
                 //错误10次必须刷新
-                unset($_SESSION['imgcode_x']);
+                $_SESSION[$this->cacheImgX] = null;
             }
         }
         return $ret;
     }
 
+    // 清除
+    public function clear()
+    {
+        $_SESSION[$this->cacheImgX]             = null;
+        $_SESSION[$this->cacheCheckSuccess]     = 0; //验证通过
+        $_SESSION[$this->cacheCheckSuccessTime] = 0; //验证通过时间
+    }
+
     private function _init()
     {
+
         $file_bg = $this->bgImgPath;
         if (!$file_bg) {
-            throw new Exception('图片地址不能为空');
+            throw new \Exception('图片地址不能为空');
         }
         $this->imFullBg = imagecreatefrompng($file_bg);
         $this->imBg     = imagecreatetruecolor($this->bgWidth, $this->bgHeight);
         imagecopy($this->imBg, $this->imFullBg, 0, 0, 0, 0, $this->bgWidth, $this->bgHeight);
-        $this->imSlide           = imagecreatetruecolor($this->markWidth, $this->bgHeight);
-        $_SESSION['imgcode_x']   = $this->_x   = mt_rand(50, $this->bgWidth - $this->markWidth - 1);
-        $_SESSION['imgcode_err'] = 0;
-        $this->_y                = mt_rand(0, $this->bgHeight - $this->markHeight - 1);
+        $this->imSlide                      = imagecreatetruecolor($this->markWidth, $this->bgHeight);
+        $_SESSION[$this->cacheImgX]         = $this->_x         = mt_rand(50, $this->bgWidth - $this->markWidth - 1);
+        $_SESSION[$this->cacheRequestTime]  = $this->requestTime;
+        $_SESSION[$this->cacheErr]          = 0;
+        $_SESSION[$this->cacheCheckSuccess] = 0; //是否验证通过
+
+        $this->_y = mt_rand(0, $this->bgHeight - $this->markHeight - 1);
+
+    }
+
+    /**
+     * 请求者识别码
+     * @Author   ZhaoXianFang
+     * @DateTime 2019-10-14
+     * @return   [type]       [description]
+     */
+    private function _setRequesterCode()
+    {
+        $remoteAddr        = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
+        $remotePort        = isset($_SERVER['REMOTE_PORT']) ? $_SERVER['REMOTE_PORT'] : ''; //动态端口号
+        $this->requestTime = isset($_SERVER['REQUEST_TIME']) ? $_SERVER['REQUEST_TIME'] : '';
+
+        if (!$remoteAddr || !$remotePort) {
+            $this->cachePrefix = 'none';
+            throw new \Exception('无法识别的请求');
+        } else {
+            // $this->cachePrefix           = $remoteAddr . '_' . $remotePort;
+            $this->cachePrefix           = $remoteAddr;
+            $this->cacheImgX             = $this->cachePrefix . '_img_x';
+            $this->cacheRequestTime      = $this->cachePrefix . '_request_time';
+            $this->cacheErr              = $this->cachePrefix . '_imgcode_err';
+            $this->cacheCheckSuccess     = $this->cachePrefix . '_imgcode_check_success';
+            $this->cacheCheckSuccessTime = $this->cachePrefix . '_imgcode_check_success_time';
+        }
     }
 
     private function _destroy()
@@ -153,7 +224,7 @@ class ImgCode
     {
         $file_mark = $this->markImgPath;
         if (!$file_mark) {
-            throw new Exception('mark图片地址不能为空');
+            throw new \Exception('mark图片地址不能为空');
         }
         $im = imagecreatefrompng($file_mark);
         header('Content-Type: image/png');
@@ -168,7 +239,7 @@ class ImgCode
     {
         $file_mark = $this->moveMarkImgPath;
         if (!$file_mark) {
-            throw new Exception('mark图片地址不能为空');
+            throw new \Exception('mark图片地址不能为空');
         }
         $img_mark = imagecreatefrompng($file_mark);
         imagecopy($this->imSlide, $this->imFullBg, 0, $this->_y, $this->_x, $this->_y, $this->markWidth, $this->markHeight);

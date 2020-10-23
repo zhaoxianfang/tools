@@ -30,7 +30,9 @@ use zxf\verify\ImgCode;
 /**
  * 输出图片
  */
-ImgCode::instance()->setOptions($file_path)->make();
+// 背景图地址
+$file_bg = './photo2.png';
+ImgCode::instance()->setOptions($file_bg)->make();
 /**
  * 验证图片
  */

@@ -3,29 +3,25 @@
 ### 使用示例
 ``` php
 <?php
-// +---------------------------------------------------------------------+
-// | xfAdmin    | [ WE CAN DO IT JUST THINK ]                            |
-// +---------------------------------------------------------------------+
-// | Licensed   | http://www.apache.org/licenses/LICENSE-2.0 )           |
-// +---------------------------------------------------------------------+
-// | Author     | ZhaoXianFang <1748331509@qq.com>                       |
-// +---------------------------------------------------------------------+
-// | Repository | https://github.com/zhaoxianfang/xf                     |
-// +---------------------------------------------------------------------+
-// | Composer   | composer require zxf/tools xf                          |
-// +---------------------------------------------------------------------+
-
+// +---------------------------------------------------------------------
+// | 新浪微博 登录
+// +---------------------------------------------------------------------
+// | Licensed   | http://www.apache.org/licenses/LICENSE-2.0 )
+// +---------------------------------------------------------------------
+// | Author     | ZhaoXianFang <1748331509@qq.com>
+// +---------------------------------------------------------------------
+// | 版权       | http://www.itzxf.com
+// +---------------------------------------------------------------------
+// | Date       | 2019-07-30
+// +---------------------------------------------------------------------
 namespace app\callback\controller;
 
-use app\common\controller\ControllerBase;
+use app\common\controller\Base;
 use zxf\sina\SaeTOAuthV2;
-use zxf\sina\SaeTClientV2;
 
-/**
- * 新浪微博 登录
- */
-class Sina extends ControllerBase
+class Sina extends Base
 {
+
     public function index()
     {
         die('非法请求');
@@ -39,77 +35,45 @@ class Sina extends ControllerBase
      */
     public function callback()
     {
-        
+
         if (!isset($_REQUEST['code'])) {
             return $this->error('非法请求');
         }
 
-        $wbAkey = config('callback.qq.wb_akey');
-        $wbSkey = config('callback.qq.wb_skey');
-        $wbCallbackUrl = config('callback.qq.wb_callback_url');
-
-        $o = new SaeTOAuthV2( $wbAkey , $wbSkey );
-        $keys = array();
-        $keys['code'] = $_REQUEST['code'];
-        $keys['redirect_uri'] = $wbCallbackUrl;
+        $wbConfig = config('callback.sina');
+        
         try {
-            $token = $o->getAccessToken( 'code', $keys ) ;
-        } catch (\Exception $e) {
-            return $this->error("获取AccessToken失败");
-        }
-        if(!$token){
-            return $this->error('授权失败');
-        }
-
-        try {
-            $c = new SaeTClientV2( $wbAkey , $wbSkey , $token['access_token'] );
-            $ms  = $c->home_timeline(); // done
-            $uid_get = $c->get_uid();
-            $uid = $uid_get['uid'];
-            $user_message = $c->show_user_by_id( $uid);//根据ID获取用户等基本信息
+            $o   = new SaeTOAuthV2($wbConfig);
+            $res = $o->sina_callback(); // 自定义
         } catch (\Exception $e) {
             return $this->error('出错啦: ' . $e->getMessage());
         }
-        // 拿到用户信息后的处理
-        // 快速登录
-        $loginUserInfo = $this->logicUser->fastLogin($uid, $user_message, 'sina');
-        //回调地址
-        $callUrl = session('sina_callback');
-        if($callUrl){
-            $this->redirect($callUrl);
-        }
-        return json(['msg'=>'登录成功','code'=>0,'data'=>$loginUserInfo]);
-        
+        // $res['user_info']  // 微信用户信息
+        // $res['uid'] // 微博uid 类似于 open_id
+        // $res['customize_data']// getAuthorizeURL 的第二个自定义数据,不传时候为 NULL
+        // TODO ...
+
     }
 
     /**
      * 登录
      * @Author   ZhaoXianFang
      * @DateTime 2018-06-06
-     * @param    string       $jumpUrl [登录成功后跳转地址]
-     * @return   [type]                [description]
+     * @param    string       $jumpUrl      [登录成功后跳转地址]
+     * @param    string       $loginModel   [登录作用的模块、不同模块session名称不同]
+     * @return   [type]                     [description]
      */
     public function login($jumpUrl = '')
     {
         try {
-            $wbAkey = config('callback.qq.wb_akey');
-            $wbSkey = config('callback.qq.wb_skey');
-            $wbCallbackUrl = config('callback.qq.wb_callback_url');
-
-            $o = new SaeTOAuthV2( $wbAkey , $wbSkey );
-
-            $code_url = $o->getAuthorizeURL( $wbCallbackUrl );
+            $wbConfig = config('callback.sina');
+            $o        = new SaeTOAuthV2($wbConfig);
+            $code_url = $o->getAuthorizeURL($jumpUrl); // 如果传入数据 会在 sina_callback 中返回在 customize_data 值中
         } catch (\Exception $e) {
-
             return $this->error('出错啦: ' . $e->getMessage());
         }
-        if($jumpUrl){
-            session('sina_callback',$jumpUrl);
-        }
         //跳转到授权页面
-        $this->redirect($code_url);
-        
-        
+        return redirect($code_url);
     }
 
     // 回调函数

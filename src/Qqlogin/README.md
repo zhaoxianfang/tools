@@ -4,7 +4,7 @@
 
 ##调用示例
 ``` php
-<?php
+<<?php
 // +---------------------------------------------------------------------
 // | 腾讯QQ 登录
 // +---------------------------------------------------------------------
@@ -19,6 +19,7 @@
 namespace app\callback\controller;
 
 use app\common\controller\Base;
+use util\Curl;
 use zxf\Qqlogin\QC;
 
 class Tencent extends Base
@@ -32,19 +33,18 @@ class Tencent extends Base
      * 处理qq登录
      * @Author   ZhaoXianFang
      * @DateTime 2018-06-05
-     * @param    string       $jumpUrl      [登录完成后跳转的地址]
+     * @param    string       $jumpUrl      [登录完成后跳转的地址 , 跳转地址参数 jumpUrl需要做 urlencode( base64_encode($jumpUrl) 操作]
      * @return   [type]                     [description]
      */
     public function login($jumpUrl = '')
     {
+        $jumpUrl = $jumpUrl ? urldecode($jumpUrl) : '';
         try {
             $qq  = new QC(config('callback.qq'));
-            // $url = $qq->qq_login(); // 不传值方式
-            $url = $qq->qq_login($jumpUrl); // 传入的数据 $jumpUrl 将会在 qq_callback 回调中返回得到
+            $url = $qq->qq_login($jumpUrl);
         } catch (\Exception $e) {
             return $this->error('出错啦: ' . $e->getMessage());
         }
-
         return redirect($url);
     }
 
@@ -52,17 +52,28 @@ class Tencent extends Base
     public function callback()
     {
         try {
-            $qq         = new QC(config('callback.qq'));
-            $res        = $qq->qq_callback(); // 如果 qq_login 传入了值则 $res 的值为传入数据；如果 qq_login 没有传值则 $res 的值为 null
-            $openId     = $qq->get_openid();
-            $userInfo   = $qq->get_user_info();
+            $qq      = new QC(config('callback.qq'));
+            $callUrl = $qq->qq_callback();
+            $openId  = $qq->get_openid();
+            $data    = $qq->get_user_info();
         } catch (\Exception $e) {
-            return $this->error('..出错啦: ' . $e->getMessage());
+            return $this->error('出错啦: ' . $e->getMessage());
         }
-        // 得到 $res 的传入值和 用户数据$userInfo
-        // TODO ...
+
+        // 拿到用户信息后的处理
+        // 快速登录
+        $loginUserInfo = \app\common\model\User::fastLogin($openId, $data, 'qq');
+
+        if ($callUrl) {
+            $callUrl = base64_decode($callUrl, true);
+            // return redirect($callUrl);
+            echo Curl::instance()->buildRequestForm($callUrl, $loginUserInfo);
+            exit;
+        }
+        return json(['msg' => '登录成功', 'code' => 0, 'data' => $loginUserInfo]);
 
     }
 }
+
 ```
 >提示:config('qq') 中需要包含3个元素 appid、appkey、callbackUrl

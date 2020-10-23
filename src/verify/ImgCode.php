@@ -41,7 +41,20 @@ class ImgCode
             } catch (Exception $e) {
                 throw new Exception('session 未启用');
             }
+
         }
+        // $options = [
+        //     // 缓存类型为File
+        //     'type'   => 'File',
+        //     // 缓存有效期为半小时有效
+        //     'expire' => 1800,
+        //     // 指定缓存目录
+        //     'path'   => Env::get('runtime_path') . 'cache/img_code/',
+        // ];
+        // // 缓存初始化
+        // // 不进行缓存初始化的话，默认使用配置文件中的缓存配置
+        // cache($options);
+
     }
     /**
      * 初始化

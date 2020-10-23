@@ -17,6 +17,7 @@
 namespace app\callback\controller;
 
 use app\common\controller\Base;
+use util\Curl;
 use zxf\sina\SaeTOAuthV2;
 
 class Sina extends Base
@@ -25,6 +26,27 @@ class Sina extends Base
     public function index()
     {
         die('非法请求');
+    }
+
+    /**
+     * 登录
+     * @Author   ZhaoXianFang
+     * @DateTime 2018-06-06
+     * @param    string       $jumpUrl      [登录成功后跳转地址 跳转地址参数 jumpUrl需要做 urlencode( base64_encode($jumpUrl) 操作]
+     * @return   [type]                     [description]
+     */
+    public function login($jumpUrl = '')
+    {
+        $jumpUrl = $jumpUrl ? urldecode($jumpUrl) : '';
+        try {
+            $wbConfig = config('callback.sina');
+            $o        = new SaeTOAuthV2($wbConfig);
+            $code_url = $o->getAuthorizeURL($jumpUrl);
+        } catch (\Exception $e) {
+            return $this->error('出错啦: ' . $e->getMessage());
+        }
+        //跳转到授权页面
+        return redirect($code_url);
     }
 
     /**
@@ -41,39 +63,32 @@ class Sina extends Base
         }
 
         $wbConfig = config('callback.sina');
-        
+
         try {
             $o   = new SaeTOAuthV2($wbConfig);
             $res = $o->sina_callback(); // 自定义
         } catch (\Exception $e) {
             return $this->error('出错啦: ' . $e->getMessage());
         }
+
         // $res['user_info']  // 微信用户信息
         // $res['uid'] // 微博uid 类似于 open_id
         // $res['customize_data']// getAuthorizeURL 的第二个自定义数据,不传时候为 NULL
-        // TODO ...
 
-    }
+        //回调地址
+        $callUrl = $res['customize_data']; //回调地址
 
-    /**
-     * 登录
-     * @Author   ZhaoXianFang
-     * @DateTime 2018-06-06
-     * @param    string       $jumpUrl      [登录成功后跳转地址]
-     * @param    string       $loginModel   [登录作用的模块、不同模块session名称不同]
-     * @return   [type]                     [description]
-     */
-    public function login($jumpUrl = '')
-    {
-        try {
-            $wbConfig = config('callback.sina');
-            $o        = new SaeTOAuthV2($wbConfig);
-            $code_url = $o->getAuthorizeURL($jumpUrl); // 如果传入数据 会在 sina_callback 中返回在 customize_data 值中
-        } catch (\Exception $e) {
-            return $this->error('出错啦: ' . $e->getMessage());
+        // 拿到用户信息后的处理
+        // 快速登录
+        $loginUserInfo = \app\common\model\User::fastLogin($res['uid'], $res['user_info'], 'sina');
+        //回调地址
+        if ($callUrl) {
+            $callUrl = base64_decode($callUrl, true);
+            echo Curl::instance()->buildRequestForm($callUrl, $loginUserInfo);
+            exit;
         }
-        //跳转到授权页面
-        return redirect($code_url);
+        return json(['msg' => '登录成功', 'code' => 0, 'data' => $loginUserInfo]);
+
     }
 
     // 回调函数
@@ -82,5 +97,6 @@ class Sina extends Base
         die("取消授权");
     }
 }
+
 
 ```

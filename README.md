@@ -131,6 +131,7 @@ class Tencent extends Base
             $qq     	= new QC(config('callback.qq'));
             $res    	= $qq->qq_callback(); // 如果 qq_login 传入了值则 $res 的值为传入数据；如果 qq_login 没有传值则 $res 的值为 null
             $openId 	= $qq->get_openid();
+            $qq         = new QC(config('callback.qq'));
             $userInfo   = $qq->get_user_info();
         } catch (\Exception $e) {
             return $this->error('..出错啦: ' . $e->getMessage());

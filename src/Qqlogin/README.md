@@ -1,21 +1,8 @@
-# QQ 登录功能
+# QQ登录
+>说明:基于 ThinkPHP6 开发，其他框架可根据实际修改
 
->说明:基于 php5 开发
-
-##调用示例
 ``` php
-<<?php
-// +---------------------------------------------------------------------
-// | 腾讯QQ 登录
-// +---------------------------------------------------------------------
-// | Licensed   | http://www.apache.org/licenses/LICENSE-2.0 )
-// +---------------------------------------------------------------------
-// | Author     | ZhaoXianFang <1748331509@qq.com>
-// +---------------------------------------------------------------------
-// | 版权       | http://www.itzxf.com
-// +---------------------------------------------------------------------
-// | Date       | 2019-07-30
-// +---------------------------------------------------------------------
+<?php
 namespace app\callback\controller;
 
 use app\common\controller\Base;
@@ -55,25 +42,15 @@ class Tencent extends Base
             $qq      = new QC(config('callback.qq'));
             $callUrl = $qq->qq_callback();
             $openId  = $qq->get_openid();
+            $qq      = new QC(config('callback.qq'));
             $data    = $qq->get_user_info();
         } catch (\Exception $e) {
             return $this->error('出错啦: ' . $e->getMessage());
         }
-
-        // 拿到用户信息后的处理
-        // 快速登录
-        $loginUserInfo = \app\common\model\User::fastLogin($openId, $data, 'qq');
-
-        if ($callUrl) {
-            $callUrl = base64_decode($callUrl, true);
-            // return redirect($callUrl);
-            echo Curl::instance()->buildRequestForm($callUrl, $loginUserInfo);
-            exit;
-        }
-        return json(['msg' => '登录成功', 'code' => 0, 'data' => $loginUserInfo]);
+        // 得到 $res 的传入值和 用户数据$userInfo
+        // TODO ..
 
     }
 }
-
 ```
 >提示:config('qq') 中需要包含3个元素 appid、appkey、callbackUrl

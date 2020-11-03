@@ -20,30 +20,7 @@
 |  截图  |  JonnyW、Psr、Symfony  |
 |  微博登录  |  sina  |
 |  QueryList  |  QueryList  |
-|  图片验证码  |  ImgCode  |
 
-### 图片验证码
->前端js、css 放置在 demo 文件夹中
-
-``` php
-use zxf\verify\ImgCode;
-/**
- * 输出图片
- */
-// 背景图地址
-$file_bg = './photo2.png';
-ImgCode::instance()->setOptions($file_bg)->make();
-/**
- * 验证图片
- */
-$res = ImgCode::instance()->check($offset);
-if ($res) {
-    echo json_encode(['code' => 200, 'msg' => '成功']);
-} else {
-    echo json_encode(['code' => 403, 'msg' => '失败']);
-}
-
-```
 
 ```php
 <?php
@@ -77,24 +54,14 @@ return [
 
 ```
 ### QQ登录
->说明:基于 ThinkPHP6 开发，其他框架可适量修改
+>说明:基于 ThinkPHP6 开发，其他框架可根据实际修改
 
 ``` php
 <?php
-// +---------------------------------------------------------------------
-// | 腾讯QQ 登录
-// +---------------------------------------------------------------------
-// | Licensed   | http://www.apache.org/licenses/LICENSE-2.0 )
-// +---------------------------------------------------------------------
-// | Author     | ZhaoXianFang <1748331509@qq.com>
-// +---------------------------------------------------------------------
-// | 版权       | http://www.itzxf.com
-// +---------------------------------------------------------------------
-// | Date       | 2019-07-30
-// +---------------------------------------------------------------------
 namespace app\callback\controller;
 
 use app\common\controller\Base;
+use util\Curl;
 use zxf\Qqlogin\QC;
 
 class Tencent extends Base
@@ -108,19 +75,18 @@ class Tencent extends Base
      * 处理qq登录
      * @Author   ZhaoXianFang
      * @DateTime 2018-06-05
-     * @param    string       $jumpUrl      [登录完成后跳转的地址]
+     * @param    string       $jumpUrl      [登录完成后跳转的地址 , 跳转地址参数 jumpUrl需要做 urlencode( base64_encode($jumpUrl) 操作]
      * @return   [type]                     [description]
      */
     public function login($jumpUrl = '')
     {
+        $jumpUrl = $jumpUrl ? urldecode($jumpUrl) : '';
         try {
             $qq  = new QC(config('callback.qq'));
-            // $url = $qq->qq_login(); // 不传值方式
-            $url = $qq->qq_login($jumpUrl); // 传入的数据 $jumpUrl 将会在 qq_callback 回调中返回得到
+            $url = $qq->qq_login($jumpUrl);
         } catch (\Exception $e) {
             return $this->error('出错啦: ' . $e->getMessage());
         }
-
         return redirect($url);
     }
 
@@ -128,40 +94,29 @@ class Tencent extends Base
     public function callback()
     {
         try {
-            $qq     	= new QC(config('callback.qq'));
-            $res    	= $qq->qq_callback(); // 如果 qq_login 传入了值则 $res 的值为传入数据；如果 qq_login 没有传值则 $res 的值为 null
-            $openId 	= $qq->get_openid();
-            $qq         = new QC(config('callback.qq'));
-            $userInfo   = $qq->get_user_info();
+            $qq      = new QC(config('callback.qq'));
+            $callUrl = $qq->qq_callback();
+            $openId  = $qq->get_openid();
+            $qq      = new QC(config('callback.qq'));
+            $data    = $qq->get_user_info();
         } catch (\Exception $e) {
-            return $this->error('..出错啦: ' . $e->getMessage());
+            return $this->error('出错啦: ' . $e->getMessage());
         }
         // 得到 $res 的传入值和 用户数据$userInfo
-        // TODO ...
+        // TODO ..
 
     }
 }
-
 ```
 
 ### 新浪微博登录
->说明:基于 ThinkPHP6 开发，其他框架可适量修改
+>说明:基于 ThinkPHP6 开发，其他框架可根据实际修改
 ``` php
 <?php
-// +---------------------------------------------------------------------
-// | 新浪微博 登录
-// +---------------------------------------------------------------------
-// | Licensed   | http://www.apache.org/licenses/LICENSE-2.0 )
-// +---------------------------------------------------------------------
-// | Author     | ZhaoXianFang <1748331509@qq.com>
-// +---------------------------------------------------------------------
-// | 版权       | http://www.itzxf.com
-// +---------------------------------------------------------------------
-// | Date       | 2019-07-30
-// +---------------------------------------------------------------------
 namespace app\callback\controller;
 
 use app\common\controller\Base;
+use util\Curl;
 use zxf\sina\SaeTOAuthV2;
 
 class Sina extends Base
@@ -170,6 +125,27 @@ class Sina extends Base
     public function index()
     {
         die('非法请求');
+    }
+
+    /**
+     * 登录
+     * @Author   ZhaoXianFang
+     * @DateTime 2018-06-06
+     * @param    string       $jumpUrl      [登录成功后跳转地址 跳转地址参数 jumpUrl需要做 urlencode( base64_encode($jumpUrl) 操作]
+     * @return   [type]                     [description]
+     */
+    public function login($jumpUrl = '')
+    {
+        $jumpUrl = $jumpUrl ? urldecode($jumpUrl) : '';
+        try {
+            $wbConfig = config('callback.sina');
+            $o        = new SaeTOAuthV2($wbConfig);
+            $code_url = $o->getAuthorizeURL($jumpUrl);
+        } catch (\Exception $e) {
+            return $this->error('出错啦: ' . $e->getMessage());
+        }
+        //跳转到授权页面
+        return redirect($code_url);
     }
 
     /**
@@ -186,39 +162,18 @@ class Sina extends Base
         }
 
         $wbConfig = config('callback.sina');
-        
+
         try {
             $o   = new SaeTOAuthV2($wbConfig);
             $res = $o->sina_callback(); // 自定义
         } catch (\Exception $e) {
             return $this->error('出错啦: ' . $e->getMessage());
         }
+
         // $res['user_info']  // 微信用户信息
         // $res['uid'] // 微博uid 类似于 open_id
         // $res['customize_data']// getAuthorizeURL 的第二个自定义数据,不传时候为 NULL
-        // TODO ...
 
-    }
-
-    /**
-     * 登录
-     * @Author   ZhaoXianFang
-     * @DateTime 2018-06-06
-     * @param    string       $jumpUrl      [登录成功后跳转地址]
-     * @param    string       $loginModel   [登录作用的模块、不同模块session名称不同]
-     * @return   [type]                     [description]
-     */
-    public function login($jumpUrl = '')
-    {
-        try {
-            $wbConfig = config('callback.sina');
-            $o        = new SaeTOAuthV2($wbConfig);
-            $code_url = $o->getAuthorizeURL($jumpUrl); // 如果传入数据 会在 sina_callback 中返回在 customize_data 值中
-        } catch (\Exception $e) {
-            return $this->error('出错啦: ' . $e->getMessage());
-        }
-        //跳转到授权页面
-        return redirect($code_url);
     }
 
     // 回调函数
@@ -227,8 +182,6 @@ class Sina extends Base
         die("取消授权");
     }
 }
-
-
 ```
 
 ### 截图功能

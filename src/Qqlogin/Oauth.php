@@ -46,6 +46,7 @@ class Oauth
      */
     public function __construct($config = array())
     {
+
         if (!$config['appid'] || !$config['appkey'] || !$config['callbackUrl']) {
             // throw new Exception("缺少必要的参数： appid、appkey、callbackUrl");
             throw new Exception($this->errorMsg['20001']);
@@ -98,7 +99,8 @@ class Oauth
             throw new Exception($this->errorMsg['30001']);
         }
 
-        $state = $_REQUEST['state'];
+        $state = urldecode($_REQUEST['state']);
+        $state = str_replace(' ', '+',$state);
         // 进行解密 验证是否为本站发出的state
         $decodeStr = $this->strCode($state, 'de');
 

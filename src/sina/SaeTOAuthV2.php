@@ -227,7 +227,8 @@ class SaeTOAuthV2
 
         // 进行解密 验证是否为本站发出的state
         try {
-        	$state          = $_REQUEST['state'];
+        	$state = urldecode($_REQUEST['state']);
+            $state = str_replace(' ', '+',$state);
         	// $state = urldecode($state);
 			$decodeStr      = $this->strCode($state, 'de');
 			$customizeParam = json_decode(base64_decode($decodeStr), true);

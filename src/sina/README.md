@@ -3,17 +3,6 @@
 ### 使用示例
 ``` php
 <?php
-// +---------------------------------------------------------------------
-// | 新浪微博 登录
-// +---------------------------------------------------------------------
-// | Licensed   | http://www.apache.org/licenses/LICENSE-2.0 )
-// +---------------------------------------------------------------------
-// | Author     | ZhaoXianFang <1748331509@qq.com>
-// +---------------------------------------------------------------------
-// | 版权       | http://www.itzxf.com
-// +---------------------------------------------------------------------
-// | Date       | 2019-07-30
-// +---------------------------------------------------------------------
 namespace app\callback\controller;
 
 use app\common\controller\Base;
@@ -75,20 +64,6 @@ class Sina extends Base
         // $res['uid'] // 微博uid 类似于 open_id
         // $res['customize_data']// getAuthorizeURL 的第二个自定义数据,不传时候为 NULL
 
-        //回调地址
-        $callUrl = $res['customize_data']; //回调地址
-
-        // 拿到用户信息后的处理
-        // 快速登录
-        $loginUserInfo = \app\common\model\User::fastLogin($res['uid'], $res['user_info'], 'sina');
-        //回调地址
-        if ($callUrl) {
-            $callUrl = base64_decode($callUrl, true);
-            echo Curl::instance()->buildRequestForm($callUrl, $loginUserInfo);
-            exit;
-        }
-        return json(['msg' => '登录成功', 'code' => 0, 'data' => $loginUserInfo]);
-
     }
 
     // 回调函数
@@ -97,6 +72,4 @@ class Sina extends Base
         die("取消授权");
     }
 }
-
-
 ```

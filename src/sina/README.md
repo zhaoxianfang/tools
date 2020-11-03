@@ -6,7 +6,6 @@
 namespace app\callback\controller;
 
 use app\common\controller\Base;
-use util\Curl;
 use zxf\sina\SaeTOAuthV2;
 
 class Sina extends Base
@@ -30,7 +29,8 @@ class Sina extends Base
         try {
             $wbConfig = config('callback.sina');
             $o        = new SaeTOAuthV2($wbConfig);
-            $code_url = $o->getAuthorizeURL($jumpUrl);
+            // $code_url = $o->getAuthorizeURL(); // 不传入数据 
+            $code_url = $o->getAuthorizeURL($jumpUrl); // 如果传入数据 会在 sina_callback 中返回在 customize_data 值中
         } catch (\Exception $e) {
             return $this->error('出错啦: ' . $e->getMessage());
         }
@@ -62,7 +62,7 @@ class Sina extends Base
 
         // $res['user_info']  // 微信用户信息
         // $res['uid'] // 微博uid 类似于 open_id
-        // $res['customize_data']// getAuthorizeURL 的第二个自定义数据,不传时候为 NULL
+        // $res['customize_data']// getAuthorizeURL 传入的自定义数据,不传时候为 NULL
 
     }
 

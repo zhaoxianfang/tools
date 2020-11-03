@@ -61,7 +61,6 @@ return [
 namespace app\callback\controller;
 
 use app\common\controller\Base;
-use util\Curl;
 use zxf\Qqlogin\QC;
 
 class Tencent extends Base
@@ -83,7 +82,8 @@ class Tencent extends Base
         $jumpUrl = $jumpUrl ? urldecode($jumpUrl) : '';
         try {
             $qq  = new QC(config('callback.qq'));
-            $url = $qq->qq_login($jumpUrl);
+            // $url = $qq->qq_login(); // 不传值方式
+            $url = $qq->qq_login($jumpUrl); // 传入的数据 $jumpUrl 将会在 qq_callback 回调中返回得到
         } catch (\Exception $e) {
             return $this->error('出错啦: ' . $e->getMessage());
         }
@@ -95,14 +95,14 @@ class Tencent extends Base
     {
         try {
             $qq      = new QC(config('callback.qq'));
-            $callUrl = $qq->qq_callback();
+            $jumpUrl = $qq->qq_callback(); // 如果 qq_login 传入了值则 $res 的值为传入数据；如果 qq_login 没有传值则 $res 的值为 null
             $openId  = $qq->get_openid();
             $qq      = new QC(config('callback.qq'));
-            $data    = $qq->get_user_info();
+            $userInfo= $qq->get_user_info();
         } catch (\Exception $e) {
             return $this->error('出错啦: ' . $e->getMessage());
         }
-        // 得到 $res 的传入值和 用户数据$userInfo
+        // 得到 $jumpUrl 的传入值和 用户数据$userInfo
         // TODO ..
 
     }
@@ -116,7 +116,6 @@ class Tencent extends Base
 namespace app\callback\controller;
 
 use app\common\controller\Base;
-use util\Curl;
 use zxf\sina\SaeTOAuthV2;
 
 class Sina extends Base
@@ -140,7 +139,8 @@ class Sina extends Base
         try {
             $wbConfig = config('callback.sina');
             $o        = new SaeTOAuthV2($wbConfig);
-            $code_url = $o->getAuthorizeURL($jumpUrl);
+            // $code_url = $o->getAuthorizeURL(); // 不传入数据 
+            $code_url = $o->getAuthorizeURL($jumpUrl); // 如果传入数据 会在 sina_callback 中返回在 customize_data 值中
         } catch (\Exception $e) {
             return $this->error('出错啦: ' . $e->getMessage());
         }
@@ -172,7 +172,7 @@ class Sina extends Base
 
         // $res['user_info']  // 微信用户信息
         // $res['uid'] // 微博uid 类似于 open_id
-        // $res['customize_data']// getAuthorizeURL 的第二个自定义数据,不传时候为 NULL
+        // $res['customize_data']// getAuthorizeURL 传入的自定义数据,不传时候为 NULL
 
     }
 

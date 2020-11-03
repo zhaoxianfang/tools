@@ -1,9 +1,8 @@
 {
     "name": "zxf/tools",
-    "description": "zxf code",
-    "keywords": ["php", "zxf", "zhaoxianfang", "tools", "code"],
+    "description": "自定义封装 第三方登录组件、远程截图等功能",
+    "keywords": ["php", "zxf", "zhaoxianfang", "tools", "login"],
     "homepage": "http://www.itzxf.com",
-    "type": "ahacode",
     "license": "Apache-2.0",
     "support": {
         "source": "https://github.com/zhaoxianfang/tools"

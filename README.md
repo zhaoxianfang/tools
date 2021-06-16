@@ -17,9 +17,10 @@
 | --- | --- |
 |  QQ登录  |  Qqlogin  |
 |  微信  |  wechat(未完成)  |
-|  截图  |  JonnyW、Psr、Symfony  |
+|  截图  |  JonnyW、Psr、Symfony(废弃)  |
 |  微博登录  |  sina  |
-|  QueryList  |  QueryList  |
+|  QueryList  |  QueryList(废弃)  |
+|  JSMin  |  js 压缩工具  |
 
 
 ```php
@@ -182,6 +183,13 @@ class Sina extends Base
         die("取消授权");
     }
 }
+```
+
+### jsMin 压缩
+
+``` php
+use zxf\JSMin;
+$minifiedCode = JSMin::minify($jsString);
 ```
 
 ### 截图功能

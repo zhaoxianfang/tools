@@ -1,8 +1,8 @@
 {
     "name": "zxf/tools",
-    "description": "自定义封装 第三方登录组件、远程截图等功能",
+    "description": "自定义封装 第三方登录组件、js代码压缩、远程截图等功能",
     "keywords": ["php", "zxf", "zhaoxianfang", "tools", "login"],
-    "homepage": "http://www.itzxf.com",
+    "homepage": "https://www.itzxf.com",
     "license": "Apache-2.0",
     "support": {
         "source": "https://github.com/zhaoxianfang/tools"

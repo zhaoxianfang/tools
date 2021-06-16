@@ -20,7 +20,11 @@
 |  截图  |  JonnyW、Psr、Symfony(废弃)  |
 |  微博登录  |  sina  |
 |  QueryList  |  QueryList(废弃)  |
-|  JSMin  |  js 压缩工具  |
+|  JsMin  |  js 压缩工具  |
+|  QrCode  |  js 压缩工具  |
+|  Compressor  |  图片压缩类  |
+|  TextToPNG  |  文字转图片  |
+|  Curl  |  http 网络请求  |
 
 
 ```php
@@ -54,6 +58,15 @@ return [
 ];
 
 ```
+
+
+### Curl 网络请求
+``` php
+
+Curl::instance()->setParams(json_encode(['path'=>'pages/index/index']))->post($url,'text');
+
+```
+
 ### QQ登录
 >说明:基于 ThinkPHP6 开发，其他框架可根据实际修改
 
@@ -188,8 +201,159 @@ class Sina extends Base
 ### jsMin 压缩
 
 ``` php
-use zxf\JSMin;
-$minifiedCode = JSMin::minify($jsString);
+use zxf\String\JsMin;
+$minifiedCode = JsMin::minify($jsString);
+```
+
+
+
+### QrCode 创建二维码
+
+``` php
+
+$text         = 'https://www.itzxf.com/';
+$filename     = false; //二维码图片保存路径(若不生成文件则设置为false)
+$level        = "L"; //二维码容错率，默认L
+$size         = '6'; //二维码图片每个黑点的像素，默认4
+$padding      = 2; //二维码边框的间距，默认2
+$saveandprint = false; //保存二维码图片并显示出来，$filename必须传递文件路径
+QrCode::png($text, $filename, $level, $size, $padding, $saveandprint);
+die;
+```
+
+
+### PHPMailer 发送邮件
+
+``` php
+
+/**
+ * 发送邮件
+ * @Author   ZhaoXianFang
+ * @DateTime 2019-11-27
+ * @param    string       $to      [接收人]
+ * @param    string       $title   [邮件标题]
+ * @param    string       $content [邮件内容]
+ * @param    string       $sender  [发件人]
+ * @param    boolean      $isHtml  [是否为html页面]
+ * @return   [type]                [true|false]
+ * @example   send_mailer('111@qq.com', '邮件测试标题', $content,'发送人', $isHtml = true);
+ * @example   send_mailer(['111@qq.com'=>'小张'],'邮件测试标题', $content,'发送人', $isHtml = true);
+ * @example   send_mailer(['111@qq.com','222@qq.com'], '邮件测试标题', $content,'发送人', $isHtml = true);
+ * @example   send_mailer([['111@qq.com'=>'小张'], ['222@qq.com'=>'无我']], '邮件测试标题', $content,'发送人', $isHtml = true);
+ */
+function send_mailer($to = '', $title = '', $content = '', $sender = '邮件测试', $isHtml = false)
+{
+    if (!$to || !$title || !$content) {
+        return false;
+    }
+    $mail = new PHPMailer(true);
+    try {
+        //使用STMP服务
+        $mail->isSMTP();
+        //这里使用我们第二步设置的stmp服务地址
+        $mail->Host = "smtp.qq.com";
+        //设置是否进行权限校验
+        $mail->SMTPAuth = true;
+        //第二步中登录网易邮箱的账号
+        $mail->Username = "邮件来源@qq.com";
+        //客户端授权密码，注意不是登录密码
+        $mail->Password = "客户端授权密码";
+        //使用ssl协议
+        $mail->SMTPSecure = 'ssl';
+        //端口设置
+        $mail->Port = 465;
+        //字符集设置，防止中文乱码
+        $mail->CharSet = "utf-8";
+        //设置邮箱的来源，邮箱与$mail->Username一致，名称随意
+        $mail->setFrom("邮件来源@qq.com", $sender);
+
+        //设置回复地址，一般与来源保持一直
+        $mail->addReplyTo("邮件来源@qq.com", "邮件反馈");
+        // $mail->AddAttachment('xx.xls','我的附件.xls'); // 添加附件,并指定名称
+
+        $mail->isHTML(true);
+        //标题
+        $mail->Subject = $title;
+        //正文
+        if ($isHtml) {
+            $mail->msgHTML($content);
+        } else {
+            $mail->Body = $content;
+        }
+        //设置收件的邮箱地址
+        if (is_string($to)) {
+            $mail->addAddress($to);
+        } else {
+            foreach ($to as $key => $userEmail) {
+                if(is_array($userEmail)){
+                    foreach ($userEmail as $user_email => $user_name) {
+                        if (is_string($user_email)) {
+                            $mail->addAddress($user_email, $user_name);
+                        } else {
+                            $mail->addAddress($user_name);
+                        }
+                    }
+                }else{
+                    if (is_string($key)) {
+                        $mail->addAddress($key, $userEmail);
+                    } else {
+                        $mail->addAddress($firstVal);
+                    }
+                }
+
+            }
+        }
+        $mail->send();
+        return true;
+    } catch (\Exception $e) {
+        return $mail->ErrorInfo;
+        // return false;
+    }
+}
+```
+
+### Compressor 图片压缩类
+``` php
+/**
+ * 功能：图片压缩类（可改变图片大小和压缩质量以及保留宽高压缩）
+ * @Author   ZhaoXianFang
+ * @DateTime 2019-03-08
+ *
+ * 调用示例：
+ *        $Compressor = new Compressor(); 
+ *        OR 
+ *        $Compressor = Compressor::instance()
+ *        # 仅压缩
+ *        $result = $Compressor->set('001.jpg', './compressOnly.png')->compress(5)->get();
+ *        # 仅改变尺寸
+ *        $result = $Compressor->set('001.jpg', './resizeOnly.jpg')->resize(500, 500)->get();
+ *        # 压缩且改变尺寸
+ *        $result = $Compressor->set('001.jpg', './resizeAndCompress.png')->resize(0, 500)->compress(5)->get();
+ *        #  压缩且按照比例压缩
+ *        $result = $Compressor->set('001.jpg', './resizeAndCompress.png')->proportion(0.5)->compress(5)->get();
+ *        return $result;
+ *  参数说明：
+ *        set(原图路径,保存后的路径);
+ *        resize(设置宽度,设置高度);//如果有一个参数为0，则保持宽高比例
+ *        proportion(压缩比例);//0.1~1 根据比例压缩
+ *        compress(压缩级别);//0~9，压缩级别，级别越高 图片越小
+ *        get();//获取生成后的结果
+ *  提示：
+ *        如果使用到compress 方法，先设置其他参数最后一步再执行 compress 压缩方法
+ */
+```
+
+
+### TextToPNG 文字转图片
+``` php
+use zxf\img\TextToPNG;
+
+$text = 'hello';
+$color = '#ffffff';
+$bgcolor = '#cccccc';
+$rotate = 0;
+
+TextToPNG::instance()->setFontStyle('diandian')->setText($text)->setSize('900', '500')->setColor($color)->setBackgroundColor($bgcolor)->setTransparent(false)->setRotate($rotate)->draw();
 ```
 
 ### 截图功能

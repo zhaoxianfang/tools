@@ -96,11 +96,11 @@ class Img
             $newFilePath = $imgPath;
         }
         $ext2 = explode(".", $newFilePath);
-        $ext2 = $ext2[count($ext2)-1];
-        
-        if(!is_dir(dirname($newFilePath))){
+        $ext2 = $ext2[count($ext2) - 1];
+
+        if (!is_dir(dirname($newFilePath))) {
             //检查是否有该文件夹，如果没有就创建，并给予最高权限
-            mkdir(dirname($newFilePath), 0755,true);
+            mkdir(dirname($newFilePath), 0755, true);
         }
         // dirname
 
@@ -172,9 +172,9 @@ class Img
         if ($newFilePath === true) {
             $newFilePath = $filePath;
         }
-        if(!is_dir(dirname($newFilePath))){
+        if (!is_dir(dirname($newFilePath))) {
             //检查是否有该文件夹，如果没有就创建，并给予最高权限
-            mkdir(dirname($newFilePath), 0755,true);
+            mkdir(dirname($newFilePath), 0755, true);
         }
         if ($newFilePath) {
             if ($ext == "jpg" || $ext == "jpeg") {
@@ -250,12 +250,11 @@ class Img
 
         $ename2 = getimagesize($smallImgPath);
         $ext2   = explode('/', $ename2['mime'])[1];
-        
 
         // $ename3 = getimagesize($saveToPath);
         // $ext3   = explode('/', $ename3['mime'])[1];
         $ext3 = explode(".", $saveToPath);
-        $ext3 = $ext3[count($ext3)-1];
+        $ext3 = $ext3[count($ext3) - 1];
 
         //获取源图gd图像标识符
         // $srcImg = imagecreatefrompng($filePath);
@@ -343,9 +342,9 @@ class Img
                 break;
         }
 
-        if(!is_dir(dirname($saveToPath)) ){
+        if (!is_dir(dirname($saveToPath))) {
             //检查是否有该文件夹，如果没有就创建，并给予最高权限
-            mkdir(dirname($saveToPath), 0755,true);
+            mkdir(dirname($saveToPath), 0755, true);
         }
 
         // 水印
@@ -368,12 +367,12 @@ class Img
                 $background = imagecreatetruecolor($w1 + $w2, $h1); // 背景图片
             }
             // if(isset($option['2']) && $option['2']=== true){
-                // $color = imagecolorallocate($background, 0, 0, 0); // 为真彩色画布创建白色背景，再设置为透明
-                // imagefill($background, 0, 0, $color);
-                // imageColorTransparent($background, $color);
-                $white = imagecolorallocate($background, 255, 255, 255);
-                imagefill($background, 0, 0, $white);
-                // imageColorTransparent($background, $white);
+            // $color = imagecolorallocate($background, 0, 0, 0); // 为真彩色画布创建白色背景，再设置为透明
+            // imagefill($background, 0, 0, $color);
+            // imageColorTransparent($background, $color);
+            $white = imagecolorallocate($background, 255, 255, 255);
+            imagefill($background, 0, 0, $white);
+            // imageColorTransparent($background, $white);
             // }else{
             //     $color = imagecolorallocate($background, 202, 201, 201); // 为真彩色画布创建白色背景，再设置为透明
             //     imagefill($background, 0, 0, $color);
@@ -427,7 +426,7 @@ class Img
             if ($dealType == 20) {
                 // 上下
                 // imagecopyresized($background, $resource, 0, $h1, 0, 0, $w2, $h2, imagesx($resource), imagesy($resource)); // 最后两个参数为原始图片宽度和高度，倒数两个参数为copy时的图片宽度和高度
-                imagecopyresized($background, $resource, 0+$option['0'], $h1+$option['1'], 0, 0, $w2, $h2, imagesx($resource), imagesy($resource)); // 最后两个参数为原始图片宽度和高度，倒数两个参数为copy时的图片宽度和高度
+                imagecopyresized($background, $resource, 0 + $option['0'], $h1 + $option['1'], 0, 0, $w2, $h2, imagesx($resource), imagesy($resource)); // 最后两个参数为原始图片宽度和高度，倒数两个参数为copy时的图片宽度和高度
             }
             if ($dealType == 21) {
                 // 左右
@@ -479,7 +478,7 @@ class Img
         // $ename = getimagesize($saveToPath);
         // $ext   = explode('/', $ename['mime'])[1];
         $ext = explode(".", $saveToPath);
-        $ext = $ext[count($ext)-1];
+        $ext = $ext[count($ext) - 1];
 
         if ($offset_y > $height) {
 
@@ -508,11 +507,11 @@ class Img
 
         imagettftext($image, $size, $rot, $offset_x, $offset_y, $foreground, $fontFile, $text);
 
-        if($saveToPath){
+        if ($saveToPath) {
 
-            if(!is_dir(dirname($saveToPath))){
+            if (!is_dir(dirname($saveToPath))) {
                 //检查是否有该文件夹，如果没有就创建，并给予最高权限
-                mkdir(dirname($saveToPath), 0755,true);
+                mkdir(dirname($saveToPath), 0755, true);
             }
 
             switch (strtolower($ext)) {
@@ -533,5 +532,56 @@ class Img
             }
         }
         return $image;
+    }
+
+    /**
+     * @desc Base64生成图片文件,自动解析格式
+     * @param $base64 可以转成图片的base64字符串
+     * @param $path 绝对路径
+     * @param $filename 生成的文件名
+     * @return array 返回的数据，当返回status==1时，代表base64生成图片成功，其他则表示失败
+     */
+    public static function base64ToImage($base64, $path, $filename)
+    {
+
+        $res = array();
+        //匹配base64字符串格式
+        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $base64, $result)) {
+            //保存最终的图片格式
+            $postfix = $result[2];
+            $base64  = base64_decode(substr(strstr($base64, ','), 1));
+            $filename .= '.' . $postfix;
+            $path .= $filename;
+            //创建图片
+            if (file_put_contents($path, $base64)) {
+                $res['status']   = 1;
+                $res['filename'] = $filename;
+            } else {
+                $res['status'] = 2;
+                $res['err']    = 'Create img failed!';
+            }
+        } else {
+            $res['status'] = 2;
+            $res['err']    = 'Not base64 char!';
+        }
+        return $res;
+
+    }
+    /**
+     * @desc 将图片转成base64字符串
+     * @param string $filename 图片地址
+     * @return string
+     */
+    public static function imageToBase64($filename = '')
+    {
+        $base64 = '';
+        if (file_exists($filename)) {
+            if ($fp = fopen($filename, "rb", 0)) {
+                $img = fread($fp, filesize($filename));
+                fclose($fp);
+                $base64 = 'data:image/jpg/png/gif;base64,' . chunk_split(base64_encode($img));
+            }
+        }
+        return $base64;
     }
 }

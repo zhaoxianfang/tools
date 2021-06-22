@@ -1,8 +1,8 @@
 # zxf
 
 
->基于thinkphp5 的项目模块开发
->调用命名空间 使用 use zxf\…… 例如 use zxf\Qqlogin\QC;  zxf\Wechat\……;
+>基于 php 的项目模块开发
+>调用命名空间 使用 use zxf\…… 例如 use zxf\Qqlogin\QC;  use zxf\String\JsMin;
 
 创建时间：2018/06/01
 
@@ -21,10 +21,15 @@
 |  微博登录  |  sina  |
 |  QueryList  |  QueryList(废弃)  |
 |  JsMin  |  js 压缩工具  |
-|  QrCode  |  js 压缩工具  |
+|  QrCode  |  文字生成二维码  |
 |  Compressor  |  图片压缩类  |
 |  TextToPNG  |  文字转图片  |
+|  PHPMailer  |  发送邮件  |
 |  Curl  |  http 网络请求  |
+|  Sms  |  发送短信  |
+|  MysqlTool  |  创建mysql数据库字典  |
+|  Img  |  修改图片尺寸、给图片上添加文字等  |
+|  Pinyin  |  中文转拼音  |
 
 
 ```php
@@ -68,7 +73,7 @@ Curl::instance()->setParams(json_encode(['path'=>'pages/index/index']))->post($u
 ```
 
 ### QQ登录
->说明:基于 ThinkPHP6 开发，其他框架可根据实际修改
+>说明:此demo 为 ThinkPHP6 ，其他框架可根据实际修改
 
 ``` php
 <?php
@@ -124,7 +129,9 @@ class Tencent extends Base
 ```
 
 ### 新浪微博登录
->说明:基于 ThinkPHP6 开发，其他框架可根据实际修改
+
+>说明:此demo 为 ThinkPHP6 ，其他框架可根据实际修改
+
 ``` php
 <?php
 namespace app\callback\controller;
@@ -352,8 +359,76 @@ $text = 'hello';
 $color = '#ffffff';
 $bgcolor = '#cccccc';
 $rotate = 0;
+$font = 'diandian'; // 使用的字体
 
-TextToPNG::instance()->setFontStyle('diandian')->setText($text)->setSize('900', '500')->setColor($color)->setBackgroundColor($bgcolor)->setTransparent(false)->setRotate($rotate)->draw();
+TextToPNG::instance()->setFontStyle($font)->setText($text)->setSize('900', '500')->setColor($color)->setBackgroundColor($bgcolor)->setTransparent(false)->setRotate($rotate)->draw();
+```
+
+#### 附 TextToPNG 文字转图片 可使用的字体参照
+```
+yuanti        圆体
+diandain      点点像素体-方形
+diandain_yt   点点像素体-圆形
+diandain_lx   点点像素体-菱形
+lishu         隶书
+qiuhong       秋鸿楷体
+taiwan_lishu  台湾隶书
+xingshu       行书
+code          代码体
+caoshu        草书
+kaiti         方正楷体简体
+fangsong      方正仿宋简体
+oppo          OPPO官方字体
+ali_puhui     阿里巴巴普惠体2.0
+baotuxiaobai  包图小白体
+heiti         方正黑体简体
+honglei       鸿雷板书简体
+haoshenti     优设好身体
+myshouxie     沐瑶软笔手写体
+foxi          佛系体
+```
+
+
+### Sms 发送短信
+``` php
+use zxf\sms\Sms;
+
+$accessKeyId     = "阿里云或者腾讯云 appid";
+$accessKeySecret = "阿里云或者腾讯云 secret";
+
+// 可发送多个手机号，变量为数组即可，如：[11111111111, 22222222222]
+$mobile   = '18***888';
+$template = '您申请的短信模板';
+$sign     = '您申请的短信签名';
+
+// 短信模板中用到的 参数 模板变量为键值对数组
+$params = [
+    "code"    => rand(1000, 9999),
+    "title"   => '您的标题',
+    "content" => '您的内容',
+];
+
+// 初始化 短信服务（阿里云短信或者腾讯云短信）
+$smsObj = Sms::instance($accessKeyId, $accessKeySecret,'ali或者tencent');
+
+// 若使用的是 腾讯云短信 需要 设置 appid 参数; 阿里云则不用
+// $smsObj = $smsObj->setAppid($appid);
+
+// 发起请求
+// 需要注意，设置配置不分先后顺序，send后也不会清空配置 
+$result    = $aliyunSms->setMobile($mobile)->setParams($params)->setTemplate($template)->setSign($sign)->send();
+/**
+ * 返回值为bool，你可获得阿里云响应做出你业务内的处理
+ *
+ * status bool 此变量是此包用来判断是否发送成功
+ * code string 阿里云短信响应代码
+ * message string 阿里云短信响应信息
+ */
+if (!$result) {
+    $response = $aliyunSms->getResponse();
+    // 做出处理
+}
+
 ```
 
 ### 截图功能

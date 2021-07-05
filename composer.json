@@ -12,8 +12,7 @@
         "email": "1748331509@qq.com"
     }],
     "require": {
-        "php": ">=7.0.0",
-        "twig/twig": "~1.16"
+        "php": ">=7.0.0"
     },
     "autoload": {
         "psr-4": {

@@ -31,7 +31,7 @@ composer require zxf/tools
 |  MysqlTool  |  创建mysql数据库字典  |
 |  Img  |  修改图片尺寸、给图片上添加文字等  |
 |  Pinyin  |  中文转拼音  |
-|  Menu  |  生成目录菜单(adminlte|layuiadmin|nazox|inspinia)  |
+|  Menu  |  生成目录菜单(adminlte、layuiadmin、nazox、inspinia)  |
 |  Random  |  生成随机数  |
 
 

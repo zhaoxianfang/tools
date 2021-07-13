@@ -1,12 +1,13 @@
 <?php
 
-namespace zxf\extend; 
+namespace zxf\extend;
 
 /**
  * 获取菜单
- */ 
+ */
 // demo
 // Menu::instance()->init($ruleList)->setActiveMenu($urlLink)->createMenu(0);
+// Menu::instance()->init($munuList)->setActiveMenu($urlLink)->setMenuType('inspinia')->createMenu(0);
 // 顶部导航
 // Menu::instance()->init($classifyList)->setTitle('name')->setUrlPrefix('/classify')->setActiveMenu($urlLink)->createMenu(0, 'home');
 // 面包屑导航
@@ -16,7 +17,7 @@ namespace zxf\extend;
 
 class Menu
 {
-	protected $arr           = [];
+    protected $arr           = [];
     protected $pk            = 'id';
     protected $pid           = 'pid';
     protected $childlist     = 'childlist';
@@ -26,7 +27,7 @@ class Menu
     protected $badgeStyle    = 'badge_text_style'; //badge 图标 样式
     protected $showchildicon = false; //子级菜单显示icon小图标
     protected $showNavIcon   = false; //前台nav 一级导航是否显示icon小图标
-    protected $menuType      = 'nazox'; //目录类型 adminlte|layuiadmin|nazox
+    protected $menuType      = 'nazox'; //目录类型 adminlte|layuiadmin|nazox|inspinia
 
     protected static $instance;
     //默认配置
@@ -50,7 +51,6 @@ class Menu
     public function __construct($options = [])
     {
         $this->options = array_merge($this->config, $options);
-        $this->domain = \think\facade\Request::domain(); // 域名
     }
 
     /**
@@ -81,11 +81,11 @@ class Menu
      *      7 => array('id'=>'7','pid'=>3,'name'=>'三级栏目二')
      * )
      */
-    public function init($arr = [], $pk = 'id', $pid = 'pid',$rootId = 0, $initTree = true, $childlist = 'childlist')
+    public function init($arr = [], $pk = 'id', $pid = 'pid', $rootId = 0, $initTree = true, $childlist = 'childlist')
     {
-        $this->arr        = $arr;
-        $pk ? $this->pk   = $pk : 'id';
-        $pid ? $this->pid = $pid : 'pid';
+        $this->arr                    = $arr;
+        $pk ? $this->pk               = $pk : 'id';
+        $pid ? $this->pid             = $pid : 'pid';
         $childlist ? $this->childlist = $childlist : $this->childlist;
 
         $this->setReturn(true);
@@ -95,10 +95,21 @@ class Menu
             // $this->arr = $this->arrayToTree();
             $this->arrayToTreeTwo();
         }
-        
+
         return $this;
     }
 
+    /**
+     * 设置域名
+     * @Author   ZhaoXianFang
+     * @DateTime 2018-05-16
+     * @param    string       $flag [description]
+     */
+    public function setDomain($domain = '')
+    {
+        $this->domain = $domain; // 域名
+        return $this;
+    }
 
     /**
      * 是否返回 $this 配合 getTreeTwo 用
@@ -148,23 +159,22 @@ class Menu
         return $this;
     }
 
-
     public function getArr()
     {
         return $this->arr;
     }
 
-    public function arrayToTree($list=[], $id = 'id', $pid = 'pid', $rootId = 0) {
-    	$list = !empty($list) ? $list : $this->arr;
-	    $data = [];
-	    foreach($list as $row) {
-	        // $data[$row[$id]][$name] = $row[$name];
-	        $data[$row[$id]] = $row;
-	        $data[$row[$pid]][$this->childlist][$row[$id]] = &$data[$row[$id]];
-	    }
-	    return isset($data[$rootId][$this->childlist]) ? $data[$rootId][$this->childlist] : [];
-	}
-
+    public function arrayToTree($list = [], $id = 'id', $pid = 'pid', $rootId = 0)
+    {
+        $list = !empty($list) ? $list : $this->arr;
+        $data = [];
+        foreach ($list as $row) {
+            // $data[$row[$id]][$name] = $row[$name];
+            $data[$row[$id]]                               = $row;
+            $data[$row[$pid]][$this->childlist][$row[$id]] = &$data[$row[$id]];
+        }
+        return isset($data[$rootId][$this->childlist]) ? $data[$rootId][$this->childlist] : [];
+    }
 
     /**
      * 获取数 TREE
@@ -184,7 +194,8 @@ class Menu
         $usePkArr = []; ////记录被处理过的pid
         //第一步，将分类id作为数组key,并创建children单元
         foreach ($arrData as $arr) {
-            $tree[$arr[$this->pk]]              = $arr;
+            $arr                                     = zxf_object_to_array($arr);
+            $tree[$arr[$this->pk]]                   = $arr;
             $tree[$arr[$this->pk]][$this->childlist] = array();
 
             $usePkArr[] = $arr[$this->pk];
@@ -221,7 +232,6 @@ class Menu
         return $tree;
     }
 
-
     /**
      * 生成排序后的菜单 每个子菜单紧跟在父菜单后面 权重值大的在前面
      * @Author   ZhaoXianFang
@@ -243,7 +253,6 @@ class Menu
         }
         return $arrList;
     }
-
 
     /**
      * 数组归纳 多维转二维
@@ -291,7 +300,6 @@ class Menu
 
     }
 
-
     /**
      * 自定义 数组排序
      * @Author   ZhaoXianFang
@@ -322,7 +330,6 @@ class Menu
         return $arrays;
     }
 
-
     public function setActiveMenu($activeMenu = '')
     {
         $this->activeMenu = $activeMenu ? strtolower(str_replace(".", "/", $activeMenu)) : '';
@@ -340,7 +347,7 @@ class Menu
      * @Author   ZhaoXianFang
      * @DateTime 2019-01-10
      * @param    string       $menuType [默认adminlte目录]
-     *                                  仅支持 adminlte|layuiadmin|nazox
+     *                                  仅支持 adminlte|layuiadmin|nazox|inspinia
      */
     public function setMenuType($menuType = 'nazox')
     {
@@ -369,6 +376,9 @@ class Menu
             if ($this->menuType == 'nazox') {
                 return $this->nazoxMenu($pk);
             }
+            if ($this->menuType == 'inspinia') {
+                return $this->inspiniaMenu($pk);
+            }
             return '';
         } else {
             // 前端顶部导航
@@ -384,50 +394,85 @@ class Menu
         }
     }
 
-	public function nazoxMenu( $pk=0 , $lv = 0 ,$menu = array() )
-	{
+    public function inspiniaMenu($pk = 0, $lv = 0, $menu = array())
+    {
 
-		$str = '';
-		$arr = !empty($menu) ? $menu : $this->arr;
-		if( empty($arr) || !is_array($arr) ) {
-			return '';
-		}
-		$lv == 0 && ( $str = '<li class="menu-title">菜单</li>' );
-		$lv++ ;
+        $str = '';
+        $arr = !empty($menu) ? $menu : $this->arr;
+        if (empty($arr) || !is_array($arr)) {
+            return '';
+        }
+        $lv++;
 
-		foreach ($arr as $key => $item) {
-			$hasArrow = (isset($item[$this->childlist]) && !empty($item[$this->childlist]))?true:false;
+        foreach ($arr as $key => $item) {
+            $hasArrow = (isset($item[$this->childlist]) && !empty($item[$this->childlist])) ? true : false;
 
-			$currentHref = $hasArrow ? 'javascript:;' : url($item['name']);// 当前url
-			$currentIcon = $item['icon'] ;// 当前url
-			
-            $isActive =  $this->checkactiveMenu($item['name'],$hasArrow) ; // 'mm-active'; // 是否激活当前菜单
-            $isShowUl = ($hasArrow && $isActive=='mm-active') ? 'mm-show' : ''; // mm-show 是否展开当前子菜单ul
+            $currentHref = $hasArrow ? 'javascript:;' : url($item['name']); // 当前url
+            $currentIcon = $item['icon']; // 当前url
 
-            // dump($currentHref);
-            // dump($this->activeMenu);
-            // dump($isActive);
-            // die;
+            $isActive = $this->checkactiveMenu($item['name'], $hasArrow); // 'active'; // 是否激活当前菜单
+            $isShowUl = ($hasArrow && ($isActive == 'active')) ? 'in' : ''; // in 是否展开当前子菜单ul
 
-			$str .= '<li class="'. $isActive .'">';
-			$str .= '<a href="'. $currentHref .'" class="' . ($hasArrow ? 'has-arrow ':' ') . $isActive . ' waves-effect">';
-			$str .= '<i class="fa '. $currentIcon .'"></i>';
-			// && // 右侧图标
-			$item['badge_text'] && (
-				$str .= '<span class="badge badge-pill '.($item['badge_text_style'] ? $item['badge_text_style'] :  'badge-info').' float-right">' . $item['badge_text'] .'</span>'
-			);
-			$str .= '<span>'. $item[$this->title] .'</span>';
-			$str .= '</a>';
-			// 子菜单
-			$str .= $hasArrow ? '<ul class="sub-menu mm-collapse '.$isShowUl.'" aria-expanded="false">' : '';
+            $str .= '<li class="' . $isActive . '">';
+            // $str .= '<a href="' . $currentHref . '" aria-expanded="' . ($isActive ? 'true' : 'false') .  '">';
+            $str .= '<a href="' . $currentHref . '">';
+            $str .= '<i class="fa ' . $currentIcon . '"></i>';
+            $str .= '<span class="nav-label">' . $item[$this->title] . '</span>';
+            // 子菜单
+            $str .= $hasArrow ? '<span class="fa arrow"></span>' : '';
 
-			$str .= $hasArrow ? $this->nazoxMenu($item[$this->pk],$lv,$item[$this->childlist]) : '';
-			$str .= $hasArrow ? '</ul>' : '';
-		}
-		return $str;
-	}
+            // && // 右侧图标
+            $item['badge_text'] && (
+                $str .= '<span class="float-right label ' . ($item['badge_text_style'] ? $item['badge_text_style'] : 'label-info') . '">' . $item['badge_text'] . '</span>'
+            );
 
+            $str .= '</a>';
+            // 子菜单
+            $str .= $hasArrow ? '<ul class="nav nav-second-level collapse ' . $isShowUl . '" aria-expanded="false">' : '';
 
+            $str .= $hasArrow ? $this->inspiniaMenu($item[$this->pk], $lv, $item[$this->childlist]) : '';
+            $str .= $hasArrow ? '</ul>' : '';
+        }
+        return $str;
+    }
+
+    public function nazoxMenu($pk = 0, $lv = 0, $menu = array())
+    {
+
+        $str = '';
+        $arr = !empty($menu) ? $menu : $this->arr;
+        if (empty($arr) || !is_array($arr)) {
+            return '';
+        }
+        $lv == 0 && ($str = '<li class="menu-title">菜单</li>');
+        $lv++;
+
+        foreach ($arr as $key => $item) {
+            $hasArrow = (isset($item[$this->childlist]) && !empty($item[$this->childlist])) ? true : false;
+
+            $currentHref = $hasArrow ? 'javascript:;' : url($item['name']); // 当前url
+            $currentIcon = $item['icon']; // 当前url
+
+            $isActive = $this->checkactiveMenu($item['name'], $hasArrow); // 'mm-active'; // 是否激活当前菜单
+            $isShowUl = ($hasArrow && $isActive == 'mm-active') ? 'mm-show' : ''; // mm-show 是否展开当前子菜单ul
+
+            $str .= '<li class="' . $isActive . '">';
+            $str .= '<a href="' . $currentHref . '" class="' . ($hasArrow ? 'has-arrow ' : ' ') . $isActive . ' waves-effect">';
+            $str .= '<i class="fa ' . $currentIcon . '"></i>';
+            // && // 右侧图标
+            $item['badge_text'] && (
+                $str .= '<span class="badge badge-pill ' . ($item['badge_text_style'] ? $item['badge_text_style'] : 'badge-info') . ' float-right">' . $item['badge_text'] . '</span>'
+            );
+            $str .= '<span>' . $item[$this->title] . '</span>';
+            $str .= '</a>';
+            // 子菜单
+            $str .= $hasArrow ? '<ul class="sub-menu mm-collapse ' . $isShowUl . '" aria-expanded="false">' : '';
+
+            $str .= $hasArrow ? $this->nazoxMenu($item[$this->pk], $lv, $item[$this->childlist]) : '';
+            $str .= $hasArrow ? '</ul>' : '';
+        }
+        return $str;
+    }
 
     /**
      * [创建layuiAdminMenu后台目录]
@@ -487,7 +532,6 @@ class Menu
         }
         return $str;
     }
-
 
     /**
      * 创建后台目录 [adminLte 目录]
@@ -584,29 +628,29 @@ class Menu
     {
         $str = '';
         $arr = $this->arr;
-        if( empty($arr) || !is_array($arr) ) {
+        if (empty($arr) || !is_array($arr)) {
             return '';
         }
 
         foreach ($arr as $key => $item) {
-            $hasChild = (isset($item[$this->childlist]) && !empty($item[$this->childlist]))?true:false;
+            $hasChild = (isset($item[$this->childlist]) && !empty($item[$this->childlist])) ? true : false;
 
-            $currentHref = $hasChild ? 'javascript:;' : $this->domain . url('/classify/'.$item[$this->pk]);// 当前url
+            $currentHref = $hasChild ? 'javascript:;' : $this->domain . url('/classify/' . $item[$this->pk]); // 当前url
             // $currentIcon = $item['icon'] ;// 当前icon
 
-            $liClass = $hasChild ? 'dropdown' : '';
-            $liLinkClass = $hasChild ? 'dropdown-toggle arrow-none' : '';
+            $liClass          = $hasChild ? 'dropdown' : '';
+            $liLinkClass      = $hasChild ? 'dropdown-toggle arrow-none' : '';
             $liLinkChildClass = $hasChild ? ' role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ' : '';
 
-            $str .= '<li class="nav-item '. $liClass .'">';
-            $str .= '<a href="'. $currentHref .'" class="nav-link ' . $liLinkClass . '" id="topnav-'. $item[$this->pk] .'" ' . $liLinkChildClass. '>';
+            $str .= '<li class="nav-item ' . $liClass . '">';
+            $str .= '<a href="' . $currentHref . '" class="nav-link ' . $liLinkClass . '" id="topnav-' . $item[$this->pk] . '" ' . $liLinkChildClass . '>';
             $str .= '<i class="ri-pencil-ruler-2-line mr-2"></i>';
 
             $str .= $item[$this->title];
             $str .= $hasChild ? '<div class="arrow-down"></div>' : '';
             $str .= '</a>';
 
-            if($hasChild){
+            if ($hasChild) {
                 $str .= $this->nazoxhomeNavMenuChildNav($item);
 
                 // $str .= '<div class="dropdown-menu" aria-labelledby="topnav-'. $item[$this->pk] .'">';
@@ -638,7 +682,7 @@ class Menu
                 //         }
                 //         $str .= '</div>';
                 //     }
-                    
+
                 //     $str .= $oneHasChild ? '</div>':'';
                 // }
                 // $str .= '</div>';
@@ -650,32 +694,31 @@ class Menu
     private function nazoxhomeNavMenuChildNav($item)
     {
         $str = '';
-        $str .= '<div class="dropdown-menu" aria-labelledby="topnav-'. $item[$this->pk] .'">';
+        $str .= '<div class="dropdown-menu" aria-labelledby="topnav-' . $item[$this->pk] . '">';
         foreach ($item[$this->childlist] as $key => $childlistItem) {
 
-            $oneHasChild = (isset($childlistItem[$this->childlist]) && !empty($childlistItem[$this->childlist]))?true:false;
-            $oneLiLinkClass = $oneHasChild ? 'dropdown-toggle arrow-none' : '';
+            $oneHasChild         = (isset($childlistItem[$this->childlist]) && !empty($childlistItem[$this->childlist])) ? true : false;
+            $oneLiLinkClass      = $oneHasChild ? 'dropdown-toggle arrow-none' : '';
             $oneLiLinkChildClass = $oneHasChild ? ' role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ' : '';
 
-            $oneCurrentHref = $oneHasChild ? 'javascript:;' : $this->domain . url('/classify/'.$childlistItem[$this->pk]) ;// 当前url
+            $oneCurrentHref = $oneHasChild ? 'javascript:;' : $this->domain . url('/classify/' . $childlistItem[$this->pk]); // 当前url
 
-            $str .= $oneHasChild ? '<div class="dropdown">':'';
+            $str .= $oneHasChild ? '<div class="dropdown">' : '';
 
-            $str .= '<a class="dropdown-item '. $oneLiLinkClass .'" href="'. $oneCurrentHref .'" id="topnav-one-'.$item[$this->pk].'" '.$oneLiLinkChildClass .'>';
+            $str .= '<a class="dropdown-item ' . $oneLiLinkClass . '" href="' . $oneCurrentHref . '" id="topnav-one-' . $item[$this->pk] . '" ' . $oneLiLinkChildClass . '>';
             $str .= '<i class="ri-pencil-ruler-2-line mr-2"></i>';
             $str .= $childlistItem[$this->title];
             $str .= $oneHasChild ? '<div class="arrow-down"></div>' : '';
             $str .= '</a>';
 
-            if($oneHasChild){
+            if ($oneHasChild) {
                 $str .= $this->nazoxhomeNavMenuChildNav($childlistItem);
             }
-            $str .= $oneHasChild ? '</div>':'';
+            $str .= $oneHasChild ? '</div>' : '';
         }
         $str .= '</div>';
         return $str;
     }
-
 
     /**
      * 创建 AdminLTE3 前台nav 导航目录 支持三级导航
@@ -749,26 +792,58 @@ class Menu
         if (!$this->activeMenu || !$link) {
             return '';
         }
+        $link = str_ireplace('.', '/', $link);
+
         $linkArr    = explode('/', strtolower(trim($link, '/'))); //数据库获取
         $setLinkArr = $this->activeMenu ? explode('/', strtolower($this->activeMenu)) : []; //当前控制器与方法
         $activeStr  = '';
 
-        if ($linkArr['0'] != app('http')->getName()) {
-            array_unshift($linkArr, app('http')->getName());
+        // 获取url所在模块
+        try {
+            // thinkphp 使用
+            if ($linkArr['0'] != app('http')->getName()) {
+                array_unshift($linkArr, app('http')->getName());
+            }
+        } catch (\Exception $e) {
+            // laravel
+            list($modules, $controller, $method) = zxf_get_laravel_route();
+            if ($linkArr['0'] != $modules) {
+                array_unshift($linkArr, $modules);
+            }
         }
 
-        $flsg = false;
+        // 获取url所在模块
+        try {
+            // thinkphp 使用
+            if ($setLinkArr['0'] != app('http')->getName()) {
+                array_unshift($setLinkArr, app('http')->getName());
+            }
+        } catch (\Exception $e) {
+            // laravel
+            if ($setLinkArr['0'] != $modules) {
+                array_unshift($setLinkArr, $modules);
+            }
+        }
+
+        // 使两个数组的长度一致 使用index 填充
+        // if (($setCount = count($setLinkArr)) != ($linkCount = count($linkArr))) {
+        //     for ($i = 0; $i < abs($setCount - $linkCount); $i++) {
+        //         $setCount < $linkCount ? array_push($setLinkArr, "index") : array_push($linkArr, "index");
+        //     }
+        // }
+
+        $flag = false;
         foreach ($linkArr as $key => $node) {
-            if (isset($setLinkArr[$key]) && $node == $setLinkArr[$key]) {
-                $flsg = true;
+            if (isset($setLinkArr[$key]) && ($node == $setLinkArr[$key])) {
+                $flag = true;
             } else {
                 return '';
             }
         }
-        
+
         //菜单样式
         if ($this->menuType == 'adminlte') {
-            if ($flsg || $hasChild) {
+            if ($flag || $hasChild) {
                 return $hasChild ? 'menu-open active' : 'active';
             }
         }
@@ -777,6 +852,9 @@ class Menu
         }
         if ($this->menuType == 'nazox') {
             return 'mm-active';
+        }
+        if ($this->menuType == 'inspinia') {
+            return 'active';
         }
     }
 
@@ -846,7 +924,7 @@ class Menu
                 $nameArr['1'] = 'index';
             }
 
-            $auth[$this->title]                 = strtolower(implode("/", $nameArr));
+            $auth[$this->title]           = strtolower(implode("/", $nameArr));
             $newAuthArr[$auth[$this->pk]] = $auth;
 
         }
@@ -908,10 +986,10 @@ class Menu
             $resultArr[] = $tree[$id][$this->title];
             $id          = $tree[$id][$this->pid];
         }
-        if(empty($resultArr)){
+        if (empty($resultArr)) {
             return '';
         }
-        
+
         $crumbCount = count($resultArr) - 1;
 
         if ($this->menuType == 'nazox') {
@@ -919,7 +997,7 @@ class Menu
             $str .= $resultArr['0'];
             $str .= '</h4>';
             $str .= '<div class="page-title-right"><ol class="breadcrumb m-0">';
-            
+
             for ($i = $crumbCount; $i >= 0; $i--) {
                 switch ($i) {
                     case 0:

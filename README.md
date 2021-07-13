@@ -6,6 +6,11 @@
 
 创建时间：2018/06/01
 
+## 引用
+```
+composer require zxf/tools
+```
+
 ## 涵盖模块
 - QQ登录
 - 微信模块
@@ -26,10 +31,12 @@
 |  TextToPNG  |  文字转图片  |
 |  PHPMailer  |  发送邮件  |
 |  Curl  |  http 网络请求  |
-|  Sms  |  发送短信  |
+|  Sms  |  发送短信: ali(阿里云)[默认] 或者 tencent（腾讯云）  |
 |  MysqlTool  |  创建mysql数据库字典  |
 |  Img  |  修改图片尺寸、给图片上添加文字等  |
 |  Pinyin  |  中文转拼音  |
+|  Menu  |  生成目录菜单(adminlte|layuiadmin|nazox|inspinia)  |
+|  Random  |  生成随机数  |
 
 
 ```php

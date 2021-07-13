@@ -583,3 +583,38 @@ if (!function_exists('zxf_show_json')) {
         return json_encode($array, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 }
+
+if (!function_exists('zxf_get_laravel_route')) {
+    /**
+     * 获取 laravel 模块 控制器 方法名
+     */
+    function zxf_get_laravel_route()
+    {
+        list($class, $method) = explode('@', request()->route()->getActionName());
+
+        # 模块名
+        $modules = str_replace(
+            '\\',
+            '.',
+            str_replace(
+                'App\\Http\\Controllers\\',
+                '',
+                trim(
+                    implode('\\', array_slice(explode('\\', $class), 0, -1)),
+                    '\\'
+                )
+            )
+        );
+
+        # 控制器名称
+        $controller = str_replace(
+            'Controller',
+            '',
+            substr(strrchr($class, '\\'), 1)
+        );
+        # 方法名
+        $method = strtolower($method);
+
+        return [strtolower($modules), strtolower($controller), $method];
+    }
+}

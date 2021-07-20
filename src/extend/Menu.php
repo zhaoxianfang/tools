@@ -194,7 +194,7 @@ class Menu
         $usePkArr = []; ////记录被处理过的pid
         //第一步，将分类id作为数组key,并创建children单元
         foreach ($arrData as $arr) {
-            $arr                                     = zxf_object_to_array($arr);
+            $arr                                     = object_to_array($arr);
             $tree[$arr[$this->pk]]                   = $arr;
             $tree[$arr[$this->pk]][$this->childlist] = array();
 
@@ -806,7 +806,7 @@ class Menu
             }
         } catch (\Exception $e) {
             // laravel
-            list($modules, $controller, $method) = zxf_get_laravel_route();
+            list($modules, $controller, $method) = get_laravel_route();
             if ($linkArr['0'] != $modules) {
                 array_unshift($linkArr, $modules);
             }

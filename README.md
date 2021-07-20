@@ -22,7 +22,8 @@ composer require zxf/tools
 |  微博登录  |  sina  |
 |  QueryList  |  QueryList(废弃)  |
 |  JsMin  |  js 压缩工具  |
-|  QrCode  |  文字生成二维码  |
+|  QrCode  |  生成二维码  |
+|  BarcodeGenerator  |  生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
 |  Compressor  |  图片压缩类  |
 |  TextToPNG  |  文字转图片  |
 |  PHPMailer  |  发送邮件  |
@@ -220,16 +221,71 @@ $minifiedCode = JsMin::minify($jsString);
 ### QrCode 创建二维码
 
 ``` php
+use zxf\qrcode\QrCode;
 
-$text         = 'https://www.itzxf.com/';
-$filename     = false; //二维码图片保存路径(若不生成文件则设置为false)
-$level        = "L"; //二维码容错率，默认L
-$size         = '6'; //二维码图片每个黑点的像素，默认4
-$padding      = 2; //二维码边框的间距，默认2
-$saveandprint = false; //保存二维码图片并显示出来，$filename必须传递文件路径
-QrCode::png($text, $filename, $level, $size, $padding, $saveandprint);
-die;
+echo '<p>Example - QrCode</p>';
+$qrCode = new QrCode();
+$qrCode
+    ->setText('https://www.itzxf.com/apidoc') // 生成二维码的内容
+    ->setSize(200) // 设置二维码大小
+    ->setPadding(10) // 设置边距
+    ->setErrorCorrection('high') // 设置二维码纠错级别。 分为 high(30%)、quartile(25%)、medium(15%)、low(7%) 几种
+    ->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0)) // 设置颜色
+    ->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0)) // 设置背景色
+    ->setLabel('在线文档|起跑线') // 设置图片下面的文字
+    ->setLabelFontSize(16) // 设置文字字体大小
+    ->setImageType(QrCode::IMAGE_TYPE_PNG) // 设置图片类型 ,默认为 png
+echo '<img src="data:' . $qrCode->getContentType() . ';base64,' . $qrCode->generate() . '" />';
 ```
+
+如果想直接输出到浏览器上，而不是获取 base64 文件流，可以使用`draw()` 方法输出，例如
+
+```php
+$qrCode = new QrCode(); // 实例化
+$qrCode
+    ->setText('https://www.itzxf.com/apidoc') // 生成二维码的内容
+    ->setSize(200) // 设置二维码大小
+    ->setPadding(10) // 设置边距
+    ->setErrorCorrection('high') // 设置二维码纠错级别。 分为 high(30%)、quartile(25%)、medium(15%)、low(7%) 几种
+    ->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0)) // 设置颜色
+    ->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0)) // 设置背景色
+    ->setLabel('在线文档|起跑线') // 设置图片下面的文字
+    ->setLabelFontSize(16) // 设置文字字体大小
+    ->setImageType(QrCode::IMAGE_TYPE_PNG) // 设置图片类型 ,默认为 png
+    ->draw() // 把图片直接绘画到浏览器
+    ;
+```
+
+### BarcodeGenerator 创建条形码
+
+例如：
+```php
+echo '<p>Example - Isbn</p>';
+$barcode = new BarcodeGenerator(); // 实例化
+$barcode->setText("0012345678901"); // 设置条形码内容
+$barcode->setFontSize(10); //  设置字体大小
+$barcode->setType(BarcodeGenerator::Isbn); // 设置条形码类型,支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce 类型的条形码
+$code = $barcode->generate(); // 生成条形码 base64 文件流
+echo '<img src="data:image/png;base64,' . $code . '" />';
+```
+
+直接输出条形码到浏览器
+> 可以把`$code = $barcode->generate();` 这行代码用用`$barcode->draw();` 代替就可以直接输出图片到浏览器了，例如
+
+```php
+echo '<p>Example - Isbn</p>';
+$barcode = new BarcodeGenerator(); // 实例化
+$barcode->setText("0012345678901"); // 设置条形码内容
+$barcode->setFontSize(10); //  设置字体大小
+$barcode->setType(BarcodeGenerator::Isbn); // 设置条形码类型,支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce 类型的条形码
+$barcode->draw(); // 把图片直接绘画到浏览器
+```
+
+#### 其他参数
+设置分辨率 `$barcode->setScale(2);`
+设置高度 `$barcode->setThickness(25);`
+`GS1-128`删除 48 个字符的限制 `$barcode->setNoLengthLimit(true);`
+`GS1-128`允许未知标识符 `$barcode->setAllowsUnknownIdentifier(true);`
 
 
 ### PHPMailer 发送邮件

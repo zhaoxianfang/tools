@@ -4,7 +4,7 @@
  * 常用的一些函数归纳
  */
 
-function zxf_test()
+function test_die()
 {
     die('this is a test fun');
 }
@@ -40,7 +40,7 @@ if (!function_exists('zxf_substr')) {
     }
 }
 
-if (!function_exists('zxf_check_file_exists')) {
+if (!function_exists('check_file_exists')) {
     /**
      * 判断远程资源是否存在
      * @Author   ZhaoXianFang
@@ -48,7 +48,7 @@ if (!function_exists('zxf_check_file_exists')) {
      * @param    [type]       $url [description]
      * @return   [type]            [description]
      */
-    function zxf_check_file_exists($url)
+    function check_file_exists($url)
     {
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_NOBODY, true); // 不取回数据
@@ -69,24 +69,24 @@ if (!function_exists('zxf_check_file_exists')) {
     }
 }
 
-if (!function_exists('zxf_default_img')) {
+if (!function_exists('default_img')) {
     /**
      * 判断图片是否存在，如果不存在则使用默认图 [若使用第三个参数，则用第三个参数替换第二个参数里面的固定字符串 __str__ ]
      * $imgPath 展示的图片地址
      * $defaultImgOrReplaceStr :1、如果 $imgPath 不存在且 $replaceStr 为空时候表示 默认图片地址; 2、如果 $imgPath 不存在且 $replaceStr 不为空则用 $replaceStr 替换  $defaultImgOrReplaceStr 中的 固定字符串 __str__
      */
-    function zxf_default_img($imgPath = '', $defaultImgOrReplaceStr = '', $replaceStr = '')
+    function default_img($imgPath = '', $defaultImgOrReplaceStr = '', $replaceStr = '')
     {
-        if (substr($imgPath, 0, 4) == 'http' && zxf_check_file_exists($imgPath)) {
+        if (substr($imgPath, 0, 4) == 'http' && check_file_exists($imgPath)) {
             return $imgPath;
         }
         $imgPath = substr($imgPath, 0, 1) == '/' ? '.' . $imgPath : $imgPath;
         return is_file($imgPath) ? ltrim($imgPath, '.') : str_ireplace('__str__', $replaceStr, $defaultImgOrReplaceStr);
     }
 }
-if (!function_exists('zxf_remove_str_emoji')) {
+if (!function_exists('remove_str_emoji')) {
     // 移除字符串中的 emoji 表情
-    function zxf_remove_str_emoji($str)
+    function remove_str_emoji($str)
     {
         $mbLen = mb_strlen($str);
 
@@ -103,9 +103,9 @@ if (!function_exists('zxf_remove_str_emoji')) {
     }
 }
 
-if (!function_exists('zxf_check_str_exists_emoji')) {
+if (!function_exists('check_str_exists_emoji')) {
     // 判断字符串中是否含有 emoji 表情
-    function zxf_check_str_exists_emoji($str)
+    function check_str_exists_emoji($str)
     {
         $mbLen  = mb_strlen($str);
         $strArr = [];
@@ -119,7 +119,7 @@ if (!function_exists('zxf_check_str_exists_emoji')) {
     }
 }
 
-if (!function_exists('zxf_is_crawler')) {
+if (!function_exists('is_crawler')) {
     /**
      * [isCrawler 检测是否为爬虫]
      * @Author   ZhaoXianFang
@@ -127,7 +127,7 @@ if (!function_exists('zxf_is_crawler')) {
      * @param    boolean      $returnName [是否返回爬虫名称]
      * @return   boolean                  [description]
      */
-    function zxf_is_crawler($returnName = false)
+    function is_crawler($returnName = false)
     {
         $agent = strtolower(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '');
         if (!empty($agent)) {
@@ -191,16 +191,16 @@ if (!function_exists('zxf_is_crawler')) {
     }
 }
 
-if (!function_exists('zxf_img_to_gray')) {
+if (!function_exists('img_to_gray')) {
     /**
-     * [zxf_img_to_gray 把彩色图片转换为灰度图片,支持透明色]
+     * [img_to_gray 把彩色图片转换为灰度图片,支持透明色]
      * @Author   ZhaoXianFang
      * @DateTime 2019-06-24
      * @param    string       $imgFile      [源图片地址]
      * @param    string       $saveFile     [生成目标地址,为空时直接输出到浏览器]
      * @return   bool                       [true:成功；false:失败]
      */
-    function zxf_img_to_gray($imgFile = '', $saveFile = '')
+    function img_to_gray($imgFile = '', $saveFile = '')
     {
         if (!$imgFile) {
             return false;
@@ -252,7 +252,7 @@ if (!function_exists('zxf_img_to_gray')) {
     }
 }
 
-if (!function_exists('zxf_truncate')) {
+if (!function_exists('truncate')) {
     /**
      * 文章去去除标签截取文字
      * @Author   ZhaoXianFang
@@ -262,7 +262,7 @@ if (!function_exists('zxf_truncate')) {
      * @param    boolean      $append [是否加...]
      * @return   [type]               [description]
      */
-    function zxf_truncate($string, $length = 150, $append = true)
+    function truncate($string, $length = 150, $append = true)
     {
         $string    = html_entity_decode($string);
         $string    = trim(strip_tags($string, '<em>'));
@@ -302,7 +302,7 @@ if (!function_exists('zxf_truncate')) {
     }
 }
 
-if (!function_exists('zxf_rmdirs')) {
+if (!function_exists('rmdirs')) {
 
     /**
      * 删除文件夹
@@ -310,7 +310,7 @@ if (!function_exists('zxf_rmdirs')) {
      * @param bool $withself 是否删除自身
      * @return boolean
      */
-    function zxf_rmdirs($dirname, $withself = true)
+    function rmdirs($dirname, $withself = true)
     {
         if (!is_dir($dirname)) {
             return false;
@@ -332,14 +332,14 @@ if (!function_exists('zxf_rmdirs')) {
 
 }
 
-if (!function_exists('zxf_deldir')) {
+if (!function_exists('deldir')) {
 
     /**
      * 删除文件夹
      * @param string $dir 目录
      * @return boolean
      */
-    function zxf_deldir($dir)
+    function deldir($dir)
     {
         //先删除目录下的文件：
         $dh = opendir($dir);
@@ -364,21 +364,21 @@ if (!function_exists('zxf_deldir')) {
 
 }
 
-if (!function_exists('zxf_create_folders')) {
+if (!function_exists('create_folders')) {
 
     /**
      * 递归创建目录
      * @param string $dir 目录
      * @return boolean
      */
-    function zxf_create_folders($dir)
+    function create_folders($dir)
     {
-        return is_dir($dir) or (zxf_create_folders(dirname($dir)) and mkdir($dir, 0777));
+        return is_dir($dir) or (create_folders(dirname($dir)) and mkdir($dir, 0777));
     }
 
 }
 
-if (!function_exists('zxf_getfilesize')) {
+if (!function_exists('getfilesize')) {
 
     /**
      * 获取文件的大小
@@ -387,7 +387,7 @@ if (!function_exists('zxf_getfilesize')) {
      * @return boolean
      */
     //获取文件的大小
-    function zxf_getfilesize($file, $DataDir)
+    function getfilesize($file, $DataDir)
     {
         $perms = stat($DataDir . $file);
         $size  = $perms['size'];
@@ -411,14 +411,14 @@ if (!function_exists('zxf_getfilesize')) {
 
 }
 
-if (!function_exists('zxf_response_and_continue')) {
+if (!function_exists('response_and_continue')) {
     /**
      * @Author   ZhaoXianFang
      * @DateTime 2019-01-07
      * @demo 案例：先以json格式返回$data，然后在后台执行 $this->pushSuggestToJyblSys(array('suggId' => $id))
      * response_and_continue($data, array($this, "pushSuggestToJyblSys"), array('suggId' => $id));
      */
-    function zxf_response_and_continue($responseDara, $backendFun, $backendFunArgs = array(), $setTimeLimit = 0, $completeFun, $completeFunArgs = array())
+    function response_and_continue($responseDara, $backendFun, $backendFunArgs = array(), $setTimeLimit = 0, $completeFun, $completeFunArgs = array())
     {
         ignore_user_abort(true);
         set_time_limit($setTimeLimit);
@@ -456,7 +456,7 @@ if (!function_exists('zxf_response_and_continue')) {
     }
 }
 
-if (!function_exists('zxf_num_to_zhcn')) {
+if (!function_exists('num_to_zhcn')) {
     /**
      * 数字转换为中文
      * @Author   ZhaoXianFang
@@ -465,7 +465,7 @@ if (!function_exists('zxf_num_to_zhcn')) {
      * @param  boolean $sim 使用小写（默认）
      * @return string
      */
-    function zxf_num_to_zhcn($num, $mode = true, $sim = true)
+    function num_to_zhcn($num, $mode = true, $sim = true)
     {
         if (!is_numeric($num)) {
             return '含有非数字非小数点字符！';
@@ -514,25 +514,25 @@ if (!function_exists('zxf_num_to_zhcn')) {
     }
 }
 
-if (!function_exists('zxf_object_to_array')) {
+if (!function_exists('object_to_array')) {
     //对象转数组
-    function zxf_object_to_array($array)
+    function object_to_array($array)
     {
         if (is_object($array)) {
             $array = (array) $array;
         }
         if (is_array($array)) {
             foreach ($array as $key => $value) {
-                $array[$key] = zxf_object_to_array($value);
+                $array[$key] = object_to_array($value);
             }
         }
         return $array;
     }
 }
 
-if (!function_exists('zxf_array_to_tree')) {
+if (!function_exists('array_to_tree')) {
     //二维数组转树tree型结构
-    function zxf_array_to_tree($items, $pid = 'pid', $id = 'id', $child = 'childlist')
+    function array_to_tree($items, $pid = 'pid', $id = 'id', $child = 'childlist')
     {
         $tree = array(); //格式化好的树
         foreach ($items as $item) {
@@ -545,76 +545,89 @@ if (!function_exists('zxf_array_to_tree')) {
         return $tree;
     }
 }
-if (!function_exists('zxf_show_img')) {
+if (!function_exists('show_img')) {
     /*
      * 页面直接输出图片
      */
-    function zxf_show_img($imgFile = '')
+    function show_img($imgFile = '')
     {
         header('Content-type:image/png');
         echo file_get_contents($imgFile);
         die;
     }
 }
-if (!function_exists('zxf_string_to_utf8')) {
+if (!function_exists('string_to_utf8')) {
     /*
      * 字符串自动转utf8编码
      */
-    function zxf_string_to_utf8($str = '')
+    function string_to_utf8($str = '')
     {
         return mb_convert_encoding($str, "UTF-8", "auto");
     }
 }
-if (!function_exists('zxf_string_to_gbk')) {
+if (!function_exists('string_to_gbk')) {
     /*
      * 字符串自动转gbk编码
      */
-    function zxf_string_to_gbk($str = '')
+    function string_to_gbk($str = '')
     {
         return mb_convert_encoding($str, "GBK", "auto");
     }
 }
-if (!function_exists('zxf_show_json')) {
+if (!function_exists('show_json')) {
     /*
      * 对json数据格式化输入展示 [转化为json格式，并格式化样式]
      */
-    function zxf_show_json($array = [])
+    function show_json($array = [])
     {
         return json_encode($array, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 }
 
-if (!function_exists('zxf_get_laravel_route')) {
+if (!function_exists('get_laravel_route')) {
     /**
      * 获取 laravel 模块 控制器 方法名
      */
-    function zxf_get_laravel_route()
+    function get_laravel_route()
     {
-        list($class, $method) = explode('@', request()->route()->getActionName());
+        try {
+            list($class, $method) = explode('@', request()->route()->getActionName());
 
-        # 模块名
-        $modules = str_replace(
-            '\\',
-            '.',
-            str_replace(
-                'App\\Http\\Controllers\\',
-                '',
-                trim(
-                    implode('\\', array_slice(explode('\\', $class), 0, -1)),
-                    '\\'
+            # 模块名
+            $modules = str_replace(
+                '\\',
+                '.',
+                str_replace(
+                    'App\\Http\\Controllers\\',
+                    '',
+                    trim(
+                        implode('\\', array_slice(explode('\\', $class), 0, -1)),
+                        '\\'
+                    )
                 )
-            )
-        );
+            );
 
-        # 控制器名称
-        $controller = str_replace(
-            'Controller',
-            '',
-            substr(strrchr($class, '\\'), 1)
-        );
-        # 方法名
-        $method = strtolower($method);
+            # 控制器名称
+            $controller = str_replace(
+                'Controller',
+                '',
+                substr(strrchr($class, '\\'), 1)
+            );
+            # 方法名
+            // $method = strtolower($method);
 
-        return [strtolower($modules), strtolower($controller), $method];
+            return [strtolower($modules), strtolower($controller), strtolower($method)];
+        } catch (Exception $e) {
+            try {
+                $uriParams  = explode('/', request()->route()->uri);
+                $modules    = $uriParams['0'];
+                $controller = $uriParams['1'];
+                $method     = $uriParams['2'];
+                return [strtolower($modules), strtolower($controller), strtolower($method)];
+            } catch (Exception $e) {
+                return ['index', 'index', 'index'];
+            }
+
+        }
     }
 }

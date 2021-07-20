@@ -228,7 +228,7 @@ class QrCode
     public function setErrorCorrection($error_correction)
     {
         if (!is_numeric($error_correction)) {
-            $level_constant   = 'zxf\img\QrCode::LEVEL_' . strtoupper($error_correction);
+            $level_constant   = 'zxf\qrcode\QrCode::LEVEL_' . strtoupper($error_correction);
             $error_correction = constant($level_constant);
         }
 

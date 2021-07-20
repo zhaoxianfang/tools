@@ -23,7 +23,7 @@ composer require zxf/tools
 |  QueryList  |  QueryList(废弃)  |
 |  JsMin  |  js 压缩工具  |
 |  QrCode  |  生成二维码  |
-|  BarcodeGenerator  |  生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
+|  BarCode  |  生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
 |  Compressor  |  图片压缩类  |
 |  TextToPNG  |  文字转图片  |
 |  PHPMailer  |  发送邮件  |
@@ -256,15 +256,15 @@ $qrCode
     ;
 ```
 
-### BarcodeGenerator 创建条形码
+### BarCode 创建条形码
 
 例如：
 ```php
 echo '<p>Example - Isbn</p>';
-$barcode = new BarcodeGenerator(); // 实例化
+$barcode = new BarCode(); // 实例化
 $barcode->setText("0012345678901"); // 设置条形码内容
 $barcode->setFontSize(10); //  设置字体大小
-$barcode->setType(BarcodeGenerator::Isbn); // 设置条形码类型,支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce 类型的条形码
+$barcode->setType(BarCode::Isbn); // 设置条形码类型,支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce 类型的条形码
 $code = $barcode->generate(); // 生成条形码 base64 文件流
 echo '<img src="data:image/png;base64,' . $code . '" />';
 ```
@@ -274,10 +274,10 @@ echo '<img src="data:image/png;base64,' . $code . '" />';
 
 ```php
 echo '<p>Example - Isbn</p>';
-$barcode = new BarcodeGenerator(); // 实例化
+$barcode = new BarCode(); // 实例化
 $barcode->setText("0012345678901"); // 设置条形码内容
 $barcode->setFontSize(10); //  设置字体大小
-$barcode->setType(BarcodeGenerator::Isbn); // 设置条形码类型,支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce 类型的条形码
+$barcode->setType(BarCode::Isbn); // 设置条形码类型,支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce 类型的条形码
 $barcode->draw(); // 把图片直接绘画到浏览器
 ```
 

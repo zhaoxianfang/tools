@@ -631,3 +631,353 @@ if (!function_exists('get_laravel_route')) {
         }
     }
 }
+
+if (!function_exists('is_idcard')) {
+    /**
+     * 赵先方
+     * 判断是否为身份证
+     *code BEGIN
+     */
+    function is_idcard($idcard)
+    {
+        $id_card = trim($idcard);
+        if (strlen($id_card) == 18) {
+            return idcard_checksum18($id_card);
+        } elseif ((strlen($id_card) == 15)) {
+            $id_card = idcard_15to18($id_card);
+            return idcard_checksum18($id_card);
+        } else {
+            return false;
+        }
+    }
+    // 计算身份证校验码，根据国家标准GB 11643-1999
+    function idcard_verify_number($idcard_base)
+    {
+        if (strlen($idcard_base) != 17) {
+            return false;
+        }
+        //加权因子
+        $factor = array(7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2);
+        //校验码对应值
+        $verify_number_list = array('1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2');
+        $checksum           = 0;
+        for ($i = 0; $i < strlen($idcard_base); $i++) {
+            $checksum += substr($idcard_base, $i, 1) * $factor[$i];
+        }
+        $mod           = $checksum % 11;
+        $verify_number = $verify_number_list[$mod];
+        return $verify_number;
+    }
+    // 将15位身份证升级到18位
+    function idcard_15to18($idcard)
+    {
+        if (strlen($idcard) != 15) {
+            return false;
+        } else {
+            // 如果身份证顺序码是996 997 998 999，这些是为百岁以上老人的特殊编码
+            if (array_search(substr($idcard, 12, 3), array('996', '997', '998', '999')) !== false) {
+                $idcard = substr($idcard, 0, 6) . '18' . substr($idcard, 6, 9);
+            } else {
+                $idcard = substr($idcard, 0, 6) . '19' . substr($idcard, 6, 9);
+            }
+        }
+        $idcard = $idcard . idcard_verify_number($idcard);
+        return $idcard;
+    }
+    // 18位身份证校验码有效性检查
+    function idcard_checksum18($idcard)
+    {
+        if (strlen($idcard) != 18) {
+            return false;
+        }
+        $idcard_base = substr($idcard, 0, 17);
+        if (idcard_verify_number($idcard_base) != strtoupper(substr($idcard, 17, 1))) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+}
+
+if (!function_exists('cutstr_html')) {
+    // 去除所有html标签
+    function cutstr_html($string)
+    {
+        $string = htmlspecialchars_decode($string);
+        $string = strip_tags($string);
+        $string = trim($string);
+        $string = ereg_replace("\t", "", $string);
+        $string = ereg_replace("\r\n", "", $string);
+        $string = ereg_replace("\r", "", $string);
+        $string = ereg_replace("\n", "", $string);
+        $string = ereg_replace(" ", "", $string);
+        $string = ereg_replace("&nbsp;", "", $string);
+        return trim($string);
+    }
+}
+if (!function_exists('str_rand')) {
+    /**
+     * 生成随机字符串
+     * @Author   ZhaoXianFang
+     * @DateTime 2017-06-28
+     * @param    integer      $length 字符串长度
+     * @param    string       $tack   附加值
+     * @return   [type]               字符串
+     */
+    function str_rand($length = 6, $tack = '')
+    {
+        $chars = 'abcdefghijkmnpqrstuvwxyzACDEFGHIJKLMNOPQRSTUVWXYZ12345679' . $tack;
+        $str   = '';
+        for ($i = 0; $i < $length; $i++) {
+            $str .= $chars[mt_rand(0, strlen($chars) - 1)];
+        }
+        return $str;
+    }
+}
+
+if (!function_exists('wx_decrypt_data')) {
+    /**
+     * 微信解密
+     * @Author   ZhaoXianFang
+     * @DateTime 2020-10-20
+     * @param    [type]       $encryptedData [description]
+     * @param    [type]       $iv            [description]
+     * @param    [type]       $sessionKey    [description]
+     * @return   [type]                      [description]
+     */
+    function wx_decrypt_data($encryptedData, $iv, $sessionKey)
+    {
+        $appId = 'wxfd...9ce';
+        if (strlen($sessionKey) != 24) {
+            return array(
+                'code' => 500,
+                'mag'  => 'sessionKey 无效',
+            );
+        }
+        $aesKey = base64_decode($sessionKey);
+        if (strlen($iv) != 24) {
+            return array(
+                'code' => 500,
+                'mag'  => 'iv 无效',
+            );
+        }
+        $aesIV     = base64_decode($iv);
+        $aesCipher = base64_decode($encryptedData);
+        $result    = openssl_decrypt($aesCipher, "AES-128-CBC", $aesKey, 1, $aesIV);
+        // $dataObj = object_array(json_decode($result,true) );
+        $dataObj = json_decode(object_array($result), true);
+        if ($dataObj == null) {
+            return array(
+                'code' => 500,
+                'mag'  => '解析失败',
+            );
+        }
+        if ($dataObj['watermark']['appid'] != $appId) {
+            return array(
+                'code' => 500,
+                'mag'  => 'appid无效',
+            );
+        }
+        return $dataObj;
+    }
+}
+
+if (!function_exists('img_base64')) {
+    /**
+     * 图片转 base64
+     * @Author   ZhaoXianFang
+     * @DateTime 2017-07-18
+     * @param    [type]       $image_file [description]
+     * @return   [type]                   [description]
+     */
+    function img_base64($image_file)
+    {
+        $base64_image = '';
+        $image_info   = getimagesize($image_file);
+        $image_data   = fread(fopen($image_file, 'r'), filesize($image_file));
+        $base64_image = 'data:' . $image_info['mime'] . ';base64,' . chunk_split(base64_encode($image_data));
+        return $base64_image;
+    }
+}
+
+if (!function_exists('is_json')) {
+    /**
+     * [is_json 判断json]
+     * @Author   ZhaoXianFang
+     * @DateTime 2018-12-27
+     * @param    [type]       $string [description]
+     * @return   boolean              [description]
+     */
+    function is_json($string)
+    {
+        try {
+            json_decode($string);
+            // return (json_last_error() == JSON_ERROR_NONE);
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+}
+
+if (!function_exists('get_full_path')) {
+    /**
+     * 根据相对路径获取绝对路径
+     * @param string $path 相对路径
+     */
+    if (!function_exists('get_full_path')) {
+        function get_full_path($path)
+        {
+            $info      = pathinfo($path);
+            $full_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $info['dirname'] . '/' . $info['basename'];
+            return $full_path;
+        }
+    }
+}
+
+if (!function_exists('convert_underline')) {
+    /**
+     * 下划线转驼峰
+     * @Author   ZhaoXianFang
+     * @DateTime 2018-08-29
+     * @return   [type]       [description]
+     */
+    function convert_underline($str)
+    {
+        $str = preg_replace_callback('/([-_]+([a-z]{1}))/i', function ($matches) {
+            return strtoupper($matches[2]);
+        }, $str);
+        return $str;
+    }
+}
+
+if (!function_exists('underline_convert')) {
+    /**
+     * 驼峰转下划线
+     * @Author   ZhaoXianFang
+     * @DateTime 2018-08-29
+     * @return   [type]       [description]
+     */
+    function underline_convert($str)
+    {
+        $str = strtolower(preg_replace('/(?<=[a-z])([A-Z])/', '_$1', $str));
+        return $str;
+    }
+}
+
+if (!function_exists('check_pass_strength')) {
+    /**
+     * 验证等保测2级评密码强度
+     * 验证密码强度是否符合 至少包含大小写字母、数字、特殊字符大于8个字符
+     * @Author   ZhaoXianFang
+     * @DateTime 2020-01-08
+     * @param    string       $password [description]
+     * @return   [type]                 [description]
+     */
+    function check_pass_strength($password = '')
+    {
+        // 检测密码强度 至少包含大小写字母、数字、特殊字符至少3个组合大于8个字符
+        $expression = '/^(?![A-Za-z]+$)(?![A-Z\\d]+$)(?![A-Z\\W]+$)(?![a-z\\d]+$)(?![a-z\\W]+$)(?![\\d\\W]+$)\\S{8,}$/';
+        if (preg_match($expression, $password)) {
+            return true;
+        }
+        return false;
+    }
+}
+
+if (!function_exists('base64_to_image')) {
+    /**
+     * base64图片转文件图片
+     * base64_to_image($row['cover'],"./uploads/images")
+     */
+    function base64_to_image($base64_image_content, $path)
+    {
+        //匹配出图片的格式
+        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $base64_image_content, $result)) {
+            $type     = $result[2];
+            $new_file = $path . "/" . date('Ymd', time()) . "/";
+            if (!file_exists($new_file)) {
+                //检查是否有该文件夹，如果没有就创建，并给予最高权限
+                mkdir($new_file, 0755, true);
+            }
+            $new_file = $new_file . md5(time() . mt_rand(1, 1000000)) . ".{$type}";
+            if (file_put_contents($new_file, base64_decode(str_replace($result[1], '', $base64_image_content)))) {
+                return ltrim($new_file, '.');
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+}
+
+if (!function_exists('get_class_child_method')) {
+    /**
+     * 获取类的 属性值 支持方法和属性(包含私有和受保护类型)调度
+     * @Author   ZhaoXianFang
+     * @DateTime 2019-04-01
+     * @param    [type]       $name [需要获取的属性名或者方法名 例如：code,getName ]
+     * @param    [type]       $args [仅当$name为方法方法调用时候作为参数传递]
+     * @return   [type]             [description]
+     */
+    function get_class_child_method(string $name, array $args = [])
+    {
+        $className = get_called_class();
+        $class     = new \ReflectionClass($className);
+
+        //方法属性 调用
+        if ($class->hasMethod($name)) {
+            $method   = $class->getMethod($name);
+            $instance = $class->newInstance();
+            if (!$method->isPublic()) {
+                //通过方法名$name获取指定方法
+                $method->setAccessible(true);
+            }
+            return $method->invokeArgs($instance, $args);
+        }
+
+        //变量属性调用
+        $property = $class->getProperty($name);
+        $property->setAccessible(true);
+
+        //得到子类中的值
+        $value = $property->getValue(new $className());
+        //判断属性值是否为数组
+        if (is_array($value)) {
+            $thisClass    = new \ReflectionClass(__CLASS__);
+            $thisProperty = $thisClass->getProperty($name);
+            $thisProperty->setAccessible(true);
+            //本类中的值
+            $thisVal = $thisProperty->getValue(new static());
+            $value   = $value + $thisVal; //保留键值对
+            ksort($value);
+        }
+        return $value;
+    }
+}
+
+if (!function_exists('build_request_form')) {
+    /**
+     * 创建一个可以携带大量数据的地址跳转url [header 携带大量数据请求的可行性方案]
+     *
+     *      $url = 'http://www.example.com';
+     *      $data = array(
+     *         'name' => 'aaa',
+     *          'domain' => 'example.com',
+     *          'date' => '2019-03-22'
+     *      );
+     *      echo buildRequestForm($url, $data);
+     *      exit;
+     */
+    function build_request_form($url, $data, $method = 'post')
+    {
+        $sHtml = "<form id='build_request_form' name='build_request_form' action='" . $url . "' method='" . $method . "'>";
+        foreach ($data as $key => $val) {
+            $sHtml .= "<input type='hidden' name='" . $key . "' value='" . $val . "' />";
+        }
+        $sHtml = $sHtml . "<input type='submit' value='确定' style='display:none;'></form>";
+        $sHtml = $sHtml . "<script>document.forms['build_request_form'].submit();</script>";
+        return $sHtml;
+    }
+}

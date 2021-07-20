@@ -1,6 +1,6 @@
 <?php
 /**
- * BarcodeGenerator
+ * BarCode 生成器
  * @author  Akhtar Khan <er.akhtarkhan@gmail.com>
  * @link http://www.codeitnow.in
  * @package https://github.com/codeitnowin/barcode-generator  
@@ -11,7 +11,7 @@ use zxf\qrcode\Generator\CINColor;
 use zxf\qrcode\Generator\CINDrawing;
 use zxf\qrcode\Generator\CINFontFile;
 
-class BarcodeGenerator extends BarcodeType {
+class BarCode extends BarcodeType {
     
     /**
      * Resolution

@@ -8,7 +8,7 @@
 ### 引入库
 ```
 use zxf\qrcode\QrCode;
-use zxf\qrcode\BarcodeGenerator;
+use zxf\qrcode\BarCode;
 ```
 
 ## QrCode 创建二维码
@@ -49,15 +49,15 @@ $qrCode
     ;
 ```
 
-## BarcodeGenerator 创建条形码
+## BarCode 创建条形码
 
 例如：
 ```php
 echo '<p>Example - Isbn</p>';
-$barcode = new BarcodeGenerator(); // 实例化
+$barcode = new BarCode(); // 实例化
 $barcode->setText("0012345678901"); // 设置条形码内容
 $barcode->setFontSize(10); //  设置字体大小
-$barcode->setType(BarcodeGenerator::Isbn); // 设置条形码类型,支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce 类型的条形码
+$barcode->setType(BarCode::Isbn); // 设置条形码类型,支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce 类型的条形码
 $code = $barcode->generate(); // 生成条形码 base64 文件流
 echo '<img src="data:image/png;base64,' . $code . '" />';
 ```
@@ -67,10 +67,10 @@ echo '<img src="data:image/png;base64,' . $code . '" />';
 
 ```php
 echo '<p>Example - Isbn</p>';
-$barcode = new BarcodeGenerator(); // 实例化
+$barcode = new BarCode(); // 实例化
 $barcode->setText("0012345678901"); // 设置条形码内容
 $barcode->setFontSize(10); //  设置字体大小
-$barcode->setType(BarcodeGenerator::Isbn); // 设置条形码类型,支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce 类型的条形码
+$barcode->setType(BarCode::Isbn); // 设置条形码类型,支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce 类型的条形码
 $barcode->draw(); // 把图片直接绘画到浏览器
 ```
 
@@ -85,9 +85,9 @@ $barcode->draw(); // 把图片直接绘画到浏览器
 ### 其他的demo
 ```
 echo '<p>Example - Code128</p>';
-$barcode = new BarcodeGenerator();
+$barcode = new BarCode();
 $barcode->setText("0123456789");
-$barcode->setType(BarcodeGenerator::Code128);
+$barcode->setType(BarCode::Code128);
 $barcode->setScale(2);
 $barcode->setThickness(25);
 $barcode->setFontSize(10);
@@ -96,49 +96,49 @@ echo '<img src="data:image/png;base64,' . $code . '" />';
 
 echo '<hr>';
 echo '<p>Example - Code11</p>';
-$barcode = new BarcodeGenerator();
+$barcode = new BarCode();
 $barcode->setText("0123456789");
-$barcode->setType(BarcodeGenerator::Code11);
+$barcode->setType(BarCode::Code11);
 $code = $barcode->generate();
 echo '<img src="data:image/png;base64,' . $code . '" />';
 
 echo '<hr>';
 echo '<p>Example - Code39</p>';
-$barcode = new BarcodeGenerator();
+$barcode = new BarCode();
 $barcode->setText("0123456789");
-$barcode->setType(BarcodeGenerator::Code39);
+$barcode->setType(BarCode::Code39);
 $code = $barcode->generate();
 echo '<img src="data:image/png;base64,' . $code . '" />';
 
 echo '<hr>';
 echo '<p>Example - Code39Extended</p>';
-$barcode = new BarcodeGenerator();
+$barcode = new BarCode();
 $barcode->setText("0123456789");
-$barcode->setType(BarcodeGenerator::Code39Extended);
+$barcode->setType(BarCode::Code39Extended);
 $code = $barcode->generate();
 echo '<img src="data:image/png;base64,' . $code . '" />';
 
 echo '<hr>';
 echo '<p>Example - Ean128</p>';
-$barcode = new BarcodeGenerator();
+$barcode = new BarCode();
 $barcode->setText("00123456789012345675");
-$barcode->setType(BarcodeGenerator::Ean128);
+$barcode->setType(BarCode::Ean128);
 $code = $barcode->generate();
 echo '<img src="data:image/png;base64,' . $code . '" />';
 
 echo '<hr>';
 echo '<p>Example - Gs1128</p>';
-$barcode = new BarcodeGenerator();
+$barcode = new BarCode();
 $barcode->setText("00123456789012345675");
-$barcode->setType(BarcodeGenerator::Gs1128);
+$barcode->setType(BarCode::Gs1128);
 $code = $barcode->generate();
 echo '<img src="data:image/png;base64,' . $code . '" />';
 
 echo '<hr>';
 echo '<p>Example - Gs1128</p>';
-$barcode = new BarcodeGenerator();
+$barcode = new BarCode();
 $barcode->setText("4157707266014651802001012603068039000000006377069620171215");
-$barcode->setType(BarcodeGenerator::Gs1128);
+$barcode->setType(BarCode::Gs1128);
 $barcode->setNoLengthLimit(true);
 $barcode->setAllowsUnknownIdentifier(true);
 $code = $barcode->generate();
@@ -147,57 +147,57 @@ echo '<img src="data:image/png;base64,' . $code . '" />';
 // i15为偶数
 echo '<hr>';
 echo '<p>Example - I25</p>';
-$barcode = new BarcodeGenerator();
+$barcode = new BarCode();
 $barcode->setText("00123456789012345675");
-$barcode->setType(BarcodeGenerator::I25);
+$barcode->setType(BarCode::I25);
 $code = $barcode->generate();
 echo '<img src="data:image/png;base64,' . $code . '" />';
 
 echo '<hr>';
 echo '<p>Example - Isbn</p>';
-$barcode = new BarcodeGenerator();
+$barcode = new BarCode();
 $barcode->setText("0012345678901");
-$barcode->setType(BarcodeGenerator::Isbn);
+$barcode->setType(BarCode::Isbn);
 $code = $barcode->generate();
 echo '<img src="data:image/png;base64,' . $code . '" />';
 
 echo '<hr>';
 echo '<p>Example - Msi</p>';
-$barcode = new BarcodeGenerator();
+$barcode = new BarCode();
 $barcode->setText("0012345678901");
-$barcode->setType(BarcodeGenerator::Msi);
+$barcode->setType(BarCode::Msi);
 $code = $barcode->generate();
 echo '<img src="data:image/png;base64,' . $code . '" />';
 
 echo '<hr>';
 echo '<p>Example - Postnet</p>';
-$barcode = new BarcodeGenerator();
+$barcode = new BarCode();
 $barcode->setText("01234567890");
-$barcode->setType(BarcodeGenerator::Postnet);
+$barcode->setType(BarCode::Postnet);
 $code = $barcode->generate();
 echo '<img src="data:image/png;base64,' . $code . '" />';
 
 echo '<hr>';
 echo '<p>Example - S25</p>';
-$barcode = new BarcodeGenerator();
+$barcode = new BarCode();
 $barcode->setText("012345678901");
-$barcode->setType(BarcodeGenerator::S25);
+$barcode->setType(BarCode::S25);
 $code = $barcode->generate();
 echo '<img src="data:image/png;base64,' . $code . '" />';
 
 echo '<hr>';
 echo '<p>Example - Upca</p>';
-$barcode = new BarcodeGenerator();
+$barcode = new BarCode();
 $barcode->setText("012345678901");
-$barcode->setType(BarcodeGenerator::Upca);
+$barcode->setType(BarCode::Upca);
 $code = $barcode->generate();
 echo '<img src="data:image/png;base64,' . $code . '" />';
 
 echo '<hr>';
 echo '<p>Example - Upce</p>';
-$barcode = new BarcodeGenerator();
+$barcode = new BarCode();
 $barcode->setText("012345");
-$barcode->setType(BarcodeGenerator::Upce);
+$barcode->setType(BarCode::Upce);
 $code = $barcode->generate();
 echo '<img src="data:image/png;base64,' . $code . '" />';
 ```

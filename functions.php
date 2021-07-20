@@ -912,51 +912,6 @@ if (!function_exists('base64_to_image')) {
     }
 }
 
-if (!function_exists('get_class_child_method')) {
-    /**
-     * 获取类的 属性值 支持方法和属性(包含私有和受保护类型)调度
-     * @Author   ZhaoXianFang
-     * @DateTime 2019-04-01
-     * @param    [type]       $name [需要获取的属性名或者方法名 例如：code,getName ]
-     * @param    [type]       $args [仅当$name为方法方法调用时候作为参数传递]
-     * @return   [type]             [description]
-     */
-    function get_class_child_method(string $name, array $args = [])
-    {
-        $className = get_called_class();
-        $class     = new \ReflectionClass($className);
-
-        //方法属性 调用
-        if ($class->hasMethod($name)) {
-            $method   = $class->getMethod($name);
-            $instance = $class->newInstance();
-            if (!$method->isPublic()) {
-                //通过方法名$name获取指定方法
-                $method->setAccessible(true);
-            }
-            return $method->invokeArgs($instance, $args);
-        }
-
-        //变量属性调用
-        $property = $class->getProperty($name);
-        $property->setAccessible(true);
-
-        //得到子类中的值
-        $value = $property->getValue(new $className());
-        //判断属性值是否为数组
-        if (is_array($value)) {
-            $thisClass    = new \ReflectionClass(__CLASS__);
-            $thisProperty = $thisClass->getProperty($name);
-            $thisProperty->setAccessible(true);
-            //本类中的值
-            $thisVal = $thisProperty->getValue(new static());
-            $value   = $value + $thisVal; //保留键值对
-            ksort($value);
-        }
-        return $value;
-    }
-}
-
 if (!function_exists('build_request_form')) {
     /**
      * 创建一个可以携带大量数据的地址跳转url [header 携带大量数据请求的可行性方案]

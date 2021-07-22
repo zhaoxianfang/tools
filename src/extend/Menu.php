@@ -53,6 +53,34 @@ class Menu
         $this->options = array_merge($this->config, $options);
     }
 
+    // 初始化参数，防止 调用 Menu 的过程中 有的 参数被篡改 导致 之后的调用参数发生错乱
+    private function initConfigParam()
+    {
+        $this->arr           = [];
+        $this->pk            = 'id';
+        $this->pid           = 'pid';
+        $this->childlist     = 'childlist';
+        $this->weigh         = 'weigh'; //权重
+        $this->title         = 'title'; //Tree 展示的作用字段
+        $this->badge         = 'badge_text'; //badge 图标
+        $this->badgeStyle    = 'badge_text_style'; //badge 图标 样式
+        $this->showchildicon = false; //子级菜单显示icon小图标
+        $this->showNavIcon   = false; //前台nav 一级导航是否显示icon小图标
+        $this->menuType      = 'nazox'; //目录类型 adminlte|layuiadmin|nazox|inspinia
+
+        //默认配置
+        $this->config  = [];
+        $this->options = [];
+        //是否返回 $this
+        $this->returnClass = false;
+        //触发的菜单
+        $this->activeMenu = '';
+        //url地址前缀
+        $this->urlPrefix = '';
+
+        $this->domain = ''; // 域名
+    }
+
     /**
      * 初始化
      * @access public
@@ -64,7 +92,6 @@ class Menu
         if (is_null(self::$instance)) {
             self::$instance = new static($options);
         }
-
         return self::$instance;
     }
 
@@ -83,6 +110,8 @@ class Menu
      */
     public function init($arr = [], $pk = 'id', $pid = 'pid', $rootId = 0, $initTree = true, $childlist = 'childlist')
     {
+        $this->initConfigParam();
+
         $this->arr                    = $arr;
         $pk ? $this->pk               = $pk : 'id';
         $pid ? $this->pid             = $pid : 'pid';
@@ -417,6 +446,7 @@ class Menu
             // $str .= '<a href="' . $currentHref . '" aria-expanded="' . ($isActive ? 'true' : 'false') .  '">';
             $str .= '<a href="' . $currentHref . '">';
             $str .= '<i class="fa ' . $currentIcon . '"></i>';
+
             $str .= '<span class="nav-label">' . $item[$this->title] . '</span>';
             // 子菜单
             $str .= $hasArrow ? '<span class="fa arrow"></span>' : '';

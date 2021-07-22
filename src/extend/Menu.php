@@ -11,7 +11,7 @@ namespace zxf\extend;
 // 顶部导航
 // Menu::instance()->init($classifyList)->setTitle('name')->setUrlPrefix('/classify')->setActiveMenu($urlLink)->createMenu(0, 'home');
 // 面包屑导航
-// $breadcrumb = \util\Menu::instance()->init($classifyList, 'id', 'pid',0, false)->getNavBreadCrumb($classify_id);
+// Menu::instance()->init($menuList, 'id', 'pid', 0, false)->getBreadCrumb('/admin/index/index', $raturnhtml = true, false);
 // 菜单转换为视图
 // Menu::instance()->init($arrList)->setWeigh()->getTree();
 
@@ -937,38 +937,41 @@ class Menu
      * @DateTime 2018-06-07
      * @param    [type]       $link     [用户访问的链接]
      * @param    [type]       $html     [是否返回html导航]
+     * @param    [type]       $clickLink[能否点击a标签链接]
+     * @param    [type]       $uri      [导航的 uri 地址字段]
+     * @param    [type]       $text     [面包屑导航展示文字字段]
      * @return   [type]                 [description]
      */
-    public function getBreadCrumb($link, $html = false)
+    public function getBreadCrumb($link, $html = false, $clickLink = true, $uri = 'name', $text = 'title')
     {
 
-        // $path       = strtolower(str_replace(".", "/", $link));
-        $path = strtolower($link);
+        $path = strtolower(str_replace(".", "/", $link));
+        // $path = strtolower($link);
 
-        $dataArr    = $this->arr;
+        $dataArr = $this->arr;
+
         $newAuthArr = [];
         //先设置数组的键值和名称到新数组
         foreach ($dataArr as $key => $auth) {
-            $nameArr = explode('/', $auth[$this->title]);
+            $auth = object_to_array($auth);
+            // str_replace(".","/",$auth[$uri]);
+
+            $nameArr = explode('/', str_replace(".", "/", $auth[$uri]));
             if (count($nameArr) < 2) {
                 $nameArr['1'] = 'index';
             }
 
-            $auth[$this->title]           = strtolower(implode("/", $nameArr));
+            $auth[$uri]                   = strtolower(implode("/", $nameArr));
             $newAuthArr[$auth[$this->pk]] = $auth;
 
         }
 
-        $breadCrumbTitle = $remark = '';
-        $crumb           = []; //导航 数组
+        $crumb = []; //导航 数组
         foreach ($newAuthArr as $key => $value) {
 
-            if ($value[$this->title] == $path || $value[$this->title] . '/index' == $path) {
+            if ($value[$uri] == $path || $value[$uri] . '/index' == $path) {
                 $crumb[] = $value;
                 $pid     = $value[$this->pid];
-
-                $breadCrumbTitle = $value[$this->title];
-                $remark          = $value['remark']; //备注
 
                 while ($pid) {
                     $crumb[] = $newAuthArr[$pid];
@@ -980,21 +983,22 @@ class Menu
 
         $str = '';
         if ($html && !empty($crumb)) {
-            $str .= '<div class="col-sm-6"><h1 class="m-0 text-dark">';
-            $str .= $crumb['0'][$this->title];
-            $str .= '</h1></div><div class="col-sm-6"><ol class="breadcrumb float-sm-right">';
+            $str .= '<div class="col-sm-6"><h1 class="m-0 text-dark gray-bg">';
+            $str .= $crumb['0'][$text];
+            $str .= '</h1></div><div class="col-sm-6"><ol class="breadcrumb float-sm-right gray-bg">';
         }
 
         $crumbCount = count($crumb) - 1;
         for ($i = $crumbCount; $i >= 0; $i--) {
+            $a_link = $clickLink ? url($crumb[$i][$uri]) : 'javascript:;';
             if ($html) {
                 if ($i == 0) {
-                    $str .= '<li class="breadcrumb-item active">' . $crumb[$i][$this->title] . '</li>';
+                    $str .= '<li class="breadcrumb-item active">' . $crumb[$i][$text] . '</li>';
                 } else {
-                    $str .= '<li class="breadcrumb-item"><a href="' . url($crumb[$i][$this->title]) . '"><i class="' . $crumb[$i]['icon'] . '"></i> ' . $crumb[$i][$this->title] . '</a></li>';
+                    $str .= '<li class="breadcrumb-item"><a href="' . $a_link . '"><i class="' . $crumb[$i]['icon'] . '"></i> ' . $crumb[$i][$this->title] . '</a></li>';
                 }
             } else {
-                $str .= $i == $crumbCount ? $crumb[$i][$this->title] : ' > ' . $crumb[$i][$this->title];
+                $str .= $i == $crumbCount ? $crumb[$i][$text] : ' > ' . $crumb[$i][$text];
             }
         }
         return $html ? (!empty($crumb) ? $str . '</ol></div>' : '') : ($str ? $str : $path);

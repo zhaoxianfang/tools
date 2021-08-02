@@ -386,26 +386,30 @@ function send_mailer($to = '', $title = '', $content = '', $sender = '邮件测�
  * @DateTime 2019-03-08
  *
  * 调用示例：
- *        $Compressor = new Compressor(); 
- *        OR 
- *        $Compressor = Compressor::instance()
+ *        # 实例化对象
+ *        $Compressor = new Compressor();
+ *        OR
+ *        $Compressor = Compressor::instance();
+ *
+ *        # 使用原始尺寸 压缩图片大小并输出到浏览器
+ *        $result = $Compressor->set('001.jpg')->proportion(1)->get();
  *        # 仅压缩
- *        $result = $Compressor->set('001.jpg', './compressOnly.png')->compress(5)->get();
- *        # 仅改变尺寸
+ *        $result = $Compressor->set('001.jpg')->compress(5)->get();
+ *        # 仅改变尺寸并保存到指定位置
  *        $result = $Compressor->set('001.jpg', './resizeOnly.jpg')->resize(500, 500)->get();
- *        # 压缩且改变尺寸
+ *        # 压缩且改变尺寸并保存到指定位置
  *        $result = $Compressor->set('001.jpg', './resizeAndCompress.png')->resize(0, 500)->compress(5)->get();
  *        #  压缩且按照比例压缩
  *        $result = $Compressor->set('001.jpg', './resizeAndCompress.png')->proportion(0.5)->compress(5)->get();
  *        return $result;
  *  参数说明：
- *        set(原图路径,保存后的路径);
+ *        set(原图路径,保存后的路径); // 如果要直接输出到浏览器则只传第一个参数即可
  *        resize(设置宽度,设置高度);//如果有一个参数为0，则保持宽高比例
  *        proportion(压缩比例);//0.1~1 根据比例压缩
- *        compress(压缩级别);//0~9，压缩级别，级别越高 图片越小
+ *        compress(压缩级别);//0~9，压缩级别，级别越高就图片越小也就越模糊
  *        get();//获取生成后的结果
  *  提示：
- *        如果使用到compress 方法，先设置其他参数最后一步再执行 compress 压缩方法
+ *        proportion 方法 回去调用 resize 方法，因此他们两个方法只需要选择调用一个即可
  */
 ```
 

@@ -1,5 +1,5 @@
 <?php
-namespace zxf\img; 
+namespace zxf\img;
 
 // +---------------------------------------------------------------------
 // | 图片压缩类（可改变图片大小和压缩质量以及保留宽高压缩）
@@ -19,26 +19,30 @@ namespace zxf\img;
  * @DateTime 2019-03-08
  *
  * 调用示例：
- *        $Compressor = new Compressor(); 
- *        OR 
- *        $Compressor = Compressor::instance()
+ *        # 实例化对象
+ *        $Compressor = new Compressor();
+ *        OR
+ *        $Compressor = Compressor::instance();
+ *
+ *        # 使用原始尺寸 压缩图片大小并输出到浏览器
+ *        $result = $Compressor->set('001.jpg')->proportion(1)->get();
  *        # 仅压缩
- *        $result = $Compressor->set('001.jpg', './compressOnly.png')->compress(5)->get();
- *        # 仅改变尺寸
+ *        $result = $Compressor->set('001.jpg')->compress(5)->get();
+ *        # 仅改变尺寸并保存到指定位置
  *        $result = $Compressor->set('001.jpg', './resizeOnly.jpg')->resize(500, 500)->get();
- *        # 压缩且改变尺寸
+ *        # 压缩且改变尺寸并保存到指定位置
  *        $result = $Compressor->set('001.jpg', './resizeAndCompress.png')->resize(0, 500)->compress(5)->get();
  *        #  压缩且按照比例压缩
  *        $result = $Compressor->set('001.jpg', './resizeAndCompress.png')->proportion(0.5)->compress(5)->get();
  *        return $result;
  *  参数说明：
- *        set(原图路径,保存后的路径);
+ *        set(原图路径,保存后的路径); // 如果要直接输出到浏览器则只传第一个参数即可
  *        resize(设置宽度,设置高度);//如果有一个参数为0，则保持宽高比例
  *        proportion(压缩比例);//0.1~1 根据比例压缩
- *        compress(压缩级别);//0~9，压缩级别，级别越高 图片越小
+ *        compress(压缩级别);//0~9，压缩级别，级别越高就图片越小也就越模糊
  *        get();//获取生成后的结果
  *  提示：
- *        如果使用到compress 方法，先设置其他参数最后一步再执行 compress 压缩方法
+ *        proportion 方法 回去调用 resize 方法，因此他们两个方法只需要选择调用一个即可
  */
 
 class Compressor
@@ -56,9 +60,14 @@ class Compressor
     ];
 
     /**
-     * 被处理的图片原始路径
+     * 图片压缩级别 [0~9]，级别越高 图片越小[图片越小越不清晰,形如马赛克模糊][php 的默认值是75]
      */
-    private $imagePath;
+    private $level = 7.5;
+
+    /**
+     * 图片对象
+     */
+    private $image;
 
     /**
      * 压缩之后的存储路径
@@ -81,15 +90,20 @@ class Compressor
     private $res = [
         'code'       => 0,
         'original'   => [
-            'name' => 'oldName',
-            'type' => 'imageType',
-            'size' => 'imageSize',
+            'name'      => 'fileName',
+            'type'      => 'imageType',
+            'size'      => 'imageSize',
+            'bits'      => 'imageBits',
+            'file_path' => 'filePath', // 源图片地址
         ],
         'compressed' => [
-            'name' => 'newName',
-            'type' => 'imageType',
-            'size' => 'imageSize',
+            'name'      => 'newName',
+            'type'      => 'imageType',
+            'bits'      => 'imageBits',
+            'size'      => 'imageSize',
+            'save_path' => 'savePath',
         ],
+
     ];
 
     public function __construct($fileType = false)
@@ -115,52 +129,60 @@ class Compressor
     }
 
     /**
-     * 压缩级别，级别越高 图片越小
+     * 设置 被压缩图片路径, 压缩之后的存储路径
+     *
+     * @param $imagePath
+     * @param $compressImageName
+     * @return $this
+     * @author 19/1/17 ZhaoXianFang
+     * @throws \Exception
+     */
+    public function set($imagePath, $savePath = null)
+    {
+        try {
+            $this->imageInfo = getImageSize($imagePath);
+        } catch (\Exception $e) {
+            throw new \Exception('不是图片类型');
+        }
+
+        $filesize              = filesize($imagePath); // 单位bit
+        $this->res['original'] = [
+            'name'      => basename($imagePath),
+            'type'      => $this->imageInfo['mime'],
+            'size'      => $filesize, // 单位bit
+            'bits'      => $this->imageInfo['bits'],
+            'file_path' => $imagePath, // 源图片地址
+        ];
+
+        $this->res['compressed'] = [
+            'name'      => basename($imagePath),
+            'type'      => $this->imageInfo['mime'],
+            'bits'      => $this->imageInfo['bits'],
+            'save_path' => $savePath, // 保存地址，可以为NULL
+        ];
+
+        if (in_array($this->imageInfo['mime'], $this->setting['file_type'])) {
+            $this->image = ('imagecreatefrom' . basename($this->imageInfo['mime']))($imagePath);
+            return $this;
+        }
+
+        throw new \Exception(__METHOD__);
+    }
+
+    /**
+     * 压缩级别，级别越高 图片越小[图片越小越不清晰]
      * @param int $level
      * @return ImgCompressor
      * @throws \Exception
-     * @author 19/1/17 CLZ.
+     * @author 19/1/17 ZhaoXianFang
      */
-    public function compress($level = 0)
+    public function compress($level = 7.5)
     {
         if ($level < 0 || $level > 9) {
             throw new \Exception(__METHOD__ . 'Compression level: [0, 9]');
         }
 
-        $compressImageName = $this->imageCompressPath;
-
-        $type = $this->imageInfo['mime'];
-
-        $image = ('imagecreatefrom' . basename($type))($this->imagePath);
-
-        if ($type == 'image/jpeg') {
-            imagejpeg($image, $compressImageName, (100 - ($level * 10)));
-        } else if ($type == 'image/gif') {
-            if ($this->ifTransparent($image)) {
-                // 保留图片透明状态
-                imageAlphaBlending($image, true);
-                imageSaveAlpha($image, true);
-                imagegif($image, $compressImageName);
-            } else {
-                imagegif($image, $compressImageName);
-            }
-
-        } else if ($type == 'image/png') {
-            if ($this->ifTransparent($image)) {
-                imageAlphaBlending($image, true);
-                imageSaveAlpha($image, true);
-                imagepng($image, $compressImageName, $level);
-            } else {
-                imagepng($image, $compressImageName, $level);
-            }
-
-        }
-
-        // 销毁图片
-        imagedestroy($image);
-
-        $this->res['compressed']['size'] = filesize($compressImageName);
-
+        $this->level = $level;
         return $this;
     }
 
@@ -169,7 +191,7 @@ class Compressor
      *
      * @param $image
      * @return bool
-     * @author 19/1/16 CLZ.
+     * @author 19/1/16 ZhaoXianFang
      */
     private function ifTransparent($image)
     {
@@ -185,52 +207,13 @@ class Compressor
     }
 
     /**
-     * 设置 被压缩图片路径, 压缩之后的存储路径
-     *
-     * @param $image
-     * @param $compressImageName
-     * @return $this
-     * @author 19/1/17 CLZ.
-     * @throws \Exception
-     */
-    public function set($image, $compressImageName)
-    {
-        try {
-            $this->imageInfo = getImageSize($image);
-        } catch (\Exception $e) {
-            throw new \Exception('不是图片类型');
-        }
-
-        $this->imagePath         = $image;
-        $this->imageCompressPath = $compressImageName;
-
-        $this->res['original'] = [
-            'name' => $this->imagePath,
-            'type' => $this->imageInfo['mime'],
-            'size' => filesize($this->imagePath),
-        ];
-
-        $this->res['compressed'] = [
-            'name' => $this->imageCompressPath,
-            'type' => $this->imageInfo['mime'],
-            'size' => '',
-        ];
-
-        if (in_array($this->imageInfo['mime'], $this->setting['file_type'])) {
-            return $this;
-        }
-
-        throw new \Exception(__METHOD__);
-    }
-
-    /**
      * 等比例缩放
      * @Author   ZhaoXianFang
      * @DateTime 2019-03-08
-     * @param    string       $percent [设置比例 0.1~1]
+     * @param    string       $percent [设置比例 0.1~1][图片压缩比例，0-1 #原图压缩，不缩放，但体积大大降低]
      * @return   [type]                [description]
      */
-    public function proportion($percent = '0.5')
+    public function proportion($percent = '1')
     {
         $width  = $this->imageInfo['0'] * $percent;
         $height = $this->imageInfo['1'] * $percent;
@@ -243,7 +226,7 @@ class Compressor
      * @param $width
      * @param $height
      * @return $this
-     * @author 19/1/17 CLZ.
+     * @author 19/1/17 ZhaoXianFang
      * @throws \Exception
      */
     public function resize($width, $height)
@@ -256,31 +239,62 @@ class Compressor
             throw new \Exception('illegal size!');
         }
 
-        $imageSrc = ('imagecreatefrom' . basename($this->imageInfo['mime']))($this->imagePath);
-
-        $image = imagecreatetruecolor($width, $height); //创建一个彩色的底图
-        imagecopyresampled($image, $imageSrc, 0, 0, 0, 0, $width, $height, $this->imageInfo[0], $this->imageInfo[1]);
-
-        ('image' . basename($this->imageInfo['mime']))($image, $this->imageCompressPath);
-
-        $this->imagePath = $this->imageCompressPath;
-
-        $this->res['compressed']['size'] = filesize($this->imageCompressPath);
-        // 销毁图片
-        imagedestroy($image);
-        imagedestroy($imageSrc);
+        $image_thump = imagecreatetruecolor($width, $height);
+        //将原图复制带图片载体上面，并且按照一定比例压缩,极大的保持了清晰度
+        imagecopyresampled($image_thump, $this->image, 0, 0, 0, 0, $width, $height, $this->imageInfo['0'], $this->imageInfo['1']);
+        imagedestroy($this->image);
+        $this->image = $image_thump;
 
         return $this;
+    }
+
+    private function printOrSaveImage()
+    {
+        $type     = $this->imageInfo['mime'];
+        $savePath = empty($this->res['compressed']['save_path']) ? null : $this->res['compressed']['save_path'];
+        if (empty($savePath)) {
+            // header("Content-type:image/jpeg");
+            header("Content-type:" . $type);
+        }
+
+        if ($type == 'image/jpeg') {
+            imagejpeg($this->image, $savePath, (100 - ($this->level * 10)));
+        } else if ($type == 'image/gif') {
+            if ($this->ifTransparent($this->image)) {
+                // 保留图片透明状态
+                imageAlphaBlending($this->image, true);
+                imageSaveAlpha($this->image, true);
+                imagegif($this->image, $savePath);
+            } else {
+                imagegif($this->image, $savePath);
+            }
+        } else if ($type == 'image/png') {
+            if ($this->ifTransparent($this->image)) {
+                imageAlphaBlending($this->image, true);
+                imageSaveAlpha($this->image, true);
+                imagepng($this->image, $savePath, $this->level);
+            } else {
+                imagepng($this->image, $savePath, $this->level);
+            }
+        }
+        // 销毁图片
+        imagedestroy($this->image);
+
+        if (!empty($savePath)) {
+            $this->res['compressed']['size'] = filesize($savePath);
+            return $this->res;
+        }
+        die;
     }
 
     /**
      * 获取结果
      *
-     * @return array
-     * @author 19/1/17 CLZ.
+     * @return 保存的图片信息或者 直接输出到浏览器[由是否保存本地来决定]
+     * @author 19/1/17 ZhaoXianFang
      */
     public function get()
     {
-        return $this->res;
+        return $this->printOrSaveImage();
     }
 }

@@ -95,8 +95,7 @@ class Oauth
     {
         //--------验证state防止CSRF攻击
         if (!empty($_REQUEST['code']) && empty($_REQUEST['state'])) {
-            // exit('30001');
-            throw new Exception($this->errorMsg['30001']);
+            // throw new Exception($this->errorMsg['30001']);
         }
         if (!empty($_REQUEST['state'])) {
             $state = urldecode($_REQUEST['state']);
@@ -109,6 +108,8 @@ class Oauth
             } catch (Exception $e) {
                 throw new Exception($this->errorMsg['30001']);
             }
+        }else{
+            $userParam = [];
         }
 
         //-------请求参数列表

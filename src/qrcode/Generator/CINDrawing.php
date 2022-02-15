@@ -36,7 +36,11 @@ class CINDrawing {
      * @param string filename
      * @param CINColor $color
      */
-    public function __construct($filename = null, CINColor $color) {
+    // public function __construct($filename = null, CINColor $color) {
+    public function __construct() {
+        $args = func_get_args();
+        $filename = $args[0]??'';
+        $color =  $args[1];
         $this->im = null;
         $this->setFilename($filename);
         $this->color = $color;
@@ -230,7 +234,10 @@ class CINDrawing {
      * Free the memory of PHP (called also by destructor).
      */
     public function destroy() {
-        @imagedestroy($this->im);
+        try {
+            $this->im && @imagedestroy($this->im);
+        } catch (\Exception $e) {
+        }
     }
 
     /**

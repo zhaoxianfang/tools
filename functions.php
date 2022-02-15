@@ -418,42 +418,42 @@ if (!function_exists('response_and_continue')) {
      * @demo 案例：先以json格式返回$data，然后在后台执行 $this->pushSuggestToJyblSys(array('suggId' => $id))
      * response_and_continue($data, array($this, "pushSuggestToJyblSys"), array('suggId' => $id));
      */
-    function response_and_continue($responseDara, $backendFun, $backendFunArgs = array(), $setTimeLimit = 0, $completeFun, $completeFunArgs = array())
-    {
-        ignore_user_abort(true);
-        set_time_limit($setTimeLimit);
-        ob_end_clean();
-        ob_start();
-        //Windows服务器
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            echo str_repeat(" ", 4096);
-        }
-        //返回结果给ajax
-        echo json_encode($responseDara);
-        $size = ob_get_length();
-        header("Content-Length: $size");
-        header('Connection: close');
-        header("HTTP/1.1 200 OK");
-        header("Content-Encoding: none");
-        header("Content-Type: application/json;charset=utf-8");
-        ob_end_flush();
-        if (ob_get_length()) {
-            ob_flush();
-        }
-        flush();
-        if (function_exists("fastcgi_finish_request")) {
-            fastcgi_finish_request();
-        }
-        sleep(2);
-        ignore_user_abort(true);
-        set_time_limit($setTimeLimit);
-        if (!empty($backendFun)) {
-            $call = call_user_func_array($backendFun, $backendFunArgs);
-            if (!empty($completeFun)) {
-                call_user_func_array($completeFun, $completeFunArgs);
-            }
-        }
-    }
+     function response_and_continue($responseDara, $backendFun, $backendFunArgs = array(), $setTimeLimit = 0, $completeFun, $completeFunArgs = array())
+     {
+         ignore_user_abort(true);
+         set_time_limit($setTimeLimit);
+         ob_end_clean();
+         ob_start();
+         //Windows服务器
+         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+             echo str_repeat(" ", 4096);
+         }
+         //返回结果给ajax
+         echo json_encode($responseDara);
+         $size = ob_get_length();
+         header("Content-Length: $size");
+         header('Connection: close');
+         header("HTTP/1.1 200 OK");
+         header("Content-Encoding: none");
+         header("Content-Type: application/json;charset=utf-8");
+         ob_end_flush();
+         if (ob_get_length()) {
+             ob_flush();
+         }
+         flush();
+         if (function_exists("fastcgi_finish_request")) {
+             fastcgi_finish_request();
+         }
+         sleep(2);
+         ignore_user_abort(true);
+         set_time_limit($setTimeLimit);
+         if (!empty($backendFun)) {
+             $call = call_user_func_array($backendFun, $backendFunArgs);
+             if (!empty($completeFun)) {
+                 call_user_func_array($completeFun, $completeFunArgs);
+             }
+         }
+     }
 }
 
 if (!function_exists('num_to_zhcn')) {

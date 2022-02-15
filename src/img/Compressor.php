@@ -34,6 +34,8 @@ namespace zxf\img;
  *        $result = $Compressor->set('001.jpg', './resizeAndCompress.png')->resize(0, 500)->compress(5)->get();
  *        #  压缩且按照比例压缩
  *        $result = $Compressor->set('001.jpg', './resizeAndCompress.png')->proportion(0.5)->compress(5)->get();
+ *        # 返回base64图片信息
+ *        $result = $Compressor->set($realPath)->proportion($input['proportion'])->get(true);
  *        return $result;
  *  参数说明：
  *        set(原图路径,保存后的路径); // 如果要直接输出到浏览器则只传第一个参数即可
@@ -240,21 +242,33 @@ class Compressor
         }
 
         $image_thump = imagecreatetruecolor($width, $height);
+        if($this->imageInfo['mime'] == 'image/png'){
+          //分配颜色 + alpha，将颜色填充到新图上
+          $alpha = imagecolorallocatealpha($image_thump, 0, 0, 0, 127);
+          imagefill($image_thump, 0, 0, $alpha);
+        }
         //将原图复制带图片载体上面，并且按照一定比例压缩,极大的保持了清晰度
         imagecopyresampled($image_thump, $this->image, 0, 0, 0, 0, $width, $height, $this->imageInfo['0'], $this->imageInfo['1']);
+        if($this->imageInfo['mime'] == 'image/png'){
+          imagesavealpha($image_thump, true);
+        }
         imagedestroy($this->image);
         $this->image = $image_thump;
 
         return $this;
     }
 
-    private function printOrSaveImage()
+    private function printOrSaveImage($toBase64String = false)
     {
         $type     = $this->imageInfo['mime'];
         $savePath = empty($this->res['compressed']['save_path']) ? null : $this->res['compressed']['save_path'];
         if (empty($savePath)) {
-            // header("Content-type:image/jpeg");
-            header("Content-type:" . $type);
+            if($toBase64String){
+                ob_start();
+            }else{
+                // header("Content-type:image/jpeg");
+                header("Content-type:" . $type);
+            }
         }
 
         if ($type == 'image/jpeg') {
@@ -283,6 +297,14 @@ class Compressor
         if (!empty($savePath)) {
             $this->res['compressed']['size'] = filesize($savePath);
             return $this->res;
+        }else{
+            if($toBase64String){
+                $imagedata = ob_get_contents();
+                // Clear the output buffer 
+                ob_end_clean();
+                // 返回base64 图片
+                return 'data:'.$type.';base64,'.base64_encode($imagedata);
+            }
         }
         die;
     }
@@ -293,8 +315,8 @@ class Compressor
      * @return 保存的图片信息或者 直接输出到浏览器[由是否保存本地来决定]
      * @author 19/1/17 ZhaoXianFang
      */
-    public function get()
+    public function get($toBase64String = false)
     {
-        return $this->printOrSaveImage();
+        return $this->printOrSaveImage($toBase64String);
     }
 }

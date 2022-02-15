@@ -15,7 +15,7 @@ namespace zxf\img;
 /**
  * 文字转图片类
  * 使用:
- *     TextToPNG::instance()->setFontPath($filepath)->setText($text)->setSize('900', '500')->setColor($color)->setBackgroundColor($bgcolor)->setTransparent(false)->setRotate($rotate)->draw();
+ *     TextToPNG::instance()->setFontStyle($font='lishu')->setText($text)->setSize('900', '500')->setColor($color)->setBackgroundColor($bgcolor)->setTransparent(false)->setRotate($rotate)->draw();
  */
 Header("Content-type: image/png");
 class TextToPNG

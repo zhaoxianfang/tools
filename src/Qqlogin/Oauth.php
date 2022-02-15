@@ -94,20 +94,21 @@ class Oauth
     public function qq_callback()
     {
         //--------验证state防止CSRF攻击
-        if (empty($_REQUEST['state'])) {
+        if (!empty($_REQUEST['code']) && empty($_REQUEST['state'])) {
             // exit('30001');
             throw new Exception($this->errorMsg['30001']);
         }
+        if (!empty($_REQUEST['state'])) {
+            $state = urldecode($_REQUEST['state']);
+            $state = str_replace(' ', '+',$state);
+            // 进行解密 验证是否为本站发出的state
+            $decodeStr = $this->strCode($state, 'de');
 
-        $state = urldecode($_REQUEST['state']);
-        $state = str_replace(' ', '+',$state);
-        // 进行解密 验证是否为本站发出的state
-        $decodeStr = $this->strCode($state, 'de');
-
-        try {
-            $userParam = json_decode(base64_decode($decodeStr),true);
-        } catch (Exception $e) {
-            throw new Exception($this->errorMsg['30001']);
+            try {
+                $userParam = json_decode(base64_decode($decodeStr),true);
+            } catch (Exception $e) {
+                throw new Exception($this->errorMsg['30001']);
+            }
         }
 
         //-------请求参数列表

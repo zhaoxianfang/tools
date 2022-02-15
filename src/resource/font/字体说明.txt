@@ -1,4 +1,4 @@
-说明：本库中的字体来源 为 【猫啃网】(https://www.maoken.com/all-fonts) 提供的免费字体
+说明：本库中的字体来源 为 【猫啃网】(https://www.maoken.com/all-fonts) 、 提供的免费字体
 
 yuanti    圆体
 diandain   点点像素体-方形
@@ -20,3 +20,11 @@ honglei    鸿雷板书简体
 haoshenti   优设好身体
 myshouxie   沐瑶软笔手写体
 foxi  佛系体
+wzny  亡者农药体
+sj_sjjt  三极瘦金简体
+sh_jjt  三极尖叫体
+sj_qyxz  三极秦韵小篆
+a_kspy  Aa楷书拼音
+fzkt  方正楷体
+sj_kdt  三极空叠体
+sj_ltjhjt  三极立体极黑简体

@@ -4,6 +4,7 @@
  * @author connect@qq.com
  * @copyright © 2013, Tencent Corporation. All rights reserved.
  */
+
 namespace zxf\Qqlogin;
 
 use Exception;
@@ -42,7 +43,7 @@ class Oauth
      * [__construct description]
      * @Author   ZhaoXianFang
      * @DateTime 2018-06-01
-     * @param    array        $config [qq配置参数] （appid、appkey、callbackUrl）
+     * @param array $config [qq配置参数] （appid、appkey、callbackUrl）
      */
     public function __construct($config = array())
     {
@@ -68,7 +69,7 @@ class Oauth
      * QQ登录
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-31
-     * @param    string       $stateSys [可选] [可以为字符串或者数组]用于callback回调的数据
+     * @param string $stateSys [可选] [可以为字符串或者数组]用于callback回调的数据
      * @return   [type]                 [description]
      */
     public function qq_login($stateSys = '')
@@ -99,16 +100,16 @@ class Oauth
         }
         if (!empty($_REQUEST['state'])) {
             $state = urldecode($_REQUEST['state']);
-            $state = str_replace(' ', '+',$state);
+            $state = str_replace(' ', '+', $state);
             // 进行解密 验证是否为本站发出的state
             $decodeStr = $this->strCode($state, 'de');
 
             try {
-                $userParam = json_decode(base64_decode($decodeStr),true);
+                $userParam = json_decode(base64_decode($decodeStr), true);
             } catch (Exception $e) {
                 throw new Exception($this->errorMsg['30001']);
             }
-        }else{
+        } else {
             $userParam = [];
         }
 
@@ -126,7 +127,6 @@ class Oauth
         $response  = $this->urlUtils->get_contents($token_url);
 
         if (strpos($response, "callback") !== false) {
-
             $lpos     = strpos($response, "(");
             $rpos     = strrpos($response, ")");
             $response = substr($response, $lpos + 1, $rpos - $lpos - 1);
@@ -139,16 +139,13 @@ class Oauth
 
         $params = array();
         parse_str($response, $params);
-
         $_SESSION['access_token'] = $params["access_token"];
 
         return $userParam;
-
     }
 
     public function get_openid()
     {
-
         //-------请求参数列表
         $keysArr = array(
             "access_token" => $_SESSION['access_token'],
@@ -159,7 +156,6 @@ class Oauth
 
         //--------检测错误是否发生
         if (strpos($response, "callback") !== false) {
-
             $lpos     = strpos($response, "(");
             $rpos     = strrpos($response, ")");
             $response = substr($response, $lpos + 1, $rpos - $lpos - 1);
@@ -167,7 +163,7 @@ class Oauth
 
         $user = json_decode($response);
         if (isset($user->error)) {
-            throw new Exception($msg->error . "：" . $msg->error_description);
+            throw new Exception($user->error . "：" . $user->error_description);
         }
 
         //------记录openid
@@ -181,18 +177,18 @@ class Oauth
      * @Author   ZhaoXianFang
      * @DateTime 2019-04-01
      * @param    [type]       $string [字符串]
-     * @param    string       $action [en:加密；de:解密]
+     * @param string $action [en:加密；de:解密]
      * @return   [type]               []
      */
     private function strCode($string, $action = 'en')
     {
         $action != 'en' && $string = base64_decode($string);
-        $code                      = '';
-        $key                       = 'str_en_de_code';
-        $keyLen                    = strlen($key);
-        $strLen                    = strlen($string);
+        $code   = '';
+        $key    = 'str_en_de_code';
+        $keyLen = strlen($key);
+        $strLen = strlen($string);
         for ($i = 0; $i < $strLen; $i++) {
-            $k = $i % $keyLen;
+            $k    = $i % $keyLen;
             $code .= $string[$i] ^ $key[$k];
         }
         return ($action != 'de' ? base64_encode($code) : $code);

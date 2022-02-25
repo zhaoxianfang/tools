@@ -55,7 +55,6 @@ class Img
     public function changeCircularImg($imgPath, $newFilePath = false)
     {
         // $ext     = pathinfo($imgPath);
-
         $ename = getimagesize($imgPath);
         $ext   = explode('/', $ename['mime'])[1];
 

@@ -11,7 +11,7 @@
 // | Date       | 2019-07-30
 // +---------------------------------------------------------------------
 
-namespace zxf\extend; 
+namespace zxf\extend;
 
 
 class MysqlTool
@@ -20,10 +20,10 @@ class MysqlTool
      * 生成mysql数据字典
      * @Author   ZhaoXianFang
      * @DateTime 2020-11-27
-     * @param    string       $dbserver   [服务器地址ip或域名]
-     * @param    string       $dbusername [账号]
-     * @param    string       $dbpassword [密码]
-     * @param    string       $database   [数据库名称]
+     * @param string $dbserver [服务器地址ip或域名]
+     * @param string $dbusername [账号]
+     * @param string $dbpassword [密码]
+     * @param string $database [数据库名称]
      * @return   [type]                   [description]
      */
     public static function dictionary($dbserver = '127.0.0.1', $dbusername = '', $dbpassword = '', $database = '')
@@ -31,9 +31,9 @@ class MysqlTool
         try {
 
             //其他配置
-            $title      = '数据字典';
+            $title = '数据字典';
             $mysql_conn = mysqli_connect("$dbserver", "$dbusername", "$dbpassword", "$database") or die("Mysql connect is error.");
-            mysqli_query($mysql_conn, "set names utf8"); 
+            mysqli_query($mysql_conn, "set names utf8");
             mysqli_set_charset($mysql_conn, 'UTF-8'); // 设置数据库字符集
             $table_result = mysqli_query($mysql_conn, 'show tables');
             //取得所有的表名
@@ -42,18 +42,18 @@ class MysqlTool
             }
             //循环取得所有表的备注及表中列消息
             foreach ($tables as $k => $v) {
-                $sql = 'SELECT * FROM ';
-                $sql .= 'INFORMATION_SCHEMA.TABLES ';
-                $sql .= 'WHERE ';
-                $sql .= "table_name = '{$v['TABLE_NAME']}'  AND table_schema = '{$database}'";
+                $sql          = 'SELECT * FROM ';
+                $sql          .= 'INFORMATION_SCHEMA.TABLES ';
+                $sql          .= 'WHERE ';
+                $sql          .= "table_name = '{$v['TABLE_NAME']}'  AND table_schema = '{$database}'";
                 $table_result = mysqli_query($mysql_conn, $sql);
                 while ($t = mysqli_fetch_array($table_result)) {
                     $tables[$k]['TABLE_COMMENT'] = $t['TABLE_COMMENT'];
                 }
-                $sql = 'SELECT * FROM ';
-                $sql .= 'INFORMATION_SCHEMA.COLUMNS ';
-                $sql .= 'WHERE ';
-                $sql .= "table_name = '{$v['TABLE_NAME']}' AND table_schema = '{$database}'";
+                $sql          = 'SELECT * FROM ';
+                $sql          .= 'INFORMATION_SCHEMA.COLUMNS ';
+                $sql          .= 'WHERE ';
+                $sql          .= "table_name = '{$v['TABLE_NAME']}' AND table_schema = '{$database}'";
                 $fields       = array();
                 $field_result = mysqli_query($mysql_conn, $sql);
                 while ($t = mysqli_fetch_array($field_result)) {

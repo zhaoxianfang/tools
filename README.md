@@ -14,26 +14,27 @@ composer require zxf/tools
 ## 涵盖模块
 
 
-|  模块  |  需要包含的文件夹  |
-| --- | --- |
-|  QQ登录  |  Qqlogin  |
-|  微信  |  wechat(未完成)  |
-|  截图  |  JonnyW、Psr、Symfony(废弃)  |
-|  微博登录  |  sina  |
-|  QueryList  |  QueryList(废弃)  |
-|  JsMin  |  js 压缩工具  |
-|  QrCode  |  生成二维码  |
-|  BarCode  |  生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
-|  Compressor  |  图片压缩类  |
-|  TextToPNG  |  文字转图片  |
-|  PHPMailer  |  发送邮件  |
-|  Curl  |  http 网络请求  |
-|  Sms  |  发送短信: ali(阿里云)[默认] 或者 tencent（腾讯云）  |
-|  MysqlTool  |  创建mysql数据库字典  |
-|  Img  |  修改图片尺寸、给图片上添加文字等  |
-|  Pinyin  |  中文转拼音  |
-|  Menu  |  生成目录菜单(adminlte、layuiadmin、nazox、inspinia)  |
-|  Random  |  生成随机数  |
+|  模块  | 需要包含的文件夹                                                                                        |
+| --- |-------------------------------------------------------------------------------------------------|
+|  QQ登录  | Qqlogin                                                                                         |
+|  微信  | wechat(未完成)                                                                                     |
+|  截图  | JonnyW、Psr、Symfony(废弃)                                                                          |
+|  微博登录  | sina                                                                                            |
+|  QueryList  | QueryList(废弃)                                                                                   |
+|  JsMin  | js 压缩工具                                                                                         |
+|  QrCode  | 生成二维码                                                                                           |
+|  BarCode  | 生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
+|  Compressor  | 图片压缩类                                                                                           |
+|  TextToPNG  | 文字转图片                                                                                           |
+|  PHPMailer  | 发送邮件                                                                                            |
+|  Curl  | http 网络请求                                                                                       |
+|  Sms  | 发送短信: ali(阿里云)[默认] 或者 tencent（腾讯云）                                                              |
+|  MysqlTool  | 创建mysql数据库字典                                                                                    |
+|  Img  | 修改图片尺寸、给图片上添加文字等                                                                                |
+|  Pinyin  | 中文转拼音                                                                                           |
+|  Menu  | 生成目录菜单(adminlte、layuiadmin、nazox、inspinia)                                                      |
+|  Random  | 生成随机数                                                                                           |
+|  ImgToIco  | 图片转ico 格式                                                                                       |
 
 
 ```php
@@ -492,6 +493,15 @@ if (!$result) {
     // 做出处理
 }
 
+```
+
+### 图片转ICO格式
+```
+ $imgurl = "./test.jpeg";
+ // 下载到浏览器
+ ImgToIco::instance()->set($imgurl, 32)->generate();
+ // 保存到指定文件夹
+ ImgToIco::instance()->set($imgurl, 32)->generate('E:/www');
 ```
 
 ### 截图功能

@@ -31,8 +31,8 @@ class Menu
 
     protected static $instance;
     //默认配置
-    protected $config = [];
-    public $options   = [];
+    protected $config  = [];
+    public    $options = [];
     //是否返回 $this
     protected $returnClass = false;
     //触发的菜单
@@ -112,9 +112,9 @@ class Menu
     {
         $this->initConfigParam();
 
-        $this->arr                    = $arr;
-        $pk ? $this->pk               = $pk : 'id';
-        $pid ? $this->pid             = $pid : 'pid';
+        $this->arr = $arr;
+        $pk ? $this->pk = $pk : 'id';
+        $pid ? $this->pid = $pid : 'pid';
         $childlist ? $this->childlist = $childlist : $this->childlist;
 
         $this->setReturn(true);
@@ -132,7 +132,7 @@ class Menu
      * 设置域名
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-16
-     * @param    string       $flag [description]
+     * @param string $flag [description]
      */
     public function setDomain($domain = '')
     {
@@ -144,7 +144,7 @@ class Menu
      * 是否返回 $this 配合 getTreeTwo 用
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-16
-     * @param    string       $flag [description]
+     * @param string $flag [description]
      */
     public function setReturn($flag = false)
     {
@@ -156,7 +156,7 @@ class Menu
      * 设置后台菜单是否包含icon 小图标
      * @Author   ZhaoXianFang
      * @DateTime 2018-07-16
-     * @param    boolean      $flag [description]
+     * @param boolean $flag [description]
      */
     public function setAdminMenuIcon($flag = false)
     {
@@ -168,7 +168,7 @@ class Menu
      * 设置权重名
      * @Author   ZhaoXianFang
      * @DateTime 2018-06-12
-     * @param    boolean      $str [description]
+     * @param boolean $str [description]
      */
     public function setWeigh($str = '')
     {
@@ -180,7 +180,7 @@ class Menu
      * 设置tree 作用的字段
      * @Author   ZhaoXianFang
      * @DateTime 2018-12-12
-     * @param    string       $name [description]
+     * @param string $name [description]
      */
     public function setTitle($str = 'title')
     {
@@ -287,8 +287,8 @@ class Menu
      * 数组归纳 多维转二维
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-28
-     * @param    string       $arrData [description]
-     * @param    string       $lv      [级别 跟级为0]
+     * @param string $arrData [description]
+     * @param string $lv [级别 跟级为0]
      * @return   [type]                [description]
      */
     private function reduce($arrData = '', $lv = 0)
@@ -375,7 +375,7 @@ class Menu
      * 设置目录类型
      * @Author   ZhaoXianFang
      * @DateTime 2019-01-10
-     * @param    string       $menuType [默认adminlte目录]
+     * @param string $menuType [默认adminlte目录]
      *                                  仅支持 adminlte|layuiadmin|nazox|inspinia
      */
     public function setMenuType($menuType = 'nazox')
@@ -389,7 +389,7 @@ class Menu
      * @Author   ZhaoXianFang
      * @DateTime 2018-07-16
      * @param    [type]       $pk    [顶级pid 一般为0]
-     * @param    string       $scope [作用域，admin(后台)、home(前台)]
+     * @param string $scope [作用域，admin(后台)、home(前台)]
      * @return   [type]              [description]
      */
     public function createMenu($pk = 0, $scope = 'admin')
@@ -453,7 +453,7 @@ class Menu
 
             // && // 右侧图标
             $item['badge_text'] && (
-                $str .= '<span class="float-right label ' . ($item['badge_text_style'] ? $item['badge_text_style'] : 'label-info') . '">' . $item['badge_text'] . '</span>'
+            $str .= '<span class="float-right label ' . ($item['badge_text_style'] ? $item['badge_text_style'] : 'label-info') . '">' . $item['badge_text'] . '</span>'
             );
 
             $str .= '</a>';
@@ -491,7 +491,7 @@ class Menu
             $str .= '<i class="fa ' . $currentIcon . '"></i>';
             // && // 右侧图标
             $item['badge_text'] && (
-                $str .= '<span class="badge badge-pill ' . ($item['badge_text_style'] ? $item['badge_text_style'] : 'badge-info') . ' float-right">' . $item['badge_text'] . '</span>'
+            $str .= '<span class="badge badge-pill ' . ($item['badge_text_style'] ? $item['badge_text_style'] : 'badge-info') . ' float-right">' . $item['badge_text'] . '</span>'
             );
             $str .= '<span>' . $item[$this->title] . '</span>';
             $str .= '</a>';
@@ -534,7 +534,7 @@ class Menu
             $icon       = $menu['icon'];
             $layHref    = (isset($menu[$this->childlist]) && !empty($menu[$this->childlist])) ? '' : 'lay-href="' . url($menu['name']) . '"';
             $activeMenu = $layHref ? $this->checkactiveMenu($menu['name']) : '';
-            $str .= '<li data-name="' . $menu['name'] . '" class="layui-nav-item ' . $activeMenu . '"><a href="javascript:;" lay-tips="' . $menu['title'] . '" ' . $layHref . ' lay-direction="2"><i class="' . $icon . '"></i><cite>' . $menu['title'] . '</cite></a>' . $this->layuiChildList($menu) . '</li>';
+            $str        .= '<li data-name="' . $menu['name'] . '" class="layui-nav-item ' . $activeMenu . '"><a href="javascript:;" lay-tips="' . $menu['title'] . '" ' . $layHref . ' lay-direction="2"><i class="' . $icon . '"></i><cite>' . $menu['title'] . '</cite></a>' . $this->layuiChildList($menu) . '</li>';
         }
         return $str;
     }
@@ -543,7 +543,7 @@ class Menu
      * [layuiAdmin 目录子列表]
      * @Author   ZhaoXianFang
      * @DateTime 2019-01-10
-     * @param    string       $parentData [description]
+     * @param string $parentData [description]
      * @return   [type]                   [description]
      */
     private function layuiChildList($parentData = '')
@@ -558,7 +558,7 @@ class Menu
         foreach ($parentData[$this->childlist] as $key => $page) {
             $layHref    = (isset($page[$this->childlist]) && !empty($page[$this->childlist])) ? '' : 'lay-href="' . url($page['name']) . '"';
             $activeMenu = $layHref ? $this->checkactiveMenu($page['name']) : '';
-            $str .= '<dl class="layui-nav-child"><dd data-name="' . $page['name'] . '" class=" ' . $activeMenu . '"><a href="javascript:;" ' . $layHref . ' >' . $page['title'] . '</a>' . $this->layuiChildList($page) . '</dd></dl>';
+            $str        .= '<dl class="layui-nav-child"><dd data-name="' . $page['name'] . '" class=" ' . $activeMenu . '"><a href="javascript:;" ' . $layHref . ' >' . $page['title'] . '</a>' . $this->layuiChildList($page) . '</dd></dl>';
         }
         return $str;
     }
@@ -568,8 +568,8 @@ class Menu
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-17
      * @param    [type]       $pk   [description]
-     * @param    array        $tArr [description]
-     * @param    array        $level [层级]
+     * @param array $tArr [description]
+     * @param array $level [层级]
      * @return   [type]             [description]
      */
     private function adminMenu($pk, $tArr = array(), $level = 0)
@@ -577,7 +577,7 @@ class Menu
         $str = '';
         if (!$tArr && $pk < 1) {
             $this->tabLevel = 0;
-            $str .= '<li class="nav-header">菜单栏</li>';
+            $str            .= '<li class="nav-header">菜单栏</li>';
             // $tArr = $this->arr;
             if ($this->weigh && $this->arr) {
                 $tArr = $this->my_sort($this->arr, $this->weigh, SORT_DESC, SORT_NUMERIC);
@@ -597,7 +597,7 @@ class Menu
             $childs = $this->my_sort($childs, $this->weigh, SORT_DESC, SORT_NUMERIC);
         }
         $level += 1;
-        $nbsp = ''; //缩进
+        $nbsp  = ''; //缩进
         if ($pk > 0) {
             // $nbspStr = '&nbsp;&nbsp;';
             $nbspStr = '';
@@ -627,7 +627,7 @@ class Menu
             // }
 
             $activeMenu = $this->checkactiveMenu($value['name'], $hasChild);
-            $str .= '<li class="nav-item ' . $hasSub . ' ' . $activeMenu . '"><a menu class="nav-link ' . $activeMenu . '" href="' . $href . '">' . $nbsp . $iconStr . '<p>' . $value[$this->title];
+            $str        .= '<li class="nav-item ' . $hasSub . ' ' . $activeMenu . '"><a menu class="nav-link ' . $activeMenu . '" href="' . $href . '">' . $nbsp . $iconStr . '<p>' . $value[$this->title];
             if ($hasChild) {
                 $str .= '<i class="fas fa-angle-left right"></i>';
                 // 右侧徽章
@@ -682,41 +682,8 @@ class Menu
 
             if ($hasChild) {
                 $str .= $this->nazoxhomeNavMenuChildNav($item);
-
-                // $str .= '<div class="dropdown-menu" aria-labelledby="topnav-'. $item[$this->pk] .'">';
-                // foreach ($item[$this->childlist] as $key => $childlistItem) {
-
-                //     $oneHasChild = (isset($childlistItem[$this->childlist]) && !empty($childlistItem[$this->childlist]))?true:false;
-                //     $oneLiLinkClass = $oneHasChild ? 'dropdown-toggle arrow-none' : '';
-                //     $oneLiLinkChildClass = $oneHasChild ? ' role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ' : '';
-
-                //     $oneCurrentHref = $oneHasChild ? 'javascript:;' : $this->domain . url('/classify/'.$childlistItem[$this->pk]) ;// 当前url
-
-                //     $str .= $oneHasChild ? '<div class="dropdown">':'';
-
-                //     $str .= '<a class="dropdown-item '. $oneLiLinkClass .'" href="'. $oneCurrentHref .'" id="topnav-one-'.$item[$this->pk].'" '.$oneLiLinkChildClass .'>';
-                //     $str .= '<i class="ri-pencil-ruler-2-line mr-2"></i>';
-                //     $str .= $childlistItem[$this->title];
-                //     $str .= $oneHasChild ? '<div class="arrow-down"></div>' : '';
-                //     $str .= '</a>';
-
-                //     if($oneHasChild){
-                //         $str .= '<div class="dropdown-menu" aria-labelledby="topnav-one-'. $childlistItem[$this->pk] .'">';
-                //         foreach ($childlistItem[$this->childlist] as $key => $twoChild) {
-
-                //             $twoCurrentHref =  $this->domain . url('/classify/'.$twoChild[$this->pk]) ;// 当前url
-                //             $str .= '<a class="dropdown-item" href="'. $twoCurrentHref .'">';
-                //             $str .= '<i class="ri-pencil-ruler-2-line mr-2"></i>';
-                //             $str .= $twoChild[$this->title];
-                //             $str .= '</a>';
-                //         }
-                //         $str .= '</div>';
-                //     }
-
-                //     $str .= $oneHasChild ? '</div>':'';
-                // }
-                // $str .= '</div>';
             }
+            $str .= '</li>';
         }
         return $str;
     }
@@ -755,8 +722,8 @@ class Menu
      * @Author   ZhaoXianFang
      * @DateTime 2018-07-16
      * @param    [type]       $pk    [description]
-     * @param    array        $tArr  [description]
-     * @param    integer      $level [description]
+     * @param array $tArr [description]
+     * @param integer $level [description]
      * @return   [type]              [description]
      */
     public function adminLtehomeNavMenu($pk, $tArr = array(), $level = 0)
@@ -792,8 +759,8 @@ class Menu
             // $activeMenu = $this->checkactiveMenu($value['name'], $hasChild);
             if ($hasChild) {
                 $str .= ($level == 1)
-                ? '<li class="nav-item dropdown"><a href="' . $href . '"  class="nav-link dropdown-toggle" id="dropdownSubMenu_' . $key . '_' . $level . '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' . $value[$this->title] . '</a>'
-                : '<li class="dropdown-submenu ' . (($level == 2) ? 'dropdown-hover' : '') . '">  <a id="dropdownSubMenu_' . $key . '_' . $level . '" href="' . $href . '" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="dropdown-item dropdown-toggle">' . $value[$this->title] . '</a>';
+                    ? '<li class="nav-item dropdown"><a href="' . $href . '"  class="nav-link dropdown-toggle" id="dropdownSubMenu_' . $key . '_' . $level . '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' . $value[$this->title] . '</a>'
+                    : '<li class="dropdown-submenu ' . (($level == 2) ? 'dropdown-hover' : '') . '">  <a id="dropdownSubMenu_' . $key . '_' . $level . '" href="' . $href . '" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="dropdown-item dropdown-toggle">' . $value[$this->title] . '</a>';
 
                 $str .= '<ul aria-labelledby="dropdownSubMenu_' . $key . '_' . $level . '" class="dropdown-menu border-0 shadow">';
 
@@ -802,8 +769,8 @@ class Menu
                 $str .= '</ul></li>';
             } else {
                 $str .= ($level == 1)
-                ? '<li class="nav-item"><a href="' . $href . '" class="nav-link">' . $value[$this->title] . '</a></li>'
-                : '<li><a href="' . $href . '" class="dropdown-item">' . $value[$this->title] . '</a></li>';
+                    ? '<li class="nav-item"><a href="' . $href . '" class="nav-link">' . $value[$this->title] . '</a></li>'
+                    : '<li><a href="' . $href . '" class="dropdown-item">' . $value[$this->title] . '</a></li>';
             }
         }
         return $str;
@@ -813,8 +780,8 @@ class Menu
      * 检测是否 激活该菜单
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-30
-     * @param    string       $link     [数据库记录的地址]
-     * @param    string       $hasChild [有子菜单？]
+     * @param string $link [数据库记录的地址]
+     * @param string $hasChild [有子菜单？]
      * @return   [type]                 [description]
      */
     private function checkactiveMenu($link = '', $hasChild = 0)
@@ -893,7 +860,7 @@ class Menu
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-17
      * @param    [type]       $pk       [description]
-     * @param    array        $listData [description]
+     * @param array $listData [description]
      * @return   [type]                 [description]
      */
     protected function findChild($pk, $listData = array())

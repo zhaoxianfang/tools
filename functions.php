@@ -978,15 +978,16 @@ if (!function_exists('download_url_file')) {
     {
         $filename = !empty($filename)?$filename:$_GPC['url'];
         $title    = substr($filename,strrpos($filename,'/')+1);
-        $file     = fopen($filename, "rb");
-        Header( "Content-type:  application/octet-stream");
-        Header( "Accept-Ranges:  bytes ");
-        Header( "Content-Disposition:  attachment;  filename= $title");
-        $contents = "";
+        $file     = fopen($filename,"rb");
+        Header("Content-type:application/octet-stream");
+        Header("Accept-Ranges:bytes");
+        Header("Content-Disposition:attachment;filename=$title");
         while (!feof($file)) {
-            $contents .= fread($file, 8192);
+            echo fread($file, 8192);
+            ob_flush();
+            flush();
         }
-        echo $contents;
         fclose($file);
+        exit;
     }
 }

@@ -89,7 +89,6 @@ if (!function_exists('remove_str_emoji')) {
     function remove_str_emoji($str)
     {
         $mbLen = mb_strlen($str);
-
         $strArr = [];
         for ($i = 0; $i < $mbLen; $i++) {
             $mbSubstr = mb_substr($str, $i, 1, 'utf-8');
@@ -98,7 +97,6 @@ if (!function_exists('remove_str_emoji')) {
             }
             $strArr[] = $mbSubstr;
         }
-
         return implode('', $strArr);
     }
 }
@@ -303,7 +301,6 @@ if (!function_exists('truncate')) {
 }
 
 if (!function_exists('rmdirs')) {
-
     /**
      * 删除文件夹
      * @param string $dirname 目录
@@ -315,11 +312,9 @@ if (!function_exists('rmdirs')) {
         if (!is_dir($dirname)) {
             return false;
         }
-
         $files = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($dirname, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST
         );
-
         foreach ($files as $fileinfo) {
             $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
             $todo($fileinfo->getRealPath());
@@ -329,7 +324,6 @@ if (!function_exists('rmdirs')) {
         }
         return true;
     }
-
 }
 
 if (!function_exists('deldir')) {
@@ -355,17 +349,11 @@ if (!function_exists('deldir')) {
         }
         closedir($dh);
         //删除当前文件夹：
-        if (rmdir($dir)) {
-            return true;
-        } else {
-            return false;
-        }
+        return rmdir($dir)?true:false;
     }
-
 }
 
 if (!function_exists('create_folders')) {
-
     /**
      * 递归创建目录
      * @param string $dir 目录
@@ -375,7 +363,6 @@ if (!function_exists('create_folders')) {
     {
         return is_dir($dir) or (create_folders(dirname($dir)) and mkdir($dir, 0777));
     }
-
 }
 
 if (!function_exists('getfilesize')) {
@@ -413,47 +400,51 @@ if (!function_exists('getfilesize')) {
 
 if (!function_exists('response_and_continue')) {
     /**
+     * 输出json后继续在后台执行指定方法
      * @Author   ZhaoXianFang
      * @DateTime 2019-01-07
-     * @demo 案例：先以json格式返回$data，然后在后台执行 $this->pushSuggestToJyblSys(array('suggId' => $id))
-     * response_and_continue($data, array($this, "pushSuggestToJyblSys"), array('suggId' => $id));
+     * @param $responseDara 立即响应的数组数据
+     * @param $backendFun   需要在后台执行的方法
+     * @param $backendFunArgs 给在后台执行的方法传递的参数
+     * @param $setTimeLimit 设置后台响应可执行时间
+     * @return void
+     *
+     * @demo ：先以json格式返回$data，然后在后台执行 $this->pushSuggestToJyblSys(array('suggId' => $id))
+     *         response_and_continue($data, array($this, "pushSuggestToJyblSys"), array('suggId' => $id));
      */
-     function response_and_continue($responseDara, $backendFun, $backendFunArgs = array(), $setTimeLimit = 0, $completeFun, $completeFunArgs = array())
-     {
-         ignore_user_abort(true);
-         set_time_limit($setTimeLimit);
-         ob_end_clean();
-         ob_start();
-         //Windows服务器
-         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-             echo str_repeat(" ", 4096);
-         }
-         //返回结果给ajax
-         echo json_encode($responseDara);
-         $size = ob_get_length();
-         header("Content-Length: $size");
-         header('Connection: close');
-         header("HTTP/1.1 200 OK");
-         header("Content-Encoding: none");
-         header("Content-Type: application/json;charset=utf-8");
-         ob_end_flush();
-         if (ob_get_length()) {
-             ob_flush();
-         }
-         flush();
-         if (function_exists("fastcgi_finish_request")) {
-             fastcgi_finish_request();
-         }
-         sleep(2);
-         ignore_user_abort(true);
-         set_time_limit($setTimeLimit);
-         if (!empty($backendFun)) {
-             $call = call_user_func_array($backendFun, $backendFunArgs);
-             if (!empty($completeFun)) {
-                 call_user_func_array($completeFun, $completeFunArgs);
-             }
-         }
-     }
+    function response_and_continue($responseDara, $backendFun, $backendFunArgs = array(), $setTimeLimit = 0)
+    {
+        ignore_user_abort(true);
+        set_time_limit($setTimeLimit);
+        ob_end_clean();
+        ob_start();
+        //Windows服务器
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            echo str_repeat(" ", 4096);
+        }
+        //返回结果给ajax
+        echo json_encode($responseDara);
+        $size = ob_get_length();
+        header("Content-Length: $size");
+        header('Connection: close');
+        header("HTTP/1.1 200 OK");
+        header("Content-Encoding: none");
+        header("Content-Type: application/json;charset=utf-8");
+        ob_end_flush();
+        if (ob_get_length()) {
+            ob_flush();
+        }
+        flush();
+        if (function_exists("fastcgi_finish_request")) {
+            fastcgi_finish_request();
+        }
+        sleep(3);
+        ignore_user_abort(true);
+        set_time_limit($setTimeLimit);
+        if (!empty($backendFun)) {
+            call_user_func_array($backendFun, $backendFunArgs);
+        }
+    }
 }
 
 if (!function_exists('num_to_zhcn')) {
@@ -594,18 +585,7 @@ if (!function_exists('get_laravel_route')) {
             list($class, $method) = explode('@', request()->route()->getActionName());
 
             # 模块名
-            $modules = str_replace(
-                '\\',
-                '.',
-                str_replace(
-                    'App\\Http\\Controllers\\',
-                    '',
-                    trim(
-                        implode('\\', array_slice(explode('\\', $class), 0, -1)),
-                        '\\'
-                    )
-                )
-            );
+            $modules = str_replace( '\\', '.', str_replace('App\\Http\\Controllers\\', '',trim( implode('\\', array_slice(explode('\\', $class), 0, -1)), '\\' )));
 
             # 控制器名称
             $controller = str_replace(
@@ -745,9 +725,9 @@ if (!function_exists('wx_decrypt_data')) {
      * @param    [type]       $sessionKey    [description]
      * @return   [type]                      [description]
      */
-    function wx_decrypt_data($encryptedData, $iv, $sessionKey)
+    function wx_decrypt_data($appId, $encryptedData, $iv, $sessionKey)
     {
-        $appId = 'wxfd...9ce';
+        // $appId = 'wxfd...9ce';
         if (strlen($sessionKey) != 24) {
             return array(
                 'code' => 500,
@@ -934,5 +914,79 @@ if (!function_exists('build_request_form')) {
         $sHtml = $sHtml . "<input type='submit' value='确定' style='display:none;'></form>";
         $sHtml = $sHtml . "<script>document.forms['build_request_form'].submit();</script>";
         return $sHtml;
+    }
+}
+
+if (!function_exists('uuid')) {
+    /**
+     * 根据微秒时间和随机数生成 12位 uuid
+     */
+    function uuid()
+    {
+        $time    = microtime(true);
+        $timeStr = str_pad(number_format($time, 0, '', ''), 14, 0, STR_PAD_RIGHT) . random_int(2383280, 14776335);
+        // 10 进制转 62进制
+        $dict   = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $result = '';
+        do {
+            $result  = $dict[$timeStr % 62] . $result;
+            $timeStr = intval($timeStr / 62);
+        } while ($timeStr != 0);
+        return $result;
+    }
+}
+
+if (!function_exists('from62to10')) {
+    /**
+     * 62进制转10进制
+     */
+    function from62to10($str)
+    {
+        $dict = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $len  = strlen($str);
+        $dec  = 0;
+        for ($i = 0; $i < $len; $i++) {
+            //找到对应字典的下标
+            $pos = strpos($dict, $str[$i]);
+            $dec += $pos * pow(62, $len - $i - 1);
+        }
+        return number_format($dec, 0, '', '');
+    }
+}
+
+if (!function_exists('from10to62')) {
+    /**
+     * 10进制转62进制
+     */
+    function from10to62($dec)
+    {
+        $dict   = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $result = '';
+        do {
+            $result = $dict[$dec % 62] . $result;
+            $dec    = intval($dec / 62);
+        } while ($dec != 0);
+        return $result;
+    }
+}
+
+if (!function_exists('download_url_file')) {
+    /**
+     * 下载url文件
+     */
+    function download_url_file($filename='')
+    {
+        $filename = !empty($filename)?$filename:$_GPC['url'];
+        $title    = substr($filename,strrpos($filename,'/')+1);
+        $file     = fopen($filename, "rb");
+        Header( "Content-type:  application/octet-stream");
+        Header( "Accept-Ranges:  bytes ");
+        Header( "Content-Disposition:  attachment;  filename= $title");
+        $contents = "";
+        while (!feof($file)) {
+            $contents .= fread($file, 8192);
+        }
+        echo $contents;
+        fclose($file);
     }
 }

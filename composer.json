@@ -1,6 +1,6 @@
 {
     "name": "zxf/tools",
-    "description": "自定义封装的组件 包含发送短信验证码、第三方登录、js代码压缩、图片处理、远程截图等功能",
+    "description": "第三方登录、条形码Barcode、二维码QrCode、生成菜单、发送短信、图片处理、随机数、字符压缩、发送邮件、生成数据字典、远程截图、和一些常用方法集合等",
     "keywords": ["php 常用类库", "php", "sms" , "zhaoxianfang", "tools", "工具合集"],
     "homepage": "https://www.itzxf.com",
     "license": "Apache-2.0",

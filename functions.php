@@ -88,7 +88,7 @@ if (!function_exists('remove_str_emoji')) {
     // 移除字符串中的 emoji 表情
     function remove_str_emoji($str)
     {
-        $mbLen = mb_strlen($str);
+        $mbLen  = mb_strlen($str);
         $strArr = [];
         for ($i = 0; $i < $mbLen; $i++) {
             $mbSubstr = mb_substr($str, $i, 1, 'utf-8');
@@ -122,7 +122,7 @@ if (!function_exists('is_crawler')) {
      * [isCrawler 检测是否为爬虫]
      * @Author   ZhaoXianFang
      * @DateTime 2019-12-24
-     * @param    boolean      $returnName [是否返回爬虫名称]
+     * @param boolean $returnName [是否返回爬虫名称]
      * @return   boolean                  [description]
      */
     function is_crawler($returnName = false)
@@ -194,8 +194,8 @@ if (!function_exists('img_to_gray')) {
      * [img_to_gray 把彩色图片转换为灰度图片,支持透明色]
      * @Author   ZhaoXianFang
      * @DateTime 2019-06-24
-     * @param    string       $imgFile      [源图片地址]
-     * @param    string       $saveFile     [生成目标地址,为空时直接输出到浏览器]
+     * @param string $imgFile [源图片地址]
+     * @param string $saveFile [生成目标地址,为空时直接输出到浏览器]
      * @return   bool                       [true:成功；false:失败]
      */
     function img_to_gray($imgFile = '', $saveFile = '')
@@ -206,12 +206,14 @@ if (!function_exists('img_to_gray')) {
         $imgInfo = pathinfo($imgFile);
         switch ($imgInfo['extension']) {
             //图片后缀
-            case 'png':$block = imagecreatefrompng($imgFile); //从 PNG 文件或 URL 新建一图像
+            case 'png':
+                $block = imagecreatefrompng($imgFile); //从 PNG 文件或 URL 新建一图像
                 break;
             case 'jpg':
                 $block = imagecreatefromjpeg($imgFile); //从 JPEG 文件或 URL 新建一图像
                 break;
-            default:return false;
+            default:
+                return false;
                 break;
         }
         $color = imagecolorallocatealpha($block, 0, 0, 0, 127); //拾取一个完全透明的颜色
@@ -243,7 +245,8 @@ if (!function_exists('img_to_gray')) {
                     imagedestroy($block); // 释放内存
                 }
                 break;
-            default:return false;
+            default:
+                return false;
                 break;
         }
         return true;
@@ -256,8 +259,8 @@ if (!function_exists('truncate')) {
      * @Author   ZhaoXianFang
      * @DateTime 2018-09-12
      * @param    [type]       $string [被截取字符串]
-     * @param    integer      $length [长度]
-     * @param    boolean      $append [是否加...]
+     * @param integer $length [长度]
+     * @param boolean $append [是否加...]
      * @return   [type]               [description]
      */
     function truncate($string, $length = 150, $append = true)
@@ -349,7 +352,7 @@ if (!function_exists('deldir')) {
         }
         closedir($dh);
         //删除当前文件夹：
-        return rmdir($dir)?true:false;
+        return rmdir($dir) ? true : false;
     }
 }
 
@@ -451,9 +454,9 @@ if (!function_exists('num_to_zhcn')) {
     /**
      * 数字转换为中文
      * @Author   ZhaoXianFang
-     * @param  string|integer|float  $num  目标数字
-     * @param  integer $mode 模式[true:金额（默认）,false:普通数字表示]
-     * @param  boolean $sim 使用小写（默认）
+     * @param string|integer|float $num 目标数字
+     * @param integer $mode 模式[true:金额（默认）,false:普通数字表示]
+     * @param boolean $sim 使用小写（默认）
      * @return string
      */
     function num_to_zhcn($num, $mode = true, $sim = true)
@@ -462,15 +465,15 @@ if (!function_exists('num_to_zhcn')) {
             return '含有非数字非小数点字符！';
         }
         $char = $sim ? array('零', '一', '二', '三', '四', '五', '六', '七', '八', '九')
-        : array('零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖');
+            : array('零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖');
         $unit = $sim ? array('', '十', '百', '千', '', '万', '亿', '兆')
-        : array('', '拾', '佰', '仟', '', '萬', '億', '兆');
+            : array('', '拾', '佰', '仟', '', '萬', '億', '兆');
         // $retval = $mode ? '元' : '点';
         $retval = $mode ? '' : '点';
         //小数部分
         if (strpos($num, '.')) {
             list($num, $dec) = explode('.', $num);
-            $dec             = strval(round($dec, 2));
+            $dec = strval(round($dec, 2));
             if ($mode) {
                 $retval .= "{$char[$dec['0']]}角{$char[$dec['1']]}分";
             } else {
@@ -510,7 +513,7 @@ if (!function_exists('object_to_array')) {
     function object_to_array($array)
     {
         if (is_object($array)) {
-            $array = (array) $array;
+            $array = (array)$array;
         }
         if (is_array($array)) {
             foreach ($array as $key => $value) {
@@ -585,7 +588,7 @@ if (!function_exists('get_laravel_route')) {
             list($class, $method) = explode('@', request()->route()->getActionName());
 
             # 模块名
-            $modules = str_replace( '\\', '.', str_replace('App\\Http\\Controllers\\', '',trim( implode('\\', array_slice(explode('\\', $class), 0, -1)), '\\' )));
+            $modules = str_replace('\\', '.', str_replace('App\\Http\\Controllers\\', '', trim(implode('\\', array_slice(explode('\\', $class), 0, -1)), '\\')));
 
             # 控制器名称
             $controller = str_replace(
@@ -630,6 +633,7 @@ if (!function_exists('is_idcard')) {
             return false;
         }
     }
+
     // 计算身份证校验码，根据国家标准GB 11643-1999
     function idcard_verify_number($idcard_base)
     {
@@ -648,6 +652,7 @@ if (!function_exists('is_idcard')) {
         $verify_number = $verify_number_list[$mod];
         return $verify_number;
     }
+
     // 将15位身份证升级到18位
     function idcard_15to18($idcard)
     {
@@ -664,6 +669,7 @@ if (!function_exists('is_idcard')) {
         $idcard = $idcard . idcard_verify_number($idcard);
         return $idcard;
     }
+
     // 18位身份证校验码有效性检查
     function idcard_checksum18($idcard)
     {
@@ -686,12 +692,36 @@ if (!function_exists('cutstr_html')) {
         $string = htmlspecialchars_decode($string);
         $string = strip_tags($string);
         $string = trim($string);
-        $string = ereg_replace("\t", "", $string);
-        $string = ereg_replace("\r\n", "", $string);
-        $string = ereg_replace("\r", "", $string);
-        $string = ereg_replace("\n", "", $string);
-        $string = ereg_replace(" ", "", $string);
-        $string = ereg_replace("&nbsp;", "", $string);
+        $string = str_replace(PHP_EOL, '', $string); // 过滤换行
+        $string = str_replace('&nbsp;', '', $string); // 去除实体空格
+        $string = preg_replace("/\s+/", " ", $string);//过滤多余回车
+        $string = preg_replace("/<[ ]+/si", "<", $string); //过滤<__("<"号后面带空格)
+        $string = preg_replace("/<\!--.*?-->/si", "", $string); //过滤html注释
+        $string = preg_replace("/<(\!.*?)>/si", "", $string); //过滤DOCTYPE
+        $string = preg_replace("/<(\/?html.*?)>/si", "", $string); //过滤html标签
+        $string = preg_replace("/<(\/?head.*?)>/si", "", $string); //过滤head标签
+        $string = preg_replace("/<(\/?meta.*?)>/si", "", $string); //过滤meta标签
+        $string = preg_replace("/<(\/?body.*?)>/si", "", $string); //过滤body标签
+        $string = preg_replace("/<(\/?link.*?)>/si", "", $string); //过滤link标签
+        $string = preg_replace("/<(\/?form.*?)>/si", "", $string); //过滤form标签
+        $string = preg_replace("/cookie/si", "COOKIE", $string); //过滤COOKIE标签
+        $string = preg_replace("/<(applet.*?)>(.*?)<(\/applet.*?)>/si", "", $string); //过滤applet标签
+        $string = preg_replace("/<(\/?applet.*?)>/si", "", $string); //过滤applet标签
+        $string = preg_replace("/<(style.*?)>(.*?)<(\/style.*?)>/si", "", $string); //过滤style标签
+        $string = preg_replace("/<(\/?style.*?)>/si", "", $string); //过滤style标签
+        $string = preg_replace("/<(title.*?)>(.*?)<(\/title.*?)>/si", "", $string); //过滤title标签
+        $string = preg_replace("/<(\/?title.*?)>/si", "", $string); //过滤title标签
+        $string = preg_replace("/<(object.*?)>(.*?)<(\/object.*?)>/si", "", $string); //过滤object标签
+        $string = preg_replace("/<(\/?objec.*?)>/si", "", $string); //过滤object标签
+        $string = preg_replace("/<(noframes.*?)>(.*?)<(\/noframes.*?)>/si", "", $string); //过滤noframes标签
+        $string = preg_replace("/<(\/?noframes.*?)>/si", "", $string); //过滤noframes标签
+        $string = preg_replace("/<(i?frame.*?)>(.*?)<(\/i?frame.*?)>/si", "", $string); //过滤frame标签
+        $string = preg_replace("/<(\/?i?frame.*?)>/si", "", $string); //过滤frame标签
+        $string = preg_replace("/<(script.*?)>(.*?)<(\/script.*?)>/si", "", $string); //过滤script标签
+        $string = preg_replace("/<(\/?script.*?)>/si", "", $string); //过滤script标签
+        $string = preg_replace("/javascript/si", "Javascript", $string); //过滤script标签
+        $string = preg_replace("/vbscript/si", "Vbscript", $string); //过滤script标签
+        $string = preg_replace("/on([a-z]+)\s*=/si", "On\\1=", $string); //过滤script标签
         return trim($string);
     }
 }
@@ -700,8 +730,8 @@ if (!function_exists('str_rand')) {
      * 生成随机字符串
      * @Author   ZhaoXianFang
      * @DateTime 2017-06-28
-     * @param    integer      $length 字符串长度
-     * @param    string       $tack   附加值
+     * @param integer $length 字符串长度
+     * @param string $tack 附加值
      * @return   [type]               字符串
      */
     function str_rand($length = 6, $tack = '')
@@ -851,7 +881,7 @@ if (!function_exists('check_pass_strength')) {
      * 验证密码强度是否符合 至少包含大小写字母、数字、特殊字符大于8个字符
      * @Author   ZhaoXianFang
      * @DateTime 2020-01-08
-     * @param    string       $password [description]
+     * @param string $password [description]
      * @return   [type]                 [description]
      */
     function check_pass_strength($password = '')
@@ -974,11 +1004,11 @@ if (!function_exists('download_url_file')) {
     /**
      * 下载url文件
      */
-    function download_url_file($filename='')
+    function download_url_file($filename = '')
     {
-        $filename = !empty($filename)?$filename:$_GPC['url'];
-        $title    = substr($filename,strrpos($filename,'/')+1);
-        $file     = fopen($filename,"rb");
+        $filename = !empty($filename) ? $filename : (!empty($_GPC['url']) ? $_GPC['url'] : '');
+        $title    = substr($filename, strrpos($filename, '/') + 1);
+        $file     = fopen($filename, "rb");
         Header("Content-type:application/octet-stream");
         Header("Accept-Ranges:bytes");
         Header("Content-Disposition:attachment;filename=$title");

@@ -12,7 +12,8 @@
         "email": "1748331509@qq.com"
     }],
     "require": {
-        "php": ">=7.0.0"
+        "php": "^7.2.5|^8.0",
+        "ext-gd": "*"
     },
     "autoload": {
         "psr-4": {

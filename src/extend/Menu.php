@@ -38,7 +38,7 @@ class Menu
     //触发的菜单
     protected $activeMenu = '';
     //url地址前缀
-    protected $urlPrefix = '';
+    protected $urlPrefix = '/classify';
 
     protected $domain = ''; // 域名
 
@@ -665,8 +665,8 @@ class Menu
         foreach ($arr as $key => $item) {
             $hasChild = (isset($item[$this->childlist]) && !empty($item[$this->childlist])) ? true : false;
 
-            $currentHref = $hasChild ? 'javascript:;' : $this->domain . url('/classify/' . $item[$this->pk]); // 当前url
-            // $currentIcon = $item['icon'] ;// 当前icon
+            $currentHref = $hasChild ? 'javascript:;' : $this->domain . url($this->urlPrefix .'/' . $item[$this->pk]); // 当前url
+            $currentIcon = $item['icon']??'' ;// 当前icon
 
             $liClass          = $hasChild ? 'dropdown' : '';
             $liLinkClass      = $hasChild ? 'dropdown-toggle arrow-none' : '';
@@ -674,7 +674,7 @@ class Menu
 
             $str .= '<li class="nav-item ' . $liClass . '">';
             $str .= '<a href="' . $currentHref . '" class="nav-link ' . $liLinkClass . '" id="topnav-' . $item[$this->pk] . '" ' . $liLinkChildClass . '>';
-            $str .= '<i class="ri-pencil-ruler-2-line mr-2"></i>';
+            $str .= '<i class="ri-pencil-ruler-2-line mr-2 '.$currentIcon.'"></i>';
 
             $str .= $item[$this->title];
             $str .= $hasChild ? '<div class="arrow-down"></div>' : '';

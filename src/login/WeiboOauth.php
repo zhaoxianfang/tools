@@ -1,0 +1,80 @@
+<?php
+
+/*
+ * 微博登录
+ *
+ */
+
+namespace zxf\login;
+
+use zxf\req\Curl;
+
+class WeiboOauth implements Handle
+{
+    protected $client;
+    protected $config;
+
+    public function __construct($config)
+    {
+        $this->config = $config;
+        $this->client = new Curl();
+    }
+
+    public function authorization()
+    {
+        $url = 'https://api.weibo.com/oauth2/authorize';
+
+        $query = array_filter([
+            'client_id' => $this->config['client_id'],
+            'redirect_uri' => $this->config['redirect_uri'],
+        ]);
+
+        $url = $url.'?'.http_build_query($query);
+        header('Location:'.$url);
+        exit();
+    }
+
+    public function getAccessToken()
+    {
+        if ('token' == request('code')) {
+            return $_GET['access_token'];
+        }
+        $url = 'https://api.weibo.com/oauth2/access_token';
+
+        $query = array_filter([
+            'client_id' => $this->config['client_id'],
+            'code' => request('code'),
+            'client_secret' => $this->config['client_secret'],
+            'redirect_uri' => $this->config['redirect_uri'],
+            'grant_type' => 'authorization_code',
+        ]);
+
+        return $res = json_decode($this->client->request('POST', $url, [
+            'query' => $query,
+        ])->getBody()->getContents())->access_token;
+    }
+
+    public function getUserInfo($access_token)
+    {
+        $url = 'https://api.weibo.com/2/users/show.json?uid=%s&access_token=%s';
+
+        $uid = $this->getUid($access_token);
+        $query = array_filter([
+            'uid' => $uid,
+            'access_token' => $access_token,
+        ]);
+
+        return json_decode($this->client->request('GET', $url, [
+            'query' => $query,
+        ])->getBody()->getContents());
+    }
+
+    public function getUid($access_token)
+    {
+        $url = 'https://api.weibo.com/oauth2/get_token_info?access_token='.$access_token;
+        $result = $this->client->post($url);
+        $result = json_decode($result->getBody()->getContents(), true);
+
+        return $result['uid'];
+    }
+}

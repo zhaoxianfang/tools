@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\Qqlogin;
+namespace zxf\login;
 
 use Exception;
 
@@ -79,7 +79,6 @@ class QqOauth implements Handle
 
         $temp_url = $this->combineURL($this->userinfo_url, $query);
         $userinfo = $this->client->get($temp_url);
-
         if (0 != $userinfo['ret']) {
             throw new \Exception($userinfo['msg']);
         }

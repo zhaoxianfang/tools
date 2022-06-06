@@ -11,7 +11,7 @@
 // | Date       | 2019-07-30
 // +---------------------------------------------------------------------
 
-namespace zxf\req; 
+namespace zxf\req;
 
 class Curl
 {
@@ -36,7 +36,7 @@ class Curl
      */
     private function initCurl()
     {
-        if (empty($this->ch) || get_resource_type($this->ch) == 'Unknown') {
+        if (empty($this->ch)) {
             $this->ch = curl_init();
         }
     }
@@ -359,17 +359,29 @@ class Curl
         $status  = curl_getinfo($this->ch);
         curl_close($this->ch);
         if (isset($status['http_code']) && $status['http_code'] == 200) {
-            if ($data_type == 'json') {
-                $content = json_decode($content);
+            if (substr($content, 0, 9) === 'callback(') {
+                $result = [];
+                preg_match_all("/(?:\{)(.*)(?:\})/i", $content, $result);
+                $content = $result[0][0];
+            } else {
+                if (!$this->isJson($content)) {
+                    // 判断 等号出现次数
+                    $countEqStr = substr_count($content, '=', 0);
+                    if ($countEqStr > 0) {
+                        parse_str($content, $content);
+                    }
+                }
+            }
+            if (is_string($content) && $data_type == 'json') {
+                $content = json_decode($content, true);
             }
         } else {
-            $content = [
+            return [
                 'code'     => 500,
                 'msg'      => '【系统提示】请求服务器网络不通或者出现请求异常',
                 'html'     => $content,
                 'err_info' => $errInfo,
             ];
-            return $content;
         }
         // return $content;
         return $this->objectArray($content);
@@ -379,14 +391,33 @@ class Curl
     protected function objectArray($array)
     {
         if (is_object($array)) {
-            $array = (array) $array;
-        }if (is_array($array)) {
+            $array = (array)$array;
+        }
+        if (is_array($array)) {
             foreach ($array as $key => $value) {
                 $array[$key] = $this->objectArray($value);
             }
         }
         return $array;
 
+    }
+
+    /**
+     * 判断字符串是否为 Json 格式
+     *
+     * @param string $string Json 字符串
+     * @return array|bool|object 成功返回true，失败返回 false
+     */
+    protected function isJson(string $string = ''): bool
+    {
+        try {
+            $data = json_decode($string, true);
+            if (($data && is_object($data)) || (is_array($data) && !empty($data))) {
+                return true;
+            }
+        } catch (\Exception $e) {
+        }
+        return false;
     }
 
     /**

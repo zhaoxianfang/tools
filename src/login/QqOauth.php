@@ -29,7 +29,7 @@ class QqOauth implements Handle
     public function authorization($stateSys = '')
     {
         $state = base64_encode(json_encode(!empty($stateSys) ? $stateSys : 'null'));
-        $state = $this->strCode($state, 'en');
+        $state = str_en_code($state, 'en');
 
         //-------构造请求参数列表
         $keysArr = array(
@@ -68,8 +68,12 @@ class QqOauth implements Handle
     }
 
 
-    public function getUserInfo($access_token)
+    public function getUserInfo($access_token = '')
     {
+        if (empty($access_token)) {
+            $access_token = $this->getAccessToken();
+        }
+
         $openidInfo = $this->getOpenid($access_token);
         $query      = array_filter([
             'openid'             => $openidInfo['openid'],
@@ -94,7 +98,7 @@ class QqOauth implements Handle
             $state = urldecode($_REQUEST['state']);
             $state = str_replace(' ', '+', $state);
             // 进行解密 验证是否为本站发出的state
-            $decodeStr = $this->strCode($state, 'de');
+            $decodeStr = str_en_code($state, 'de');
 
             try {
                 $userParam = json_decode(base64_decode($decodeStr), true);
@@ -136,28 +140,6 @@ class QqOauth implements Handle
         $combined .= ($keyStr);
 
         return $combined;
-    }
-
-    /**
-     * 字符串加解密
-     * @Author   ZhaoXianFang
-     * @DateTime 2019-04-01
-     * @param    [type]       $string [字符串]
-     * @param string $action [en:加密；de:解密]
-     * @return   [type]               []
-     */
-    private function strCode($string, $action = 'en')
-    {
-        $action != 'en' && $string = base64_decode($string);
-        $code   = '';
-        $key    = 'str_en_de_code';
-        $keyLen = strlen($key);
-        $strLen = strlen($string);
-        for ($i = 0; $i < $strLen; $i++) {
-            $k    = $i % $keyLen;
-            $code .= $string[$i] ^ $key[$k];
-        }
-        return ($action != 'de' ? base64_encode($code) : $code);
     }
 
 }

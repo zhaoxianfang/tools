@@ -70,8 +70,6 @@ class Curl
             "Content-type:application/json;charset='utf-8'",
         );
         if (is_array($header)) {
-            //          curl_setopt($this->ch, CURLOPT_HTTPHEADER, $header);
-            //          $headers = array_merge($contentType,$header);
             foreach ($header as $key => $head) {
                 if ($head) {
                     $contentType[] = $key . ':' . $head;
@@ -79,7 +77,7 @@ class Curl
             }
         }
         curl_setopt($this->ch, CURLOPT_HTTPHEADER, $contentType);
-
+        curl_setopt($this->ch, CURLINFO_HEADER_OUT, true);
         return $this;
     }
 
@@ -230,10 +228,9 @@ class Curl
     public function get($url, $data_type = 'json')
     {
         $this->initCurl();
-
+        curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, false);
         if (stripos($url, 'https://') !== false) {
-            curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, false);
             curl_setopt($this->ch, CURLOPT_SSLVERSION, 1);
         }
         // 设置get参数
@@ -244,9 +241,15 @@ class Curl
                 $url .= '?' . http_build_query($this->httpParams);
             }
         }
+        curl_setopt($this->ch, CURLOPT_ENCODING, "");
+        curl_setopt($this->ch, CURLINFO_HEADER_OUT, true);
+
         curl_setopt($this->ch, CURLOPT_URL, $url);
-        curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($this->ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+        curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($this->ch, CURLOPT_USERAGENT, $this->randUserAgent());
+        curl_setopt($this->ch, CURLOPT_HEADER, false);
+
         return $this->run($data_type);
     }
 
@@ -296,9 +299,7 @@ class Curl
     public function put($url, $data_type = 'json')
     {
         $this->initCurl();
-        // $data = json_encode($this->httpParams);
         curl_setopt($this->ch, CURLOPT_URL, $url); //设置请求的URL
-        // curl_setopt($this->ch, CURLOPT_HTTPHEADER, array('Content-type:application/json'));
         curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1); //设为TRUE把curl_exec()结果转化为字串，而不是直接输出
         curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, "PUT"); //设置请求方式
         // curl_setopt($this->ch, CURLOPT_POSTFIELDS, $data); //设置提交的字符串
@@ -358,32 +359,28 @@ class Curl
         $errInfo = curl_error($this->ch);
         $status  = curl_getinfo($this->ch);
         curl_close($this->ch);
-        if (isset($status['http_code']) && $status['http_code'] == 200) {
-            if (substr($content, 0, 9) === 'callback(') {
-                $result = [];
-                preg_match_all("/(?:\{)(.*)(?:\})/i", $content, $result);
-                $content = $result[0][0];
-            } else {
-                if (!$this->isJson($content)) {
-                    // 判断 等号出现次数
-                    $countEqStr = substr_count($content, '=', 0);
-                    if ($countEqStr > 0) {
-                        parse_str($content, $content);
-                    }
+        $this->ch = null;// 重置
+
+        if (empty($content) && !empty($errInfo)) {
+            $content = $errInfo;
+        }
+        if (substr($content, 0, 9) === 'callback(') {
+            $result = [];
+            preg_match_all("/(?:\{)(.*)(?:\})/i", $content, $result);
+            $content = $result[0][0];
+        } else {
+            if (!$this->isJson($content)) {
+                // 判断 等号出现次数
+                $countEqStr = substr_count($content, '=', 0);
+                if ($countEqStr > 0) {
+                    parse_str($content, $content);
                 }
             }
-            if (is_string($content) && $data_type == 'json') {
-                $content = json_decode($content, true);
-            }
-        } else {
-            return [
-                'code'     => 500,
-                'msg'      => '【系统提示】请求服务器网络不通或者出现请求异常',
-                'html'     => $content,
-                'err_info' => $errInfo,
-            ];
         }
-        // return $content;
+        if (is_string($content) && $this->isJson($content) && $data_type == 'json') {
+            $content = json_decode($content, true);
+        }
+
         return $this->objectArray($content);
     }
 
@@ -457,33 +454,6 @@ class Curl
             return false;
         }
         return true;
-    }
-
-    /**
-     * 建立跳转请求表单
-     * @param string $url 数据提交跳转到的URL
-     * @param array $data 请求参数数组
-     * @param string $method 提交方式：post或get 默认post
-     * @return string 提交表单的HTML文本
-     * 示例
-     * $url = 'http://www.itzxf.com/';
-     * $data = array(
-     *   'name' => 'aaa',
-     *   'domain' => 'itzxf.com',
-     *   'date' => '2019-03-22'
-     * );
-     * echo buildRequestForm($url, $data);
-     */
-    public function buildRequestForm($url = '', $data, $method = 'post')
-    {
-        $formId = 'requestForm_' . rand();
-        $sHtml  = "<form id='" . $formId . "' name='requestForm' action='" . $url . "' method='" . $method . "'>";
-        foreach ($data as $key => $val) {
-            $sHtml .= "<input type='hidden' name='" . $key . "' value='" . $val . "' />";
-        }
-        $sHtml = $sHtml . "<input type='submit' value='确定' style='display:none;'></form>";
-        $sHtml = $sHtml . "<script>document.forms['" . $formId . "'].submit();</script>";
-        return $sHtml;
     }
 
     /**

@@ -922,28 +922,65 @@ if (!function_exists('base64_to_image')) {
     }
 }
 
-if (!function_exists('build_request_form')) {
+if (!function_exists('buildRequestFormAndSend')) {
     /**
-     * 创建一个可以携带大量数据的地址跳转url [header 携带大量数据请求的可行性方案]
+     * 构建form表单并提交数据
+     * 满足提交大量表单会被数据长度等限制的问题
+     * [header 携带大量数据请求的可行性方案]
      *
-     *      $url = 'http://www.example.com';
-     *      $data = array(
-     *         'name' => 'aaa',
-     *          'domain' => 'example.com',
-     *          'date' => '2019-03-22'
-     *      );
-     *      echo buildRequestForm($url, $data);
-     *      exit;
+     * @param string $url 数据提交跳转到的URL
+     * @param array $data 需要提交的数组,支持多维 (按照数组的键值对组装form表单数据)
+     * @param string $method 提交方式 支持 post|get|put|delete
+     * @return string 组装提交表单的HTML文本
+     * @throws Exception
      */
-    function build_request_form($url, $data, $method = 'post')
+    function buildRequestFormAndSend(string $url, array $data = [], string $method = 'post'): string
     {
-        $sHtml = "<form id='build_request_form' name='build_request_form' action='" . $url . "' method='" . $method . "'>";
-        foreach ($data as $key => $val) {
-            $sHtml .= "<input type='hidden' name='" . $key . "' value='" . $val . "' />";
+        $method        = $method ? strtolower($method) : 'post';
+        $methodIsMorph = in_array($method, ['put', 'delete']) ? strtoupper($method) : ''; // 变形
+        $method        = in_array($method, ['put', 'delete', 'post']) ? 'post' : 'get';
+
+        $data   = obj2Arr($data);
+        $method = strtolower($method) == 'post' ? 'POST' : 'GET';
+        $formId = 'requestForm_' . time() . '_' . random_int(2383280, 14776335);
+        $html   = "<form id='" . $formId . "' action='" . $url . "' method='" . $method . "'>";
+        $html   .= !empty($methodIsMorph) ? '<input type="hidden" name="_method" value="' . $methodIsMorph . '" />' : '';
+        // 遍历子数组
+        function traverseChildArr($arr, $namePrefix = ''): string
+        {
+            $arr     = obj2Arr($arr);
+            $htmlStr = '';
+            foreach ($arr as $key => $item) {
+                $name    = empty($namePrefix) ? $key : $namePrefix . '[' . $key . ']';
+                $htmlStr .= is_array($item) ? traverseChildArr($item, $name) : "<input type='hidden' name='" . $name . "' value='" . $item . "' />";
+            }
+            return $htmlStr;
         }
-        $sHtml = $sHtml . "<input type='submit' value='确定' style='display:none;'></form>";
-        $sHtml = $sHtml . "<script>document.forms['build_request_form'].submit();</script>";
-        return $sHtml;
+
+        $html .= traverseChildArr($data, '');
+        $html .= "<input type='submit' value='确定' style='display:none;'></form>";
+        $html .= "<script>document.forms['" . $formId . "'].submit();</script>";
+        return $html;
+    }
+}
+
+if (!function_exists('obj2Arr')) {
+    /**
+     * 对象转数组
+     * @param $array
+     * @return array|mixed
+     */
+    function obj2Arr($array)
+    {
+        if (is_object($array)) {
+            $array = (array)$array;
+        }
+        if (is_array($array)) {
+            foreach ($array as $key => $value) {
+                $array[$key] = obj2Arr($value);
+            }
+        }
+        return $array;
     }
 }
 
@@ -1019,5 +1056,29 @@ if (!function_exists('download_url_file')) {
         }
         fclose($file);
         exit;
+    }
+}
+
+if (!function_exists('str_en_code')) {
+    /**
+     * 字符串加解密
+     * @Author   ZhaoXianFang
+     * @DateTime 2019-04-01
+     * @param    [type]       $string [字符串]
+     * @param string $action [en:加密；de:解密]
+     * @return   [type]               []
+     */
+    function str_en_code($string, $action = 'en')
+    {
+        $action != 'en' && $string = base64_decode($string);
+        $code   = '';
+        $key    = 'str_en_de_code';
+        $keyLen = strlen($key);
+        $strLen = strlen($string);
+        for ($i = 0; $i < $strLen; $i++) {
+            $k    = $i % $keyLen;
+            $code .= $string[$i] ^ $key[$k];
+        }
+        return ($action != 'de' ? base64_encode($code) : $code);
     }
 }

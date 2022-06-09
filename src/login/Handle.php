@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\Qqlogin;
+namespace zxf\login;
 
 interface Handle
 {
@@ -8,5 +8,5 @@ interface Handle
 
     public function getAccessToken();
 
-    public function getUserInfo($access_token);
+    public function getUserInfo($access_token = '');
 }

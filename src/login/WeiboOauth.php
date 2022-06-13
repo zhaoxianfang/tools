@@ -37,9 +37,7 @@ class WeiboOauth implements Handle
             'state'         => $state,
         ]);
 
-        $url = $url . '?' . http_build_query($query);
-        header('Location:' . $url);
-        exit();
+        return $url . '?' . http_build_query($query);
     }
 
     public function getAccessToken()

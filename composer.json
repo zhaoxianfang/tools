@@ -23,5 +23,12 @@
     },
     "config": {
         "process-timeout": 300
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "zxf\\extend\\ServiceProvider"
+            ]
+        }
     }
 }

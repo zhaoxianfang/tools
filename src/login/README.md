@@ -83,7 +83,9 @@ class Sina extends Controller
         $weibo = new WeiboOauth(config('callback.sina'));
 
         // $url = $qq->authorization(); // 不传值方式
-        $weibo->authorization($jumpUrl); // 传入的数据 $jumpUrl 将会在 qq_callback 回调中返回得到
+        $url = $weibo->authorization($jumpUrl); // 传入的数据 $jumpUrl 将会在 qq_callback 回调中返回得到
+        // 重定向到外部地址
+        return redirect()->away($url);
 
     }
 

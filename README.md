@@ -37,6 +37,12 @@ composer require zxf/tools
 |  ImgToIco  | 图片转ico 格式                                                                                       |
 
 
+#### 发布配置
+
+```
+php artisan vendor:publish --tag=callback
+```
+
 ```php
 <?php
 /**

@@ -991,47 +991,42 @@ if (!function_exists('uuid')) {
     function uuid()
     {
         $time    = microtime(true);
-        $timeStr = str_pad(number_format($time, 0, '', ''), 14, 0, STR_PAD_RIGHT) . random_int(2383280, 14776335);
-        // 10 进制转 62进制
-        $dict   = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $result = '';
-        do {
-            $result  = $dict[$timeStr % 62] . $result;
-            $timeStr = intval($timeStr / 62);
-        } while ($timeStr != 0);
-        return $result;
+        $timeStr = date('ymdHis').substr(explode(' ',microtime())[0], 2 ,6) . random_int(3600, 215999);
+        return from10to60($timeStr);
     }
 }
 
-if (!function_exists('from62to10')) {
+if (!function_exists('from60to10')) {
     /**
-     * 62进制转10进制
+     * 60进制转10进制
      */
-    function from62to10($str)
+    function from60to10($str)
     {
-        $dict = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        // (去掉oO)
+        $dict = '0123456789abcdefghijklmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ';
         $len  = strlen($str);
         $dec  = 0;
         for ($i = 0; $i < $len; $i++) {
             //找到对应字典的下标
             $pos = strpos($dict, $str[$i]);
-            $dec += $pos * pow(62, $len - $i - 1);
+            $dec += $pos * pow(60, $len - $i - 1);
         }
         return number_format($dec, 0, '', '');
     }
 }
 
-if (!function_exists('from10to62')) {
+if (!function_exists('from10to60')) {
     /**
-     * 10进制转62进制
+     * 10进制转60进制
      */
-    function from10to62($dec)
+    function from10to60($dec)
     {
-        $dict   = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        // (去掉oO)
+        $dict   = '0123456789abcdefghijklmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ';
         $result = '';
         do {
-            $result = $dict[$dec % 62] . $result;
-            $dec    = intval($dec / 62);
+            $result = $dict[$dec % 60] . $result;
+            $dec    = intval($dec / 60);
         } while ($dec != 0);
         return $result;
     }

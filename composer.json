@@ -2,14 +2,15 @@
     "name": "zxf/tools",
     "description": "第三方登录、条形码Barcode、二维码QrCode、生成菜单、发送短信、图片处理、随机数、字符压缩、发送邮件、生成数据字典、远程截图、和一些常用方法集合等",
     "keywords": ["php 常用类库", "php", "sms" , "zhaoxianfang", "tools", "工具合集"],
-    "homepage": "https://www.itzxf.com",
+    "homepage": "https://github.com/zhaoxianfang/",
     "license": "Apache-2.0",
     "support": {
         "source": "https://github.com/zhaoxianfang/tools"
     },
     "authors": [{
         "name": "zhaoxianfang",
-        "email": "1748331509@qq.com"
+        "email": "1748331509@qq.com",
+        "homepage": "https://weisifang.com"
     }],
     "require": {
         "php": "^7.2.5|^8.0",
@@ -19,7 +20,10 @@
         "psr-4": {
             "zxf\\": "./src"
         },
-        "files": ["functions.php"]
+        "files": [
+            "src/funcs/functions.php",
+            "src/funcs/module_helpers.php"
+        ]
     },
     "config": {
         "process-timeout": 300
@@ -27,8 +31,11 @@
     "extra": {
         "laravel": {
             "providers": [
-                "zxf\\extend\\ServiceProvider"
-            ]
+                "zxf\\laravel\\ServiceProvider"
+            ],
+            "aliases": {
+                "Module": "zxf\\Facades\\Module"
+            }
         }
     }
 }

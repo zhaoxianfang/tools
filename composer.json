@@ -21,7 +21,7 @@
             "zxf\\": "./src"
         },
         "files": [
-            "src/funcs/functions.php",
+            "src/funcs/helpers.php",
             "src/funcs/module_helpers.php"
         ]
     },

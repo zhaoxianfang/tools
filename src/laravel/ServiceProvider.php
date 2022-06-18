@@ -21,10 +21,10 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     public function boot()
     {
         $this->bootPublishes();
-        $this->bootConsole();
-
-        // 加载模块boot
-        $this->mapModuleBoot();
+//        $this->bootConsole();
+//
+//        // 加载模块boot
+//        $this->mapModuleBoot();
     }
 
     public function register()
@@ -32,12 +32,12 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         // 注册 whereHasIn 的几个查询方式来替换 whereHas 查询全表扫描的问题
         $this->registerBuilderQuery();
 
-        $this->registerProviders();
-
-        // 注册modules 模块服务
-        if (app()->runningInConsole()) {
-            $this->registerModulesServices();
-        }
+//        $this->registerProviders();
+//
+//        // 注册modules 模块服务
+//        if (app()->runningInConsole()) {
+//            $this->registerModulesServices();
+//        }
 
         $this->mergeConfigFrom(__DIR__ . '/../config/modules.php', 'modules');
     }

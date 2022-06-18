@@ -39,7 +39,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 //            $this->registerModulesServices();
 //        }
 
-        $this->mergeConfigFrom(__DIR__ . '/../config/modules.php', 'modules');
+        $this->mergeConfigFrom(__DIR__ . '/../../config/modules.php', 'modules');
     }
 
     public function provides()
@@ -98,19 +98,19 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     // 加载发布文件
     protected function bootPublishes() {
         $this->publishes([
-            __DIR__ . '/../config/oauth.php' => config_path('oauth.php')
+            __DIR__ . '/../../config/oauth.php' => config_path('oauth.php')
         ], 'zxf');
 
         $this->publishes([
-            __DIR__ . '/../config/modules.php' => config_path('modules.php')
+            __DIR__ . '/../../config/modules.php' => config_path('modules.php')
         ], 'zxf');
 
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/app.php', 'app'
+            __DIR__ . '/../../config/app.php', 'app'
         );
         // 发布文件组
         $this->publishes([
-            __DIR__ . '/../Modules/' => base_path()
+            __DIR__ . '/../../Modules/' => base_path()
         ], 'zxf');
     }
 

@@ -92,6 +92,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     // 加载命令
     protected function bootConsole() {
         if ($this->app->runningInConsole()) {
+            // 命令行
         }
     }
 

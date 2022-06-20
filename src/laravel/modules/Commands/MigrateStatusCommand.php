@@ -25,7 +25,7 @@ class MigrateStatusCommand extends Command
     protected $description = 'Status for all module migrations';
 
     /**
-     * @var \zxf\laravel\Modules\Contracts\RepositoryInterface
+     * @var \zxf\Modules\Contracts\RepositoryInterface
      */
     protected $module;
 

@@ -27,7 +27,7 @@ class MigrateResetCommand extends Command
     protected $description = 'Reset the modules migrations.';
 
     /**
-     * @var \zxf\laravel\Modules\Contracts\RepositoryInterface
+     * @var \zxf\Modules\Contracts\RepositoryInterface
      */
     protected $module;
 

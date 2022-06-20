@@ -25,7 +25,7 @@ class MigrateCommand extends Command
     protected $description = 'Migrate the migrations from the specified module or from all modules.';
 
     /**
-     * @var \zxf\laravel\Modules\Contracts\RepositoryInterface
+     * @var \zxf\Modules\Contracts\RepositoryInterface
      */
     protected $module;
 

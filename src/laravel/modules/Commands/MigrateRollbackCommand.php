@@ -27,7 +27,7 @@ class MigrateRollbackCommand extends Command
     protected $description = 'Rollback the modules migrations.';
 
     /**
-     * @var \zxf\laravel\Modules\Contracts\RepositoryInterface
+     * @var \zxf\Modules\Contracts\RepositoryInterface
      */
     protected $module;
 

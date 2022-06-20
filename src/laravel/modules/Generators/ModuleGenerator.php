@@ -51,7 +51,7 @@ class ModuleGenerator extends Generator
     /**
      * The module instance.
      *
-     * @var \Nwidart\Modules\Module
+     * @var \Modules\Core\Modules\Module
      */
     protected $module;
 
@@ -80,9 +80,9 @@ class ModuleGenerator extends Generator
      * The constructor.
      * @param $name
      * @param FileRepository $module
-     * @param Config     $config
+     * @param Config $config
      * @param Filesystem $filesystem
-     * @param Console    $console
+     * @param Console $console
      */
     public function __construct(
         $name,
@@ -91,13 +91,14 @@ class ModuleGenerator extends Generator
         Filesystem $filesystem = null,
         Console $console = null,
         ActivatorInterface $activator = null
-    ) {
-        $this->name = $name;
-        $this->config = $config;
+    )
+    {
+        $this->name       = $name;
+        $this->config     = $config;
         $this->filesystem = $filesystem;
-        $this->console = $console;
-        $this->module = $module;
-        $this->activator = $activator;
+        $this->console    = $console;
+        $this->module     = $module;
+        $this->activator  = $activator;
     }
 
     /**
@@ -227,7 +228,7 @@ class ModuleGenerator extends Generator
     /**
      * Get the module instance.
      *
-     * @return \Nwidart\Modules\Module
+     * @return \Modules\Core\Modules\Module
      */
     public function getModule()
     {
@@ -285,7 +286,7 @@ class ModuleGenerator extends Generator
     /**
      * Generate the module.
      */
-    public function generate() : int
+    public function generate(): int
     {
         $name = $this->getName();
 
@@ -301,15 +302,9 @@ class ModuleGenerator extends Generator
 
         $this->generateFolders();
 
-        $this->generateModuleJsonFile();
-
         if ($this->type !== 'plain') {
             $this->generateFiles();
             $this->generateResources();
-        }
-
-        if ($this->type === 'plain') {
-            $this->cleanModuleJsonFile();
         }
 
         $this->activator->setActiveByName($name, $this->isActive);
@@ -327,7 +322,8 @@ class ModuleGenerator extends Generator
         foreach ($this->getFolders() as $key => $folder) {
             $folder = GenerateConfigReader::read($key);
 
-            if ($folder->generate() === false) {
+            // all 表示生成所有模块（包括`generator.generate` 为 `false`的模块）
+            if ($this->type !== 'all' && $folder->generate() === false) {
                 continue;
             }
 
@@ -375,16 +371,16 @@ class ModuleGenerator extends Generator
     {
         if (GenerateConfigReader::read('seeder')->generate() === true) {
             $this->console->call('module:make-seed', [
-                'name' => $this->getName(),
-                'module' => $this->getName(),
+                'name'     => $this->getName(),
+                'module'   => $this->getName(),
                 '--master' => true,
             ]);
         }
 
         if (GenerateConfigReader::read('provider')->generate() === true) {
             $this->console->call('module:make-provider', [
-                'name' => $this->getName() . 'ServiceProvider',
-                'module' => $this->getName(),
+                'name'     => $this->getName() . 'ServiceProvider',
+                'module'   => $this->getName(),
                 '--master' => true,
             ]);
             $this->console->call('module:route-provider', [
@@ -393,11 +389,11 @@ class ModuleGenerator extends Generator
         }
 
         if (GenerateConfigReader::read('controller')->generate() === true) {
-            $options = $this->type=='api'?['--api'=>true]:[];
+            $options = $this->type == 'api' ? ['--api' => true] : [];
             $this->console->call('module:make-controller', [
-                'controller' => $this->getName() . 'Controller',
-                'module' => $this->getName(),
-            ]+$options);
+                    'controller' => $this->getName() . 'Controller',
+                    'module'     => $this->getName(),
+                ] + $options);
         }
     }
 
@@ -461,22 +457,6 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Generate the module.json file
-     */
-    private function generateModuleJsonFile()
-    {
-        $path = $this->module->getModulePath($this->getName()) . 'module.json';
-
-        if (!$this->filesystem->isDirectory($dir = dirname($path))) {
-            $this->filesystem->makeDirectory($dir, 0775, true);
-        }
-
-        $this->filesystem->put($path, $this->getStubContents('json'));
-
-        $this->console->info("Created : {$path}");
-    }
-
-    /**
      * Remove the default service provider that was added in the module.json file
      * This is needed when a --plain module was created
      */
@@ -484,8 +464,8 @@ class ModuleGenerator extends Generator
     {
         $path = $this->module->getModulePath($this->getName()) . 'module.json';
 
-        $content = $this->filesystem->get($path);
-        $namespace = $this->getModuleNamespaceReplacement();
+        $content    = $this->filesystem->get($path);
+        $namespace  = $this->getModuleNamespaceReplacement();
         $studlyName = $this->getStudlyNameReplacement();
 
         $provider = '"' . $namespace . '\\\\' . $studlyName . '\\\\Providers\\\\' . $studlyName . 'ServiceProvider"';

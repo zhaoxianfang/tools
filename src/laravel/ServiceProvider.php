@@ -9,6 +9,8 @@ use zxf\laravel\Modules\Laravel;
 use zxf\laravel\Modules\Activators\FileActivator;
 use zxf\laravel\Modules\Providers\ConsoleServiceProvider;
 use zxf\laravel\Modules\Providers\ContractsServiceProvider;
+use zxf\laravel\Modules\Providers\ModulesRouteServiceProvider;
+use Illuminate\Pagination\Paginator;
 
 /**
  * 支持 laravel 服务注入
@@ -18,28 +20,31 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {
     protected $defer = true;
 
+    public function register()
+    {
+
+        // 注册modules 模块服务
+        // if (app()->runningInConsole()) {
+            $this->registerModulesServices();
+        // }
+
+        $this->registerProviders();
+
+
+        $this->mergeConfigFrom(__DIR__ . '/../../config/modules.php', 'modules');
+
+        // 注册 whereHasIn 的几个查询方式来替换 whereHas 查询全表扫描的问题
+        $this->registerBuilderQuery();
+    }
+
     public function boot()
     {
         $this->bootPublishes();
-//        $this->bootConsole();
-//
-//        // 加载模块boot
-//        $this->mapModuleBoot();
-    }
+        // 加载模块boot
+         $this->mapModuleBoot();
 
-    public function register()
-    {
-        // 注册 whereHasIn 的几个查询方式来替换 whereHas 查询全表扫描的问题
-        $this->registerBuilderQuery();
-
-//        $this->registerProviders();
-//
-//        // 注册modules 模块服务
-//        if (app()->runningInConsole()) {
-//            $this->registerModulesServices();
-//        }
-
-        $this->mergeConfigFrom(__DIR__ . '/../../config/modules.php', 'modules');
+        // 设置数据分页模板
+        $this->setPaginationView();
     }
 
     public function provides()
@@ -89,30 +94,29 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         });
     }
 
-    // 加载命令
-    protected function bootConsole() {
-        if ($this->app->runningInConsole()) {
-            // 命令行
-        }
+    // 设置数据分页模板
+    protected function setPaginationView()
+    {
+        // php artisan vendor:publish --tag=laravel-pagination
+        Paginator::defaultView('vendor.pagination.default');
+        Paginator::defaultSimpleView('vendor.pagination.simple-default');
     }
 
     // 加载发布文件
     protected function bootPublishes() {
         $this->publishes([
             __DIR__ . '/../../config/oauth.php' => config_path('oauth.php')
-        ], 'zxf');
+        ], 'modules');
 
         $this->publishes([
             __DIR__ . '/../../config/modules.php' => config_path('modules.php')
-        ], 'zxf');
+        ], 'modules');
 
-        $this->mergeConfigFrom(
-            __DIR__ . '/../../config/app.php', 'app'
-        );
-        // 发布文件组
+
+        // 发布Modules模块文件组
         $this->publishes([
-            __DIR__ . '/../../Modules/' => base_path()
-        ], 'zxf');
+            __DIR__ . '/../../publishes/' => base_path('')
+        ], 'modules');
     }
 
 
@@ -135,6 +139,90 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     {
         $this->app->register(ConsoleServiceProvider::class);
         $this->app->register(ContractsServiceProvider::class);
+        // 注册路由
+        $this->app->register(ModulesRouteServiceProvider::class);
     }
 
+    protected function mapModuleBoot()
+    {
+        $modules = array_slice(scandir(base_path(config('modules.namespace','Modules'))), 2);
+        foreach ($modules as $module) {
+            $moduleLower = strtolower($module);
+            if (is_dir(base_path(config('modules.namespace','Modules').'/' . $module))) {
+                $this->registerTranslations($module, $moduleLower);
+                $this->registerConfig($module, $moduleLower);
+                $this->registerViews($module, $moduleLower);
+                $this->loadMigrationsFrom(module_path($module, 'Database/Migrations'));
+                // $this->loadFactoriesFrom(module_path($module, 'Database/factories'));
+            }
+        }
+    }
+
+    /**
+     * Register translations.
+     *
+     * @return void
+     */
+    public function registerTranslations($module, $moduleLower)
+    {
+        $langPath = resource_path('lang/modules/' . $moduleLower);
+
+        if (is_dir($langPath)) {
+            $this->loadTranslationsFrom($langPath, $moduleLower);
+            $this->loadJsonTranslationsFrom($langPath, $moduleLower);
+        } else {
+            $this->loadTranslationsFrom(module_path($module, 'Resources/lang'), $moduleLower);
+            $this->loadJsonTranslationsFrom(module_path($module, 'Resources/lang'), $moduleLower);
+        }
+    }
+
+    /**
+     * Register views.
+     * 然后就可以使用 view('apidoc::test') 去访问Apidoc/Resources/views里面的视图文件了
+     *
+     * @return void
+     */
+    public function registerViews($module, $moduleLower)
+    {
+        $viewPath = resource_path('views/modules/' . $moduleLower);
+
+        $sourcePath = module_path($module, 'Resources/views');
+
+        $this->loadViewsFrom(module_path($module, 'Resources/views'), $moduleLower);
+
+        $this->publishes([
+            $sourcePath => $viewPath
+        ], ['views', $moduleLower . '-module-views']);
+
+        $this->loadViewsFrom(array_merge($this->getPublishableViewPaths($module, $moduleLower), [$sourcePath]), $moduleLower);
+    }
+
+    private function getPublishableViewPaths($module, $moduleLower): array
+    {
+        $paths = [];
+        foreach (\Config::get('view.paths') as $path) {
+            if (is_dir($path . '/modules/' . $moduleLower)) {
+                $paths[] = $path . '/modules/' . $moduleLower;
+            }
+        }
+        return $paths;
+    }
+
+    /**
+     * Register config.
+     *
+     * @return false|void
+     */
+    protected function registerConfig($module, $moduleLower)
+    {
+        if (!is_file(module_path($module, 'Config/config.php'))) {
+            return false;
+        }
+        $this->publishes([
+            module_path($module, 'Config/config.php') => config_path($moduleLower . '.php'),
+        ], 'config');
+        $this->mergeConfigFrom(
+            module_path($module, 'Config/config.php'), $moduleLower
+        );
+    }
 }

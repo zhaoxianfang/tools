@@ -6,8 +6,8 @@ use Illuminate\Cache\CacheManager;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
-use Modules\Core\Modules\Contracts\ActivatorInterface;
-use Modules\Core\Modules\Module;
+use zxf\laravel\Modules\Contracts\ActivatorInterface;
+use zxf\laravel\Modules\Module;
 
 class FileActivator implements ActivatorInterface
 {

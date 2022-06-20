@@ -79,7 +79,7 @@ abstract class GeneratorCommand extends Command
     /**
      * Get class namespace.
      *
-     * @param \zxf\laravel\Modules\Module $module
+     * @param \zxf\Modules\Module $module
      *
      * @return string
      */

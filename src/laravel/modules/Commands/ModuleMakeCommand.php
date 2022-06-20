@@ -67,6 +67,7 @@ class ModuleMakeCommand extends Command
     protected function getOptions()
     {
         return [
+            ['all', null, InputOption::VALUE_NONE, '生成 modules.php 配置中 包含 generate 为 false 的所有模块'],
             ['plain', 'p', InputOption::VALUE_NONE, 'Generate a plain module (without some resources).'],
             ['api', null, InputOption::VALUE_NONE, 'Generate an api module.'],
             ['web', null, InputOption::VALUE_NONE, 'Generate a web module.'],

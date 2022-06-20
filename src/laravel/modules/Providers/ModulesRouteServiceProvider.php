@@ -90,9 +90,9 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
             Route::namespace($this->getModulesName()."\\{$module}\Http\Controllers\Web")
                 // ->prefix(underline_convert($module)) // ->prefix('web') // 是否设置统一的路由前缀
                 ->prefix('') // 根据实际的业务逻辑去路由文件中自定义前缀和路由名等
-                ->middleware([
-                    'web',
-                ])
+//                ->middleware([
+//                    'web',
+//                ])
                 ->group($path);
         }
     }

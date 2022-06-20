@@ -46,7 +46,7 @@ class PublishMigrationCommand extends Command
     /**
      * Publish migration for the specified module.
      *
-     * @param \zxf\laravel\Modules\Module $module
+     * @param \zxf\Modules\Module $module
      */
     public function publish($module)
     {

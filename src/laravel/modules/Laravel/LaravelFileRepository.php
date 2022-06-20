@@ -2,7 +2,7 @@
 
 namespace zxf\laravel\Modules\Laravel;
 
-use Modules\Core\Modules\FileRepository;
+use zxf\laravel\Modules\FileRepository;
 
 class LaravelFileRepository extends FileRepository
 {

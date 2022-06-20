@@ -482,7 +482,7 @@ if (!$result) {
 ```
 
 ### laravel 多模块应用
-[多模文档说明](LARAVEL_MODULE_README.md)
+[多模文档说明](./LARAVEL_MODULE_README.md)
 
 
 ### 截图功能

@@ -19,7 +19,6 @@ class ExtendMiddleware
     public function handle(Request $request, Closure $next)
     {
 		$this->traceStr = '';
-
         if ($request->isMethod('get')) {
             // 监听sql执行
             config('modules.trace') && listan_sql($this->traceStr);
@@ -42,7 +41,7 @@ class ExtendMiddleware
     {
         // 打印sql执行日志
         if ($request->isMethod('get') && config('modules.trace')) {
-            echo $this->traceStr);
+            echo $this->traceStr;
         }
     }
 }

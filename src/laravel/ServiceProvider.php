@@ -11,7 +11,6 @@ use zxf\laravel\Modules\Providers\ConsoleServiceProvider;
 use zxf\laravel\Modules\Providers\ContractsServiceProvider;
 use zxf\laravel\Modules\Providers\ModulesRouteServiceProvider;
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Artisan;
 use zxf\laravel\Modules\Middleware\ExtendMiddleware;
 
 /**
@@ -41,7 +40,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     {
         $this->bootPublishes();
         // 加载模块boot
-         $this->mapModuleBoot();
+        $this->mapModuleBoot();
 
         // 设置数据分页模板
         $this->setPaginationView();
@@ -105,7 +104,8 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     }
 
     // 加载发布文件
-    protected function bootPublishes() {
+    protected function bootPublishes()
+    {
         $this->publishes([
             __DIR__ . '/../../config/oauth.php' => config_path('oauth.php')
         ], 'modules');
@@ -139,27 +139,27 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     protected function registerProviders()
     {
-        $this->app->register(ConsoleServiceProvider::class);
+        if (is_dir(base_path(config('modules.namespace', 'Modules')))) {
+            $this->app->register(ConsoleServiceProvider::class);
+        }
         $this->app->register(ContractsServiceProvider::class);
         // 注册路由
         $this->app->register(ModulesRouteServiceProvider::class);
         // 注册中间件
         $this->app->singleton(ExtendMiddleware::class);
+        $this->app->alias(ExtendMiddleware::class, 'module');
         // 注册异常报告
-        // $this->reportable(function (Exceptions $e) {
-            //
-        // });
     }
 
     protected function mapModuleBoot()
     {
-        if(!is_dir(base_path(config('modules.namespace','Modules')))){
+        if (!is_dir(base_path(config('modules.namespace', 'Modules')))) {
             return false;
         }
-        $modules = array_slice(scandir(base_path(config('modules.namespace','Modules'))), 2);
+        $modules = array_slice(scandir(base_path(config('modules.namespace', 'Modules'))), 2);
         foreach ($modules as $module) {
             $moduleLower = strtolower($module);
-            if (is_dir(base_path(config('modules.namespace','Modules').'/' . $module))) {
+            if (is_dir(base_path(config('modules.namespace', 'Modules') . '/' . $module))) {
                 $this->registerTranslations($module, $moduleLower);
                 $this->registerConfig($module, $moduleLower);
                 $this->registerViews($module, $moduleLower);
@@ -238,8 +238,9 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     }
 
     // 使用多模块提示
-    protected function tips(){
-        if(!is_dir(base_path(config('modules.namespace','Modules')))){
+    protected function tips()
+    {
+        if (!is_dir(base_path(config('modules.namespace', 'Modules')))) {
             echo '> php artisan vendor:publish --provider="zxf\laravel\ServiceProvider"' . PHP_EOL;
         }
     }

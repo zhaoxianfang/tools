@@ -2,10 +2,7 @@
 
 namespace zxf\laravel\Modules\Providers;
 
-use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 
 class ModulesRouteServiceProvider extends RouteServiceProvider
@@ -64,14 +61,17 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
         $pathDir    = base_path($this->getModulesName() . "/{$module}/Routes/");
         $routeFiles = $this->findRouteFile($pathDir);
         foreach ($routeFiles as $routeName) {
-            $path              = $pathDir . $routeName . '.php';
-            $lowRouteName      = strtolower($routeName);
+            $path         = $pathDir . $routeName . '.php';
+            $lowRouteName = strtolower($routeName);
             // 默认使用web中间件
             $useMiddlewareName = in_array($lowRouteName, ['api', 'web']) ? $lowRouteName : 'web';
             Route::namespace($this->getModulesName() . "\\{$module}\Http\Controllers\\" . ucfirst($lowRouteName))
                 // ->prefix(underline_convert($module)) // ->prefix('admin') // 是否设置统一的路由前缀
                 ->prefix('') // 根据实际的业务逻辑去路由文件中自定义前缀和路由名等
-                ->middleware([$useMiddlewareName])
+                ->middleware([
+                    'module',
+                    $useMiddlewareName
+                ])
                 ->group($path);
         }
     }

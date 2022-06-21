@@ -7,18 +7,6 @@ use Illuminate\Support\Facades\Route;
 
 class ModulesRouteServiceProvider extends RouteServiceProvider
 {
-    protected static $instance;
-
-    /**
-     * 初始化
-     */
-    public static function instance($app)
-    {
-        if (is_null(self::$instance)) {
-            self::$instance = new static($app);
-        }
-        return self::$instance;
-    }
 
     /**
      * 扩展 boot 功能
@@ -67,7 +55,7 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
             $useMiddlewareName = in_array($lowRouteName, ['api', 'web']) ? $lowRouteName : 'web';
             Route::namespace($this->getModulesName() . "\\{$module}\Http\Controllers\\" . ucfirst($lowRouteName))
                 // ->prefix(underline_convert($module)) // ->prefix('admin') // 是否设置统一的路由前缀
-                ->prefix('') // 根据实际的业务逻辑去路由文件中自定义前缀和路由名等
+                ->prefix($lowRouteName == 'api' ? 'api' : '') // 只有api 版块默认使用api前缀
                 ->middleware([
                     'module',
                     $useMiddlewareName

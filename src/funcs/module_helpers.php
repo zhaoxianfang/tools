@@ -76,15 +76,18 @@ if (!function_exists('listan_sql') && class_exists('\Illuminate\Support\Facades\
         });
     }
 }
-/**
- * 打印对象里面受保护属性的值
- * @param $obj
- * @param $name
- * @return mixed
- */
-function getProtectedValue($obj, $name)
-{
-    $array = (array)$obj;
-    $prefix = chr(0) . '*' . chr(0);
-    return $array[$prefix . $name];
+
+if (!function_exists('get_module_name')) {
+    /**
+     * 打印对象里面受保护属性的值
+     * @param $obj
+     * @param $name
+     * @return mixed
+     */
+    function getProtectedValue($obj, $name)
+    {
+        $array = (array)$obj;
+        $prefix = chr(0) . '*' . chr(0);
+        return $array[$prefix . $name];
+    }
 }

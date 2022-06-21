@@ -77,7 +77,7 @@ if (!function_exists('listan_sql') && class_exists('\Illuminate\Support\Facades\
     }
 }
 
-if (!function_exists('get_module_name')) {
+if (!function_exists('getProtectedValue')) {
     /**
      * 打印对象里面受保护属性的值
      * @param $obj

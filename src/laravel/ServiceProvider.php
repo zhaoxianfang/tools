@@ -24,9 +24,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     {
 
         // 注册modules 模块服务
-        // if (app()->runningInConsole()) {
-            $this->registerModulesServices();
-        // }
+        $this->registerModulesServices();
 
         $this->registerProviders();
 
@@ -145,6 +143,9 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
     protected function mapModuleBoot()
     {
+        if(!is_dir(base_path(config('modules.namespace','Modules')))){
+            return false;
+        }
         $modules = array_slice(scandir(base_path(config('modules.namespace','Modules'))), 2);
         foreach ($modules as $module) {
             $moduleLower = strtolower($module);

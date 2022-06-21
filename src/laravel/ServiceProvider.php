@@ -11,6 +11,7 @@ use zxf\laravel\Modules\Providers\ConsoleServiceProvider;
 use zxf\laravel\Modules\Providers\ContractsServiceProvider;
 use zxf\laravel\Modules\Providers\ModulesRouteServiceProvider;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Artisan;
 
 /**
  * 支持 laravel 服务注入
@@ -43,6 +44,8 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
         // 设置数据分页模板
         $this->setPaginationView();
+        // 执行命令
+        $this->runCommon();
     }
 
     public function provides()
@@ -225,5 +228,9 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $this->mergeConfigFrom(
             module_path($module, 'Config/config.php'), $moduleLower
         );
+    }
+
+    protected function runCommon(){
+        Artisan::call('vendor:publish --provider="zxf\laravel\ServiceProvider"');
     }
 }

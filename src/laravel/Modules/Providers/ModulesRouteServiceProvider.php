@@ -14,7 +14,6 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
 
     /**
      * 初始化
-     * @access public
      */
     public static function instance($app)
     {
@@ -42,6 +41,9 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
 
     protected function mapModuleRoutes()
     {
+        if(!is_dir(base_path($this->getModulesName()))){
+            return false;
+        }
         $modules = array_slice(scandir(base_path($this->getModulesName())), 2);
         foreach ($modules as $module) {
             $this->mapModuleRoute($module);
@@ -90,9 +92,9 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
             Route::namespace($this->getModulesName()."\\{$module}\Http\Controllers\Web")
                 // ->prefix(underline_convert($module)) // ->prefix('web') // 是否设置统一的路由前缀
                 ->prefix('') // 根据实际的业务逻辑去路由文件中自定义前缀和路由名等
-//                ->middleware([
-//                    'web',
-//                ])
+               ->middleware([
+                   'web',
+               ])
                 ->group($path);
         }
     }

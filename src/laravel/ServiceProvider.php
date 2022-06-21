@@ -231,6 +231,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     }
 
     protected function runCommon(){
-        Artisan::call('vendor:publish --provider="zxf\laravel\ServiceProvider"');
+        echo 'php artisan vendor:publish --provider="zxf\laravel\ServiceProvider"' . PHP_EOL;
     }
 }

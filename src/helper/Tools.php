@@ -5,7 +5,7 @@ namespace zxf\header;
 /**
  * 助手类
  */
-class Helper
+class Tools
 {
     /**
      * 判断当前服务器系统

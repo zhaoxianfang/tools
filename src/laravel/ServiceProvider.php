@@ -12,6 +12,7 @@ use zxf\laravel\Modules\Providers\ContractsServiceProvider;
 use zxf\laravel\Modules\Providers\ModulesRouteServiceProvider;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Artisan;
+use zxf\laravel\Modules\Middleware\ExtendMiddleware;
 
 /**
  * 支持 laravel 服务注入
@@ -142,6 +143,12 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $this->app->register(ContractsServiceProvider::class);
         // 注册路由
         $this->app->register(ModulesRouteServiceProvider::class);
+        // 注册中间件
+        $this->app->singleton(ExtendMiddleware::class);
+        // 注册异常报告
+        // $this->reportable(function (Exceptions $e) {
+            //
+        // });
     }
 
     protected function mapModuleBoot()

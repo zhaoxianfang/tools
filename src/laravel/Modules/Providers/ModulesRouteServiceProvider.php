@@ -35,13 +35,15 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
             $this->mapModuleRoutes();
         }
     }
-    protected function getModulesName(){
-        return config('modules.namespace','Modules');
+
+    protected function getModulesName()
+    {
+        return config('modules.namespace', 'Modules');
     }
 
     protected function mapModuleRoutes()
     {
-        if(!is_dir(base_path($this->getModulesName()))){
+        if (!is_dir(base_path($this->getModulesName()))) {
             return false;
         }
         $modules = array_slice(scandir(base_path($this->getModulesName())), 2);
@@ -50,52 +52,46 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
         }
     }
 
+    /**
+     * 查询路由文件夹下的路由文件，并根据该文件名设置路由命名和中间件
+     *    例如：Routes 文件夹下有一个 api.php 文件，则该路由文件对应的控制器路径为 \Http\Controllers\Api\ ,使用的中间件为 api
+     *
+     * @param $module
+     * @return void
+     */
     protected function mapModuleRoute($module)
     {
-        $this->mapAdminRoutes($module);
-        $this->mapApiRoutes($module);
-        $this->mapWebRoutes($module);
-    }
-
-    protected function mapAdminRoutes($module)
-    {
-        $path = base_path($this->getModulesName()."/{$module}/Routes/admin.php");
-        if (file_exists($path)) {
-            Route::namespace($this->getModulesName()."\\{$module}\Http\Controllers\Admin")
+        $pathDir    = base_path($this->getModulesName() . "/{$module}/Routes/");
+        $routeFiles = $this->findRouteFile($pathDir);
+        foreach ($routeFiles as $routeName) {
+            $path              = $pathDir . $routeName . '.php';
+            $lowRouteName      = strtolower($routeName);
+            // 默认使用web中间件
+            $useMiddlewareName = in_array($lowRouteName, ['api', 'web']) ? $lowRouteName : 'web';
+            Route::namespace($this->getModulesName() . "\\{$module}\Http\Controllers\\" . ucfirst($lowRouteName))
                 // ->prefix(underline_convert($module)) // ->prefix('admin') // 是否设置统一的路由前缀
                 ->prefix('') // 根据实际的业务逻辑去路由文件中自定义前缀和路由名等
-                ->middleware([
-                    'admin'
-                ])
+                ->middleware([$useMiddlewareName])
                 ->group($path);
         }
     }
 
-    protected function mapApiRoutes($module)
+    // 查找路由文件[去除后缀]
+    protected function findRouteFile($dir = '')
     {
-        $path = base_path($this->getModulesName()."/{$module}/Routes/api.php");
-        if (file_exists($path)) {
-            Route::namespace($this->getModulesName()."\\{$module}\Http\Controllers\Api")
-                ->prefix('api')
-                ->middleware([
-                    'api',
-                    \Modules\Core\Middleware\JwtAuthPrivilege::class
-                ])
-                ->group($path);
+        $filesList = [];
+        if (!is_dir($dir)) {
+            return $filesList;
         }
-    }
-
-    protected function mapWebRoutes($module)
-    {
-        $path = base_path($this->getModulesName()."/{$module}/Routes/web.php");
-        if (file_exists($path)) {
-            Route::namespace($this->getModulesName()."\\{$module}\Http\Controllers\Web")
-                // ->prefix(underline_convert($module)) // ->prefix('web') // 是否设置统一的路由前缀
-                ->prefix('') // 根据实际的业务逻辑去路由文件中自定义前缀和路由名等
-               ->middleware([
-                   'web',
-               ])
-                ->group($path);
+        //首先先读取文件夹
+        $files = scandir($dir);
+        //遍历文件夹
+        foreach ($files as $route) {
+            $ext = pathinfo($route, PATHINFO_EXTENSION);
+            if ($ext == 'php') {
+                $filesList[] = pathinfo($route, PATHINFO_FILENAME);
+            }
         }
+        return $filesList;
     }
 }

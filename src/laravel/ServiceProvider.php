@@ -44,8 +44,8 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
         // 设置数据分页模板
         $this->setPaginationView();
-        // 执行命令
-        $this->runCommon();
+        // 使用提示
+        $this->tips();
     }
 
     public function provides()
@@ -230,7 +230,10 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         );
     }
 
-    protected function runCommon(){
-        echo 'php artisan vendor:publish --provider="zxf\laravel\ServiceProvider"' . PHP_EOL;
+    // 使用多模块提示
+    protected function tips(){
+        if(!is_dir(base_path(config('modules.namespace','Modules')))){
+            echo '> php artisan vendor:publish --provider="zxf\laravel\ServiceProvider"' . PHP_EOL;
+        }
     }
 }

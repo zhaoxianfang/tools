@@ -85,7 +85,10 @@ class ModuleMakeCommand extends Command
     {
         $isPlain = $this->option('plain');
         $isApi = $this->option('api');
-
+        
+        if($isAall){
+            return 'all';
+        }
         if ($isPlain && $isApi) {
             return 'web';
         }

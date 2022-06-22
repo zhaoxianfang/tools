@@ -4,6 +4,7 @@ namespace zxf\laravel\Modules\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use zxf\laravel\Trace\ToHtml;
 
 class ExtendMiddleware
 {
@@ -22,6 +23,7 @@ class ExtendMiddleware
         if ($request->isMethod('get')) {
             // 监听sql执行
             config('modules.trace') && listan_sql($this->traceStr);
+            $this->traceHandle = (new ToHtml($request))->handle();
         }
 
         $response = $next($request);
@@ -42,6 +44,7 @@ class ExtendMiddleware
         // 打印sql执行日志
         if ($request->isMethod('get') && config('modules.trace')) {
             echo $this->traceStr;
+            $this->traceHandle->output();
         }
     }
 }

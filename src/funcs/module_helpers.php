@@ -77,17 +77,34 @@ if (!function_exists('listan_sql') && class_exists('\Illuminate\Support\Facades\
     }
 }
 
-if (!function_exists('getProtectedValue')) {
+if (!function_exists('get_protected_value')) {
     /**
      * 打印对象里面受保护属性的值
      * @param $obj
      * @param $name
      * @return mixed
      */
-    function getProtectedValue($obj, $name)
+    function get_protected_value($obj, $name)
     {
         $array = (array)$obj;
         $prefix = chr(0) . '*' . chr(0);
         return $array[$prefix . $name];
+    }
+}
+
+if (!function_exists('copy_model_value') && class_exists('\Illuminate\Support\Facades\DB')) {
+    /**
+     * 复制模型，主要是解决 laravel -> replicate 复制方法会缺失部分字段问题
+     * @param $model
+     * @return mixed
+     */
+    function copy_model_value($model)
+    {
+        $obj = $model->replicate();
+        $modelObj = collect($model);
+        foreach ($modelObj as $key => $item) {
+            $obj->$key = $item;
+        }
+        return $obj;
     }
 }

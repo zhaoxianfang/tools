@@ -4,12 +4,10 @@ namespace zxf\laravel\Modules\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use zxf\laravel\Trace\ToHtml;
+use zxf\laravel\Trace\Handle;
 
 class ExtendMiddleware
 {
-	protected $traceStr = '';
-
     /**
      * 模块扩展中间件
      *
@@ -19,14 +17,22 @@ class ExtendMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-		$this->traceStr = '';
-        if ($request->isMethod('get')) {
-            // 监听sql执行
-            config('modules.trace') && listan_sql($this->traceStr);
-            $this->traceHandle = (new ToHtml($request))->handle();
+        $traceHandle = '';
+        if (!app()->runningInConsole() && $request->isMethod('get') && config('modules.trace')) {
+            $traceHandle = (new Handle($request))->handle();
         }
 
         $response = $next($request);
+
+        // 打印sql执行日志
+        if (!app()->runningInConsole() && $request->isMethod('get') && config('modules.trace')) {
+            $traceContent = $traceHandle->output();
+
+            $pageContent = get_protected_value($response, 'content');
+            $position    = strripos($pageContent, "</body>");
+            $pageContent = substr_replace($pageContent, $traceContent . PHP_EOL, $position, 0);
+            set_protected_value($response, 'content', $pageContent);
+        }
 
         return $response;
 
@@ -35,16 +41,16 @@ class ExtendMiddleware
     /**
      * 在响应发送到浏览器后处理任务。
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Illuminate\Http\Response  $response
+     * @param \Illuminate\Http\Request $request
+     * @param \Illuminate\Http\Response $response
      * @return void
      */
     public function terminate($request, $response)
     {
+        echo '<h1>我是terminate</h1>';
         // 打印sql执行日志
         if ($request->isMethod('get') && config('modules.trace')) {
-            echo $this->traceStr;
-            $this->traceHandle->output();
+            //$this->traceHandle->output();
         }
     }
 }

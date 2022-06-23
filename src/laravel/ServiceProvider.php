@@ -201,10 +201,11 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
         $this->loadViewsFrom(module_path($module, 'Resources/views'), $moduleLower);
 
-        $this->publishes([
-            $sourcePath => $viewPath
-        ], ['views', $moduleLower . '-module-views']);
-
+        if(config('modules.publishes_views',true)) {
+            $this->publishes([
+                $sourcePath => $viewPath
+            ], ['views', $moduleLower . '-module-views']);
+        }
         $this->loadViewsFrom(array_merge($this->getPublishableViewPaths($module, $moduleLower), [$sourcePath]), $moduleLower);
     }
 
@@ -229,9 +230,12 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         if (!is_file(module_path($module, 'Config/config.php'))) {
             return false;
         }
-        $this->publishes([
-            module_path($module, 'Config/config.php') => config_path($moduleLower . '.php'),
-        ], 'config');
+        if(config('modules.publishes_config',false)){
+            $this->publishes([
+                module_path($module, 'Config/config.php') => config_path($moduleLower . '.php'),
+            ], 'config');
+        }
+
         $this->mergeConfigFrom(
             module_path($module, 'Config/config.php'), $moduleLower
         );

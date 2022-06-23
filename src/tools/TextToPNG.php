@@ -1,5 +1,6 @@
 <?php
-namespace zxf\img; 
+
+namespace zxf\tools;
 
 // +---------------------------------------------------------------------
 // | 文字转图片类
@@ -18,6 +19,7 @@ namespace zxf\img;
  *     TextToPNG::instance()->setFontStyle($font='lishu')->setText($text)->setSize('900', '500')->setColor($color)->setBackgroundColor($bgcolor)->setTransparent(false)->setRotate($rotate)->draw();
  */
 Header("Content-type: image/png");
+
 class TextToPNG
 {
 
@@ -55,7 +57,7 @@ class TextToPNG
      * 设置文本
      * @Author   ZhaoXianFang
      * @DateTime 2019-03-20
-     * @param    string       $text [description]
+     * @param string $text [description]
      */
     public function setText($text = 'undefined')
     {
@@ -96,10 +98,10 @@ class TextToPNG
             $this->size = $this->size > $this->imgHeight ? floor($this->imgHeight * 0.8) : $this->size;
         }
         if ($this->imgHeight > $font_height) {
-            $this->size = $this->size  * 0.8;
+            $this->size = $this->size * 0.8;
         }
-        if($textLen < 3){
-            $this->size = $this->size  * 1.5;
+        if ($textLen < 3) {
+            $this->size = $this->size * 1.5;
         }
 
         // 确定边框高度.
@@ -121,7 +123,7 @@ class TextToPNG
         }
 
         // -30 是用于y坐标误差值
-        $offset_y = ($this->imgHeight - $height) / 2 + $height * 1.1 - ($textLen < 4 ? 25 : 15) ;
+        $offset_y = ($this->imgHeight - $height) / 2 + $height * 1.1 - ($textLen < 4 ? 25 : 15);
 
         $image = imagecreate($this->imgWidth, $this->imgHeight);
 
@@ -135,18 +137,19 @@ class TextToPNG
         ImageInterlace($image, false);
         $ttx = ($this->imgWidth - $width * 1.1) / 2;
 
-        // 画图 
+        // 画图
         ImageTTFText($image, $this->size, $this->rot, $offset_x + $ttx, $offset_y, $foreground, $this->font, $this->text);
 
         // 输出为png格式.
         imagePNG($image);
         die;
     }
+
     /**
      * 设置文字颜色
      * @Author   ZhaoXianFang
      * @DateTime 2019-03-20
-     * @param    string       $hexVal [16进制背景色]
+     * @param string $hexVal [16进制背景色]
      */
     public function setColor($hexVal = 'FFFFFF')
     {
@@ -178,7 +181,7 @@ class TextToPNG
      * 设置背景色
      * @Author   ZhaoXianFang
      * @DateTime 2019-03-20
-     * @param    string       $hexVal [16进制背景色]
+     * @param string $hexVal [16进制背景色]
      */
     public function setBackgroundColor($hexVal = '0000FF')
     {
@@ -210,13 +213,13 @@ class TextToPNG
      * 设置画布大小
      * @Author   ZhaoXianFang
      * @DateTime 2019-03-20
-     * @param    string       $width  [description]
-     * @param    string       $height [description]
+     * @param string $width [description]
+     * @param string $height [description]
      */
     public function setSize($width = '900', $height = '500')
     {
-        $this->imgWidth  = (int) $width;
-        $this->imgHeight = (int) $height;
+        $this->imgWidth  = (int)$width;
+        $this->imgHeight = (int)$height;
 
         return $this;
     }
@@ -225,7 +228,7 @@ class TextToPNG
      * 设置字体
      * @Author   ZhaoXianFang
      * @DateTime 2019-03-20
-     * @param    string       $filepath [description]
+     * @param string $filepath [description]
      */
     public function setFontPath($filepath = '')
     {
@@ -235,31 +238,32 @@ class TextToPNG
 
     public function setFontStyle($style = 'xingshu')
     {
-        $this->font = dirname(dirname(__FILE__)) .'/resource/font/'.$style.'.ttf';
+        $this->font = dirname(dirname(__FILE__)) . '/resource/font/' . $style . '.ttf';
         return $this;
     }
-    
+
 
     /**
      * 设置图片是否透明
      * @Author   ZhaoXianFang
      * @DateTime 2019-03-20
-     * @param    boolean      $val [description]
+     * @param boolean $val [description]
      */
     public function setTransparent($val = false)
     {
-        $this->transparent = (bool) $val;
+        $this->transparent = (bool)$val;
         return $this;
     }
+
     /**
      * 设置旋转角度
      * @Author   ZhaoXianFang
      * @DateTime 2019-03-20
-     * @param    integer      $rotate [description]
+     * @param integer $rotate [description]
      */
     public function setRotate($rotate = 0)
     {
-        $this->rot = (int) $rotate;
+        $this->rot = (int)$rotate;
         return $this;
     }
 

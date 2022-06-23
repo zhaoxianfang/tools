@@ -1,5 +1,6 @@
 <?php
-namespace zxf\img;
+
+namespace zxf\tools;
 
 // +---------------------------------------------------------------------
 // | 图片压缩类（可改变图片大小和压缩质量以及保留宽高压缩）
@@ -46,7 +47,6 @@ namespace zxf\img;
  *  提示：
  *        proportion 方法 回去调用 resize 方法，因此他们两个方法只需要选择调用一个即可
  */
-
 class Compressor
 {
     protected static $instance;
@@ -115,6 +115,7 @@ class Compressor
         }
 
     }
+
     /**
      * 初始化
      * @access public
@@ -136,8 +137,8 @@ class Compressor
      * @param $imagePath
      * @param $compressImageName
      * @return $this
-     * @author 19/1/17 ZhaoXianFang
      * @throws \Exception
+     * @author 19/1/17 ZhaoXianFang
      */
     public function set($imagePath, $savePath = null)
     {
@@ -212,7 +213,7 @@ class Compressor
      * 等比例缩放
      * @Author   ZhaoXianFang
      * @DateTime 2019-03-08
-     * @param    string       $percent [设置比例 0.1~1][图片压缩比例，0-1 #原图压缩，不缩放，但体积大大降低]
+     * @param string $percent [设置比例 0.1~1][图片压缩比例，0-1 #原图压缩，不缩放，但体积大大降低]
      * @return   [type]                [description]
      */
     public function proportion($percent = '1')
@@ -228,8 +229,8 @@ class Compressor
      * @param $width
      * @param $height
      * @return $this
-     * @author 19/1/17 ZhaoXianFang
      * @throws \Exception
+     * @author 19/1/17 ZhaoXianFang
      */
     public function resize($width, $height)
     {
@@ -242,15 +243,15 @@ class Compressor
         }
 
         $image_thump = imagecreatetruecolor($width, $height);
-        if($this->imageInfo['mime'] == 'image/png'){
-          //分配颜色 + alpha，将颜色填充到新图上
-          $alpha = imagecolorallocatealpha($image_thump, 0, 0, 0, 127);
-          imagefill($image_thump, 0, 0, $alpha);
+        if ($this->imageInfo['mime'] == 'image/png') {
+            //分配颜色 + alpha，将颜色填充到新图上
+            $alpha = imagecolorallocatealpha($image_thump, 0, 0, 0, 127);
+            imagefill($image_thump, 0, 0, $alpha);
         }
         //将原图复制带图片载体上面，并且按照一定比例压缩,极大的保持了清晰度
         imagecopyresampled($image_thump, $this->image, 0, 0, 0, 0, $width, $height, $this->imageInfo['0'], $this->imageInfo['1']);
-        if($this->imageInfo['mime'] == 'image/png'){
-          imagesavealpha($image_thump, true);
+        if ($this->imageInfo['mime'] == 'image/png') {
+            imagesavealpha($image_thump, true);
         }
         imagedestroy($this->image);
         $this->image = $image_thump;
@@ -263,9 +264,9 @@ class Compressor
         $type     = $this->imageInfo['mime'];
         $savePath = empty($this->res['compressed']['save_path']) ? null : $this->res['compressed']['save_path'];
         if (empty($savePath)) {
-            if($toBase64String){
+            if ($toBase64String) {
                 ob_start();
-            }else{
+            } else {
                 // header("Content-type:image/jpeg");
                 header("Content-type:" . $type);
             }
@@ -297,13 +298,13 @@ class Compressor
         if (!empty($savePath)) {
             $this->res['compressed']['size'] = filesize($savePath);
             return $this->res;
-        }else{
-            if($toBase64String){
+        } else {
+            if ($toBase64String) {
                 $imagedata = ob_get_contents();
-                // Clear the output buffer 
+                // Clear the output buffer
                 ob_end_clean();
                 // 返回base64 图片
-                return 'data:'.$type.';base64,'.base64_encode($imagedata);
+                return 'data:' . $type . ';base64,' . base64_encode($imagedata);
             }
         }
         die;

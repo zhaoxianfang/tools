@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\helper;
+namespace zxf\tools;
 
 /**
  * 助手类

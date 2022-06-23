@@ -1,11 +1,11 @@
 <?php
 /**
  * jsmin.php - PHP implementation of Douglas Crockford's JSMin.
- * 
+ *
  * PHP 5 or higher is required.
  *
  * demo : use zxf\String\JsMin;   $minifiedCode = JsMin::minify($jsString);
- * 
+ *
  * @package JSMin
  * @author Ryan Grove <ryan@wonko.com>
  * @copyright 2002 Douglas Crockford <douglas@crockford.com> (jsmin.c)
@@ -16,7 +16,7 @@
  * @link https://github.com/rgrove/jsmin-php
  */
 
-namespace zxf\String; 
+namespace zxf\tools;
 
 use Exception;
 

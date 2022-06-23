@@ -10,7 +10,7 @@
 // +---------------------------------------------------------------------
 // | Date       | 2019-07-30
 // +---------------------------------------------------------------------
-namespace zxf\img;
+namespace zxf\tools;
 
 class Img
 {
@@ -38,11 +38,8 @@ class Img
      * 将图片处理为圆角
      * @Author    ZhaoXianFang
      * @DateTime  2020-04-05
-     * @copyright [copyright]
-     * @license   [license]
-     * @version   [version]
      * @param     [type]       $imgPath     [要处理的图片路径]
-     * @param     boolean      $newFilePath [可选][保存路径]
+     * @param boolean $newFilePath [可选][保存路径]
      *                                 [false默认不保存,true直接修改原图,设置路径则保存到设置路径]
      * @return    [type]                    [description]
      * demo1:     header("Content-Type: image/png");
@@ -51,6 +48,9 @@ class Img
      *            imagedestroy($img);
      * demo2:     $img = Img::changeCircularImg('./1.jpg',true);
      * demo3:     $img = Img::changeCircularImg('./1.jpg','./img/temp.jpg');
+     * @copyright [copyright]
+     * @license   [license]
+     * @version   [version]
      */
     public function changeCircularImg($imgPath, $newFilePath = false)
     {
@@ -123,15 +123,15 @@ class Img
      * 修改图片尺寸[支持透明图片修改]
      * @Author    ZhaoXianFang
      * @DateTime  2020-04-05
-     * @copyright [copyright]
-     * @license   [license]
-     * @version   [version]
      * @param     [type]       $filePath    [原图路径]
-     * @param     boolean      $newFilePath [可选][保存路径]
+     * @param boolean $newFilePath [可选][保存路径]
      *                                 [false默认不保存,true直接修改原图,设置路径则保存到设置路径]
      * @param     [type]       $xmax        [设置新图宽度]
      * @param     [type]       $ymax        [设置新图高度]
      * @return    [type]                    [description]
+     * @version   [version]
+     * @copyright [copyright]
+     * @license   [license]
      */
     public function resizeImage($filePath, $newFilePath = false, $xmax, $ymax)
     {
@@ -192,9 +192,6 @@ class Img
      * 解决imagecopymerge 函数背景黑色问题,参数与 imagecopymerge 保持一直
      * @Author    ZhaoXianFang
      * @DateTime  2020-04-05
-     * @copyright [copyright]
-     * @license   [license]
-     * @version   [version]
      * @param     [type]       $dst_im [目标图像]
      * @param     [type]       $src_im [被拷贝的源图像]
      * @param     [type]       $dst_x  [目标图像开始 x 坐标]
@@ -205,6 +202,9 @@ class Img
      * @param     [type]       $src_h  [从 src_y 开始）拷贝的高度]
      * @param     [type]       $pct    [图像合并程度，取值 0-100 ，当 pct=0 时，实际上什么也没做，反之完全合并。]
      * @return    [type]               [description]
+     * @copyright [copyright]
+     * @license   [license]
+     * @version   [version]
      */
     public function imagecopymerge_alpha($dst_im, $src_im, $dst_x, $dst_y, $src_x, $src_y, $src_w, $src_h, $pct)
     {
@@ -230,15 +230,15 @@ class Img
      * 图片水印 和 拼接合并
      * @Author    ZhaoXianFang
      * @DateTime  2020-04-05
+     * @param string $bigImgPath [description]
+     * @param string $smallImgPath [description]
+     * @param string $saveToPath [description]
+     * @param string $option 数组参数[0：x偏移；1：y偏移；2：是否使用透明底色]
+     * @param string $type [设置方式 water:水印;splice:拼接]
+     * @return    [type]                     [description]
      * @copyright [copyright]
      * @license   [license]
      * @version   [version]
-     * @param     string       $bigImgPath   [description]
-     * @param     string       $smallImgPath [description]
-     * @param     string       $saveToPath   [description]
-     * @param     string       $option       数组参数[0：x偏移；1：y偏移；2：是否使用透明底色]
-     * @param     string       $type         [设置方式 water:水印;splice:拼接]
-     * @return    [type]                     [description]
      */
     public function imageMerge($bigImgPath = '', $smallImgPath = '', $saveToPath = '', $type = 'water', $option = [])
     {
@@ -348,8 +348,8 @@ class Img
 
         // 水印
         if ($dealType == 1) {
-            $bigImg                                    = imagecreatefromstring(file_get_contents($bigImgPath));
-            $smallImg                                  = imagecreatefromstring(file_get_contents($smallImgPath));
+            $bigImg   = imagecreatefromstring(file_get_contents($bigImgPath));
+            $smallImg = imagecreatefromstring(file_get_contents($smallImgPath));
             list($qCodeWidth, $qCodeHight, $qCodeType) = getimagesize($smallImgPath);
             // imagecopymerge($bigImg, $qCodeImg, 300, 400, 0, 0, $qCodeWidth, $qCodeHight, 100);
             $this->imagecopymerge_alpha($bigImg, $smallImg, $dst_x, $dst_y, $src_x, $src_y, $qCodeWidth, $qCodeHight, 100);
@@ -457,14 +457,14 @@ class Img
      * @Author   ZhaoXianFang
      * @DateTime 2020-04-07
      * @param    [type]       $image      [图片对象]
-     * @param    int          $size       [文字大小]
+     * @param int $size [文字大小]
      * @param    [type]       $rot        [旋转角度]
      * @param    [type]       $offset_x   [写入的X坐标]
      * @param    [type]       $offset_y   [写入的Y坐标]
      * @param    [type]       $foreground [背景：例如 ImageColorAllocate($image, 255,255,255)]
      * @param    [type]       $fontFile   [ttf字体 路径]
      * @param    [type]       $text       [文本]
-     * @param    string       $saveToPath [保存路径]
+     * @param string $saveToPath [保存路径]
      * @return   [type]                   [description]
      * demo:         $white = ImageColorAllocate($image, 255,255,255);
      *               $imgTool->drawTextImg($image, 15, 0, 50, 900, $white = false, "E:/www/itzxf.com/public/static/font/lishu.ttf", "手机号:xxx", 'save_ttf.png');
@@ -547,10 +547,10 @@ class Img
         //匹配base64字符串格式
         if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $base64, $result)) {
             //保存最终的图片格式
-            $postfix = $result[2];
-            $base64  = base64_decode(substr(strstr($base64, ','), 1));
+            $postfix  = $result[2];
+            $base64   = base64_decode(substr(strstr($base64, ','), 1));
             $filename .= '.' . $postfix;
-            $path .= $filename;
+            $path     .= $filename;
             //创建图片
             if (file_put_contents($path, $base64)) {
                 $res['status']   = 1;
@@ -566,6 +566,7 @@ class Img
         return $res;
 
     }
+
     /**
      * @desc 将图片转成base64字符串
      * @param string $filename 图片地址

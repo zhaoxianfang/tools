@@ -400,6 +400,23 @@ if (!function_exists('getfilesize')) {
     }
 
 }
+if (!function_exists('byteFormat')) {
+    /**
+     * @desc 文件字节转具体大小 array("B", "KB", "MB", "GB", "TB", "PB","EB","ZB","YB")， 默认转成M
+     * @param $size 文件字节
+     * @return string
+     */
+    function byteFormat($size, $dec = 2)
+    {
+        $units = array("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB");
+        $pos   = 0;
+        while ($size >= 1024) {
+            $size /= 1024;
+            $pos++;
+        }
+        return round($size, $dec) . " " . $units[$pos];
+    }
+}
 
 if (!function_exists('response_and_continue')) {
     /**
@@ -991,7 +1008,7 @@ if (!function_exists('uuid')) {
     function uuid()
     {
         $time    = microtime(true);
-        $timeStr = date('ymdHis').substr(explode(' ',microtime())[0], 2 ,6) . random_int(3600, 215999);
+        $timeStr = date('ymdHis') . substr(explode(' ', microtime())[0], 2, 6) . random_int(3600, 215999);
         return from10to60($timeStr);
     }
 }

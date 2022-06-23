@@ -11,7 +11,7 @@
 // | Date       | 2019-07-30
 // +---------------------------------------------------------------------
 
-namespace zxf\extend;
+namespace zxf\tools;
 
 
 class MysqlTool

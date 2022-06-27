@@ -4,9 +4,21 @@
  * 常用的一些函数归纳
  */
 
-function test_die()
-{
-    die('this is a test fun');
+if (!function_exists('session')) {
+    /**
+     * 简易session 助手函数
+     */
+    function session($name, $value = null)
+    {
+        $handle = \zxf\tools\Session::instance();
+        if ($value != null) {
+            $value = (is_array($value) || is_object($value)) ? json_encode($value) : $value;
+            return $handle->$name = $value;
+        } else {
+            $val = $handle->$name;
+            return is_json($val) ? json_decode($val, true) : $val;
+        }
+    }
 }
 
 if (!function_exists('zxf_substr')) {
@@ -838,12 +850,13 @@ if (!function_exists('is_json')) {
     function is_json($string)
     {
         try {
-            json_decode($string);
-            // return (json_last_error() == JSON_ERROR_NONE);
-            return true;
+            $data = json_decode($string, $assoc = false);
+            if ((!empty($data) && is_object($data)) || (is_array($data) && !empty($data))) {
+                return true;
+            }
         } catch (\Exception $e) {
-            return false;
         }
+        return false;
     }
 }
 

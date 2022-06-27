@@ -112,7 +112,7 @@ if (!function_exists('set_protected_value')) {
         $reflectionClass = new ReflectionClass($obj);
         $reflectionProperty = $reflectionClass->getProperty($filed);
         try {
-            $reflectionProperty->setValue($value);
+            $reflectionClass->setStaticPropertyValue($filed, $value);
         }catch (\Exception $err){
             $reflectionProperty->setAccessible(true);
             $reflectionProperty->setValue($obj, $value);

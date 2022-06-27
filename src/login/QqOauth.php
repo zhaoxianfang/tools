@@ -39,6 +39,7 @@ class QqOauth implements Handle
             "state"         => $state,
             "scope"         => 'get_user_info',
         );
+        session('zxf_login_qq_state', $state);
 
         return $this->combineURL($this->authorization_url, $keysArr);
     }
@@ -94,8 +95,9 @@ class QqOauth implements Handle
 
     public function getStateParam()
     {
-        if (!empty($_REQUEST['state'])) {
-            $state = urldecode($_REQUEST['state']);
+        $state = !empty($_REQUEST['state']) ? $_REQUEST['state'] : session('zxf_login_qq_state');
+        if (!empty($state)) {
+            $state = urldecode($state);
             $state = str_replace(' ', '+', $state);
             // 进行解密 验证是否为本站发出的state
             $decodeStr = str_en_code($state, 'de');

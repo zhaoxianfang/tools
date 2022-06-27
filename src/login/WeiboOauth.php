@@ -36,6 +36,7 @@ class WeiboOauth implements Handle
             'response_type' => 'code',
             'state'         => $state,
         ]);
+        session('zxf_login_weibo_state', $state);
 
         return $url . '?' . http_build_query($query);
     }
@@ -85,7 +86,9 @@ class WeiboOauth implements Handle
     {
         // 进行解密 验证是否为本站发出的state
         try {
-            $state = urldecode($_REQUEST['state']);
+            $state = !empty($_REQUEST['state']) ? $_REQUEST['state'] : session('zxf_login_weibo_state');
+
+            $state = urldecode($state);
             $state = str_replace(' ', '+', $state);
             // $state = urldecode($state);
             $decodeStr      = str_en_code($state, 'de');

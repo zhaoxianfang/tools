@@ -24,9 +24,10 @@ class Session
 
     public function start_session()
     {
-        if ($this->session_state == self::SESSION_NOT_STARTED) {
-            $this->session_state = session_start();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
         }
+        $this->session_state = session_status();
         return $this->session_state;
     }
 

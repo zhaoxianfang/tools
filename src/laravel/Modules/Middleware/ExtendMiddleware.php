@@ -47,10 +47,7 @@ class ExtendMiddleware
      */
     public function terminate($request, $response)
     {
-        echo '<h1>我是terminate</h1>';
-        // 打印sql执行日志
-        if ($request->isMethod('get') && config('modules.trace')) {
-            //$this->traceHandle->output();
-        }
+        // 测试发现 有时不会执行此方法，因此不能在此做各种「输出」
+        return $response;
     }
 }

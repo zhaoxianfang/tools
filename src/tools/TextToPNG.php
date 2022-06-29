@@ -13,37 +13,36 @@ namespace zxf\tools;
 // +---------------------------------------------------------------------
 // | Date       | 2019-07-30
 // +---------------------------------------------------------------------
+
 /**
- * 文字转图片类
+ * 文字转图片类[会自定计算文字字号大小]
  * 使用:
  *     TextToPNG::instance()->setFontStyle($font='lishu')->setText($text)->setSize('900', '500')->setColor($color)->setBackgroundColor($bgcolor)->setTransparent(false)->setRotate($rotate)->draw();
  */
-Header("Content-type: image/png");
-
 class TextToPNG
 {
 
     protected static $instance; // object 对象实例
 
-    private $font        = './../resource/font/lishu.ttf'; //默认字体. 相对于脚本存放目录的相对路径.
-    private $text        = "undefined"; // 默认文字.
-    private $size        = 24; //默认字体大小，会自动适配
-    private $rot         = 0; // 旋转角度.
-    private $transparent = false; // 文字是否设置为透明.
-    private $red         = '0xFF'; // 16进制 白色字体
-    private $grn         = '0xFF';
-    private $blu         = '0xFF';
-    private $bg_red      = "0x00"; //16进制 蓝色背景
-    private $bg_grn      = "0x00";
-    private $bg_blu      = '0xFF';
-    private $imgWidth    = '900'; //生成图片宽
-    private $imgHeight   = '500'; //生成图片高
+    private $font           = './../resource/font/lishu.ttf'; //默认字体. 相对于脚本存放目录的相对路径.
+    private $text           = "Hello!"; // 默认文字.
+    private $size           = 24; //默认字体大小，会自动适配
+    private $rot            = 0; // 旋转角度.
+    private $transparent    = false; // 文字是否设置为透明.
+    private $red            = '0xFF'; // 16进制 白色字体
+    private $grn            = '0xFF';
+    private $blu            = '0xFF';
+    private $bg_red         = "0x00"; //16进制 蓝色背景
+    private $bg_grn         = "0x00";
+    private $bg_blu         = '0xFF';
+    private $imgWidth       = '900'; //生成图片宽
+    private $imgHeight      = '500'; //生成图片高
+    private $imgWidthUsage  = 0.9; //生成图片宽度使用率，例如0.9表示 使用90%，留空10%
+    private $imgHeightUsage = 0.9; //生成图片高度使用率，例如0.9表示 使用90%，留空10%
 
     /**
      * 初始化
-     * @access public
      * @param array $options 参数
-     * @return Auth
      */
     public static function instance($options = [])
     {
@@ -59,11 +58,10 @@ class TextToPNG
      * @DateTime 2019-03-20
      * @param string $text [description]
      */
-    public function setText($text = 'undefined')
+    public function setText($text = 'Hello!')
     {
         $this->text = $text;
         return $this;
-
     }
 
     /**
@@ -74,75 +72,115 @@ class TextToPNG
      */
     public function draw()
     {
-
-        $width    = 0;
-        $height   = 0;
-        $offset_x = 0;
-        $offset_y = 0;
-        $bounds   = array();
-        $image    = "";
-
-        // 确定文字高度.
-        $bounds = ImageTTFBBox($this->size, $this->rot, $this->font, "W");
-        if ($this->rot < 0) {
-            $font_height = abs($bounds[7] - $bounds[1]);
-        } else if ($this->rot > 0) {
-            $font_height = abs($bounds[1] - $bounds[7]);
-        } else {
-            $font_height = abs($bounds[7] - $bounds[1]);
-        }
-        $textLen    = mb_strlen($this->text); //字数
-        $font_width = abs($bounds[4] - $bounds[6]); //字宽
-        if ($this->imgWidth > $font_width) {
-            $this->size = floor(($this->imgWidth * 0.8 - $font_width) / $textLen / 1.15);
-            $this->size = $this->size > $this->imgHeight ? floor($this->imgHeight * 0.8) : $this->size;
-        }
-        if ($this->imgHeight > $font_height) {
-            $this->size = $this->size * 0.8;
-        }
-        if ($textLen < 3) {
-            $this->size = $this->size * 1.5;
-        }
+        // 自动调整文字宽度和字体大小
+        $this->autowrap();
 
         // 确定边框高度.
-        $bounds = ImageTTFBBox($this->size, $this->rot, $this->font, $this->text);
-        if ($this->rot < 0) {
-            $width    = abs($bounds[4] - $bounds[0]);
-            $height   = abs($bounds[3] - $bounds[7]);
-            $offset_x = 0;
+        $bounds     = imagettfbbox($this->size, $this->rot, $this->font, $this->text);
+        $minX       = min($bounds[0], $bounds[2], $bounds[4], $bounds[6]);
+        $maxX       = max($bounds[0], $bounds[2], $bounds[4], $bounds[6]);
+        $minY       = min($bounds[1], $bounds[3], $bounds[5], $bounds[7]);
+        $maxY       = max($bounds[1], $bounds[3], $bounds[5], $bounds[7]);
+        $textWidth  = bcsub($maxX, $minX);
+        $textHeight = bcsub($maxY, $minY);
+        // 居中显示
+        $offset_x = ($this->imgWidth - $textWidth) / 2 + abs($minX);
+        $offset_y = ($this->imgHeight - $textHeight) / 2 + abs($minY);
 
-        } else if ($this->rot > 0) {
-            $width    = abs($bounds[2] - $bounds[6]);
-            $height   = abs($bounds[1] - $bounds[5]);
-            $offset_x = abs($bounds[0] - $bounds[6]);
-
-        } else {
-            $width    = abs($bounds[4] - $bounds[6]);
-            $height   = abs($bounds[7] - $bounds[1]);
-            $offset_x = 0;
-        }
-
-        // -30 是用于y坐标误差值
-        $offset_y = ($this->imgHeight - $height) / 2 + $height * 1.1 - ($textLen < 4 ? 25 : 15);
-
-        $image = imagecreate($this->imgWidth, $this->imgHeight);
-
-        $background = ImageColorAllocate($image, hexdec($this->bg_red), hexdec($this->bg_grn), hexdec($this->bg_blu));
-        $foreground = ImageColorAllocate($image, hexdec($this->red), hexdec($this->grn), hexdec($this->blu));
+        $image      = imagecreate($this->imgWidth, $this->imgHeight);
+        $background = imagecolorallocate($image, hexdec($this->bg_red), hexdec($this->bg_grn), hexdec($this->bg_blu));
+        $foreground = imagecolorallocate($image, hexdec($this->red), hexdec($this->grn), hexdec($this->blu));
 
         if ($this->transparent) {
-            ImageColorTransparent($image, $background);
+            imagecolortransparent($image, $background);
         }
 
-        ImageInterlace($image, false);
-        $ttx = ($this->imgWidth - $width * 1.1) / 2;
+        imageinterlace($image, false);
 
         // 画图
-        ImageTTFText($image, $this->size, $this->rot, $offset_x + $ttx, $offset_y, $foreground, $this->font, $this->text);
+        imagettftext($image, $this->size, $this->rot, $offset_x, $offset_y, $foreground, $this->font, $this->text);
 
+        Header("Content-type: image/png");
         // 输出为png格式.
-        imagePNG($image);
+        imagepng($image);
         die;
+    }
+
+    // 自动调整文字宽度和字体大小
+    public function autowrap($init = true)
+    {
+        $rot = $init ? 0 : $this->rot; // 旋转角度
+
+        // 将字符串拆分成一个个单字 保存到数组 letter 中
+        for ($i = 0; $i < mb_strlen($this->text); $i++) {
+            $letter[] = mb_substr($this->text, $i, 1, 'utf-8');
+        }
+
+        $content         = "";
+        $fontIsTooHeight = false;
+        for ($i = 0; $i < count($letter); $i++) {
+            // 换行处理
+            if ($letter[$i] == "/" && $letter[$i + 1] == "n") {
+                $content        .= PHP_EOL;// 换行
+                $letter[$i + 1] = '';
+                continue;
+            }
+
+            $teststr = $content . " " . $letter[$i];
+            // 测量宽度和高度
+            $testbox    = imagettfbbox($this->size, $rot, $this->font, $teststr);
+            $minX       = min($testbox[0], $testbox[2], $testbox[4], $testbox[6]);
+            $maxX       = max($testbox[0], $testbox[2], $testbox[4], $testbox[6]);
+            $minY       = min($testbox[1], $testbox[3], $testbox[5], $testbox[7]);
+            $maxY       = max($testbox[1], $testbox[3], $testbox[5], $testbox[7]);
+            $testWidth  = bcsub($maxX, $minX);
+            $testHeight = bcsub($maxY, $minY);
+            // 宽度最大显示90%
+            if ($init && ($testWidth > ($this->imgWidth * $this->imgWidthUsage)) && ($content !== "")) {
+                $content .= PHP_EOL;// 换行
+            }
+            if ($testHeight > ($this->imgHeight * $this->imgHeightUsage)) {
+                // 文字太高了
+                $fontIsTooHeight = true;
+                break;
+            }
+
+            $content .= $letter[$i];
+        }
+        if ($fontIsTooHeight) {
+            $this->size = floor(bcmul($this->size, bcdiv($this->imgHeight * $this->imgHeightUsage, $testHeight, 2)));
+            return $this->autowrap($init);
+        }
+
+        if ($testHeight < floor($this->imgHeight * $this->imgHeightUsage * 0.45)) {
+            $this->size = bcadd($this->size, 3);
+            return $this->autowrap($init);
+        }
+
+        // 文字面积
+        $txtArea = bcmul($testWidth, $testHeight);
+        // 图片面积
+        $imgArea = floor(bcmul($this->imgWidth * $this->imgWidthUsage, $this->imgHeight * $this->imgHeightUsage));
+        // 文字空白占比
+        $emptyRatio = bcsub(1, bcdiv($txtArea, $imgArea, 3), 1);
+        // 允许 0.4 ~ 0.8 的空白
+        $setRatio = (($this->rot > 30 && $this->rot < 150) || ($this->rot > 210 && $this->rot < 330)) ? 0.8 : 0.4;
+        if ($emptyRatio > $setRatio) {
+            // 字小了
+            $this->size = bcadd($this->size, $emptyRatio * 10);
+            return $this->autowrap($init);
+        }
+        if ($emptyRatio < 0.1) {
+            // 字大了
+            $this->size = bcsub($this->size, abs($emptyRatio * 10)) - 1; // 防止 0%
+            return $this->autowrap($init);
+        }
+
+        $this->text = $content;
+        if ($init === true) {
+            return $this->autowrap(false);
+        }
+        return true;
     }
 
     /**
@@ -153,27 +191,7 @@ class TextToPNG
      */
     public function setColor($hexVal = 'FFFFFF')
     {
-        $len = strlen($hexVal);
-        switch ($len) {
-            case '6':
-                $this->red = '0x' . substr($hexVal, 0, 2); //截取两位
-                $this->grn = '0x' . substr($hexVal, 2, 2); //截取两位
-                $this->blu = '0x' . substr($hexVal, 4, 2); //截取两位
-                break;
-            case '3':
-                $this->red = '0x' . substr($hexVal, 0, 1) . substr($hexVal, 0, 1); //截取一位
-                $this->grn = '0x' . substr($hexVal, 1, 1) . substr($hexVal, 1, 1); //截取一位
-                $this->blu = '0x' . substr($hexVal, 2, 1) . substr($hexVal, 2, 1); //截取一位
-                break;
-            case '1':
-                $this->red = '0x' . $hexVal . $hexVal;
-                $this->grn = '0x' . $hexVal . $hexVal;
-                $this->blu = '0x' . $hexVal . $hexVal;
-                break;
-            default:
-                # code...
-                break;
-        }
+        $this->transformColor($hexVal, false);
         return $this;
     }
 
@@ -185,25 +203,41 @@ class TextToPNG
      */
     public function setBackgroundColor($hexVal = '0000FF')
     {
+        $this->transformColor($hexVal, true);
+        return $this;
+    }
+
+    /**
+     * 颜色值转换
+     * @param string $hexVal 颜色值（支持1位，3位，6位）
+     * @param $isBackground
+     * @return $this
+     * @throws \Exception
+     */
+    private function transformColor($hexVal = '0000FF', $isBackground = true)
+    {
         $len = strlen($hexVal);
+        $red = $isBackground ? 'bg_red' : 'red';
+        $grn = $isBackground ? 'bg_grn' : 'grn';
+        $blu = $isBackground ? 'bg_blu' : 'blu';
         switch ($len) {
             case '6':
-                $this->bg_red = '0x' . substr($hexVal, 0, 2); //截取两位
-                $this->bg_grn = '0x' . substr($hexVal, 2, 2); //截取两位
-                $this->bg_blu = '0x' . substr($hexVal, 4, 2); //截取两位
+                $this->$red = '0x' . substr($hexVal, 0, 2); //截取两位
+                $this->$grn = '0x' . substr($hexVal, 2, 2); //截取两位
+                $this->$blu = '0x' . substr($hexVal, 4, 2); //截取两位
                 break;
             case '3':
-                $this->bg_red = '0x' . substr($hexVal, 0, 1) . substr($hexVal, 0, 1); //截取一位
-                $this->bg_grn = '0x' . substr($hexVal, 1, 1) . substr($hexVal, 1, 1); //截取一位
-                $this->bg_blu = '0x' . substr($hexVal, 2, 1) . substr($hexVal, 2, 1); //截取一位
+                $this->$red = '0x' . substr($hexVal, 0, 1) . substr($hexVal, 0, 1); //截取一位
+                $this->$grn = '0x' . substr($hexVal, 1, 1) . substr($hexVal, 1, 1); //截取一位
+                $this->$blu = '0x' . substr($hexVal, 2, 1) . substr($hexVal, 2, 1); //截取一位
                 break;
             case '1':
-                $this->bg_red = '0x' . $hexVal . $hexVal;
-                $this->bg_grn = '0x' . $hexVal . $hexVal;
-                $this->bg_blu = '0x' . $hexVal . $hexVal;
+                $this->$red = '0x' . $hexVal . $hexVal;
+                $this->$grn = '0x' . $hexVal . $hexVal;
+                $this->$blu = '0x' . $hexVal . $hexVal;
                 break;
             default:
-                # code...
+                throw new \Exception(($isBackground ? '背景' : '前景') . '色有误');
                 break;
         }
         return $this;
@@ -218,8 +252,8 @@ class TextToPNG
      */
     public function setSize($width = '900', $height = '500')
     {
-        $this->imgWidth  = (int)$width;
-        $this->imgHeight = (int)$height;
+        $this->imgWidth  = abs((int)$width);
+        $this->imgHeight = abs((int)$height);
 
         return $this;
     }
@@ -233,12 +267,18 @@ class TextToPNG
     public function setFontPath($filepath = '')
     {
         $this->font = $filepath;
+        if (!is_file($this->font)) {
+            throw new \Exception('字体文件不存在:' . $filepath);
+        }
         return $this;
     }
 
     public function setFontStyle($style = 'xingshu')
     {
         $this->font = dirname(dirname(__FILE__)) . '/resource/font/' . $style . '.ttf';
+        if (!is_file($this->font)) {
+            throw new \Exception('不支持的字体:' . $style);
+        }
         return $this;
     }
 
@@ -263,6 +303,9 @@ class TextToPNG
      */
     public function setRotate($rotate = 0)
     {
+        // 角度转换到0-360度内
+        $rotate    = $rotate > 0 ? ($rotate % 360) : ($rotate % -360);
+        $rotate    = $rotate > 0 ? $rotate : (360 + $rotate);
         $this->rot = (int)$rotate;
         return $this;
     }

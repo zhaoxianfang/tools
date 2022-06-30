@@ -30,7 +30,7 @@ class Handle
             // 运行在命令行下
             return $this;
         }
-        $this->startTime   = microtime(true);
+        $this->startTime   = constant('LARAVEL_START') ?? microtime(true);
         $this->startMemory = memory_get_usage();
         $this->fileList    = $this->getFileInfo();
         listan_sql($this->sqlList, false);
@@ -101,7 +101,7 @@ class Handle
                     }
             }
         }
-        if($this->request->isMethod('get')){
+        if ($this->request->isMethod('get')) {
             return $this->randerPage($trace) . $this->randerConsole($trace);
         }
         return $this->randerConsole($trace);

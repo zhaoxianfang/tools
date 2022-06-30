@@ -14,30 +14,33 @@ composer require zxf/tools
 ## 涵盖模块
 
 
-|  模块  | 需要包含的文件夹                                                                                        |
-| --- |-------------------------------------------------------------------------------------------------|
-|  QQ登录  | Qqlogin                                                                                         |
-|  微信  | wechat(未完成)                                                                                     |
-|  截图  | JonnyW、Psr、Symfony(废弃)                                                                          |
-|  微博登录  | sina                                                                                            |
-|  QueryList  | QueryList(废弃)                                                                                   |
-|  JsMin  | js 压缩工具                                                                                         |
-|  QrCode  | 生成二维码                                                                                           |
-|  BarCode  | 生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
-|  Compressor  | 图片压缩类                                                                                           |
-|  TextToPNG  | 文字转图片                                                                                           |
-|  PHPMailer  | 发送邮件                                                                                            |
-|  Curl  | http 网络请求                                                                                       |
-|  Sms  | 发送短信: ali(阿里云)[默认] 或者 tencent（腾讯云）                                                              |
-|  MysqlTool  | 创建mysql数据库字典                                                                                    |
-|  Img  | 修改图片尺寸、给图片上添加文字等                                                                                |
-|  Pinyin  | 中文转拼音                                                                                           |
-|  Menu  | 生成目录菜单(adminlte、layuiadmin、nazox、inspinia)                                                      |
-|  Random  | 生成随机数                                                                                           |
-|  ImgToIco  | 图片转ico 格式                                                                                       |
-|  Modules  | laravel 多模块应用                                                                                       |
+| 模块         | 需要包含的文件夹/说明                                                                                     |
+|------------|-------------------------------------------------------------------------------------------------|
+| QQ登录       | Qqlogin                                                                                         |
+| 微信         | wechat(未完成)                                                                                     |
+| 截图         | JonnyW、Psr、Symfony(废弃)                                                                          |
+| 微博登录       | sina                                                                                            |
+| QueryList  | QueryList(废弃)                                                                                   |
+| JsMin      | js 压缩工具                                                                                         |
+| QrCode     | 生成二维码                                                                                           |
+| BarCode    | 生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
+| Compressor | 图片压缩类                                                                                           |
+| TextToPNG  | 文字转图片                                                                                           |
+| PHPMailer  | 发送邮件                                                                                            |
+| Curl       | http 网络请求                                                                                       |
+| Sms        | 发送短信: ali(阿里云)[默认] 或者 tencent（腾讯云）                                                              |
+| MysqlTool  | 创建mysql数据库字典                                                                                    |
+| Img        | 修改图片尺寸、给图片上添加文字等                                                                                |
+| Pinyin     | 中文转拼音                                                                                           |
+| Menu       | 生成目录菜单(adminlte、layuiadmin、nazox、inspinia)                                                      |
+| Random     | 生成随机数                                                                                           |
+| ImgToIco   | 图片转ico 格式                                                                                       |
+| Modules    | laravel 多模块应用                                                                                   |
+| Command    | 命令行解析工具                                                                                         |
+| 其他         | 还有一些没有写在此处的工具类                                                                                  |
 
 
+### 第三方登录
 ```php
 <?php
 /**
@@ -74,7 +77,7 @@ return [
 ### Curl 网络请求
 ``` php
 
-Curl::instance()->setParams(['path'=>'pages/index/index'])->post($url,'json');
+zxf\tools\Curl::instance()->setParams(['path'=>'pages/index/index'])->post($url,'json');
 
 ```
 
@@ -190,7 +193,7 @@ class Sina extends Controller
 ### jsMin 压缩
 
 ``` php
-use zxf\String\JsMin;
+use zxf\tools\JsMin;
 $minifiedCode = JsMin::minify($jsString);
 ```
 
@@ -290,7 +293,7 @@ function send_mailer($to = '', $title = '', $content = '', $sender = '邮件测�
     if (!$to || !$title || !$content) {
         return false;
     }
-    $mail = new PHPMailer(true);
+    $mail = new \zxf\req\PHPMailer(true);
     try {
         //使用STMP服务
         $mail->isSMTP();
@@ -365,9 +368,9 @@ function send_mailer($to = '', $title = '', $content = '', $sender = '邮件测�
  *
  * 调用示例：
  *        # 实例化对象
- *        $Compressor = new Compressor();
+ *        $Compressor = new \zxf\tools\Compressor();
  *        OR
- *        $Compressor = Compressor::instance();
+ *        $Compressor = \zxf\tools\Compressor::instance();
  *
  *        # 使用原始尺寸 压缩图片大小并输出到浏览器
  *        $result = $Compressor->set('001.jpg')->proportion(1)->get();
@@ -394,7 +397,7 @@ function send_mailer($to = '', $title = '', $content = '', $sender = '邮件测�
 
 ### TextToPNG 文字转图片
 ``` php
-use zxf\img\TextToPNG;
+use zxf\tools\TextToPNG;
 
 $text = 'hello';
 $color = '#ffffff';
@@ -476,13 +479,65 @@ if (!$result) {
 ```
  $imgurl = "./test.jpeg";
  // 下载到浏览器
- ImgToIco::instance()->set($imgurl, 32)->generate();
+ zxf\tools\ImgToIco::instance()->set($imgurl, 32)->generate();
  // 保存到指定文件夹
- ImgToIco::instance()->set($imgurl, 32)->generate('E:/www');
+ zxf\tools\ImgToIco::instance()->set($imgurl, 32)->generate('E:/www');
 ```
 
 ### laravel 多模块应用
 [多模文档说明](./README_laravel.md)
+
+### Command 命令行参数解析
+> 在项目根目录新建一个`command` 脚本，测试内容如下
+
+```
+/**
+ * 命令行参数解析工具类
+ */
+#!/usr/bin/env php
+<?php
+
+$cmd = new zxf\tools\Command::instance();
+
+// 获取所有参数值
+$cmd->all();
+
+// 解析选项 port
+$cmd->option('port', function ($val) {
+   // $val port选项传入的值
+   echo 'Option port handler=》.$val;
+});
+
+// 解析参数 test
+$cmd->args('test', function ($bool){
+$bool 是否解析到 test true|false
+    if($bool){
+        // 传入了 test
+    }else{
+       //未传入 test
+    }
+});
+
+// 获取所有Opts的值
+$cmd->getOptVal();
+// 获取 port 的值 ，没有则返回null
+$cmd->getOptVal('post');
+
+// 获取所有Args的值
+$cmd->getArgVal();
+// 获取 是否传入 test 的 ，返回true|false
+$cmd->getArgVal('test');
+
+/**
+ * 调用 demo:  php command --port 3307 -c 100 -hlocal -g test
+ * 传入参数说明：
+ *    --opts参数名称 加 空格 加 opts参数值 例如：--port 3307 表示 port 的值为 3307      ; 返回到 opts 中
+ *    -opts参数名称 加 空格 加 opts参数值 例如：-c 100 表示 c 的值为 100                ; 返回到 opts 中
+ *    -opts参数简称「单字母」 不加空格 接opts参数值 例如：-hlocal 表示  的值为 local      ; 返回到 opts 中
+ *    -opts参数简称「单字母」 例如：-g 表示 传入了参数 g                                ; 返回到 opts 中
+ *    参数名称 例如：test 表示 传入了参数 test                                         ; 返回到 args 中
+ */
+```
 
 
 ### 截图功能

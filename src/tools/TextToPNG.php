@@ -39,6 +39,7 @@ class TextToPNG
     private $imgHeight      = '500'; //生成图片高
     private $imgWidthUsage  = 0.9; //生成图片宽度使用率，例如0.9表示 使用90%，留空10%
     private $imgHeightUsage = 0.9; //生成图片高度使用率，例如0.9表示 使用90%，留空10%
+    private $isAllowWrap    = true; //是否允许文字自动换行
 
     /**
      * 初始化
@@ -65,6 +66,17 @@ class TextToPNG
     }
 
     /**
+     * 是否自动设置换行
+     * @param $val
+     * @return $this
+     */
+    public function allowWrap($val = true)
+    {
+        $this->isAllowWrap = (bool)$val;
+        return $this;
+    }
+
+    /**
      * 进行绘画
      * @Author   ZhaoXianFang
      * @DateTime 2019-03-20
@@ -73,7 +85,7 @@ class TextToPNG
     public function draw()
     {
         // 自动调整文字宽度和字体大小
-        $this->autowrap();
+        $this->autowrap($this->isAllowWrap);
 
         // 确定边框高度.
         $bounds     = imagettfbbox($this->size, $this->rot, $this->font, $this->text);

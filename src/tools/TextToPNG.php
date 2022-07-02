@@ -24,6 +24,8 @@ class TextToPNG
 
     protected static $instance; // object 对象实例
 
+    private static $calculateNum = 0; //自动计算文字次数
+
     private $font           = './../resource/font/lishu.ttf'; //默认字体. 相对于脚本存放目录的相对路径.
     private $text           = "Hello!"; // 默认文字.
     private $size           = 24; //默认字体大小，会自动适配
@@ -84,22 +86,24 @@ class TextToPNG
      */
     public function draw()
     {
+        self::$calculateNum = 0;
+
         // 自动调整文字宽度和字体大小
         $this->autowrap($this->isAllowWrap);
 
         // 确定边框高度.
-        $bounds     = imagettfbbox($this->size, $this->rot, $this->font, $this->text);
-        $minX       = min($bounds[0], $bounds[2], $bounds[4], $bounds[6]);
-        $maxX       = max($bounds[0], $bounds[2], $bounds[4], $bounds[6]);
-        $minY       = min($bounds[1], $bounds[3], $bounds[5], $bounds[7]);
-        $maxY       = max($bounds[1], $bounds[3], $bounds[5], $bounds[7]);
-        $textWidth  = bcsub($maxX, $minX);
+        $bounds = imagettfbbox($this->size, $this->rot, $this->font, $this->text);
+        $minX = min($bounds[0], $bounds[2], $bounds[4], $bounds[6]);
+        $maxX = max($bounds[0], $bounds[2], $bounds[4], $bounds[6]);
+        $minY = min($bounds[1], $bounds[3], $bounds[5], $bounds[7]);
+        $maxY = max($bounds[1], $bounds[3], $bounds[5], $bounds[7]);
+        $textWidth = bcsub($maxX, $minX);
         $textHeight = bcsub($maxY, $minY);
         // 居中显示
         $offset_x = ($this->imgWidth - $textWidth) / 2 + abs($minX);
         $offset_y = ($this->imgHeight - $textHeight) / 2 + abs($minY);
 
-        $image      = imagecreate($this->imgWidth, $this->imgHeight);
+        $image = imagecreate($this->imgWidth, $this->imgHeight);
         $background = imagecolorallocate($image, hexdec($this->bg_red), hexdec($this->bg_grn), hexdec($this->bg_blu));
         $foreground = imagecolorallocate($image, hexdec($this->red), hexdec($this->grn), hexdec($this->blu));
 
@@ -121,37 +125,45 @@ class TextToPNG
     // 自动调整文字宽度和字体大小
     public function autowrap($init = true)
     {
+        if (self::$calculateNum > 8) {
+            return false;
+        }
+        self::$calculateNum++;
+
         $rot = $init ? 0 : $this->rot; // 旋转角度
+
+        $imgUseWidth = $this->imgWidth * $this->imgWidthUsage;
+        $imgUseHeight = $this->imgHeight * $this->imgHeightUsage;
 
         // 将字符串拆分成一个个单字 保存到数组 letter 中
         for ($i = 0; $i < mb_strlen($this->text); $i++) {
             $letter[] = mb_substr($this->text, $i, 1, 'utf-8');
         }
 
-        $content         = "";
+        $content = "";
         $fontIsTooHeight = false;
         for ($i = 0; $i < count($letter); $i++) {
             // 换行处理
             if ($letter[$i] == "/" && $letter[$i + 1] == "n") {
-                $content        .= PHP_EOL;// 换行
+                $content .= PHP_EOL;// 换行
                 $letter[$i + 1] = '';
                 continue;
             }
 
             $teststr = $content . " " . $letter[$i];
             // 测量宽度和高度
-            $testbox    = imagettfbbox($this->size, $rot, $this->font, $teststr);
-            $minX       = min($testbox[0], $testbox[2], $testbox[4], $testbox[6]);
-            $maxX       = max($testbox[0], $testbox[2], $testbox[4], $testbox[6]);
-            $minY       = min($testbox[1], $testbox[3], $testbox[5], $testbox[7]);
-            $maxY       = max($testbox[1], $testbox[3], $testbox[5], $testbox[7]);
-            $testWidth  = bcsub($maxX, $minX);
+            $testbox = imagettfbbox($this->size, $rot, $this->font, $teststr);
+            $minX = min($testbox[0], $testbox[2], $testbox[4], $testbox[6]);
+            $maxX = max($testbox[0], $testbox[2], $testbox[4], $testbox[6]);
+            $minY = min($testbox[1], $testbox[3], $testbox[5], $testbox[7]);
+            $maxY = max($testbox[1], $testbox[3], $testbox[5], $testbox[7]);
+            $testWidth = bcsub($maxX, $minX);
             $testHeight = bcsub($maxY, $minY);
             // 宽度最大显示90%
-            if ($init && ($testWidth > ($this->imgWidth * $this->imgWidthUsage)) && ($content !== "")) {
+            if ($init && ($testWidth > $imgUseWidth) && ($content !== "")) {
                 $content .= PHP_EOL;// 换行
             }
-            if ($testHeight > ($this->imgHeight * $this->imgHeightUsage)) {
+            if ($testHeight > $imgUseHeight) {
                 // 文字太高了
                 $fontIsTooHeight = true;
                 break;
@@ -159,12 +171,23 @@ class TextToPNG
 
             $content .= $letter[$i];
         }
+
         if ($fontIsTooHeight) {
-            $this->size = floor(bcmul($this->size, bcdiv($this->imgHeight * $this->imgHeightUsage, $testHeight, 2)));
+            $this->size = floor(bcmul($this->size, bcdiv($imgUseHeight, $testHeight, 2)));
             return $this->autowrap($init);
         }
 
-        if ($testHeight < floor($this->imgHeight * $this->imgHeightUsage * 0.45)) {
+        if (!$this->isAllowWrap && ($testWidth > $imgUseWidth * 0.7)) {
+            $this->size = floor(bcmul($this->size, bcdiv($imgUseWidth, $testWidth, 2)));
+
+            return $this->autowrap($init);
+        }
+        if (!$this->isAllowWrap && ($testWidth < $imgUseWidth * 0.7)) {
+            $this->size = $this->size + 2;
+            return $this->autowrap($init);
+        }
+
+        if ($this->isAllowWrap && ($testHeight < floor($imgUseHeight * 0.45))) {
             $this->size = bcadd($this->size, 3);
             return $this->autowrap($init);
         }
@@ -172,14 +195,14 @@ class TextToPNG
         // 文字面积
         $txtArea = bcmul($testWidth, $testHeight);
         // 图片面积
-        $imgArea = floor(bcmul($this->imgWidth * $this->imgWidthUsage, $this->imgHeight * $this->imgHeightUsage));
+        $imgArea = floor(bcmul($imgUseWidth, $imgUseHeight));
         // 文字空白占比
         $emptyRatio = bcsub(1, bcdiv($txtArea, $imgArea, 3), 1);
         // 允许 0.4 ~ 0.8 的空白
         $setRatio = (($this->rot > 30 && $this->rot < 150) || ($this->rot > 210 && $this->rot < 330)) ? 0.8 : 0.4;
-        if ($emptyRatio > $setRatio) {
+        if (!$this->isAllowWrap && ($emptyRatio > $setRatio)) {
             // 字小了
-            $this->size = bcadd($this->size, $emptyRatio * 10);
+            $this->size = bcadd($this->size, $emptyRatio * 5);
             return $this->autowrap($init);
         }
         if ($emptyRatio < 0.1) {
@@ -264,7 +287,7 @@ class TextToPNG
      */
     public function setSize($width = '900', $height = '500')
     {
-        $this->imgWidth  = abs((int)$width);
+        $this->imgWidth = abs((int)$width);
         $this->imgHeight = abs((int)$height);
 
         return $this;
@@ -316,8 +339,8 @@ class TextToPNG
     public function setRotate($rotate = 0)
     {
         // 角度转换到0-360度内
-        $rotate    = $rotate > 0 ? ($rotate % 360) : ($rotate % -360);
-        $rotate    = $rotate > 0 ? $rotate : (360 + $rotate);
+        $rotate = $rotate > 0 ? ($rotate % 360) : ($rotate % -360);
+        $rotate = $rotate > 0 ? $rotate : (360 + $rotate);
         $this->rot = (int)$rotate;
         return $this;
     }

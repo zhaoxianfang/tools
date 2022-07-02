@@ -85,51 +85,22 @@ if (!function_exists('listan_sql') && class_exists('\Illuminate\Support\Facades\
     }
 }
 
-if (!function_exists('get_protected_value')) {
+if (!function_exists('copy_model') && class_exists('\Illuminate\Support\Facades\DB')) {
     /**
-     * 打印对象里面受保护属性的值
-     * @param $obj
-     * @param $name
-     * @return mixed
-     */
-    function get_protected_value($obj, $name)
-    {
-        $array = (array)$obj;
-        $prefix = chr(0) . '*' . chr(0);
-        return $array[$prefix . $name];
-    }
-}
-
-if (!function_exists('set_protected_value')) {
-    /**
-     * 使用反射 修改对象里面受保护属性的值
-     * @param $obj
-     * @param $name
-     * @return mixed
-     */
-    function set_protected_value($obj, $filed,$value)
-    {
-        $reflectionClass = new ReflectionClass($obj);
-        $reflectionProperty = $reflectionClass->getProperty($filed);
-        try {
-            $reflectionClass->setStaticPropertyValue($filed, $value);
-        }catch (\Exception $err){
-            $reflectionProperty->setAccessible(true);
-            $reflectionProperty->setValue($obj, $value);
-        }
-    }
-}
-
-if (!function_exists('copy_model_value') && class_exists('\Illuminate\Support\Facades\DB')) {
-    /**
+     * 复制一份不带 关联关系的模型
      * 复制模型，主要是解决 laravel -> replicate 复制方法会缺失部分字段问题
      * @param $model
      * @return mixed
      */
-    function copy_model_value($model)
+    function copy_model($model)
     {
-        $obj = $model->replicate();
-        $modelObj = collect($model);
+        // 先复制一份模型 // 防止修改到原模型属性
+        $copyModel = $model->replicate();
+        // 创建一个新实例
+        $obj = $model->newInstance();
+        // 移除所有关联 relations
+        $copyModel = $copyModel->unsetRelations();
+        $modelObj  = collect($copyModel);
         foreach ($modelObj as $key => $item) {
             $obj->$key = $item;
         }

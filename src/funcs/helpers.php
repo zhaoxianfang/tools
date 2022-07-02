@@ -1107,3 +1107,39 @@ if (!function_exists('str_en_code')) {
         return ($action != 'de' ? base64_encode($code) : $code);
     }
 }
+
+
+if (!function_exists('get_protected_value')) {
+    /**
+     * 打印对象里面受保护属性的值
+     * @param $obj
+     * @param $name
+     * @return mixed
+     */
+    function get_protected_value($obj, $name)
+    {
+        $array = (array)$obj;
+        $prefix = chr(0) . '*' . chr(0);
+        return $array[$prefix . $name];
+    }
+}
+
+if (!function_exists('set_protected_value')) {
+    /**
+     * 使用反射 修改对象里面受保护属性的值
+     * @param $obj
+     * @param $name
+     * @return mixed
+     */
+    function set_protected_value($obj, $filed,$value)
+    {
+        $reflectionClass = new ReflectionClass($obj);
+        $reflectionProperty = $reflectionClass->getProperty($filed);
+        try {
+            $reflectionClass->setStaticPropertyValue($filed, $value);
+        }catch (\Exception $err){
+            $reflectionProperty->setAccessible(true);
+            $reflectionProperty->setValue($obj, $value);
+        }
+    }
+}

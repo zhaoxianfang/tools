@@ -37,6 +37,7 @@ composer require zxf/tools
 | ImgToIco   | 图片转ico 格式                                                                                       |
 | Modules    | laravel 多模块应用                                                                                   |
 | Command    | 命令行解析工具                                                                                         |
+| Tree       | 树形结构化                                                                                           |
 | 其他         | 还有一些没有写在此处的工具类                                                                                  |
 
 
@@ -482,6 +483,36 @@ if (!$result) {
  zxf\tools\ImgToIco::instance()->set($imgurl, 32)->generate();
  // 保存到指定文件夹
  zxf\tools\ImgToIco::instance()->set($imgurl, 32)->generate('E:/www');
+```
+
+### Tree 树形结构化,
+```
+$arr = array(
+     array('id'=>'1','pid'=>0,'name'=>'一级栏目一'),
+     array('id'=>'2','pid'=>0,'name'=>'一级栏目二'),
+     array('id'=>'3','pid'=>1,'name'=>'二级栏目一'),
+     array('id'=>'4','pid'=>1,'name'=>'二级栏目二'),
+     array('id'=>'5','pid'=>2,'name'=>'二级栏目三'),
+     array('id'=>'6','pid'=>3,'name'=>'三级栏目一'),
+     array('id'=>'7','pid'=>3,'name'=>'三级栏目二')
+)
+$tree = zxf\tools\Tree::instance()->init($arr, 'id', 'pid', 'childlist');
+
+// 添加节点 会自动补上 pid
+$tree->addNode(3,array('id'=>'8','name'=>'二级栏目一的子节点'));
+// 删除节点
+$tree->delNode(6);
+// 修改节点 ,会自动补上 id 和 pid
+$tree->changeNode(5,array('name'=>'二级栏目三的修改项'));
+// 通过id查找节点
+$tree->find(5);
+// 通过id查找子节点
+$tree->childTree(5);
+// 通过id查找父节点
+$tree->parentTree(5);
+
+// 获取tree
+$tree->getTree();
 ```
 
 ### laravel 多模块应用

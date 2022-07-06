@@ -38,6 +38,7 @@ composer require zxf/tools
 | Modules    | laravel 多模块应用                                                                                   |
 | Command    | 命令行解析工具                                                                                         |
 | Tree       | 树形结构化                                                                                           |
+| DiDom      | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                         |
 | 其他         | 还有一些没有写在此处的工具类                                                                                  |
 
 
@@ -516,7 +517,7 @@ $tree->getTree();
 ```
 
 ### laravel 多模块应用
-[多模文档说明](./README_laravel.md)
+[多模文档说明](README_laravel.md)
 
 ### Command 命令行参数解析
 > 在项目根目录新建一个`command` 脚本，测试内容如下

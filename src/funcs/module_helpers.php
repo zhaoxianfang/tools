@@ -95,15 +95,13 @@ if (!function_exists('copy_model') && class_exists('\Illuminate\Support\Facades\
     function copy_model($model)
     {
         // 先复制一份模型 // 防止修改到原模型属性
-        $copyModel = $model->replicate();
-        // 创建一个新实例
-        $obj = $model->newInstance();
-        // 移除所有关联 relations
-        $copyModel = $copyModel->unsetRelations();
-        $modelObj  = collect($copyModel);
+        $obj = $model->replicate();
+        // 进行遍历赋值
+        $modelObj = collect($model);
         foreach ($modelObj as $key => $item) {
             $obj->$key = $item;
         }
-        return $obj;
+        // 移除所有关联 relations
+        return $obj->unsetRelations();
     }
 }

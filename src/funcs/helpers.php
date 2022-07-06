@@ -4,11 +4,11 @@
  * 常用的一些函数归纳
  */
 
-if (!function_exists('simple_session')) {
+if (!function_exists('i_session')) {
     /**
      * 简易session 助手函数
      */
-    function simple_session($name, $value = null)
+    function i_session($name, $value = null)
     {
         $handle = \zxf\tools\Session::instance();
         if ($value != null) {

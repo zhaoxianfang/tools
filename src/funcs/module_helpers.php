@@ -97,8 +97,8 @@ if (!function_exists('copy_model') && class_exists('\Illuminate\Support\Facades\
         // 先复制一份模型 // 防止修改到原模型属性
         $obj = $model->replicate();
         // 进行遍历赋值
-        $modelObj = collect($model);
-        foreach ($modelObj as $key => $item) {
+        $data = collect($model->getAttributes())->merge($model->getOriginal());
+        foreach ($data as $key => $item) {
             $obj->$key = $item;
         }
         // 移除所有关联 relations

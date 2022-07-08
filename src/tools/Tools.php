@@ -532,8 +532,8 @@ class Tools
      */
     static public function realIp()
     {
-        static $realip = NULL;
-        if ($realip !== NULL) return $realip;
+        static $realip = null;
+        if ($realip !== null) return $realip;
         if (isset($_SERVER)) {
             if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
                 $arr = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
@@ -730,5 +730,134 @@ class Tools
             echo $file_data;
         }
         fclose($fp); //关闭文件
+    }
+
+    /**
+     * 获取IP地址
+     * @return string
+     */
+    static public function getIP(): string
+    {
+        if (isset($_SERVER['HTTP_CLIENT_IP'])) {
+            $ip = $_SERVER['HTTP_CLIENT_IP'];
+        }
+        if (isset($_SERVER['HTTP_X_REAL_IP'])) {
+            $ip = $_SERVER['HTTP_X_REAL_IP'];
+        } else if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ip  = $_SERVER['HTTP_X_FORWARDED_FOR'];
+            $ips = explode(',', $ip);
+            $ip  = trim(current($ips));
+        } else if (isset($_SERVER['REMOTE_ADDR'])) {
+            $ip = $_SERVER['REMOTE_ADDR'];
+        } else {
+            $ip = '0.0.0.0';
+        }
+        return $ip;
+    }
+
+    /**
+     * format 保留两位小数
+     *
+     * @param int $input 数值
+     * @param int $number 小数位数
+     *
+     * @return string
+     */
+    static public function format($input, int $number = 2): string
+    {
+        return sprintf("%." . $number . "f", $input);
+    }
+
+    /**
+     * formatDate 时间格式化
+     *
+     * @param int $time 时间
+     *
+     * @return string
+     */
+    static public function formatDate(int $time): string
+    {
+        $t = time() - $time;
+
+        $f = [
+            '31536000' => '年',
+            '2592000'  => '个月',
+            '604800'   => '星期',
+            '86400'    => '天',
+            '3600'     => '小时',
+            '60'       => '分钟',
+            '1'        => '秒'
+        ];
+
+        foreach ($f as $k => $v) {
+            if (0 != $c = floor($t / (int)$k)) {
+                return $c . $v . '前';
+            } else {
+                return '刚刚';
+            }
+        }
+    }
+
+    /**
+     * 二维数组排序
+     *
+     * @param array $array 排序的数组
+     * @param string $keys 要排序的key
+     * @param string $sort 排序类型 ASC、DESC
+     *
+     * @return array
+     */
+    static public function arrayMultiSort(array $array, string $keys, string $sort = 'desc'): array
+    {
+        $keysValue = [];
+
+        foreach ($array as $k => $v) {
+            $keysValue[$k] = $v[$keys];
+        }
+
+        $orderSort = [
+            'asc'  => SORT_ASC,
+            'desc' => SORT_DESC,
+        ];
+
+        array_multisort($keysValue, $orderSort[$sort], $array);
+
+        return $array;
+    }
+
+    /**
+     * XML转数组
+     *
+     * @param string $xml xml
+     *
+     * @return array
+     */
+    static public function xmlToArray(string $xml): array
+    {
+        //禁止引用外部xml实体
+        libxml_disable_entity_loader(true);
+        $xmlString = simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA);
+        $result    = json_decode(json_encode($xmlString), true);
+        return $result;
+    }
+
+    /**
+     * 数组转XML
+     *
+     * @param array $input 数组
+     *
+     * @return string
+     */
+    static public function arrayToXml(array $input): string
+    {
+        $str = '<xml>';
+
+        foreach ($input as $k => $v) {
+            $str .= '<' . $k . '>' . $v . '</' . $k . '>';
+        }
+
+        $str .= '</xml>';
+
+        return $str;
     }
 }

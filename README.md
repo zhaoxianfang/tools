@@ -10,6 +10,11 @@
 ```
 composer require zxf/tools
 ```
+## 使用文档
+> 该文档会进行详细的介绍本扩展包的包含的功能和用法
+
+[使用文档](https://weisifang.com/docs/doc/17 "使用文档")
+
 
 ## 涵盖模块
 
@@ -19,8 +24,7 @@ composer require zxf/tools
 | QQ登录       | Qqlogin                                                                                         |
 | 微信         | wechat(未完成)                                                                                     |
 | 截图         | JonnyW、Psr、Symfony(废弃)                                                                          |
-| 微博登录       | sina                                                                                            |
-| QueryList  | QueryList(废弃)                                                                                   |
+| 微博登录       | sina                                                                                            |                                                                      |
 | JsMin      | js 压缩工具                                                                                         |
 | QrCode     | 生成二维码                                                                                           |
 | BarCode    | 生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
@@ -38,7 +42,8 @@ composer require zxf/tools
 | Modules    | laravel 多模块应用                                                                                   |
 | Command    | 命令行解析工具                                                                                         |
 | Tree       | 树形结构化                                                                                           |
-| DiDom      | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                         |
+| DiDom      | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                      |
+| Csv        | 读取、导入、导出csv                                                                                     |
 | 其他         | 还有一些没有写在此处的工具类                                                                                  |
 
 
@@ -516,6 +521,94 @@ $tree->parentTree(5);
 $tree->getTree();
 ```
 
+### csv
+```
+// 导出数据
+$csvExport = \zxf\csv\Export::init()->setHeader(['col1','col2'])->setData([
+[
+'first column', 'second column',
+],[
+'first column', 'second column',
+],[
+'first column', 'second column',
+],[
+'01234324324324', '5307897897987989',
+],
+])->output('导出的文件名');
+
+// 读文件
+$fileName = '/Users/linian/www_root/code_test/Csv1/export.csv';
+$csvFile  = new \zxf\csv\CsvReader($fileName);
+foreach ($csvFile as $row) {
+    dump($row);
+}
+
+
+// 跳过第一行读文件
+$csvFile = new \zxf\csv\CsvReader(
+    $fileName,
+    \zxf\csv\CsvOptions::DEFAULT_DELIMITER,
+    \zxf\csv\CsvOptions::DEFAULT_ENCLOSURE,
+    \zxf\csv\CsvOptions::DEFAULT_ESCAPED_BY,
+    1
+);
+foreach ($csvFile as $row) {
+    dump($row);
+}
+
+// 写入 CSV
+$csvFile = new \zxf\csv\CsvWriter('/Users/linian/www_root/code_test/Csv1/export_writer_test.csv');
+$rows    = [
+    [
+        'col1', 'col2',
+    ],
+    [
+        'first column', 'second column',
+    ],
+];
+
+foreach ($rows as $row) {
+    $csvFile->writeRow($row);
+}
+
+// 附加到 CSV
+$fileName = '/Users/linian/www_root/code_test/Csv1/export_writer_test.csv';
+$file     = fopen($fileName, 'a');
+$csvFile  = new \zxf\csv\CsvWriter($file);
+$rows     = [
+    [
+        'col1-ext', 'col2-ext',
+    ],
+    [
+        'first column-ext', 'second column-ext',
+    ],
+];
+
+foreach ($rows as $row) {
+    $csvFile->writeRow($row);
+}
+fclose($file);
+
+// 使用 Windows 换行符编写 CSV
+$csvFile = new \zxf\csv\CsvWriter(
+    $fileName,
+    \zxf\csv\CsvWriter::DEFAULT_DELIMITER,
+    \zxf\csv\CsvWriter::DEFAULT_ENCLOSURE,
+    "\r\n"
+);
+$rows    = [
+    [
+        'col1', 'col2',
+    ],
+    [
+        'first column', 'second column',
+    ],
+];
+
+foreach ($rows as $row) {
+    $csvFile->writeRow($row);
+}
+```
 ### laravel 多模块应用
 [多模文档说明](README_laravel.md)
 

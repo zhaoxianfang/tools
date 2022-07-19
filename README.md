@@ -13,7 +13,7 @@ composer require zxf/tools
 ## 使用文档
 > 该文档会进行详细的介绍本扩展包的包含的功能和用法
 
-[使用文档](https://weisifang.com/docs/doc/17 "使用文档")
+[查看文档 https://weisifang.com/docs/7](https://weisifang.com/docs/7 "查看文档 https://weisifang.com/docs/7") 
 
 
 ## 涵盖模块
@@ -42,8 +42,9 @@ composer require zxf/tools
 | Modules    | laravel 多模块应用                                                                                   |
 | Command    | 命令行解析工具                                                                                         |
 | Tree       | 树形结构化                                                                                           |
-| DiDom      | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                      |
+| dom        | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                      |
 | Csv        | 读取、导入、导出csv                                                                                     |
+| FileCache  | 文件缓存                                                                                            |
 | 其他         | 还有一些没有写在此处的工具类                                                                                  |
 
 

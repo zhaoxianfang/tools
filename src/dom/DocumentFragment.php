@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace zxf\DiDom;
+namespace zxf\dom;
 
 use DOMDocumentFragment;
 

@@ -85,10 +85,11 @@ class ImgToIco
             $this->imageInfo['path'] = $imagePath;
             $this->imageInfo['size'] = filesize($imagePath); // 单位bit
             if ($this->imageInfo['size'] > 204800) {
-                throw new \Exception(__METHOD__ . '你上传的文件过大，最大不能超过200KB');
+//                throw new \Exception(__METHOD__ . '你上传的文件过大，最大不能超过200KB');
             }
         } catch (\Exception $e) {
-            throw new \Exception(__METHOD__ . '不是图片类型');
+            throw new \Exception($e->getMessage());
+            // throw new \Exception(__METHOD__ . '不是图片类型');
         }
         if (!in_array($this->imageInfo['mime'], $this->fileType)) {
             throw new \Exception(__METHOD__ . '不支持的文件格式');
@@ -136,13 +137,20 @@ class ImgToIco
             $temp_file = tempnam(sys_get_temp_dir(), 'ICO_');
             if (file_put_contents($temp_file, $icon_data)) {
                 // 下载到浏览器
-                $this->output_for_download($temp_file, 'favicon.ico');
+                return $this->output_for_download($temp_file, 'favicon.ico');
             }
         }
     }
 
+    private function base64EncodeImage($image_file)
+    {
+        $image_info = getimagesize($image_file);
+        $image_data = fread(fopen($image_file, 'r'), filesize($image_file));
+        return 'data:' . $image_info['mime'] . ';base64,' . chunk_split(base64_encode($image_data));
+    }
+
     /**
-     * 下载文件到浏览器
+     * 下载文件到浏览器[改为返回base64]
      *
      * @param string $filename 文件路径
      * @param array $title 输出的文件名
@@ -150,6 +158,8 @@ class ImgToIco
      */
     private function output_for_download($filename, $title)
     {
+        return $this->base64EncodeImage($filename);
+
         $file = fopen($filename, "rb");
         Header("Content-type:  application/octet-stream ");
         Header("Accept-Ranges:  bytes ");
@@ -179,6 +189,7 @@ class ImgToIco
                 $icANDmask[$key][$y] = '';
                 for ($x = 0; $x < $ImageWidths[$key]; $x++) {
                     $argb = $this->GetPixelColor($gd_image, $x, $y);
+
                     $a    = round(255 * ((127 - $argb['alpha']) / 127));
                     $r    = $argb['red'];
                     $g    = $argb['green'];
@@ -273,9 +284,6 @@ class ImgToIco
 
     private function GetPixelColor(&$img, $x, $y)
     {
-        if (!is_resource($img)) {
-            return false;
-        }
         return ImageColorsForIndex($img, ImageColorAt($img, $x, $y));
     }
 }

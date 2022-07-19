@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace zxf\DiDom\Exceptions;
+namespace zxf\dom\Exceptions;
 
 use Exception;
 

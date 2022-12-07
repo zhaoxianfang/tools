@@ -18,14 +18,14 @@ class ExtendMiddleware
     public function handle(Request $request, Closure $next)
     {
         $traceHandle = '';
-        if (!app()->runningInConsole() && $request->isMethod('get') && config('modules.trace')) {
+        if (!app()->runningInConsole() && $request->isMethod('get') && config('app.debug')) {
             $traceHandle = (new Handle($request))->handle();
         }
 
         $response = $next($request);
 
-        // 打印sql执行日志
-        if (!app()->runningInConsole() && $request->isMethod('get') && config('modules.trace')) {
+        // 打印sql执行日
+        if (!app()->runningInConsole() && $request->isMethod('get') && config('app.debug')) {
             $traceContent = $traceHandle->output();
 
             $pageContent = get_protected_value($response, 'content');

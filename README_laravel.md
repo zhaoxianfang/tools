@@ -200,6 +200,11 @@ php artisan module:make-resource PostResource Blog --collection
 php artisan module:make-test EloquentPostRepositoryTest Blog
 ```
 
+### 创建command
+```
+php artisan module:make-command TestCommand Test 
+```
+
 ## 更多
 
 请移步查看

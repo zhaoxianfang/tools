@@ -306,7 +306,7 @@ class Db
                 'charset'  => $charset
             ];
         }
-        $this->addConnection('default');
+        $this->addConnection('default', $options);
 
         if ($isSubQuery) {
             $this->isSubQuery = true;
@@ -469,7 +469,7 @@ class Db
      *
      * @return $this
      */
-    public function addConnection($name, array $params)
+    public function addConnection($name, array $params = [])
     {
         $params                           = !empty($params) ? $params : config('mysql.' . $name);
         $this->connectionsSettings[$name] = array();
@@ -1196,7 +1196,7 @@ class Db
         // We have to check if the file exists
         if (!file_exists($importFile)) {
             // Throw an exception
-            throw new Exception("importCSV -> importFile " . $importFile . " does not exists!");
+            throw new \Exception("importCSV -> importFile " . $importFile . " does not exists!");
         }
 
         // Define the default values

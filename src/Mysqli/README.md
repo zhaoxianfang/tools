@@ -13,6 +13,7 @@
 use zxf\Mysqli\Db;
 ```
 ### 配置文件格式
+配置文件`mysql.php`
 ```
 <?php
 /**

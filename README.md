@@ -17,10 +17,9 @@ composer require zxf/tools
 | 模块         | 需要包含的文件夹/说明                                                                                     |
 |------------|-------------------------------------------------------------------------------------------------|
 | QQ登录       | Qqlogin                                                                                         |
-| 微信         | wechat(未完成)                                                                                     |
-| 截图         | JonnyW、Psr、Symfony(废弃)                                                                          |
+| 微信         | wechat(未接入)                                                                                     |
+| 截图         | ScreenShot                                                                                      |
 | 微博登录       | sina                                                                                            |
-| QueryList  | QueryList(废弃)                                                                                   |
 | JsMin      | js 压缩工具                                                                                         |
 | QrCode     | 生成二维码                                                                                           |
 | BarCode    | 生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
@@ -38,7 +37,8 @@ composer require zxf/tools
 | Modules    | laravel 多模块应用                                                                                   |
 | Command    | 命令行解析工具                                                                                         |
 | Tree       | 树形结构化                                                                                           |
-| DiDom      | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                         |
+| DiDom      | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                      |
+| Db / Model | Mysql 的基础操作类Db;封装调用类Model                                                                       |
 | 其他         | 还有一些没有写在此处的工具类                                                                                  |
 
 
@@ -515,7 +515,19 @@ $tree->parentTree(5);
 // 获取tree
 $tree->getTree();
 ```
+### 网页截图
+> 使用前需要提前到[phantomjs](https://phantomjs.org/download.html) 下载相应的可执行应用程序
 
+```
+use zxf\ScreenShot\ScreenShot;
+
+// $softPath： 可执行文件phantomjs或者phantomjs.exe 所在目录； ScreenShot 会自动识别系统 $softPath 该使用 phantomjs 还是 phantomjs.exe
+// $url: 被截图网页  url
+// $savePath: 截图成功后的保存文件完整地址
+$res = ScreenShot::init($softPath='/Users/linian/extend')->setUrl($url = 'http://www.baidu.com')->run($savePath = __DIR__.'/img/'.time().'.png');
+
+$res 返回 true|fales 表示是否截图成功
+```
 ### laravel 多模块应用
 [多模文档说明](README_laravel.md)
 

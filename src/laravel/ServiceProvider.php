@@ -106,14 +106,10 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     // 加载发布文件
     protected function bootPublishes()
     {
+        // 把config 文件夹类的配置文件 发布到 config 文件夹下
         $this->publishes([
-            __DIR__ . '/../../config/oauth.php' => config_path('oauth.php')
+            __DIR__ . '/../../config/' => config_path('')
         ], 'modules');
-
-        $this->publishes([
-            __DIR__ . '/../../config/modules.php' => config_path('modules.php')
-        ], 'modules');
-
 
         // 发布Modules模块文件组
         $this->publishes([
@@ -201,7 +197,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
         $this->loadViewsFrom(module_path($module, 'Resources/views'), $moduleLower);
 
-        if(config('modules.publishes_views',true)) {
+        if (config('modules.publishes_views', true)) {
             $this->publishes([
                 $sourcePath => $viewPath
             ], ['views', $moduleLower . '-module-views']);
@@ -230,7 +226,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         if (!is_file(module_path($module, 'Config/config.php'))) {
             return false;
         }
-        if(config('modules.publishes_config',false)){
+        if (config('modules.publishes_config', false)) {
             $this->publishes([
                 module_path($module, 'Config/config.php') => config_path($moduleLower . '.php'),
             ], 'config');

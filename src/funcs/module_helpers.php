@@ -46,11 +46,11 @@ if (!function_exists('listan_sql') && class_exists('\Illuminate\Support\Facades\
      *      // 打印sql追踪
      *      echo $logStr;
      */
-    function listan_sql(&$traceLogStrOrArr = '',$carryHtml = true)
+    function listan_sql(&$traceLogStrOrArr = '', $carryHtml = true)
     {
         // 监听sql执行
-        $style = $contentStyle ='';
-        if($carryHtml){
+        $style = $contentStyle = '';
+        if ($carryHtml) {
             $style = "position: fixed;bottom:0;right:0;font-size:14px;width:100%;z-index: 999999;color: #000;text-align:left;font-family:'微软雅黑';background:#ffffff;";
             $contentStyle = 'overflow:auto;height:auto;padding:0;line-height: 24px;max-height: 200px;';
         }
@@ -58,7 +58,7 @@ if (!function_exists('listan_sql') && class_exists('\Illuminate\Support\Facades\
         $debugInfo = [];
         $logStr = '';
 
-        \Illuminate\Support\Facades\DB::listen(function ($query) use ($style, &$debugInfo, $contentStyle, &$logStr, &$traceLogStrOrArr,$carryHtml) {
+        \Illuminate\Support\Facades\DB::listen(function ($query) use ($style, &$debugInfo, $contentStyle, &$logStr, &$traceLogStrOrArr, $carryHtml) {
             $bindings = $query->bindings;
             $sql = $query->sql;
             foreach ($bindings as $replace) {
@@ -70,14 +70,14 @@ if (!function_exists('listan_sql') && class_exists('\Illuminate\Support\Facades\
                 'sql'  => $sql,
                 'time' => round($query->time / 1000, 3),
             ];
-            if($carryHtml) {
+            if ($carryHtml) {
                 foreach ($debugInfo as $info) {
 
                     $logStr .= '<li style="border-bottom:1px solid #EEE;font-size:14px;padding:0 12px">' . 'execution time:' . $info['time'] . '(s);=>sql:' . $info['sql'] . '</li>';
                 }
                 // 打印sql执行日志
                 $traceLogStrOrArr = '<div style="' . $style . '"><div style="' . $contentStyle . '">' . $logStr . '</div></div>';
-            }else{
+            } else {
                 $traceLogStrOrArr = $debugInfo;
             }
 
@@ -102,6 +102,12 @@ if (!function_exists('copy_model') && class_exists('\Illuminate\Support\Facades\
             $obj->$key = $item;
         }
         // 移除所有关联 relations
-        return $obj->unsetRelations();
+        $res = $obj->unsetRelations();
+
+        $relations = $model->getRelations();
+        foreach ($relations as $real => $v) {
+            $res->$real = null;
+        }
+        return $res;
     }
 }

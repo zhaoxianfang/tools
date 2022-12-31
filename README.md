@@ -1,5 +1,6 @@
 # zxf
 
+![](https://img.shields.io/github/stars/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/forks/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/tag/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/release/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/issues/zhaoxianfang/tools.svg)
 
 >基于 php 的项目模块开发
 >调用命名空间 使用 use zxf\…… 例如 use zxf\login\QqOauth;  use zxf\String\JsMin;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace zxf\DiDom;
+namespace zxf\dom;
 
 class Errors
 {
@@ -30,7 +30,7 @@ class Errors
 
     /**
      * Restore error reporting.
-     * 
+     *
      * @param bool $clear
      */
     public static function restore($clear = true)

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace zxf\DiDom;
+namespace zxf\dom;
 
-use zxf\DiDom\Exceptions\InvalidSelectorException;
+use zxf\dom\Exceptions\InvalidSelectorException;
 use DOMAttr;
 use DOMCdataSection;
 use DOMComment;

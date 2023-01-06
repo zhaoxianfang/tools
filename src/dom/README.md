@@ -1,4 +1,4 @@
-# zxf/DiDom 模块说明
+# zxf/dom 模块说明
 
 >来源： 本模块由 https://github.com/Imangazaliev/DiDOM 而来
 > 使用时候需要加上命名空间 `zxf`
@@ -8,7 +8,7 @@
 ## Quick start
 
 ```php
-use DiDom\Document;
+use zxf\dom\Document;
 
 $document = new Document('http://www.news.com/', true);
 
@@ -21,7 +21,7 @@ foreach($posts as $post) {
 
 ## Creating new document
 
-DiDom allows to load HTML in several ways:
+ zxf\dom allows to load HTML in several ways:
 
 ##### With constructor
 
@@ -83,8 +83,8 @@ DiDOM accepts CSS selector or XPath as an expression for search. You need to pat
 ##### With method `find()`:
 
 ```php
-use DiDom\Document;
-use DiDom\Query;
+use zxf\dom\Document;
+use zxf\dom\Query;
 
 ...
 
@@ -95,7 +95,7 @@ $posts = $document->find('.post');
 $posts = $document->find("//div[contains(@class, 'post')]", Query::TYPE_XPATH);
 ```
 
-If the elements that match a given expression are found, then method returns an array of instances of `DiDom\Element`, otherwise - an empty array. You could also get an array of `DOMElement` objects. To get this, pass `false` as the third parameter.
+If the elements that match a given expression are found, then method returns an array of instances of `zxf\dom\Element`, otherwise - an empty array. You could also get an array of `DOMElement` objects. To get this, pass `false` as the third parameter.
 
 ##### With magic method `__invoke()`:
 
@@ -174,7 +174,7 @@ $document->first('head')->firstInDocument('title')->remove();
 
 ## Supported selectors
 
-DiDom supports search by:
+ zxf\dom supports search by:
 
 - tag
 - class, ID, name and value of an attribute
@@ -308,7 +308,7 @@ echo $posts[0]->text();
 ### Creating an instance of the class
 
 ```php
-use DiDom\Element;
+use zxf\dom\Element;
 
 $element = new Element('span', 'Hello');
 
@@ -329,8 +329,8 @@ $element = new Element('textarea', 'Text', $attributes);
 An element can be created from an instance of the class `DOMElement`:
 
 ```php
-use DiDom\Element;
-use DOMElement;
+use zxf\dom\Element;
+use zxf\dom\DOMElement;
 
 $domElement = new DOMElement('span', 'Hello');
 
@@ -574,7 +574,7 @@ Cache is an array of XPath expressions, that were converted from CSS.
 #### Getting from cache
 
 ```php
-use DiDom\Query;
+use zxf\dom\Query;
 
 ...
 

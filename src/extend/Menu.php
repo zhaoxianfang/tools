@@ -56,20 +56,20 @@ class Menu
     // 初始化参数，防止 调用 Menu 的过程中 有的 参数被篡改 导致 之后的调用参数发生错乱
     private function initConfigParam()
     {
-        $this->arr           = [];
-        $this->pk            = 'id';
-        $this->pid           = 'pid';
-        $this->childlist     = 'childlist';
-        $this->weigh         = 'weigh'; //权重
-        $this->title         = 'title'; //Tree 展示的作用字段
-        $this->badge         = 'badge_text'; //badge 图标
-        $this->badgeStyle    = 'badge_text_style'; //badge 图标 样式
+        $this->arr = [];
+        $this->pk = 'id';
+        $this->pid = 'pid';
+        $this->childlist = 'childlist';
+        $this->weigh = 'weigh'; //权重
+        $this->title = 'title'; //Tree 展示的作用字段
+        $this->badge = 'badge_text'; //badge 图标
+        $this->badgeStyle = 'badge_text_style'; //badge 图标 样式
         $this->showchildicon = false; //子级菜单显示icon小图标
-        $this->showNavIcon   = false; //前台nav 一级导航是否显示icon小图标
-        $this->menuType      = 'nazox'; //目录类型 adminlte|layuiadmin|nazox|inspinia
+        $this->showNavIcon = false; //前台nav 一级导航是否显示icon小图标
+        $this->menuType = 'nazox'; //目录类型 adminlte|layuiadmin|nazox|inspinia
 
         //默认配置
-        $this->config  = [];
+        $this->config = [];
         $this->options = [];
         //是否返回 $this
         $this->returnClass = false;
@@ -199,7 +199,7 @@ class Menu
         $data = [];
         foreach ($list as $row) {
             // $data[$row[$id]][$name] = $row[$name];
-            $data[$row[$id]]                               = $row;
+            $data[$row[$id]] = $row;
             $data[$row[$pid]][$this->childlist][$row[$id]] = &$data[$row[$id]];
         }
         return isset($data[$rootId][$this->childlist]) ? $data[$rootId][$this->childlist] : [];
@@ -219,12 +219,12 @@ class Menu
         if (!$arrData) {
             return array();
         }
-        $tree     = array();
+        $tree = array();
         $usePkArr = []; ////记录被处理过的pid
         //第一步，将分类id作为数组key,并创建children单元
         foreach ($arrData as $arr) {
-            $arr                                     = object_to_array($arr);
-            $tree[$arr[$this->pk]]                   = $arr;
+            $arr = object_to_array($arr);
+            $tree[$arr[$this->pk]] = $arr;
             $tree[$arr[$this->pk]][$this->childlist] = array();
 
             $usePkArr[] = $arr[$this->pk];
@@ -531,10 +531,10 @@ class Menu
             if (!$menu) {
                 return '';
             }
-            $icon       = $menu['icon'];
-            $layHref    = (isset($menu[$this->childlist]) && !empty($menu[$this->childlist])) ? '' : 'lay-href="' . url($menu['name']) . '"';
+            $icon = $menu['icon'];
+            $layHref = (isset($menu[$this->childlist]) && !empty($menu[$this->childlist])) ? '' : 'lay-href="' . url($menu['name']) . '"';
             $activeMenu = $layHref ? $this->checkactiveMenu($menu['name']) : '';
-            $str        .= '<li data-name="' . $menu['name'] . '" class="layui-nav-item ' . $activeMenu . '"><a href="javascript:;" lay-tips="' . $menu['title'] . '" ' . $layHref . ' lay-direction="2"><i class="' . $icon . '"></i><cite>' . $menu['title'] . '</cite></a>' . $this->layuiChildList($menu) . '</li>';
+            $str .= '<li data-name="' . $menu['name'] . '" class="layui-nav-item ' . $activeMenu . '"><a href="javascript:;" lay-tips="' . $menu['title'] . '" ' . $layHref . ' lay-direction="2"><i class="' . $icon . '"></i><cite>' . $menu['title'] . '</cite></a>' . $this->layuiChildList($menu) . '</li>';
         }
         return $str;
     }
@@ -556,9 +556,9 @@ class Menu
             $parentData[$this->childlist] = $this->my_sort($parentData[$this->childlist], $this->weigh, SORT_DESC, SORT_NUMERIC);
         }
         foreach ($parentData[$this->childlist] as $key => $page) {
-            $layHref    = (isset($page[$this->childlist]) && !empty($page[$this->childlist])) ? '' : 'lay-href="' . url($page['name']) . '"';
+            $layHref = (isset($page[$this->childlist]) && !empty($page[$this->childlist])) ? '' : 'lay-href="' . url($page['name']) . '"';
             $activeMenu = $layHref ? $this->checkactiveMenu($page['name']) : '';
-            $str        .= '<dl class="layui-nav-child"><dd data-name="' . $page['name'] . '" class=" ' . $activeMenu . '"><a href="javascript:;" ' . $layHref . ' >' . $page['title'] . '</a>' . $this->layuiChildList($page) . '</dd></dl>';
+            $str .= '<dl class="layui-nav-child"><dd data-name="' . $page['name'] . '" class=" ' . $activeMenu . '"><a href="javascript:;" ' . $layHref . ' >' . $page['title'] . '</a>' . $this->layuiChildList($page) . '</dd></dl>';
         }
         return $str;
     }
@@ -577,7 +577,7 @@ class Menu
         $str = '';
         if (!$tArr && $pk < 1) {
             $this->tabLevel = 0;
-            $str            .= '<li class="nav-header">菜单栏</li>';
+            $str .= '<li class="nav-header">菜单栏</li>';
             // $tArr = $this->arr;
             if ($this->weigh && $this->arr) {
                 $tArr = $this->my_sort($this->arr, $this->weigh, SORT_DESC, SORT_NUMERIC);
@@ -597,11 +597,11 @@ class Menu
             $childs = $this->my_sort($childs, $this->weigh, SORT_DESC, SORT_NUMERIC);
         }
         $level += 1;
-        $nbsp  = ''; //缩进
+        $nbsp = ''; //缩进
         if ($pk > 0) {
             // $nbspStr = '&nbsp;&nbsp;';
             $nbspStr = '';
-            $nbsp    = str_repeat($nbspStr, $level);
+            $nbsp = str_repeat($nbspStr, $level);
         }
         foreach ($childs as $key => $value) {
             if (!isset($value[$this->pid])) {
@@ -610,14 +610,14 @@ class Menu
 
             $nextArr = (isset($value[$this->childlist]) && count($value[$this->childlist]) > 0) ? $value[$this->childlist] : array();
 
-            $href     = url($this->urlPrefix . $value['name']);
-            $icon     = $value['icon'];
-            $hasSub   = '';
+            $href = url($this->urlPrefix . $value['name']);
+            $icon = $value['icon'];
+            $hasSub = '';
             $hasChild = 0;
             if (isset($value[$this->childlist]) && count($value[$this->childlist]) > 0) {
                 //有子菜单
-                $href     = 'javascript:;';
-                $hasSub   = 'has-treeview ';
+                $href = 'javascript:;';
+                $hasSub = 'has-treeview ';
                 $hasChild = 1;
             }
             $iconStr = '';
@@ -627,7 +627,7 @@ class Menu
             // }
 
             $activeMenu = $this->checkactiveMenu($value['name'], $hasChild);
-            $str        .= '<li class="nav-item ' . $hasSub . ' ' . $activeMenu . '"><a menu class="nav-link ' . $activeMenu . '" href="' . $href . '">' . $nbsp . $iconStr . '<p>' . $value[$this->title];
+            $str .= '<li class="nav-item ' . $hasSub . ' ' . $activeMenu . '"><a menu class="nav-link ' . $activeMenu . '" href="' . $href . '">' . $nbsp . $iconStr . '<p>' . $value[$this->title];
             if ($hasChild) {
                 $str .= '<i class="fas fa-angle-left right"></i>';
                 // 右侧徽章
@@ -665,16 +665,16 @@ class Menu
         foreach ($arr as $key => $item) {
             $hasChild = (isset($item[$this->childlist]) && !empty($item[$this->childlist])) ? true : false;
 
-            $currentHref = $hasChild ? 'javascript:;' : $this->domain . url($this->urlPrefix .'/' . $item[$this->pk]); // 当前url
-            $currentIcon = $item['icon']??'' ;// 当前icon
+            $currentHref = $hasChild ? 'javascript:;' : $this->domain . url($this->urlPrefix . '/' . $item[$this->pk]); // 当前url
+            $currentIcon = $item['icon'] ?? '';// 当前icon
 
-            $liClass          = $hasChild ? 'dropdown' : '';
-            $liLinkClass      = $hasChild ? 'dropdown-toggle arrow-none' : '';
+            $liClass = $hasChild ? 'dropdown' : '';
+            $liLinkClass = $hasChild ? 'dropdown-toggle arrow-none' : '';
             $liLinkChildClass = $hasChild ? ' role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ' : '';
 
             $str .= '<li class="nav-item ' . $liClass . '">';
             $str .= '<a href="' . $currentHref . '" class="nav-link ' . $liLinkClass . '" id="topnav-' . $item[$this->pk] . '" ' . $liLinkChildClass . '>';
-            $str .= '<i class="ri-pencil-ruler-2-line mr-2 '.$currentIcon.'"></i>';
+            $str .= '<i class="ri-pencil-ruler-2-line mr-2 ' . $currentIcon . '"></i>';
 
             $str .= $item[$this->title];
             $str .= $hasChild ? '<div class="arrow-down"></div>' : '';
@@ -694,11 +694,11 @@ class Menu
         $str .= '<div class="dropdown-menu" aria-labelledby="topnav-' . $item[$this->pk] . '">';
         foreach ($item[$this->childlist] as $key => $childlistItem) {
 
-            $oneHasChild         = (isset($childlistItem[$this->childlist]) && !empty($childlistItem[$this->childlist])) ? true : false;
-            $oneLiLinkClass      = $oneHasChild ? 'dropdown-toggle arrow-none' : '';
+            $oneHasChild = (isset($childlistItem[$this->childlist]) && !empty($childlistItem[$this->childlist])) ? true : false;
+            $oneLiLinkClass = $oneHasChild ? 'dropdown-toggle arrow-none' : '';
             $oneLiLinkChildClass = $oneHasChild ? ' role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ' : '';
 
-            $oneCurrentHref = $oneHasChild ? 'javascript:;' : $this->domain . url('/classify/' . $childlistItem[$this->pk]); // 当前url
+            $oneCurrentHref = $oneHasChild ? 'javascript:;' : $this->domain . url($this->urlPrefix . '/' . $childlistItem[$this->pk]); // 当前url
 
             $str .= $oneHasChild ? '<div class="dropdown">' : '';
 
@@ -731,7 +731,7 @@ class Menu
         $str = '';
         if (!$tArr && $pk < 1) {
             $this->tabLevel = 0;
-            $tArr           = ($this->weigh && $this->arr) ? $this->my_sort($this->arr, $this->weigh, SORT_DESC, SORT_NUMERIC) : $this->arr;
+            $tArr = ($this->weigh && $this->arr) ? $this->my_sort($this->arr, $this->weigh, SORT_DESC, SORT_NUMERIC) : $this->arr;
         }
         if (!$tArr) {
             return $str;
@@ -754,7 +754,7 @@ class Menu
 
             //有无子菜单
             $hasChild = (isset($value[$this->childlist]) && count($value[$this->childlist]) > 0) ? 1 : 0;
-            $href     = $hasChild ? 'javascript:;' : url($this->urlPrefix . '/' . $value[$this->pk])->suffix('html')->domain(true);
+            $href = $hasChild ? 'javascript:;' : url($this->urlPrefix . '/' . $value[$this->pk])->suffix('html')->domain(true);
 
             // $activeMenu = $this->checkactiveMenu($value['name'], $hasChild);
             if ($hasChild) {
@@ -791,9 +791,9 @@ class Menu
         }
         $link = str_ireplace('.', '/', $link);
 
-        $linkArr    = explode('/', strtolower(trim($link, '/'))); //数据库获取
+        $linkArr = explode('/', strtolower(trim($link, '/'))); //数据库获取
         $setLinkArr = $this->activeMenu ? explode('/', strtolower($this->activeMenu)) : []; //当前控制器与方法
-        $activeStr  = '';
+        $activeStr = '';
 
         // 获取url所在模块
         try {
@@ -889,12 +889,12 @@ class Menu
      */
     public function clear()
     {
-        $this->config      = [];
-        $this->options     = [];
+        $this->config = [];
+        $this->options = [];
         $this->returnClass = '';
-        $this->arr         = [];
-        $this->pk          = 'id';
-        $this->pid         = 'pid';
+        $this->arr = [];
+        $this->pk = 'id';
+        $this->pid = 'pid';
         return $this;
     }
 
@@ -928,7 +928,7 @@ class Menu
                 $nameArr['1'] = 'index';
             }
 
-            $auth[$uri]                   = strtolower(implode("/", $nameArr));
+            $auth[$uri] = strtolower(implode("/", $nameArr));
             $newAuthArr[$auth[$this->pk]] = $auth;
 
         }
@@ -938,11 +938,11 @@ class Menu
 
             if ($value[$uri] == $path || $value[$uri] . '/index' == $path) {
                 $crumb[] = $value;
-                $pid     = $value[$this->pid];
+                $pid = $value[$this->pid];
 
                 while ($pid) {
                     $crumb[] = $newAuthArr[$pid];
-                    $pid     = $newAuthArr[$pid][$this->pid];
+                    $pid = $newAuthArr[$pid][$this->pid];
                 }
                 break;
             }
@@ -974,8 +974,8 @@ class Menu
     // 获取 nav 面包屑导航
     public function getNavBreadCrumb($id = '')
     {
-        $str     = '';
-        $tree    = array();
+        $str = '';
+        $tree = array();
         $arrData = $this->arr;
         //第一步，将分类id作为数组key
         foreach ($arrData as $arr) {
@@ -985,7 +985,7 @@ class Menu
         $resultArr = [];
         while (isset($tree[$id])) {
             $resultArr[] = $tree[$id][$this->title];
-            $id          = $tree[$id][$this->pid];
+            $id = $tree[$id][$this->pid];
         }
         if (empty($resultArr)) {
             return '';

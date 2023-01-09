@@ -16,7 +16,7 @@ if (!function_exists('i_session')) {
             return $handle->$name = $value;
         } else {
             $val = $handle->$name;
-            return is_json($val) ? json_decode($val, true) : $val;
+            return is_json($val) ? json_decode_plus($val, true) : $val;
         }
     }
 }
@@ -52,18 +52,71 @@ if (!function_exists('zxf_substr')) {
     }
 }
 
+if (!function_exists('truncate')) {
+    /**
+     * 文章去去除标签截取文字
+     *
+     * @Author   ZhaoXianFang
+     * @DateTime 2018-09-12
+     *
+     * @param string  $string [被截取字符串]
+     * @param integer $length [长度]
+     * @param boolean $append [是否加...]
+     *
+     * @return   string
+     */
+    function truncate($string, $length = 150, $append = true)
+    {
+        $string    = html_entity_decode($string);
+        $string    = trim(strip_tags($string, '<em>'));
+        $strlength = strlen($string);
+        if ($length == 0 || $length >= $strlength) {
+            return $string;
+        } elseif ($length < 0) {
+            $length = $strlength + $length;
+            if ($length < 0) {
+                $length = $strlength;
+            }
+        }
+        if (function_exists('mb_substr')) {
+            $newstr = mb_substr($string, 0, $length, "UTF-8");
+        } elseif (function_exists('iconv_substr')) {
+            $newstr = iconv_substr($string, 0, $length, "UTF-8");
+        } else {
+            for ($i = 0; $i < $length; $i++) {
+                $tempstring = substr($string, 0, 1);
+                if (ord($tempstring) > 127) {
+                    $i++;
+                    if ($i < $length) {
+                        $newstring[] = substr($string, 0, 3);
+                        $string      = substr($string, 3);
+                    }
+                } else {
+                    $newstring[] = substr($string, 0, 1);
+                    $string      = substr($string, 1);
+                }
+            }
+            $newstr = join($newstring);
+        }
+        if ($append && $string != $newstr) {
+            $newstr .= '...';
+        }
+        return $newstr;
+    }
+}
+
 if (!function_exists('check_file_exists')) {
     /**
      * 判断远程资源是否存在
-     * @Author   ZhaoXianFang
-     * @DateTime 2019-06-26
-     * @param    [type]       $url [description]
-     * @return   [type]            [description]
+     *
+     * @param $url
+     *
+     * @return bool
      */
-    function check_file_exists($url)
+    function check_file_exists($url): bool
     {
         $curl = curl_init($url);
-        curl_setopt($curl, CURLOPT_NOBODY, true); // 不取回数据
+        curl_setopt($curl, CURLOPT_NOBODY, true);          // 不取回数据
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); // https请求 不验证证书和hosts
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($curl, CURLOPT_SSLVERSION, 1);
@@ -98,7 +151,7 @@ if (!function_exists('default_img')) {
 }
 if (!function_exists('remove_str_emoji')) {
     // 移除字符串中的 emoji 表情
-    function remove_str_emoji($str)
+    function remove_str_emoji($str): string
     {
         $mbLen  = mb_strlen($str);
         $strArr = [];
@@ -115,7 +168,7 @@ if (!function_exists('remove_str_emoji')) {
 
 if (!function_exists('check_str_exists_emoji')) {
     // 判断字符串中是否含有 emoji 表情
-    function check_str_exists_emoji($str)
+    function check_str_exists_emoji($str): bool
     {
         $mbLen  = mb_strlen($str);
         $strArr = [];
@@ -132,12 +185,15 @@ if (!function_exists('check_str_exists_emoji')) {
 if (!function_exists('is_crawler')) {
     /**
      * [isCrawler 检测是否为爬虫]
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2019-12-24
+     *
      * @param boolean $returnName [是否返回爬虫名称]
+     *
      * @return   boolean                  [description]
      */
-    function is_crawler($returnName = false)
+    function is_crawler(bool $returnName = false)
     {
         $agent = strtolower(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '');
         if (!empty($agent)) {
@@ -204,10 +260,13 @@ if (!function_exists('is_crawler')) {
 if (!function_exists('img_to_gray')) {
     /**
      * [img_to_gray 把彩色图片转换为灰度图片,支持透明色]
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2019-06-24
-     * @param string $imgFile [源图片地址]
+     *
+     * @param string $imgFile  [源图片地址]
      * @param string $saveFile [生成目标地址,为空时直接输出到浏览器]
+     *
      * @return   bool                       [true:成功；false:失败]
      */
     function img_to_gray($imgFile = '', $saveFile = '')
@@ -229,14 +288,14 @@ if (!function_exists('img_to_gray')) {
                 break;
         }
         $color = imagecolorallocatealpha($block, 0, 0, 0, 127); //拾取一个完全透明的颜色
-        imagealphablending($block, false); //关闭混合模式，以便透明颜色能覆盖原画布
+        imagealphablending($block, false);                      //关闭混合模式，以便透明颜色能覆盖原画布
         //生成灰度图
         if (!$block || !imagefilter($block, IMG_FILTER_GRAYSCALE)) {
             return false;
         }
         // imagefilter($block, IMG_FILTER_BRIGHTNESS, -35);//亮度降低35
-        imagefill($block, 0, 0, $color); //填充
-        imagesavealpha($block, true); //设置保存PNG时保留透明通道信息
+        imagefill($block, 0, 0, $color);                        //填充
+        imagesavealpha($block, true);                           //设置保存PNG时保留透明通道信息
         //图片后缀 生成图片
         switch ($imgInfo['extension']) {
             case 'png':
@@ -244,7 +303,7 @@ if (!function_exists('img_to_gray')) {
                     imagepng($block, $saveFile); //生成图片
                 } else {
                     header('Content-type: image/png');
-                    imagepng($block); //生成图片
+                    imagepng($block);     //生成图片
                     imagedestroy($block); // 释放内存
                 }
                 break;
@@ -253,76 +312,27 @@ if (!function_exists('img_to_gray')) {
                     imagejpeg($block, $saveFile); //生成图片
                 } else {
                     header('Content-Type: image/jpeg');
-                    imagejpeg($block); //生成图片
+                    imagejpeg($block);    //生成图片
                     imagedestroy($block); // 释放内存
                 }
                 break;
             default:
                 return false;
-                break;
         }
         return true;
-    }
-}
-
-if (!function_exists('truncate')) {
-    /**
-     * 文章去去除标签截取文字
-     * @Author   ZhaoXianFang
-     * @DateTime 2018-09-12
-     * @param    [type]       $string [被截取字符串]
-     * @param integer $length [长度]
-     * @param boolean $append [是否加...]
-     * @return   [type]               [description]
-     */
-    function truncate($string, $length = 150, $append = true)
-    {
-        $string    = html_entity_decode($string);
-        $string    = trim(strip_tags($string, '<em>'));
-        $strlength = strlen($string);
-        if ($length == 0 || $length >= $strlength) {
-            return $string;
-        } elseif ($length < 0) {
-            $length = $strlength + $length;
-            if ($length < 0) {
-                $length = $strlength;
-            }
-        }
-        if (function_exists('mb_substr')) {
-            $newstr = mb_substr($string, 0, $length, "UTF-8");
-        } elseif (function_exists('iconv_substr')) {
-            $newstr = iconv_substr($string, 0, $length, "UTF-8");
-        } else {
-            for ($i = 0; $i < $length; $i++) {
-                $tempstring = substr($string, 0, 1);
-                if (ord($tempstring) > 127) {
-                    $i++;
-                    if ($i < $length) {
-                        $newstring[] = substr($string, 0, 3);
-                        $string      = substr($string, 3);
-                    }
-                } else {
-                    $newstring[] = substr($string, 0, 1);
-                    $string      = substr($string, 1);
-                }
-            }
-            $newstr = join($newstring);
-        }
-        if ($append && $string != $newstr) {
-            $newstr .= '...';
-        }
-        return $newstr;
     }
 }
 
 if (!function_exists('rmdirs')) {
     /**
      * 删除文件夹
-     * @param string $dirname 目录
-     * @param bool $withself 是否删除自身
+     *
+     * @param string $dirname  目录
+     * @param bool   $withself 是否删除自身
+     *
      * @return boolean
      */
-    function rmdirs($dirname, $withself = true)
+    function rmdirs(string $dirname, bool $withself = true)
     {
         if (!is_dir($dirname)) {
             return false;
@@ -345,10 +355,12 @@ if (!function_exists('deldir')) {
 
     /**
      * 删除文件夹
+     *
      * @param string $dir 目录
+     *
      * @return boolean
      */
-    function deldir($dir)
+    function deldir(string $dir): bool
     {
         //先删除目录下的文件：
         $dh = opendir($dir);
@@ -364,61 +376,51 @@ if (!function_exists('deldir')) {
         }
         closedir($dh);
         //删除当前文件夹：
-        return rmdir($dir) ? true : false;
+        return rmdir($dir);
     }
 }
 
 if (!function_exists('create_folders')) {
     /**
      * 递归创建目录
+     *
      * @param string $dir 目录
+     *
      * @return boolean
      */
-    function create_folders($dir)
+    function create_folders(string $dir): bool
     {
         return is_dir($dir) or (create_folders(dirname($dir)) and mkdir($dir, 0777));
     }
 }
 
-if (!function_exists('getfilesize')) {
-
+if (!function_exists('get_filesize')) {
     /**
      * 获取文件的大小
-     * @param string $dirname 目录
-     * @param bool $withself 是否删除自身
-     * @return boolean
+     *
+     * @param string $file 文件名称
+     * @param string $dir  路径
+     *
+     * @return string
      */
-    //获取文件的大小
-    function getfilesize($file, $DataDir)
+    function get_filesize(string $file, string $dir = '')
     {
-        $perms = stat($DataDir . $file);
+        $perms = stat($dir . $file);
         $size  = $perms['size'];
-        // 单位自动转换函数
-        $kb = 1024; // Kilobyte
-        $mb = 1024 * $kb; // Megabyte
-        $gb = 1024 * $mb; // Gigabyte
-        $tb = 1024 * $gb; // Terabyte
-        if ($size < $kb) {
-            return $size . " B";
-        } else if ($size < $mb) {
-            return round($size / $kb, 2) . " KB";
-        } else if ($size < $gb) {
-            return round($size / $mb, 2) . " MB";
-        } else if ($size < $tb) {
-            return round($size / $gb, 2) . " GB";
-        } else {
-            return round($size / $tb, 2) . " TB";
-        }
+        return byteFormat($size);
     }
 
 }
 if (!function_exists('byteFormat')) {
     /**
-     * @desc 文件字节转具体大小 array("B", "KB", "MB", "GB", "TB", "PB","EB","ZB","YB")， 默认转成M
-     * @param $size 文件字节
+     * 文件字节转具体大小 array("B", "KB", "MB", "GB", "TB", "PB","EB","ZB","YB")， 默认转成M
+     *
+     * @param int $size 文件字节
+     * @param int $dec
+     *
      * @return string
      */
-    function byteFormat($size, $dec = 2)
+    function byteFormat(int $size, int $dec = 2): string
     {
         $units = array("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB");
         $pos   = 0;
@@ -433,15 +435,18 @@ if (!function_exists('byteFormat')) {
 if (!function_exists('response_and_continue')) {
     /**
      * 输出json后继续在后台执行指定方法
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2019-01-07
-     * @param $responseDara 立即响应的数组数据
-     * @param $backendFun   需要在后台执行的方法
+     *
+     * @param $responseDara   立即响应的数组数据
+     * @param $backendFun     需要在后台执行的方法
      * @param $backendFunArgs 给在后台执行的方法传递的参数
-     * @param $setTimeLimit 设置后台响应可执行时间
+     * @param $setTimeLimit   设置后台响应可执行时间
+     *
      * @return void
      *
-     * @demo ：先以json格式返回$data，然后在后台执行 $this->pushSuggestToJyblSys(array('suggId' => $id))
+     * @demo     ：先以json格式返回$data，然后在后台执行 $this->pushSuggestToJyblSys(array('suggId' => $id))
      *         response_and_continue($data, array($this, "pushSuggestToJyblSys"), array('suggId' => $id));
      */
     function response_and_continue($responseDara, $backendFun, $backendFunArgs = array(), $setTimeLimit = 0)
@@ -482,13 +487,16 @@ if (!function_exists('response_and_continue')) {
 if (!function_exists('num_to_zhcn')) {
     /**
      * 数字转换为中文
+     *
      * @Author   ZhaoXianFang
-     * @param string|integer|float $num 目标数字
-     * @param integer $mode 模式[true:金额（默认）,false:普通数字表示]
-     * @param boolean $sim 使用小写（默认）
+     *
+     * @param string|integer|float $num  目标数字
+     * @param integer              $mode 模式[true:金额（默认）,false:普通数字表示]
+     * @param boolean              $sim  使用小写（默认）
+     *
      * @return string
      */
-    function num_to_zhcn($num, $mode = true, $sim = true)
+    function num_to_zhcn($num, $mode = true, $sim = true): string
     {
         if (!is_numeric($num)) {
             return '含有非数字非小数点字符！';
@@ -532,8 +540,7 @@ if (!function_exists('num_to_zhcn')) {
             }
         }
         $num_val = array_reverse($out);
-        $retval  = join('', $num_val) . $retval;
-        return $retval;
+        return join('', $num_val) . $retval;
     }
 }
 
@@ -646,9 +653,11 @@ if (!function_exists('get_laravel_route')) {
 
 if (!function_exists('is_idcard')) {
     /**
-     * 赵先方
      * 判断是否为身份证
-     *code BEGIN
+     *
+     * @param $idcard
+     *
+     * @return bool
      */
     function is_idcard($idcard)
     {
@@ -716,54 +725,57 @@ if (!function_exists('is_idcard')) {
 
 if (!function_exists('cutstr_html')) {
     // 去除所有html标签
-    function cutstr_html($string)
+    function cutstr_html($string): string
     {
         $string = htmlspecialchars_decode($string);
         $string = strip_tags($string);
         $string = trim($string);
-        $string = str_replace(PHP_EOL, '', $string); // 过滤换行
-        $string = str_replace('&nbsp;', '', $string); // 去除实体空格
-        $string = preg_replace("/\s+/", " ", $string);//过滤多余回车
-        $string = preg_replace("/<[ ]+/si", "<", $string); //过滤<__("<"号后面带空格)
-        $string = preg_replace("/<\!--.*?-->/si", "", $string); //过滤html注释
-        $string = preg_replace("/<(\!.*?)>/si", "", $string); //过滤DOCTYPE
-        $string = preg_replace("/<(\/?html.*?)>/si", "", $string); //过滤html标签
-        $string = preg_replace("/<(\/?head.*?)>/si", "", $string); //过滤head标签
-        $string = preg_replace("/<(\/?meta.*?)>/si", "", $string); //过滤meta标签
-        $string = preg_replace("/<(\/?body.*?)>/si", "", $string); //过滤body标签
-        $string = preg_replace("/<(\/?link.*?)>/si", "", $string); //过滤link标签
-        $string = preg_replace("/<(\/?form.*?)>/si", "", $string); //过滤form标签
-        $string = preg_replace("/cookie/si", "COOKIE", $string); //过滤COOKIE标签
-        $string = preg_replace("/<(applet.*?)>(.*?)<(\/applet.*?)>/si", "", $string); //过滤applet标签
-        $string = preg_replace("/<(\/?applet.*?)>/si", "", $string); //过滤applet标签
-        $string = preg_replace("/<(style.*?)>(.*?)<(\/style.*?)>/si", "", $string); //过滤style标签
-        $string = preg_replace("/<(\/?style.*?)>/si", "", $string); //过滤style标签
-        $string = preg_replace("/<(title.*?)>(.*?)<(\/title.*?)>/si", "", $string); //过滤title标签
-        $string = preg_replace("/<(\/?title.*?)>/si", "", $string); //过滤title标签
-        $string = preg_replace("/<(object.*?)>(.*?)<(\/object.*?)>/si", "", $string); //过滤object标签
-        $string = preg_replace("/<(\/?objec.*?)>/si", "", $string); //过滤object标签
+        $string = str_replace(PHP_EOL, '', $string);                                      // 过滤换行
+        $string = str_replace('&nbsp;', '', $string);                                     // 去除实体空格
+        $string = preg_replace("/\s+/", " ", $string);                                    //过滤多余回车
+        $string = preg_replace("/<[ ]+/si", "<", $string);                                //过滤<__("<"号后面带空格)
+        $string = preg_replace("/<\!--.*?-->/si", "", $string);                           //过滤html注释
+        $string = preg_replace("/<(\!.*?)>/si", "", $string);                             //过滤DOCTYPE
+        $string = preg_replace("/<(\/?html.*?)>/si", "", $string);                        //过滤html标签
+        $string = preg_replace("/<(\/?head.*?)>/si", "", $string);                        //过滤head标签
+        $string = preg_replace("/<(\/?meta.*?)>/si", "", $string);                        //过滤meta标签
+        $string = preg_replace("/<(\/?body.*?)>/si", "", $string);                        //过滤body标签
+        $string = preg_replace("/<(\/?link.*?)>/si", "", $string);                        //过滤link标签
+        $string = preg_replace("/<(\/?form.*?)>/si", "", $string);                        //过滤form标签
+        $string = preg_replace("/cookie/si", "COOKIE", $string);                          //过滤COOKIE标签
+        $string = preg_replace("/<(applet.*?)>(.*?)<(\/applet.*?)>/si", "", $string);     //过滤applet标签
+        $string = preg_replace("/<(\/?applet.*?)>/si", "", $string);                      //过滤applet标签
+        $string = preg_replace("/<(style.*?)>(.*?)<(\/style.*?)>/si", "", $string);       //过滤style标签
+        $string = preg_replace("/<(\/?style.*?)>/si", "", $string);                       //过滤style标签
+        $string = preg_replace("/<(title.*?)>(.*?)<(\/title.*?)>/si", "", $string);       //过滤title标签
+        $string = preg_replace("/<(\/?title.*?)>/si", "", $string);                       //过滤title标签
+        $string = preg_replace("/<(object.*?)>(.*?)<(\/object.*?)>/si", "", $string);     //过滤object标签
+        $string = preg_replace("/<(\/?objec.*?)>/si", "", $string);                       //过滤object标签
         $string = preg_replace("/<(noframes.*?)>(.*?)<(\/noframes.*?)>/si", "", $string); //过滤noframes标签
-        $string = preg_replace("/<(\/?noframes.*?)>/si", "", $string); //过滤noframes标签
-        $string = preg_replace("/<(i?frame.*?)>(.*?)<(\/i?frame.*?)>/si", "", $string); //过滤frame标签
-        $string = preg_replace("/<(\/?i?frame.*?)>/si", "", $string); //过滤frame标签
-        $string = preg_replace("/<(script.*?)>(.*?)<(\/script.*?)>/si", "", $string); //过滤script标签
-        $string = preg_replace("/<(\/?script.*?)>/si", "", $string); //过滤script标签
-        $string = preg_replace("/javascript/si", "Javascript", $string); //过滤script标签
-        $string = preg_replace("/vbscript/si", "Vbscript", $string); //过滤script标签
-        $string = preg_replace("/on([a-z]+)\s*=/si", "On\\1=", $string); //过滤script标签
+        $string = preg_replace("/<(\/?noframes.*?)>/si", "", $string);                    //过滤noframes标签
+        $string = preg_replace("/<(i?frame.*?)>(.*?)<(\/i?frame.*?)>/si", "", $string);   //过滤frame标签
+        $string = preg_replace("/<(\/?i?frame.*?)>/si", "", $string);                     //过滤frame标签
+        $string = preg_replace("/<(script.*?)>(.*?)<(\/script.*?)>/si", "", $string);     //过滤script标签
+        $string = preg_replace("/<(\/?script.*?)>/si", "", $string);                      //过滤script标签
+        $string = preg_replace("/javascript/si", "Javascript", $string);                  //过滤script标签
+        $string = preg_replace("/vbscript/si", "Vbscript", $string);                      //过滤script标签
+        $string = preg_replace("/on([a-z]+)\s*=/si", "On\\1=", $string);                  //过滤script标签
         return trim($string);
     }
 }
 if (!function_exists('str_rand')) {
     /**
      * 生成随机字符串
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2017-06-28
+     *
      * @param integer $length 字符串长度
-     * @param string $tack 附加值
-     * @return   [type]               字符串
+     * @param string  $tack   附加值
+     *
+     * @return   string               字符串
      */
-    function str_rand($length = 6, $tack = '')
+    function str_rand(int $length = 6, string $tack = ''): string
     {
         $chars = 'abcdefghijkmnpqrstuvwxyzACDEFGHIJKLMNOPQRSTUVWXYZ12345679' . $tack;
         $str   = '';
@@ -777,12 +789,13 @@ if (!function_exists('str_rand')) {
 if (!function_exists('wx_decrypt_data')) {
     /**
      * 微信解密
-     * @Author   ZhaoXianFang
-     * @DateTime 2020-10-20
-     * @param    [type]       $encryptedData [description]
-     * @param    [type]       $iv            [description]
-     * @param    [type]       $sessionKey    [description]
-     * @return   [type]                      [description]
+     *
+     * @param $appId
+     * @param $encryptedData
+     * @param $iv
+     * @param $sessionKey
+     *
+     * @return array|mixed
      */
     function wx_decrypt_data($appId, $encryptedData, $iv, $sessionKey)
     {
@@ -803,8 +816,8 @@ if (!function_exists('wx_decrypt_data')) {
         $aesIV     = base64_decode($iv);
         $aesCipher = base64_decode($encryptedData);
         $result    = openssl_decrypt($aesCipher, "AES-128-CBC", $aesKey, 1, $aesIV);
-        // $dataObj = object_array(json_decode($result,true) );
-        $dataObj = json_decode(object_array($result), true);
+
+        $dataObj = json_decode_plus(object_array($result), true);
         if ($dataObj == null) {
             return array(
                 'code' => 500,
@@ -824,33 +837,37 @@ if (!function_exists('wx_decrypt_data')) {
 if (!function_exists('img_base64')) {
     /**
      * 图片转 base64
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2017-07-18
+     *
      * @param    [type]       $image_file [description]
-     * @return   [type]                   [description]
+     *
+     * @return   string                   [description]
      */
     function img_base64($image_file)
     {
-        $base64_image = '';
-        $image_info   = getimagesize($image_file);
-        $image_data   = fread(fopen($image_file, 'r'), filesize($image_file));
-        $base64_image = 'data:' . $image_info['mime'] . ';base64,' . chunk_split(base64_encode($image_data));
-        return $base64_image;
+        $image_info = getimagesize($image_file);
+        $image_data = fread(fopen($image_file, 'r'), filesize($image_file));
+        return 'data:' . $image_info['mime'] . ';base64,' . chunk_split(base64_encode($image_data));
     }
 }
 
 if (!function_exists('is_json')) {
     /**
      * [is_json 判断json]
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-12-27
+     *
      * @param    [type]       $string [description]
+     *
      * @return   boolean              [description]
      */
-    function is_json($string)
+    function is_json($string): bool
     {
         try {
-            $data = json_decode($string, $assoc = false);
+            $data = json_decode_plus($string, false);
             if ((!empty($data) && is_object($data)) || (is_array($data) && !empty($data))) {
                 return true;
             }
@@ -863,14 +880,14 @@ if (!function_exists('is_json')) {
 if (!function_exists('get_full_path')) {
     /**
      * 根据相对路径获取绝对路径
+     *
      * @param string $path 相对路径
      */
     if (!function_exists('get_full_path')) {
         function get_full_path($path)
         {
-            $info      = pathinfo($path);
-            $full_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $info['dirname'] . '/' . $info['basename'];
-            return $full_path;
+            $info = pathinfo($path);
+            return $_SERVER['DOCUMENT_ROOT'] . '/' . $info['dirname'] . '/' . $info['basename'];
         }
     }
 }
@@ -878,27 +895,28 @@ if (!function_exists('get_full_path')) {
 if (!function_exists('convert_underline')) {
     /**
      * 下划线转驼峰
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-08-29
      * @return   [type]       [description]
      */
     function convert_underline($str)
     {
-        $str = preg_replace_callback('/([-_]+([a-z]{1}))/i', function ($matches) {
+        return preg_replace_callback('/([-_]+([a-z]{1}))/i', function ($matches) {
             return strtoupper($matches[2]);
         }, $str);
-        return $str;
     }
 }
 
 if (!function_exists('underline_convert')) {
     /**
      * 驼峰转下划线
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-08-29
-     * @return   [type]       [description]
+     * @return   string       [description]
      */
-    function underline_convert($str)
+    function underline_convert($str): string
     {
         $str = strtolower(preg_replace('/(?<=[a-z])([A-Z])/', '_$1', $str));
         return $str;
@@ -909,12 +927,15 @@ if (!function_exists('check_pass_strength')) {
     /**
      * 验证等保测2级评密码强度
      * 验证密码强度是否符合 至少包含大小写字母、数字、特殊字符大于8个字符
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2020-01-08
+     *
      * @param string $password [description]
-     * @return   [type]                 [description]
+     *
+     * @return bool
      */
-    function check_pass_strength($password = '')
+    function check_pass_strength(string $password = ''): bool
     {
         // 检测密码强度 至少包含大小写字母、数字、特殊字符至少3个组合大于8个字符
         $expression = '/^(?![A-Za-z]+$)(?![A-Z\\d]+$)(?![A-Z\\W]+$)(?![a-z\\d]+$)(?![a-z\\W]+$)(?![\\d\\W]+$)\\S{8,}$/';
@@ -958,9 +979,10 @@ if (!function_exists('buildRequestFormAndSend')) {
      * 满足提交大量表单会被数据长度等限制的问题
      * [header 携带大量数据请求的可行性方案]
      *
-     * @param string $url 数据提交跳转到的URL
-     * @param array $data 需要提交的数组,支持多维 (按照数组的键值对组装form表单数据)
+     * @param string $url    数据提交跳转到的URL
+     * @param array  $data   需要提交的数组,支持多维 (按照数组的键值对组装form表单数据)
      * @param string $method 提交方式 支持 post|get|put|delete
+     *
      * @return string 组装提交表单的HTML文本
      * @throws Exception
      */
@@ -997,7 +1019,9 @@ if (!function_exists('buildRequestFormAndSend')) {
 if (!function_exists('obj2Arr')) {
     /**
      * 对象转数组
+     *
      * @param $array
+     *
      * @return array|mixed
      */
     function obj2Arr($array)
@@ -1017,6 +1041,9 @@ if (!function_exists('obj2Arr')) {
 if (!function_exists('uuid')) {
     /**
      * 根据微秒时间和随机数生成 12位 uuid
+     *
+     * @return string
+     * @throws Exception
      */
     function uuid()
     {
@@ -1051,7 +1078,7 @@ if (!function_exists('from10to60')) {
      */
     function from10to60($dec)
     {
-        // (去掉oO)
+        // (去掉oO,因为和0很像)
         $dict   = '0123456789abcdefghijklmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ';
         $result = '';
         do {
@@ -1066,9 +1093,9 @@ if (!function_exists('download_url_file')) {
     /**
      * 下载url文件
      */
-    function download_url_file($filename = '')
+    function download_url_file($url = '')
     {
-        $filename = !empty($filename) ? $filename : (!empty($_GPC['url']) ? $_GPC['url'] : '');
+        $filename = !empty($url) ? $url : (!empty($_GPC['url']) ? $_GPC['url'] : '');
         $title    = substr($filename, strrpos($filename, '/') + 1);
         $file     = fopen($filename, "rb");
         Header("Content-type:application/octet-stream");
@@ -1087,13 +1114,13 @@ if (!function_exists('download_url_file')) {
 if (!function_exists('str_en_code')) {
     /**
      * 字符串加解密
-     * @Author   ZhaoXianFang
-     * @DateTime 2019-04-01
-     * @param    [type]       $string [字符串]
+     *
+     * @param        $string [字符串]
      * @param string $action [en:加密；de:解密]
-     * @return   [type]               []
+     *
+     * @return string
      */
-    function str_en_code($string, $action = 'en')
+    function str_en_code($string, string $action = 'en')
     {
         $action != 'en' && $string = base64_decode($string);
         $code   = '';
@@ -1112,13 +1139,15 @@ if (!function_exists('str_en_code')) {
 if (!function_exists('get_protected_value')) {
     /**
      * 打印对象里面受保护属性的值
+     *
      * @param $obj
      * @param $name
+     *
      * @return mixed
      */
     function get_protected_value($obj, $name)
     {
-        $array = (array)$obj;
+        $array  = (array)$obj;
         $prefix = chr(0) . '*' . chr(0);
         return $array[$prefix . $name];
     }
@@ -1127,19 +1156,43 @@ if (!function_exists('get_protected_value')) {
 if (!function_exists('set_protected_value')) {
     /**
      * 使用反射 修改对象里面受保护属性的值
+     *
      * @param $obj
-     * @param $name
-     * @return mixed
+     * @param $filed
+     * @param $value
+     *
+     * @return void
+     * @throws ReflectionException
      */
-    function set_protected_value($obj, $filed,$value)
+    function set_protected_value($obj, $filed, $value)
     {
-        $reflectionClass = new ReflectionClass($obj);
+        $reflectionClass    = new ReflectionClass($obj);
         $reflectionProperty = $reflectionClass->getProperty($filed);
         try {
             $reflectionClass->setStaticPropertyValue($filed, $value);
-        }catch (\Exception $err){
+        } catch (\Exception $err) {
             $reflectionProperty->setAccessible(true);
             $reflectionProperty->setValue($obj, $value);
+        }
+    }
+}
+
+if (!function_exists('json_decode_plus')) {
+    /**
+     * json_decode 加强版， 主要是为了了处理 json 字符串中包含了 \\" 和 \\ 转义字符导致无法解析的问题
+     *
+     * @param string $jsonStr json 字符串
+     *
+     * @return mixed
+     */
+    function json_decode_plus(string $jsonStr, $assoc = null)
+    {
+        try {
+            $jsonStr = preg_replace('/\\"/', '"', $jsonStr);
+            $jsonStr = str_replace('\\', '', $jsonStr);
+            return json_decode($jsonStr, $assoc);
+        } catch (\Exception $e) {
+            return json_decode($jsonStr, $assoc);
         }
     }
 }

@@ -3,7 +3,7 @@
 ![](https://img.shields.io/github/stars/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/forks/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/tag/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/release/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/issues/zhaoxianfang/tools.svg)
 
 >基于 php 的项目模块开发
->调用命名空间 使用 use zxf\…… 例如 use zxf\login\QqOauth;  use zxf\String\JsMin;
+>调用命名空间 使用 use zxf\…… 例如 use zxf\login\QqOauth;  use zxf\min\JsMin;
 
 创建时间：2018/06/01
 
@@ -38,7 +38,7 @@ composer require zxf/tools
 | Modules    | laravel 多模块应用                                                                                   |
 | Command    | 命令行解析工具                                                                                         |
 | Tree       | 树形结构化                                                                                           |
-| DiDom      | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                      |
+| dom        | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                      |
 | Db / Model | Mysql 的基础操作类Db;封装调用类Model                                                                       |
 | 其他         | 还有一些没有写在此处的工具类                                                                                  |
 
@@ -196,7 +196,7 @@ class Sina extends Controller
 ### jsMin 压缩
 
 ``` php
-use zxf\tools\JsMin;
+use zxf\min\JsMin;
 $minifiedCode = JsMin::minify($jsString);
 ```
 
@@ -210,7 +210,7 @@ use zxf\qrcode\QrCode;
 echo '<p>Example - QrCode</p>';
 $qrCode = new QrCode();
 $qrCode
-    ->setText('https://www.itzxf.com/apidoc') // 生成二维码的内容
+    ->setText('https://www.weisifang.com/apidoc') // 生成二维码的内容
     ->setSize(200) // 设置二维码大小
     ->setPadding(10) // 设置边距
     ->setErrorCorrection('high') // 设置二维码纠错级别。 分为 high(30%)、quartile(25%)、medium(15%)、low(7%) 几种
@@ -227,7 +227,7 @@ echo '<img src="data:' . $qrCode->getContentType() . ';base64,' . $qrCode->gener
 ```php
 $qrCode = new QrCode(); // 实例化
 $qrCode
-    ->setText('https://www.itzxf.com/apidoc') // 生成二维码的内容
+    ->setText('https://www.weisifang.com/docs') // 生成二维码的内容
     ->setSize(200) // 设置二维码大小
     ->setPadding(10) // 设置边距
     ->setErrorCorrection('high') // 设置二维码纠错级别。 分为 high(30%)、quartile(25%)、medium(15%)、low(7%) 几种
@@ -525,7 +525,7 @@ use zxf\ScreenShot\ScreenShot;
 // $softPath： 可执行文件phantomjs或者phantomjs.exe 所在目录； ScreenShot 会自动识别系统 $softPath 该使用 phantomjs 还是 phantomjs.exe
 // $url: 被截图网页  url
 // $savePath: 截图成功后的保存文件完整地址
-$res = ScreenShot::init($softPath='/Users/linian/extend')->setUrl($url = 'http://www.baidu.com')->run($savePath = __DIR__.'/img/'.time().'.png');
+$res = ScreenShot::init($softPath='/Users/linian/extend')->setUrl($url = 'https://www.weisifang.com')->run($savePath = __DIR__.'/img/'.time().'.png');
 
 $res 返回 true|fales 表示是否截图成功
 ```
@@ -584,7 +584,4 @@ $cmd->getArgVal('test');
  */
 ```
 
-
-### 截图功能
->参考[安装php-phantomjs](https://segmentfault.com/a/1190000008234820) 改装
 

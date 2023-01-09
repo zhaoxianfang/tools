@@ -21,13 +21,13 @@ class Menu
     protected $pk            = 'id';
     protected $pid           = 'pid';
     protected $childlist     = 'childlist';
-    protected $weigh         = 'weigh'; //权重
-    protected $title         = 'title'; //Tree 展示的作用字段
-    protected $badge         = 'badge_text'; //badge 图标
+    protected $weigh         = 'weigh';            //权重
+    protected $title         = 'title';            //Tree 展示的作用字段
+    protected $badge         = 'badge_text';       //badge 图标
     protected $badgeStyle    = 'badge_text_style'; //badge 图标 样式
-    protected $showchildicon = false; //子级菜单显示icon小图标
-    protected $showNavIcon   = false; //前台nav 一级导航是否显示icon小图标
-    protected $menuType      = 'nazox'; //目录类型 adminlte|layuiadmin|nazox|inspinia
+    protected $showchildicon = false;              //子级菜单显示icon小图标
+    protected $showNavIcon   = false;              //前台nav 一级导航是否显示icon小图标
+    protected $menuType      = 'nazox';            //目录类型 adminlte|layuiadmin|nazox|inspinia
 
     protected static $instance;
     //默认配置
@@ -44,6 +44,7 @@ class Menu
 
     /**
      * 生成树型结构所需修饰符号，可以换成图片
+     *
      * @var array
      */
     protected $icon = array(' │', ' ├', ' └');
@@ -56,20 +57,20 @@ class Menu
     // 初始化参数，防止 调用 Menu 的过程中 有的 参数被篡改 导致 之后的调用参数发生错乱
     private function initConfigParam()
     {
-        $this->arr = [];
-        $this->pk = 'id';
-        $this->pid = 'pid';
-        $this->childlist = 'childlist';
-        $this->weigh = 'weigh'; //权重
-        $this->title = 'title'; //Tree 展示的作用字段
-        $this->badge = 'badge_text'; //badge 图标
-        $this->badgeStyle = 'badge_text_style'; //badge 图标 样式
-        $this->showchildicon = false; //子级菜单显示icon小图标
-        $this->showNavIcon = false; //前台nav 一级导航是否显示icon小图标
-        $this->menuType = 'nazox'; //目录类型 adminlte|layuiadmin|nazox|inspinia
+        $this->arr           = [];
+        $this->pk            = 'id';
+        $this->pid           = 'pid';
+        $this->childlist     = 'childlist';
+        $this->weigh         = 'weigh';            //权重
+        $this->title         = 'title';            //Tree 展示的作用字段
+        $this->badge         = 'badge_text';       //badge 图标
+        $this->badgeStyle    = 'badge_text_style'; //badge 图标 样式
+        $this->showchildicon = false;              //子级菜单显示icon小图标
+        $this->showNavIcon   = false;              //前台nav 一级导航是否显示icon小图标
+        $this->menuType      = 'nazox';            //目录类型 adminlte|layuiadmin|nazox|inspinia
 
         //默认配置
-        $this->config = [];
+        $this->config  = [];
         $this->options = [];
         //是否返回 $this
         $this->returnClass = false;
@@ -83,9 +84,12 @@ class Menu
 
     /**
      * 初始化
+     *
      * @access public
+     *
      * @param array $options 参数
-     * @return Tree
+     *
+     * @return Menu
      */
     public static function instance($options = [])
     {
@@ -97,8 +101,9 @@ class Menu
 
     /**
      * 初始化方法
+     *
      * @param array 2维数组，例如：
-     * array(
+     *      array(
      *      1 => array('id'=>'1','pid'=>0,'name'=>'一级栏目一'),
      *      2 => array('id'=>'2','pid'=>0,'name'=>'一级栏目二'),
      *      3 => array('id'=>'3','pid'=>1,'name'=>'二级栏目一'),
@@ -106,16 +111,16 @@ class Menu
      *      5 => array('id'=>'5','pid'=>2,'name'=>'二级栏目三'),
      *      6 => array('id'=>'6','pid'=>3,'name'=>'三级栏目一'),
      *      7 => array('id'=>'7','pid'=>3,'name'=>'三级栏目二')
-     * )
+     *      )
      */
     public function init($arr = [], $pk = 'id', $pid = 'pid', $rootId = 0, $initTree = true, $childlist = 'childlist')
     {
         $this->initConfigParam();
 
         $this->arr = $arr;
-        $pk ? $this->pk = $pk : 'id';
-        $pid ? $this->pid = $pid : 'pid';
-        $childlist ? $this->childlist = $childlist : $this->childlist;
+        $pk && $this->pk = $pk;
+        $pid && $this->pid = $pid;
+        $childlist && $this->childlist = $childlist;
 
         $this->setReturn(true);
 
@@ -130,11 +135,13 @@ class Menu
 
     /**
      * 设置域名
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-16
+     *
      * @param string $flag [description]
      */
-    public function setDomain($domain = '')
+    public function setDomain($domain = ''): Menu
     {
         $this->domain = $domain; // 域名
         return $this;
@@ -142,11 +149,13 @@ class Menu
 
     /**
      * 是否返回 $this 配合 getTreeTwo 用
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-16
+     *
      * @param string $flag [description]
      */
-    public function setReturn($flag = false)
+    public function setReturn($flag = false): Menu
     {
         $this->returnClass = $flag ? true : false;
         return $this;
@@ -154,11 +163,13 @@ class Menu
 
     /**
      * 设置后台菜单是否包含icon 小图标
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-07-16
+     *
      * @param boolean $flag [description]
      */
-    public function setAdminMenuIcon($flag = false)
+    public function setAdminMenuIcon($flag = false): Menu
     {
         $this->showchildicon = $flag ? true : false;
         return $this;
@@ -166,11 +177,13 @@ class Menu
 
     /**
      * 设置权重名
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-06-12
+     *
      * @param boolean $str [description]
      */
-    public function setWeigh($str = '')
+    public function setWeigh($str = ''): Menu
     {
         $this->weigh = $str;
         return $this;
@@ -178,8 +191,10 @@ class Menu
 
     /**
      * 设置tree 作用的字段
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-12-12
+     *
      * @param string $name [description]
      */
     public function setTitle($str = 'title')
@@ -199,7 +214,7 @@ class Menu
         $data = [];
         foreach ($list as $row) {
             // $data[$row[$id]][$name] = $row[$name];
-            $data[$row[$id]] = $row;
+            $data[$row[$id]]                               = $row;
             $data[$row[$pid]][$this->childlist][$row[$id]] = &$data[$row[$id]];
         }
         return isset($data[$rootId][$this->childlist]) ? $data[$rootId][$this->childlist] : [];
@@ -207,8 +222,10 @@ class Menu
 
     /**
      * 获取数 TREE
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-03-14
+     *
      * @param    [type]       $arrData    [待处理的数组]
      * @param    [type]       $pid        [父id]
      * @param    [type]       $pk         [自增主键id]
@@ -219,12 +236,12 @@ class Menu
         if (!$arrData) {
             return array();
         }
-        $tree = array();
+        $tree     = array();
         $usePkArr = []; ////记录被处理过的pid
         //第一步，将分类id作为数组key,并创建children单元
         foreach ($arrData as $arr) {
-            $arr = object_to_array($arr);
-            $tree[$arr[$this->pk]] = $arr;
+            $arr                                     = object_to_array($arr);
+            $tree[$arr[$this->pk]]                   = $arr;
             $tree[$arr[$this->pk]][$this->childlist] = array();
 
             $usePkArr[] = $arr[$this->pk];
@@ -263,6 +280,7 @@ class Menu
 
     /**
      * 生成排序后的菜单 每个子菜单紧跟在父菜单后面 权重值大的在前面
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-28
      * @return   [type]       [description]
@@ -285,13 +303,13 @@ class Menu
 
     /**
      * 数组归纳 多维转二维
-     * @Author   ZhaoXianFang
-     * @DateTime 2018-05-28
-     * @param string $arrData [description]
-     * @param string $lv [级别 跟级为0]
+     *
+     * @param array $arrData [description]
+     * @param int   $lv      [级别 跟级为0]
+     *
      * @return   [type]                [description]
      */
-    private function reduce($arrData = '', $lv = 0)
+    private function reduce(array $arrData = [], $lv = 0)
     {
         $listArr = array();
         if (!$arrData) {
@@ -316,11 +334,7 @@ class Menu
                 $lv++;
                 $childArr = $this->reduce($value[$this->childlist], $lv);
 
-                // if (isset($value[$this->childlist]['0'][$this->childlist]) || !$this->weigh) {
-                $listArr = array_merge($listArr, $childArr);
-                // } else {
-                //     $listArr = array_merge($listArr, $this->my_sort($childArr, $this->weigh, SORT_DESC));
-                // }
+                $listArr = !empty($childArr) ? array_merge($listArr, $childArr) : $listArr;
                 $lv--;
 
             }
@@ -331,13 +345,13 @@ class Menu
 
     /**
      * 自定义 数组排序
-     * @Author   ZhaoXianFang
-     * @DateTime 2017-09-11
-     * @param    [type]       $arrays     [被排序数组]
-     * @param    [type]       $sort_key   [被排序字段]
-     * @param    [type]       $sort_order [排序方式]
-     * @param    [type]       $sort_type  [排序类型]
-     * @return   [type]                   [description]
+     *
+     * @param array  $arrays     [被排序数组]
+     * @param string $sort_key   [被排序字段]
+     * @param string $sort_order [排序方式]
+     * @param string $sort_type  [排序类型]
+     *
+     * @return   array|bool                   [description]
      */
     private function my_sort($arrays, $sort_key, $sort_order = SORT_ASC, $sort_type = SORT_NUMERIC)
     {
@@ -373,9 +387,8 @@ class Menu
 
     /**
      * 设置目录类型
-     * @Author   ZhaoXianFang
-     * @DateTime 2019-01-10
-     * @param string $menuType [默认adminlte目录]
+     *
+     * @param string $menuType          [默认adminlte目录]
      *                                  仅支持 adminlte|layuiadmin|nazox|inspinia
      */
     public function setMenuType($menuType = 'nazox')
@@ -386,13 +399,13 @@ class Menu
 
     /**
      * [createMenu 创建目录] [默认adminlte风格目录--目前仅支持 adminlte|layuiadmin|nazox ]
-     * @Author   ZhaoXianFang
-     * @DateTime 2018-07-16
-     * @param    [type]       $pk    [顶级pid 一般为0]
+     *
+     * @param int    $pk    [顶级pid 一般为0]
      * @param string $scope [作用域，admin(后台)、home(前台)]
-     * @return   [type]              [description]
+     *
+     * @return   string              [description]
      */
-    public function createMenu($pk = 0, $scope = 'admin')
+    public function createMenu($pk = 0, $scope = 'admin'): string
     {
         if ($scope == 'admin') {
             //后台菜单
@@ -437,9 +450,9 @@ class Menu
             $hasArrow = (isset($item[$this->childlist]) && !empty($item[$this->childlist])) ? true : false;
 
             $currentHref = $hasArrow ? 'javascript:;' : url($item['name']); // 当前url
-            $currentIcon = $item['icon']; // 当前url
+            $currentIcon = $item['icon'];                                   // 当前url
 
-            $isActive = $this->checkactiveMenu($item['name'], $hasArrow); // 'active'; // 是否激活当前菜单
+            $isActive = $this->checkactiveMenu($item['name'], $hasArrow);   // 'active'; // 是否激活当前菜单
             $isShowUl = ($hasArrow && ($isActive == 'active')) ? 'in' : ''; // in 是否展开当前子菜单ul
 
             $str .= '<li class="' . $isActive . '">';
@@ -481,9 +494,9 @@ class Menu
             $hasArrow = (isset($item[$this->childlist]) && !empty($item[$this->childlist])) ? true : false;
 
             $currentHref = $hasArrow ? 'javascript:;' : url($item['name']); // 当前url
-            $currentIcon = $item['icon']; // 当前url
+            $currentIcon = $item['icon'];                                   // 当前url
 
-            $isActive = $this->checkactiveMenu($item['name'], $hasArrow); // 'mm-active'; // 是否激活当前菜单
+            $isActive = $this->checkactiveMenu($item['name'], $hasArrow);         // 'mm-active'; // 是否激活当前菜单
             $isShowUl = ($hasArrow && $isActive == 'mm-active') ? 'mm-show' : ''; // mm-show 是否展开当前子菜单ul
 
             $str .= '<li class="' . $isActive . '">';
@@ -491,7 +504,7 @@ class Menu
             $str .= '<i class="fa ' . $currentIcon . '"></i>';
             // && // 右侧图标
             $item['badge_text'] && (
-            $str .= '<span class="badge badge-pill ' . ($item['badge_text_style'] ? $item['badge_text_style'] : 'badge-info') . ' float-right">' . $item['badge_text'] . '</span>'
+            $str .= '<span class="badge badge-pill ' . (!empty($item['badge_text_style']) ? $item['badge_text_style'] : 'badge-info') . ' float-right">' . $item['badge_text'] . '</span>'
             );
             $str .= '<span>' . $item[$this->title] . '</span>';
             $str .= '</a>';
@@ -506,9 +519,12 @@ class Menu
 
     /**
      * [创建layuiAdminMenu后台目录]
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2019-01-10
+     *
      * @param    [type]       $pk    [description]
+     *
      * @return   [type]              [description]
      */
     private function layuiAdminMenu($pk)
@@ -531,19 +547,22 @@ class Menu
             if (!$menu) {
                 return '';
             }
-            $icon = $menu['icon'];
-            $layHref = (isset($menu[$this->childlist]) && !empty($menu[$this->childlist])) ? '' : 'lay-href="' . url($menu['name']) . '"';
+            $icon       = $menu['icon'];
+            $layHref    = (isset($menu[$this->childlist]) && !empty($menu[$this->childlist])) ? '' : 'lay-href="' . url($menu['name']) . '"';
             $activeMenu = $layHref ? $this->checkactiveMenu($menu['name']) : '';
-            $str .= '<li data-name="' . $menu['name'] . '" class="layui-nav-item ' . $activeMenu . '"><a href="javascript:;" lay-tips="' . $menu['title'] . '" ' . $layHref . ' lay-direction="2"><i class="' . $icon . '"></i><cite>' . $menu['title'] . '</cite></a>' . $this->layuiChildList($menu) . '</li>';
+            $str        .= '<li data-name="' . $menu['name'] . '" class="layui-nav-item ' . $activeMenu . '"><a href="javascript:;" lay-tips="' . $menu['title'] . '" ' . $layHref . ' lay-direction="2"><i class="' . $icon . '"></i><cite>' . $menu['title'] . '</cite></a>' . $this->layuiChildList($menu) . '</li>';
         }
         return $str;
     }
 
     /**
      * [layuiAdmin 目录子列表]
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2019-01-10
+     *
      * @param string $parentData [description]
+     *
      * @return   [type]                   [description]
      */
     private function layuiChildList($parentData = '')
@@ -556,20 +575,23 @@ class Menu
             $parentData[$this->childlist] = $this->my_sort($parentData[$this->childlist], $this->weigh, SORT_DESC, SORT_NUMERIC);
         }
         foreach ($parentData[$this->childlist] as $key => $page) {
-            $layHref = (isset($page[$this->childlist]) && !empty($page[$this->childlist])) ? '' : 'lay-href="' . url($page['name']) . '"';
+            $layHref    = (isset($page[$this->childlist]) && !empty($page[$this->childlist])) ? '' : 'lay-href="' . url($page['name']) . '"';
             $activeMenu = $layHref ? $this->checkactiveMenu($page['name']) : '';
-            $str .= '<dl class="layui-nav-child"><dd data-name="' . $page['name'] . '" class=" ' . $activeMenu . '"><a href="javascript:;" ' . $layHref . ' >' . $page['title'] . '</a>' . $this->layuiChildList($page) . '</dd></dl>';
+            $str        .= '<dl class="layui-nav-child"><dd data-name="' . $page['name'] . '" class=" ' . $activeMenu . '"><a href="javascript:;" ' . $layHref . ' >' . $page['title'] . '</a>' . $this->layuiChildList($page) . '</dd></dl>';
         }
         return $str;
     }
 
     /**
      * 创建后台目录 [adminLte 目录]
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-17
+     *
      * @param    [type]       $pk   [description]
-     * @param array $tArr [description]
+     * @param array $tArr  [description]
      * @param array $level [层级]
+     *
      * @return   [type]             [description]
      */
     private function adminMenu($pk, $tArr = array(), $level = 0)
@@ -577,7 +599,7 @@ class Menu
         $str = '';
         if (!$tArr && $pk < 1) {
             $this->tabLevel = 0;
-            $str .= '<li class="nav-header">菜单栏</li>';
+            $str            .= '<li class="nav-header">菜单栏</li>';
             // $tArr = $this->arr;
             if ($this->weigh && $this->arr) {
                 $tArr = $this->my_sort($this->arr, $this->weigh, SORT_DESC, SORT_NUMERIC);
@@ -597,11 +619,11 @@ class Menu
             $childs = $this->my_sort($childs, $this->weigh, SORT_DESC, SORT_NUMERIC);
         }
         $level += 1;
-        $nbsp = ''; //缩进
+        $nbsp  = ''; //缩进
         if ($pk > 0) {
             // $nbspStr = '&nbsp;&nbsp;';
             $nbspStr = '';
-            $nbsp = str_repeat($nbspStr, $level);
+            $nbsp    = str_repeat($nbspStr, $level);
         }
         foreach ($childs as $key => $value) {
             if (!isset($value[$this->pid])) {
@@ -610,14 +632,14 @@ class Menu
 
             $nextArr = (isset($value[$this->childlist]) && count($value[$this->childlist]) > 0) ? $value[$this->childlist] : array();
 
-            $href = url($this->urlPrefix . $value['name']);
-            $icon = $value['icon'];
-            $hasSub = '';
+            $href     = url($this->urlPrefix . $value['name']);
+            $icon     = $value['icon'];
+            $hasSub   = '';
             $hasChild = 0;
             if (isset($value[$this->childlist]) && count($value[$this->childlist]) > 0) {
                 //有子菜单
-                $href = 'javascript:;';
-                $hasSub = 'has-treeview ';
+                $href     = 'javascript:;';
+                $hasSub   = 'has-treeview ';
                 $hasChild = 1;
             }
             $iconStr = '';
@@ -627,7 +649,7 @@ class Menu
             // }
 
             $activeMenu = $this->checkactiveMenu($value['name'], $hasChild);
-            $str .= '<li class="nav-item ' . $hasSub . ' ' . $activeMenu . '"><a menu class="nav-link ' . $activeMenu . '" href="' . $href . '">' . $nbsp . $iconStr . '<p>' . $value[$this->title];
+            $str        .= '<li class="nav-item ' . $hasSub . ' ' . $activeMenu . '"><a menu class="nav-link ' . $activeMenu . '" href="' . $href . '">' . $nbsp . $iconStr . '<p>' . $value[$this->title];
             if ($hasChild) {
                 $str .= '<i class="fas fa-angle-left right"></i>';
                 // 右侧徽章
@@ -652,6 +674,7 @@ class Menu
 
     /**
      * NAZOX 前台 顶部 nav 导航目录
+     *
      * @Author   ZhaoXianFang
      */
     public function nazoxhomeNavMenu($pk)
@@ -666,10 +689,10 @@ class Menu
             $hasChild = (isset($item[$this->childlist]) && !empty($item[$this->childlist])) ? true : false;
 
             $currentHref = $hasChild ? 'javascript:;' : $this->domain . url($this->urlPrefix . '/' . $item[$this->pk]); // 当前url
-            $currentIcon = $item['icon'] ?? '';// 当前icon
+            $currentIcon = !empty($item['icon']) ? $item['icon'] : '';                                                  // 当前icon
 
-            $liClass = $hasChild ? 'dropdown' : '';
-            $liLinkClass = $hasChild ? 'dropdown-toggle arrow-none' : '';
+            $liClass          = $hasChild ? 'dropdown' : '';
+            $liLinkClass      = $hasChild ? 'dropdown-toggle arrow-none' : '';
             $liLinkChildClass = $hasChild ? ' role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ' : '';
 
             $str .= '<li class="nav-item ' . $liClass . '">';
@@ -694,8 +717,8 @@ class Menu
         $str .= '<div class="dropdown-menu" aria-labelledby="topnav-' . $item[$this->pk] . '">';
         foreach ($item[$this->childlist] as $key => $childlistItem) {
 
-            $oneHasChild = (isset($childlistItem[$this->childlist]) && !empty($childlistItem[$this->childlist])) ? true : false;
-            $oneLiLinkClass = $oneHasChild ? 'dropdown-toggle arrow-none' : '';
+            $oneHasChild         = (isset($childlistItem[$this->childlist]) && !empty($childlistItem[$this->childlist])) ? true : false;
+            $oneLiLinkClass      = $oneHasChild ? 'dropdown-toggle arrow-none' : '';
             $oneLiLinkChildClass = $oneHasChild ? ' role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ' : '';
 
             $oneCurrentHref = $oneHasChild ? 'javascript:;' : $this->domain . url($this->urlPrefix . '/' . $childlistItem[$this->pk]); // 当前url
@@ -719,11 +742,14 @@ class Menu
 
     /**
      * 创建 AdminLTE3 前台nav 导航目录 支持三级导航
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-07-16
+     *
      * @param    [type]       $pk    [description]
-     * @param array $tArr [description]
+     * @param array   $tArr  [description]
      * @param integer $level [description]
+     *
      * @return   [type]              [description]
      */
     public function adminLtehomeNavMenu($pk, $tArr = array(), $level = 0)
@@ -731,7 +757,7 @@ class Menu
         $str = '';
         if (!$tArr && $pk < 1) {
             $this->tabLevel = 0;
-            $tArr = ($this->weigh && $this->arr) ? $this->my_sort($this->arr, $this->weigh, SORT_DESC, SORT_NUMERIC) : $this->arr;
+            $tArr           = ($this->weigh && $this->arr) ? $this->my_sort($this->arr, $this->weigh, SORT_DESC, SORT_NUMERIC) : $this->arr;
         }
         if (!$tArr) {
             return $str;
@@ -754,7 +780,7 @@ class Menu
 
             //有无子菜单
             $hasChild = (isset($value[$this->childlist]) && count($value[$this->childlist]) > 0) ? 1 : 0;
-            $href = $hasChild ? 'javascript:;' : url($this->urlPrefix . '/' . $value[$this->pk])->suffix('html')->domain(true);
+            $href     = $hasChild ? 'javascript:;' : url($this->urlPrefix . '/' . $value[$this->pk])->suffix('html')->domain(true);
 
             // $activeMenu = $this->checkactiveMenu($value['name'], $hasChild);
             if ($hasChild) {
@@ -778,10 +804,13 @@ class Menu
 
     /**
      * 检测是否 激活该菜单
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-30
-     * @param string $link [数据库记录的地址]
+     *
+     * @param string $link     [数据库记录的地址]
      * @param string $hasChild [有子菜单？]
+     *
      * @return   [type]                 [description]
      */
     private function checkactiveMenu($link = '', $hasChild = 0)
@@ -791,9 +820,9 @@ class Menu
         }
         $link = str_ireplace('.', '/', $link);
 
-        $linkArr = explode('/', strtolower(trim($link, '/'))); //数据库获取
+        $linkArr    = explode('/', strtolower(trim($link, '/')));                           //数据库获取
         $setLinkArr = $this->activeMenu ? explode('/', strtolower($this->activeMenu)) : []; //当前控制器与方法
-        $activeStr = '';
+        $activeStr  = '';
 
         // 获取url所在模块
         try {
@@ -857,10 +886,13 @@ class Menu
 
     /**
      * 查找子数组
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-17
+     *
      * @param    [type]       $pk       [description]
      * @param array $listData [description]
+     *
      * @return   [type]                 [description]
      */
     protected function findChild($pk, $listData = array())
@@ -883,37 +915,40 @@ class Menu
 
     /**
      * 清除数据
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-05-17
      * @return   [type]       [description]
      */
     public function clear()
     {
-        $this->config = [];
-        $this->options = [];
+        $this->config      = [];
+        $this->options     = [];
         $this->returnClass = '';
-        $this->arr = [];
-        $this->pk = 'id';
-        $this->pid = 'pid';
+        $this->arr         = [];
+        $this->pk          = 'id';
+        $this->pid         = 'pid';
         return $this;
     }
 
     /**
      * 获取面包屑导航
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2018-06-07
+     *
      * @param    [type]       $link     [用户访问的链接]
      * @param    [type]       $html     [是否返回html导航]
      * @param    [type]       $clickLink[能否点击a标签链接]
      * @param    [type]       $uri      [导航的 uri 地址字段]
      * @param    [type]       $text     [面包屑导航展示文字字段]
+     *
      * @return   [type]                 [description]
      */
     public function getBreadCrumb($link, $html = false, $clickLink = true, $uri = 'name', $text = 'title')
     {
 
         $path = strtolower(str_replace(".", "/", $link));
-        // $path = strtolower($link);
 
         $dataArr = $this->arr;
 
@@ -921,28 +956,27 @@ class Menu
         //先设置数组的键值和名称到新数组
         foreach ($dataArr as $key => $auth) {
             $auth = object_to_array($auth);
-            // str_replace(".","/",$auth[$uri]);
 
             $nameArr = explode('/', str_replace(".", "/", $auth[$uri]));
             if (count($nameArr) < 2) {
                 $nameArr['1'] = 'index';
             }
 
-            $auth[$uri] = strtolower(implode("/", $nameArr));
+            $auth[$uri]                   = strtolower(implode("/", $nameArr));
             $newAuthArr[$auth[$this->pk]] = $auth;
 
         }
 
         $crumb = []; //导航 数组
-        foreach ($newAuthArr as $key => $value) {
+        foreach ($newAuthArr as $value) {
 
             if ($value[$uri] == $path || $value[$uri] . '/index' == $path) {
                 $crumb[] = $value;
-                $pid = $value[$this->pid];
+                $pid     = $value[$this->pid];
 
                 while ($pid) {
                     $crumb[] = $newAuthArr[$pid];
-                    $pid = $newAuthArr[$pid][$this->pid];
+                    $pid     = $newAuthArr[$pid][$this->pid];
                 }
                 break;
             }
@@ -974,8 +1008,8 @@ class Menu
     // 获取 nav 面包屑导航
     public function getNavBreadCrumb($id = '')
     {
-        $str = '';
-        $tree = array();
+        $str     = '';
+        $tree    = array();
         $arrData = $this->arr;
         //第一步，将分类id作为数组key
         foreach ($arrData as $arr) {
@@ -985,7 +1019,7 @@ class Menu
         $resultArr = [];
         while (isset($tree[$id])) {
             $resultArr[] = $tree[$id][$this->title];
-            $id = $tree[$id][$this->pid];
+            $id          = $tree[$id][$this->pid];
         }
         if (empty($resultArr)) {
             return '';

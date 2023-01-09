@@ -453,12 +453,12 @@ class Menu
 
             // && // 右侧图标
             $item['badge_text'] && (
-            $str .= '<span class="float-right label ' . ($item['badge_text_style'] ? $item['badge_text_style'] : 'label-info') . '">' . $item['badge_text'] . '</span>'
+            $str .= '<span class="float-right label ' . (!empty($item['badge_text_style']) ? $item['badge_text_style'] : 'label-info') . '">' . $item['badge_text'] . '</span>'
             );
 
             $str .= '</a>';
             // 子菜单
-            $str .= $hasArrow ? '<ul class="nav nav-second-level collapse ' . $isShowUl . '" aria-expanded="false">' : '';
+            $str .= $hasArrow ? '<ul class="nav ' . ($lv < 2 ? 'nav-second-level' : 'nav-third-level') . ' collapse ' . $isShowUl . '" aria-expanded="false">' : '';
 
             $str .= $hasArrow ? $this->inspiniaMenu($item[$this->pk], $lv, $item[$this->childlist]) : '';
             $str .= $hasArrow ? '</ul>' : '';

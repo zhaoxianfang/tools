@@ -2,23 +2,23 @@
 
 ![](https://img.shields.io/github/stars/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/forks/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/tag/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/release/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/issues/zhaoxianfang/tools.svg)
 
->基于 php 的项目模块开发
->调用命名空间 使用 use zxf\…… 例如 use zxf\login\QqOauth;  use zxf\min\JsMin;
+> 基于 php 的项目模块开发
+> 调用命名空间 使用 use zxf\…… 例如 use zxf\login\QqOauth; use zxf\min\JsMin;
 
 创建时间：2018/06/01
 
 ## 引用
+
 ```
 composer require zxf/tools
 ```
 
 ## 涵盖模块
 
-
 | 模块         | 需要包含的文件夹/说明                                                                                     |
 |------------|-------------------------------------------------------------------------------------------------|
 | QQ登录       | Qqlogin                                                                                         |
-| 微信         | wechat(未接入)                                                                                     |
+| 微信         | WeChat                                                                                          |
 | 截图         | ScreenShot                                                                                      |
 | 微博登录       | sina                                                                                            |
 | JsMin      | js 压缩工具                                                                                         |
@@ -42,8 +42,8 @@ composer require zxf/tools
 | Db / Model | Mysql 的基础操作类Db;封装调用类Model                                                                       |
 | 其他         | 还有一些没有写在此处的工具类                                                                                  |
 
-
 ### 第三方登录
+
 ```php
 <?php
 /**
@@ -76,8 +76,22 @@ return [
 
 ```
 
+### 微信
+
+```php
+// 直播间
+use zxf\WeChat\Live\LiveRoom;
+$this->sdk = LiveRoom::instance($this->config);
+```
+
+```php
+// 永久素材
+use zxf\WeChat\Material\PermanentFiles;
+$this->sdk = PermanentFiles::instance($this->config);
+```
 
 ### Curl 网络请求
+
 ``` php
 
 zxf\tools\Curl::instance()->setParams(['path'=>'pages/index/index'])->post($url,'json');
@@ -85,7 +99,8 @@ zxf\tools\Curl::instance()->setParams(['path'=>'pages/index/index'])->post($url,
 ```
 
 ### QQ登录
->说明:不同框架可根据实际修改
+
+> 说明:不同框架可根据实际修改
 
 ``` php
 <?php
@@ -135,12 +150,12 @@ class Connect extends Controller
 }
 
 ```
->提示:config('callback.qq') 中需要包含3个元素 appid、appkey、callbackUrl
 
+> 提示:config('callback.qq') 中需要包含3个元素 appid、appkey、callbackUrl
 
 ### 新浪微博登录
 
->说明:不同框架可根据实际修改
+> 说明:不同框架可根据实际修改
 
 ``` php
 <?php
@@ -191,7 +206,7 @@ class Sina extends Controller
 
 ```
 
->提示:config('callback.sina') 中需要包含3个元素 wb_akey、wb_skey、wb_callback_url
+> 提示:config('callback.sina') 中需要包含3个元素 wb_akey、wb_skey、wb_callback_url
 
 ### jsMin 压缩
 
@@ -199,8 +214,6 @@ class Sina extends Controller
 use zxf\min\JsMin;
 $minifiedCode = JsMin::minify($jsString);
 ```
-
-
 
 ### QrCode 创建二维码
 
@@ -243,6 +256,7 @@ $qrCode
 ### BarCode 创建条形码
 
 例如：
+
 ```php
 echo '<p>Example - Isbn</p>';
 $barcode = new BarCode(); // 实例化
@@ -266,11 +280,11 @@ $barcode->draw(); // 把图片直接绘画到浏览器
 ```
 
 #### 其他参数
+
 设置分辨率 `$barcode->setScale(2);`
 设置高度 `$barcode->setThickness(25);`
 `GS1-128`删除 48 个字符的限制 `$barcode->setNoLengthLimit(true);`
 `GS1-128`允许未知标识符 `$barcode->setAllowsUnknownIdentifier(true);`
-
 
 ### PHPMailer 发送邮件
 
@@ -363,6 +377,7 @@ function send_mailer($to = '', $title = '', $content = '', $sender = '邮件测�
 ```
 
 ### Compressor 图片压缩类
+
 ``` php
 /**
  * 功能：图片压缩类（可改变图片大小和压缩质量以及保留宽高压缩）
@@ -397,8 +412,8 @@ function send_mailer($to = '', $title = '', $content = '', $sender = '邮件测�
  */
 ```
 
-
 ### TextToPNG 文字转图片
+
 ``` php
 use zxf\tools\TextToPNG;
 
@@ -412,6 +427,7 @@ TextToPNG::instance()->setFontStyle($font)->setText($text)->setSize('900', '500'
 ```
 
 #### 附 TextToPNG 文字转图片 可使用的字体参照
+
 ```
 yuanti        圆体
 diandain      点点像素体-方形
@@ -435,8 +451,8 @@ myshouxie     沐瑶软笔手写体
 foxi          佛系体
 ```
 
-
 ### Sms 发送短信
+
 ``` php
 use zxf\sms\Sms;
 
@@ -479,6 +495,7 @@ if (!$result) {
 ```
 
 ### 图片转ICO格式
+
 ```
  $imgurl = "./test.jpeg";
  // 下载到浏览器
@@ -488,6 +505,7 @@ if (!$result) {
 ```
 
 ### Tree 树形结构化,
+
 ```
 $arr = array(
      array('id'=>'1','pid'=>0,'name'=>'一级栏目一'),
@@ -516,7 +534,9 @@ $tree->parentTree(5);
 // 获取tree
 $tree->getTree();
 ```
+
 ### 网页截图
+
 > 使用前需要提前到[phantomjs](https://phantomjs.org/download.html) 下载相应的可执行应用程序
 
 ```
@@ -529,10 +549,13 @@ $res = ScreenShot::init($softPath='/Users/linian/extend')->setUrl($url = 'https:
 
 $res 返回 true|fales 表示是否截图成功
 ```
+
 ### laravel 多模块应用
+
 [多模文档说明](README_laravel.md)
 
 ### Command 命令行参数解析
+
 > 在项目根目录新建一个`command` 脚本，测试内容如下
 
 ```

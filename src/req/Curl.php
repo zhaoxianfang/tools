@@ -45,7 +45,7 @@ class Curl
      * 初始化
      * @access public
      * @param array $options 参数
-     * @return Auth
+     * @return Curl
      */
     public static function instance($options = [])
     {

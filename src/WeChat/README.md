@@ -631,8 +631,6 @@ class MaterialBaseService
 
 ## 永久素材管理
 
-> 临时素材 和永久素材一样，把`zxf\WeChat\Material\PermanentFiles`替换为`zxf\WeChat\Material\TempFiles` 即可
-
 ```
 <?php
 
@@ -672,8 +670,40 @@ class WechatFilesService extends MaterialBaseService
     // 删除素材列表
     public function delete(string $mediaId = '')
     {
-        return res_json($this->sdk->delete($mediaId));
+        return res_json($this->sdk->deleteFile($mediaId));
     }
+
+}
+
+```
+
+## 临时素材管理
+
+```
+<?php
+
+namespace xxx\WeChat;
+
+use zxf\WeChat\Material\TempFiles;
+
+/**
+ * 微信素材管理
+ */
+class WechatFilesService extends MaterialBaseService
+{
+    public function __construct()
+    {
+        parent::__construct();
+        $this->sdk = TempFiles::instance($this->config);
+    }
+
+    // 上传图片
+    public function uploadImg(string $imgPath = '')
+    {
+        return res_json($this->sdk->uploadImage($imgPath));
+    }
+
+    // 调用方法和永久素材一致
 
 }
 

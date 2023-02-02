@@ -7,12 +7,12 @@ use zxf\WeChat\WeChatBase;
 /**
  * 素材
  */
-class Material extends WeChatBase
+class MaterialBase extends WeChatBase
 {
     public $type = 'official_account';
 
     // 上传类型 material：永久; media: 临时
-    public $uploadType = 'material';
+    protected $uploadType = 'material';
 
     /**
      * 请求上传
@@ -21,13 +21,13 @@ class Material extends WeChatBase
      * @param string $type     image|voice|thumb|video
      *                         图片（image）: 10M，支持bmp/png/jpeg/jpg/gif格式
      *                         语音（voice）：2M，播放长度不超过60s，mp3/wma/wav/amr格式
-     *                         视频（video）：10MB，支持MP4格式 【暂未实现】
+     *                         视频（video）：10MB，支持MP4格式
      *                         缩略图（thumb）：64KB，支持 JPG 格式
      *
      * @return array|bool|mixed|string
      * @throws \Illuminate\Http\Client\RequestException
      */
-    public function upload(string $filePath, string $type = 'image', string $videoTitle = '', string $videoDescription = '')
+    protected function upload(string $filePath, string $type = 'image', string $videoTitle = '', string $videoDescription = '')
     {
         if (!file_exists($filePath) || !is_readable($filePath)) {
             throw new \Exception(sprintf('文件不存在或者不可读: "%s"', $filePath));
@@ -58,7 +58,7 @@ class Material extends WeChatBase
     }
 
     // 获取素材列表
-    public function list(string $type = 'image', int $offset = 0, int $count = 10)
+    protected function list(string $type = 'image', int $offset = 0, int $count = 10)
     {
         $data = [
             "type"   => $type,
@@ -69,7 +69,7 @@ class Material extends WeChatBase
     }
 
     // 删除素材
-    public function delete(string $mediaId = '')
+    protected function delete(string $mediaId = '')
     {
         $data = [
             "media_id" => $mediaId,

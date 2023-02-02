@@ -174,6 +174,7 @@ class WeChatBase
      */
     public function getAccessToken(): string
     {
+        //TODO 没有就去微信获取，有就读取缓存
         return $this->accessToken;
     }
 
@@ -208,7 +209,7 @@ class WeChatBase
         $res = $this->http->get($url);
 
         $this->accessToken = $res['access_token'];
-
+        //TODO 缓存token
         return $this;
     }
 

@@ -5,9 +5,9 @@ namespace zxf\WeChat\Material;
 /**
  * 永久素材
  */
-class PermanentFiles extends Material
+class PermanentFiles extends MaterialBase
 {
-    public $uploadType = 'material';
+    protected $uploadType = 'material';
 
     /**
      * 上传图片

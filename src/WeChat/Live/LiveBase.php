@@ -7,7 +7,7 @@ use zxf\WeChat\WeChatBase;
 /**
  * 小程序直播
  */
-class Live extends WeChatBase
+class LiveBase extends WeChatBase
 {
     public $type = 'mini_program';
 }

@@ -5,7 +5,7 @@ namespace zxf\WeChat\Live;
 /**
  * 直播平台 所有商品管理
  */
-class LiveGoods extends Live
+class LiveGoods extends LiveBase
 {
     /**
      * 导入商品到微信并提交审核 ,每天可以导入500个商品

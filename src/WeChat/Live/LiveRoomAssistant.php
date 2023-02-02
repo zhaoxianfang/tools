@@ -2,7 +2,7 @@
 
 namespace zxf\WeChat\Live;
 
-class LiveRoomAssistant extends Live
+class LiveRoomAssistant extends LiveBase
 {
 
     // 添加管理直播间小助手

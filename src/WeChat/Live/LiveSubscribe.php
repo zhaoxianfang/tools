@@ -5,7 +5,7 @@ namespace zxf\WeChat\Live;
 /**
  * 直播长期订阅
  */
-class LiveSubscribe extends Live
+class LiveSubscribe extends LiveBase
 {
     // 获取长期订阅用户
     public function list(int $page = 1, int $limit = 200)

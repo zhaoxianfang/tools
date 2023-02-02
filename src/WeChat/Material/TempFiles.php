@@ -5,9 +5,9 @@ namespace zxf\WeChat\Material;
 /**
  * 临时素材
  */
-class TempFiles extends Material
+class TempFiles extends MaterialBase
 {
-    public $uploadType = 'media';
+    protected $uploadType = 'media';
 
     /**
      * 上传图片
@@ -19,7 +19,7 @@ class TempFiles extends Material
     public function uploadImage(string $realPath)
     {
 
-        $result = $this->wechatApp->media->uploadImage($realPath);
+        $result = $this->upload($realPath);
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
             throw new \Exception($this->getCode($result['errcode']), $result['errcode']);

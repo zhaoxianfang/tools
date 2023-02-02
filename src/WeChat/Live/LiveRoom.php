@@ -2,7 +2,7 @@
 
 namespace zxf\WeChat\Live;
 
-class LiveRoom extends Live
+class LiveRoom extends LiveBase
 {
 
     /**

@@ -2,7 +2,7 @@
 
 namespace zxf\WeChat\Live;
 
-class LiveRole extends Live
+class LiveRole extends LiveBase
 {
     // 设置成员角色
     public function add($openId, $role = 2): array

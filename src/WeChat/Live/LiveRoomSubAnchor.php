@@ -5,7 +5,7 @@ namespace zxf\WeChat\Live;
 /**
  * 直播间主播副号
  */
-class LiveRoomSubAnchor extends Live
+class LiveRoomSubAnchor extends LiveBase
 {
     // 获取主播副号
     public function info($roomId)

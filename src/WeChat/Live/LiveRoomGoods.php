@@ -5,7 +5,7 @@ namespace zxf\WeChat\Live;
 /**
  * 直播间内的商品管理
  */
-class LiveRoomGoods extends Live
+class LiveRoomGoods extends LiveBase
 {
 
     // 直播间导入商品

@@ -16,23 +16,27 @@
  *
  *--------------------------------------------------------------------
  */
+
 namespace zxf\qrcode\Generator;
+
 use zxf\qrcode\Generator\CINParseException;
 use zxf\qrcode\Generator\CINBarcode;
 use zxf\qrcode\Generator\CINBarcode1D;
 use zxf\qrcode\Generator\CINLabel;
 
-class CINupce extends CINBarcode1D {
-    protected $codeParity = array();
+class CINupce extends CINBarcode1D
+{
+    protected $codeParity  = array();
     protected $upce;
-    protected $labelLeft = null;
+    protected $labelLeft   = null;
     protected $labelCenter = null;
-    protected $labelRight = null;
+    protected $labelRight  = null;
 
     /**
      * Constructor.
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
 
         $this->keys = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
@@ -77,7 +81,7 @@ class CINupce extends CINBarcode1D {
                 array(0, 1, 0, 1, 0, 1),    /* 0,7 */
                 array(0, 1, 0, 1, 1, 0),    /* 0,8 */
                 array(0, 1, 1, 0, 1, 0)     /* 0,9 */
-            )
+            ),
         );
     }
 
@@ -86,7 +90,8 @@ class CINupce extends CINBarcode1D {
      *
      * @param resource $im
      */
-    public function draw($im) {
+    public function draw($im)
+    {
         $this->calculateChecksum();
 
         // Starting Code
@@ -115,13 +120,15 @@ class CINupce extends CINBarcode1D {
      *
      * @param int $w
      * @param int $h
+     *
      * @return int[]
      */
-    public function getDimension($w, $h) {
-        $startlength = 3;
+    public function getDimension($w, $h)
+    {
+        $startlength  = 3;
         $centerlength = 5;
-        $textlength = 6 * 7;
-        $endlength = 1;
+        $textlength   = 6 * 7;
+        $endlength    = 1;
 
         $w += $startlength + $centerlength + $textlength + $endlength;
         $h += $this->thickness;
@@ -131,21 +138,22 @@ class CINupce extends CINBarcode1D {
     /**
      * Adds the default label.
      */
-    protected function addDefaultLabel() {
+    protected function addDefaultLabel()
+    {
         if ($this->isDefaultEanLabelEnabled()) {
             $this->processChecksum();
             $font = $this->font;
 
-            $this->labelLeft = new CINLabel(substr($this->text, 0, 1), $font, CINLabel::POSITION_LEFT, CINLabel::ALIGN_BOTTOM);
+            $this->labelLeft    = new CINLabel(substr($this->text, 0, 1), $font, CINLabel::POSITION_LEFT, CINLabel::ALIGN_BOTTOM);
             $labelLeftDimension = $this->labelLeft->getDimension();
             $this->labelLeft->setSpacing(8);
             $this->labelLeft->setOffset($labelLeftDimension[1] / 2);
 
-            $this->labelCenter = new CINLabel($this->upce, $font, CINLabel::POSITION_BOTTOM, CINLabel::ALIGN_LEFT);
+            $this->labelCenter    = new CINLabel($this->upce, $font, CINLabel::POSITION_BOTTOM, CINLabel::ALIGN_LEFT);
             $labelCenterDimension = $this->labelCenter->getDimension();
             $this->labelCenter->setOffset(($this->scale * 46 - $labelCenterDimension[0]) / 2 + $this->scale * 2);
 
-            $this->labelRight = new CINLabel($this->keys[$this->checksumValue], $font, CINLabel::POSITION_RIGHT, CINLabel::ALIGN_BOTTOM);
+            $this->labelRight    = new CINLabel($this->keys[$this->checksumValue], $font, CINLabel::POSITION_RIGHT, CINLabel::ALIGN_BOTTOM);
             $labelRightDimension = $this->labelRight->getDimension();
             $this->labelRight->setSpacing(8);
             $this->labelRight->setOffset($labelRightDimension[1] / 2);
@@ -161,16 +169,18 @@ class CINupce extends CINBarcode1D {
      *
      * @return bool
      */
-    protected function isDefaultEanLabelEnabled() {
+    protected function isDefaultEanLabelEnabled()
+    {
         $label = $this->getLabel();
-        $font = $this->font;
+        $font  = $this->font;
         return $label !== null && $label !== '' && $font !== null && $this->defaultLabel !== null;
     }
 
     /**
      * Validates the input.
      */
-    protected function validate() {
+    protected function validate()
+    {
         $c = strlen($this->text);
         if ($c === 0) {
             throw new CINParseException('upce', 'No data has been entered.');
@@ -246,23 +256,24 @@ class CINupce extends CINBarcode1D {
     /**
      * Overloaded method to calculate checksum.
      */
-    protected function calculateChecksum() {
+    protected function calculateChecksum()
+    {
         // Calculating Checksum
         // Consider the right-most digit of the message to be in an "odd" position,
         // and assign odd/even to each character moving from right to left
         // Odd Position = 3, Even Position = 1
         // Multiply it by the number
         // Add all of that and do 10-(?mod10)
-        $odd = true;
+        $odd                 = true;
         $this->checksumValue = 0;
-        $c = strlen($this->text);
+        $c                   = strlen($this->text);
         for ($i = $c; $i > 0; $i--) {
             if ($odd === true) {
                 $multiplier = 3;
-                $odd = false;
+                $odd        = false;
             } else {
                 $multiplier = 1;
-                $odd = true;
+                $odd        = true;
             }
 
             if (!isset($this->keys[$this->text[$i - 1]])) {
@@ -278,7 +289,8 @@ class CINupce extends CINBarcode1D {
     /**
      * Overloaded method to display the checksum.
      */
-    protected function processChecksum() {
+    protected function processChecksum()
+    {
         if ($this->checksumValue === false) { // Calculate the checksum only once
             $this->calculateChecksum();
         }
@@ -294,9 +306,10 @@ class CINupce extends CINBarcode1D {
      * Draws the extended bars on the image.
      *
      * @param resource $im
-     * @param int $plus
+     * @param int      $plus
      */
-    protected function drawExtendedBars($im, $plus) {
+    protected function drawExtendedBars($im, $plus)
+    {
         $rememberX = $this->positionX;
         $rememberH = $this->thickness;
 
@@ -321,10 +334,12 @@ class CINupce extends CINBarcode1D {
      * Inverses the string when the $inverse parameter is equal to 1.
      *
      * @param string $text
-     * @param int $inverse
+     * @param int    $inverse
+     *
      * @return string
      */
-    private static function inverse($text, $inverse = 1) {
+    private static function inverse($text, $inverse = 1)
+    {
         if ($inverse === 1) {
             $text = strrev($text);
         }
@@ -332,4 +347,3 @@ class CINupce extends CINBarcode1D {
         return $text;
     }
 }
-?>

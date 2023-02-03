@@ -6,12 +6,15 @@
  *
  *--------------------------------------------------------------------
  */
+
 namespace zxf\qrcode\Generator;
+
 use zxf\qrcode\Generator\CINArgumentException;
 use zxf\qrcode\Generator\CINFont;
 use zxf\qrcode\Generator\CINColor;
 
-class CINFontFile implements CINFont {
+class CINFontFile implements CINFont
+{
     const PHP_BOX_FIX = 0;
 
     private $path;
@@ -26,15 +29,16 @@ class CINFontFile implements CINFont {
      * Constructor.
      *
      * @param string $fontPath path to the file
-     * @param int $size size in point
+     * @param int    $size     size in point
      */
-    public function __construct($fontPath, $size) {
+    public function __construct($fontPath, $size)
+    {
         if (!file_exists($fontPath)) {
             throw new CINArgumentException('The font path is incorrect.', 'fontPath');
         }
 
-        $this->path = $fontPath;
-        $this->size = $size;
+        $this->path            = $fontPath;
+        $this->size            = $size;
         $this->foregroundColor = new CINColor('black');
         $this->setRotationAngle(0);
         $this->setBoxFix(self::PHP_BOX_FIX);
@@ -45,7 +49,8 @@ class CINFontFile implements CINFont {
      *
      * @return string
      */
-    public function getText() {
+    public function getText()
+    {
         return $this->text;
     }
 
@@ -54,9 +59,10 @@ class CINFontFile implements CINFont {
      *
      * @param string text
      */
-    public function setText($text) {
+    public function setText($text)
+    {
         $this->text = $text;
-        $this->box = null;
+        $this->box  = null;
     }
 
     /**
@@ -64,7 +70,8 @@ class CINFontFile implements CINFont {
      *
      * @return int
      */
-    public function getRotationAngle() {
+    public function getRotationAngle()
+    {
         return (360 - $this->rotationAngle) % 360;
     }
 
@@ -73,7 +80,8 @@ class CINFontFile implements CINFont {
      *
      * @param int
      */
-    public function setRotationAngle($rotationAngle) {
+    public function setRotationAngle($rotationAngle)
+    {
         $this->rotationAngle = (int)$rotationAngle;
         if ($this->rotationAngle !== 90 && $this->rotationAngle !== 180 && $this->rotationAngle !== 270) {
             $this->rotationAngle = 0;
@@ -89,7 +97,8 @@ class CINFontFile implements CINFont {
      *
      * @return CINColor
      */
-    public function getBackgroundColor() {
+    public function getBackgroundColor()
+    {
     }
 
     /**
@@ -97,7 +106,8 @@ class CINFontFile implements CINFont {
      *
      * @param CINColor $backgroundColor
      */
-    public function setBackgroundColor($backgroundColor) {
+    public function setBackgroundColor($backgroundColor)
+    {
     }
 
     /**
@@ -105,7 +115,8 @@ class CINFontFile implements CINFont {
      *
      * @return CINColor
      */
-    public function getForegroundColor() {
+    public function getForegroundColor()
+    {
         return $this->foregroundColor;
     }
 
@@ -114,7 +125,8 @@ class CINFontFile implements CINFont {
      *
      * @param CINColor $foregroundColor
      */
-    public function setForegroundColor($foregroundColor) {
+    public function setForegroundColor($foregroundColor)
+    {
         $this->foregroundColor = $foregroundColor;
     }
 
@@ -123,7 +135,8 @@ class CINFontFile implements CINFont {
      *
      * @return int
      */
-    public function getBoxFix() {
+    public function getBoxFix()
+    {
         return $this->boxFix;
     }
 
@@ -132,7 +145,8 @@ class CINFontFile implements CINFont {
      *
      * @param int $value
      */
-    public function setBoxFix($value) {
+    public function setBoxFix($value)
+    {
         $this->boxFix = intval($value);
     }
 
@@ -141,9 +155,10 @@ class CINFontFile implements CINFont {
      *
      * @return int[]
      */
-    public function getDimension() {
-        $w = 0.0;
-        $h = 0.0;
+    public function getDimension()
+    {
+        $w   = 0.0;
+        $h   = 0.0;
         $box = $this->getBox();
 
         if ($box !== null) {
@@ -169,17 +184,19 @@ class CINFontFile implements CINFont {
      * $x and $y represent the left bottom corner.
      *
      * @param resource $im
-     * @param int $x
-     * @param int $y
+     * @param int      $x
+     * @param int      $y
      */
-    public function draw($im, $x, $y) {
+    public function draw($im, $x, $y)
+    {
         $drawingPosition = $this->getDrawingPosition($x, $y);
         imagettftext($im, $this->size, $this->rotationAngle, $drawingPosition[0], $drawingPosition[1], $this->foregroundColor->allocate($im), $this->path, $this->text);
     }
 
-    private function getDrawingPosition($x, $y) {
-        $dimension = $this->getDimension();
-        $box = $this->getBox();
+    private function getDrawingPosition($x, $y)
+    {
+        $dimension     = $this->getDimension();
+        $box           = $this->getBox();
         $rotationAngle = $this->getRotationAngle();
         if ($rotationAngle === 0) {
             $y += abs(min($box[5], $box[7]));
@@ -196,13 +213,13 @@ class CINFontFile implements CINFont {
         return array($x, $y);
     }
 
-    private function getBox() {
+    private function getBox()
+    {
         if ($this->box === null) {
-            $gd = imagecreate(1, 1);
+            $gd        = imagecreate(1, 1);
             $this->box = imagettftext($gd, $this->size, 0, 0, 0, 0, $this->path, $this->text);
         }
 
         return $this->box;
     }
 }
-?>

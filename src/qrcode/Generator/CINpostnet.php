@@ -7,16 +7,20 @@
  * A postnet is composed of either 5, 9 or 11 digits used by US postal service.
  *--------------------------------------------------------------------
  */
+
 namespace zxf\qrcode\Generator;
+
 use zxf\qrcode\Generator\CINParseException;
 use zxf\qrcode\Generator\CINBarcode1D;
 
 
-class CINpostnet extends CINBarcode1D {
+class CINpostnet extends CINBarcode1D
+{
     /**
      * Constructor.
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
 
         $this->keys = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
@@ -41,10 +45,11 @@ class CINpostnet extends CINBarcode1D {
      *
      * @param resource $im
      */
-    public function draw($im) {
+    public function draw($im)
+    {
         // Checksum
         $checksum = 0;
-        $c = strlen($this->text);
+        $c        = strlen($this->text);
         for ($i = 0; $i < $c; $i++) {
             $checksum += intval($this->text[$i]);
         }
@@ -72,14 +77,16 @@ class CINpostnet extends CINBarcode1D {
      *
      * @param int $w
      * @param int $h
+     *
      * @return int[]
      */
-    public function getDimension($w, $h) {
-        $c = strlen($this->text);
-        $startlength = 3;
-        $textlength = $c * 5 * 3;
+    public function getDimension($w, $h)
+    {
+        $c              = strlen($this->text);
+        $startlength    = 3;
+        $textlength     = $c * 5 * 3;
         $checksumlength = 5 * 3;
-        $endlength = 3;
+        $endlength      = 3;
 
         // We remove the white on the right
         $removelength = -1.56;
@@ -92,7 +99,8 @@ class CINpostnet extends CINBarcode1D {
     /**
      * Validates the input.
      */
-    protected function validate() {
+    protected function validate()
+    {
         $c = strlen($this->text);
         if ($c === 0) {
             throw new CINParseException('postnet', 'No data has been entered.');
@@ -117,10 +125,11 @@ class CINpostnet extends CINBarcode1D {
      * Overloaded method for drawing special barcode.
      *
      * @param resource $im
-     * @param string $code
-     * @param boolean $startBar
+     * @param string   $code
+     * @param boolean  $startBar
      */
-    protected function drawChar($im, $code, $startBar = true) {
+    protected function drawChar($im, $code, $startBar = true)
+    {
         $c = strlen($code);
         for ($i = 0; $i < $c; $i++) {
             if ($code[$i] === '0') {
@@ -134,4 +143,3 @@ class CINpostnet extends CINBarcode1D {
         }
     }
 }
-?>

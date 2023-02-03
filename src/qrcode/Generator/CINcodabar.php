@@ -6,15 +6,19 @@
  *
  *--------------------------------------------------------------------
  */
+
 namespace zxf\qrcode\Generator;
+
 use zxf\qrcode\Generator\CINParseException;
 use zxf\qrcode\Generator\CINBarcode1D;
 
-class CINcodabar extends CINBarcode1D {
+class CINcodabar extends CINBarcode1D
+{
     /**
      * Constructor.
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
 
         $this->keys = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '$', ':', '/', '.', '+', 'A', 'B', 'C', 'D');
@@ -47,7 +51,8 @@ class CINcodabar extends CINBarcode1D {
      *
      * @param mixed $text
      */
-    public function parse($text) {
+    public function parse($text)
+    {
         parent::parse(strtoupper($text));    // Only Capital Letters are Allowed
     }
 
@@ -56,7 +61,8 @@ class CINcodabar extends CINBarcode1D {
      *
      * @param resource $im
      */
-    public function draw($im) {
+    public function draw($im)
+    {
         $c = strlen($this->text);
         for ($i = 0; $i < $c; $i++) {
             $this->drawChar($im, $this->findCode($this->text[$i]), true);
@@ -70,11 +76,13 @@ class CINcodabar extends CINBarcode1D {
      *
      * @param int $w
      * @param int $h
+     *
      * @return int[]
      */
-    public function getDimension($w, $h) {
+    public function getDimension($w, $h)
+    {
         $textLength = 0;
-        $c = strlen($this->text);
+        $c          = strlen($this->text);
         for ($i = 0; $i < $c; $i++) {
             $index = $this->findIndex($this->text[$i]);
             if ($index !== false) {
@@ -91,7 +99,8 @@ class CINcodabar extends CINBarcode1D {
     /**
      * Validates the input.
      */
-    protected function validate() {
+    protected function validate()
+    {
         $c = strlen($this->text);
         if ($c === 0) {
             throw new CINParseException('codabar', 'No data has been entered.');
@@ -118,4 +127,3 @@ class CINcodabar extends CINBarcode1D {
         parent::validate();
     }
 }
-?>

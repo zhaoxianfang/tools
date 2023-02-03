@@ -8,17 +8,21 @@
  *
  *--------------------------------------------------------------------
  */
+
 namespace zxf\qrcode\Generator;
+
 use zxf\qrcode\Generator\CINParseException;
 use zxf\qrcode\Generator\CINBarcode1D;
 
-class CINs25 extends CINBarcode1D {
+class CINs25 extends CINBarcode1D
+{
     private $checksum;
 
     /**
      * Constructor.
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
 
         $this->keys = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
@@ -43,7 +47,8 @@ class CINs25 extends CINBarcode1D {
      *
      * @param bool $checksum
      */
-    public function setChecksum($checksum) {
+    public function setChecksum($checksum)
+    {
         $this->checksum = (bool)$checksum;
     }
 
@@ -52,7 +57,8 @@ class CINs25 extends CINBarcode1D {
      *
      * @param resource $im
      */
-    public function draw($im) {
+    public function draw($im)
+    {
         $temp_text = $this->text;
 
         // Checksum
@@ -80,12 +86,14 @@ class CINs25 extends CINBarcode1D {
      *
      * @param int $w
      * @param int $h
+     *
      * @return int[]
      */
-    public function getDimension($w, $h) {
-        $c = strlen($this->text);
-        $startlength = 8;
-        $textlength = $c * 14;
+    public function getDimension($w, $h)
+    {
+        $c              = strlen($this->text);
+        $startlength    = 8;
+        $textlength     = $c * 14;
         $checksumlength = 0;
         if ($c % 2 !== 0) {
             $checksumlength = 14;
@@ -101,7 +109,8 @@ class CINs25 extends CINBarcode1D {
     /**
      * Validates the input.
      */
-    protected function validate() {
+    protected function validate()
+    {
         $c = strlen($this->text);
         if ($c === 0) {
             throw new CINParseException('s25', 'No data has been entered.');
@@ -127,23 +136,24 @@ class CINs25 extends CINBarcode1D {
     /**
      * Overloaded method to calculate checksum.
      */
-    protected function calculateChecksum() {
+    protected function calculateChecksum()
+    {
         // Calculating Checksum
         // Consider the right-most digit of the message to be in an "even" position,
         // and assign odd/even to each character moving from right to left
         // Even Position = 3, Odd Position = 1
         // Multiply it by the number
         // Add all of that and do 10-(?mod10)
-        $even = true;
+        $even                = true;
         $this->checksumValue = 0;
-        $c = strlen($this->text);
+        $c                   = strlen($this->text);
         for ($i = $c; $i > 0; $i--) {
             if ($even === true) {
                 $multiplier = 3;
-                $even = false;
+                $even       = false;
             } else {
                 $multiplier = 1;
-                $even = true;
+                $even       = true;
             }
 
             $this->checksumValue += $this->keys[$this->text[$i - 1]] * $multiplier;
@@ -154,7 +164,8 @@ class CINs25 extends CINBarcode1D {
     /**
      * Overloaded method to display the checksum.
      */
-    protected function processChecksum() {
+    protected function processChecksum()
+    {
         if ($this->checksumValue === false) { // Calculate the checksum only once
             $this->calculateChecksum();
         }
@@ -166,4 +177,3 @@ class CINs25 extends CINBarcode1D {
         return false;
     }
 }
-?>

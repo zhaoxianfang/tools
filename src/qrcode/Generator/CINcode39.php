@@ -6,23 +6,27 @@
  *
  *--------------------------------------------------------------------
  */
+
 namespace zxf\qrcode\Generator;
+
 use zxf\qrcode\Generator\CINParseException;
 use zxf\qrcode\Generator\CINBarcode1D;
 
-class CINcode39 extends CINBarcode1D {
+class CINcode39 extends CINBarcode1D
+{
     protected $starting, $ending;
-    protected $checksum;
+    protected            $checksum;
 
     /**
      * Constructor.
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
 
         $this->starting = $this->ending = 43;
-        $this->keys = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '-', '.', ' ', '$', '/', '+', '%', '*');
-        $this->code = array(    // 0 added to add an extra space
+        $this->keys     = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '-', '.', ' ', '$', '/', '+', '%', '*');
+        $this->code     = array(    // 0 added to add an extra space
             '0001101000',   /* 0 */
             '1001000010',   /* 1 */
             '0011000010',   /* 2 */
@@ -77,7 +81,8 @@ class CINcode39 extends CINBarcode1D {
      *
      * @param bool $checksum
      */
-    public function setChecksum($checksum) {
+    public function setChecksum($checksum)
+    {
         $this->checksum = (bool)$checksum;
     }
 
@@ -86,7 +91,8 @@ class CINcode39 extends CINBarcode1D {
      *
      * @param mixed $text
      */
-    public function parse($text) {
+    public function parse($text)
+    {
         parent::parse(strtoupper($text));    // Only Capital Letters are Allowed
     }
 
@@ -95,12 +101,13 @@ class CINcode39 extends CINBarcode1D {
      *
      * @param resource $im
      */
-    public function draw($im) {
+    public function draw($im)
+    {
         // Starting *
         $this->drawChar($im, $this->code[$this->starting], true);
 
         // Chars
-        $c =  strlen($this->text);
+        $c = strlen($this->text);
         for ($i = 0; $i < $c; $i++) {
             $this->drawChar($im, $this->findCode($this->text[$i]), true);
         }
@@ -121,11 +128,13 @@ class CINcode39 extends CINBarcode1D {
      *
      * @param int $w
      * @param int $h
+     *
      * @return int[]
      */
-    public function getDimension($w, $h) {
-        $textlength = 13 * strlen($this->text);
-        $startlength = 13;
+    public function getDimension($w, $h)
+    {
+        $textlength     = 13 * strlen($this->text);
+        $startlength    = 13;
         $checksumlength = 0;
         if ($this->checksum === true) {
             $checksumlength = 13;
@@ -141,7 +150,8 @@ class CINcode39 extends CINBarcode1D {
     /**
      * Validates the input.
      */
-    protected function validate() {
+    protected function validate()
+    {
         $c = strlen($this->text);
         if ($c === 0) {
             throw new CINParseException('code39', 'No data has been entered.');
@@ -164,9 +174,10 @@ class CINcode39 extends CINBarcode1D {
     /**
      * Overloaded method to calculate checksum.
      */
-    protected function calculateChecksum() {
+    protected function calculateChecksum()
+    {
         $this->checksumValue = 0;
-        $c = strlen($this->text);
+        $c                   = strlen($this->text);
         for ($i = 0; $i < $c; $i++) {
             $this->checksumValue += $this->findIndex($this->text[$i]);
         }
@@ -177,7 +188,8 @@ class CINcode39 extends CINBarcode1D {
     /**
      * Overloaded method to display the checksum.
      */
-    protected function processChecksum() {
+    protected function processChecksum()
+    {
         if ($this->checksumValue === false) { // Calculate the checksum only once
             $this->calculateChecksum();
         }
@@ -189,4 +201,3 @@ class CINcode39 extends CINBarcode1D {
         return false;
     }
 }
-?>

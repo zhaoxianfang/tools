@@ -4,13 +4,15 @@
  *
  * Holds Color in RGB Format.
  *
- *--------------------------------------------------------------------  
+ *--------------------------------------------------------------------
  */
+
 namespace zxf\qrcode\Generator;
 
-class CINColor {
+class CINColor
+{
     protected $r, $g, $b;    // int Hexadecimal Value
-    protected $transparent;
+    protected         $transparent;
 
     /**
      * Save RGB value into the classes.
@@ -23,9 +25,10 @@ class CINColor {
      *
      * @param mixed ...
      */
-    public function __construct() {
+    public function __construct()
+    {
         $args = func_get_args();
-        $c = count($args);
+        $c    = count($args);
         if ($c === 3) {
             $this->r = intval($args[0]);
             $this->g = intval($args[1]);
@@ -55,7 +58,8 @@ class CINColor {
      *
      * @param bool $transparent
      */
-    public function setTransparent($transparent) {
+    public function setTransparent($transparent)
+    {
         $this->transparent = $transparent;
     }
 
@@ -64,7 +68,8 @@ class CINColor {
      *
      * @return int
      */
-    public function r() {
+    public function r()
+    {
         return $this->r;
     }
 
@@ -73,7 +78,8 @@ class CINColor {
      *
      * @return int
      */
-    public function g() {
+    public function g()
+    {
         return $this->g;
     }
 
@@ -82,7 +88,8 @@ class CINColor {
      *
      * @return int
      */
-    public function b() {
+    public function b()
+    {
         return $this->b;
     }
 
@@ -90,9 +97,11 @@ class CINColor {
      * Returns the int value for PHP color.
      *
      * @param resource $im
+     *
      * @return int
      */
-    public function allocate(&$im) {
+    public function allocate(&$im)
+    {
         $allocated = imagecolorallocate($im, $this->r, $this->g, $this->b);
         if ($this->transparent) {
             return imagecolortransparent($im, $allocated);
@@ -109,8 +118,9 @@ class CINColor {
      * @param string $code
      * @param string $default
      */
-    public static function getColor($code, $default = 'white') {
-        switch(strtolower($code)) {
+    public static function getColor($code, $default = 'white')
+    {
+        switch (strtolower($code)) {
             case '':
             case 'white':
                 return 0xffffff;
@@ -151,4 +161,3 @@ class CINColor {
         }
     }
 }
-?>

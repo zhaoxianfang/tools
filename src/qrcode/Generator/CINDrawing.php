@@ -7,51 +7,56 @@
  *
  *--------------------------------------------------------------------
  */
+
 namespace zxf\qrcode\Generator;
+
 use zxf\qrcode\Generator\CINBarcode;
 use zxf\qrcode\Generator\CINColor;
 use zxf\qrcode\Generator\CINDrawException;
 use zxf\qrcode\Generator\Drawer\CINDrawJPG;
 use zxf\qrcode\Generator\Drawer\CINDrawPNG;
 
-class CINDrawing {
-    const IMG_FORMAT_PNG = 1;
+class CINDrawing
+{
+    const IMG_FORMAT_PNG  = 1;
     const IMG_FORMAT_JPEG = 2;
-    const IMG_FORMAT_GIF = 3;
+    const IMG_FORMAT_GIF  = 3;
     const IMG_FORMAT_WBMP = 4;
 
     private $w, $h;         // int
-    private $color;         // CINColor
-    private $filename;      // char *
-    private $im;            // {object}
-    private $barcode;       // CINBarcode
-    private $dpi;           // float
-    private $rotateDegree;  // float
+    private     $color;         // CINColor
+    private     $filename;      // char *
+    private     $im;            // {object}
+    private     $barcode;       // CINBarcode
+    private     $dpi;           // float
+    private     $rotateDegree;  // float
 
     /**
      * Constructor.
      *
-     * @param int $w
-     * @param int $h
+     * @param int      $w
+     * @param int      $h
      * @param string filename
      * @param CINColor $color
      */
     // public function __construct($filename = null, CINColor $color) {
-    public function __construct() {
-        $args = func_get_args();
-        $filename = $args[0]??'';
-        $color =  $args[1];
+    public function __construct()
+    {
+        $args     = func_get_args();
+        $filename = $args[0] ?? '';
+        $color    = $args[1];
         $this->im = null;
         $this->setFilename($filename);
-        $this->color = $color;
-        $this->dpi = null;
+        $this->color        = $color;
+        $this->dpi          = null;
         $this->rotateDegree = 0.0;
     }
 
     /**
      * Destructor.
      */
-    public function __destruct() {
+    public function __destruct()
+    {
         $this->destroy();
     }
 
@@ -60,7 +65,8 @@ class CINDrawing {
      *
      * @return string
      */
-    public function getFilename() {
+    public function getFilename()
+    {
         return $this->filename;
     }
 
@@ -69,14 +75,16 @@ class CINDrawing {
      *
      * @param string $filaneme
      */
-    public function setFilename($filename) {
+    public function setFilename($filename)
+    {
         $this->filename = $filename;
     }
 
     /**
      * @return resource.
      */
-    public function get_im() {
+    public function get_im()
+    {
         return $this->im;
     }
 
@@ -85,7 +93,8 @@ class CINDrawing {
      *
      * @param resource $im
      */
-    public function set_im($im) {
+    public function set_im($im)
+    {
         $this->im = $im;
     }
 
@@ -94,7 +103,8 @@ class CINDrawing {
      *
      * @return CINBarcode
      */
-    public function getBarcode() {
+    public function getBarcode()
+    {
         return $this->barcode;
     }
 
@@ -103,7 +113,8 @@ class CINDrawing {
      *
      * @param CINBarcode $barcode
      */
-    public function setBarcode(CINBarcode $barcode) {
+    public function setBarcode(CINBarcode $barcode)
+    {
         $this->barcode = $barcode;
     }
 
@@ -112,7 +123,8 @@ class CINDrawing {
      *
      * @return float
      */
-    public function getDPI() {
+    public function getDPI()
+    {
         return $this->dpi;
     }
 
@@ -121,7 +133,8 @@ class CINDrawing {
      *
      * @param float $dpi
      */
-    public function setDPI($dpi) {
+    public function setDPI($dpi)
+    {
         $this->dpi = $dpi;
     }
 
@@ -130,7 +143,8 @@ class CINDrawing {
      *
      * @return float
      */
-    public function getRotationAngle() {
+    public function getRotationAngle()
+    {
         return $this->rotateDegree;
     }
 
@@ -139,15 +153,17 @@ class CINDrawing {
      *
      * @param float $degree
      */
-    public function setRotationAngle($degree) {
+    public function setRotationAngle($degree)
+    {
         $this->rotateDegree = (float)$degree;
     }
 
     /**
      * Draws the barcode on the image $im.
      */
-    public function draw() {
-        $size = $this->barcode->getDimension(0, 0);
+    public function draw()
+    {
+        $size    = $this->barcode->getDimension(0, 0);
         $this->w = max(1, $size[0]);
         $this->h = max(1, $size[1]);
         $this->init();
@@ -160,7 +176,8 @@ class CINDrawing {
      * @param int $image_style
      * @param int $quality
      */
-    public function finish($image_style = self::IMG_FORMAT_PNG, $quality = 100) {
+    public function finish($image_style = self::IMG_FORMAT_PNG, $quality = 100)
+    {
         $drawer = null;
 
         $im = $this->im;
@@ -202,7 +219,8 @@ class CINDrawing {
      *
      * @param Exception $exception
      */
-    public function drawException($exception) {
+    public function drawException($exception)
+    {
         $this->w = 1;
         $this->h = 1;
         $this->init();
@@ -213,10 +231,10 @@ class CINDrawing {
 
         $text = 'Error: ' . $exception->getMessage();
 
-        $width = imagefontwidth(2) * strlen($text);
+        $width  = imagefontwidth(2) * strlen($text);
         $height = imagefontheight(2);
         if ($width > $w || $height > $h) {
-            $width = max($w, $width);
+            $width  = max($w, $width);
             $height = max($h, $height);
 
             // We change the size of the image
@@ -233,7 +251,8 @@ class CINDrawing {
     /**
      * Free the memory of PHP (called also by destructor).
      */
-    public function destroy() {
+    public function destroy()
+    {
         try {
             $this->im && @imagedestroy($this->im);
         } catch (\Exception $e) {
@@ -243,7 +262,8 @@ class CINDrawing {
     /**
      * Init Image and color background.
      */
-    private function init() {
+    private function init()
+    {
         if ($this->im === null) {
             $this->im = imagecreatetruecolor($this->w, $this->h)
             or die('Can\'t Initialize the GD Libraty');
@@ -251,4 +271,3 @@ class CINDrawing {
         }
     }
 }
-?>

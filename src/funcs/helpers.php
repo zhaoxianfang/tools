@@ -356,17 +356,19 @@ if (!function_exists('deldir')) {
     /**
      * 删除文件夹
      *
-     * @param string $dir 目录
+     * @param string $dir     目录
+     * @param bool   $delSelf 是否删除目录自身
      *
      * @return boolean
      */
-    function deldir(string $dir): bool
+    function deldir(string $dir, $delSelf = true): bool
     {
         //先删除目录下的文件：
         $dh = opendir($dir);
         while ($file = readdir($dh)) {
             if ($file != "." && $file != "..") {
                 $fullpath = $dir . "/" . $file;
+                $fullpath = str_replace(['//', '\\\\', '\\/'], ['/', '\\', '/'], $fullpath);
                 if (!is_dir($fullpath)) {
                     unlink($fullpath);
                 } else {
@@ -376,7 +378,28 @@ if (!function_exists('deldir')) {
         }
         closedir($dh);
         //删除当前文件夹：
-        return rmdir($dir);
+        return $delSelf ? rmdir($dir) : true;
+    }
+}
+
+if (!function_exists('dir_is_empty')) {
+    /**
+     * 判断文件夹是否为空
+     *
+     * @param string $dir
+     *
+     * @return bool
+     */
+    function dir_is_empty(string $dir): bool
+    {
+        if ($handle = opendir($dir)) {
+            while ($item = readdir($handle)) {
+                if ($item != "." && $item != " ..") {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
 
@@ -1113,25 +1136,80 @@ if (!function_exists('download_url_file')) {
 
 if (!function_exists('str_en_code')) {
     /**
-     * 字符串加解密
+     * 字符串加密和解密
      *
-     * @param        $string [字符串]
-     * @param string $action [en:加密；de:解密]
+     * @param string     $string         字符串
+     * @param string     $operation      de(DECODE)表示解密，en(ENCODE)表示加密；
+     * @param int|string $expiry         缓存生命周期 0表示永久缓存 默认99年
+     *                                   支持格式:
+     *                                   int 缓存多少秒，例如 90 表示缓存90秒，如果小于等于0，则用0替换
+     *                                   string: 时间字符串格式,例如:+1 day、2023-01-01 09:00:02 等 strtotime 支持的格式均可
+     * @param string     $key
      *
-     * @return string
+     * @return false|string
      */
-    function str_en_code($string, string $action = 'en')
+    function str_en_code(string $string, string $operation = 'en', int|string $expiry = 312206400, string $key = '')
     {
-        $action != 'en' && $string = base64_decode($string);
-        $code   = '';
-        $key    = 'str_en_de_code';
-        $keyLen = strlen($key);
-        $strLen = strlen($string);
-        for ($i = 0; $i < $strLen; $i++) {
-            $k    = $i % $keyLen;
-            $code .= $string[$i] ^ $key[$k];
+        $operation = in_array($operation, ['de', 'DECODE']) ? 'DECODE' : 'ENCODE';
+        // 转换字符串
+        $string = $operation == 'DECODE' ? str_replace(array("_"), array("/"), $string) : $string;
+        // 动态密匙长度，相同的明文会生成不同密文就是依靠动态密匙
+        $ckey_length = 4;
+        // 密匙
+        $key = md5(!empty($key) ? $key : 'www.weisifang.com');
+        // 密匙a会参与加解密
+        $keya = md5(substr($key, 0, 16));
+        // 密匙b会用来做数据完整性验证
+        $keyb = md5(substr($key, 16, 16));
+        // 密匙c用于变化生成的密文
+        $keyc = $ckey_length ? ($operation == 'DECODE' ? substr($string, 0, $ckey_length) : substr(md5(microtime()), -$ckey_length)) : '';
+        // 参与运算的密匙
+        $cryptkey   = $keya . md5($keya . $keyc);
+        $key_length = strlen($cryptkey);
+        // 明文，前10位用来保存时间戳，解密时验证数据有效性，10到26位用来保存$keyb(密匙b)，
+        //解密时会通过这个密匙验证数据完整性
+        // 如果是解码的话，会从第$ckey_length位开始，因为密文前$ckey_length位保存 动态密匙，以保证解密正确
+        $expiry        = (is_numeric($expiry) || empty($expiry)) ? time() + (int)$expiry : strtotime($expiry);
+        $string        = $operation == 'DECODE' ? base64_decode(substr($string, $ckey_length)) : sprintf('%010d', $expiry) . substr(md5($string . $keyb), 0, 16) . $string;
+        $string_length = strlen($string);
+        $result        = '';
+        $box           = range(0, 255);
+        $rndkey        = array();
+        // 产生密匙簿
+        for ($i = 0; $i <= 255; $i++) {
+            $rndkey[$i] = ord($cryptkey[$i % $key_length]);
         }
-        return ($action != 'de' ? base64_encode($code) : $code);
+        // 用固定的算法，打乱密匙簿，增加随机性，好像很复杂，实际上对并不会增加密文的强度
+        for ($j = $i = 0; $i < 256; $i++) {
+            $j       = ($j + $box[$i] + $rndkey[$i]) % 256;
+            $tmp     = $box[$i];
+            $box[$i] = $box[$j];
+            $box[$j] = $tmp;
+        }
+        // 核心加解密部分
+        for ($a = $j = $i = 0; $i < $string_length; $i++) {
+            $a       = ($a + 1) % 256;
+            $j       = ($j + $box[$a]) % 256;
+            $tmp     = $box[$a];
+            $box[$a] = $box[$j];
+            $box[$j] = $tmp;
+            // 从密匙簿得出密匙进行异或，再转成字符
+            $result .= chr(ord($string[$i]) ^ ($box[($box[$a] + $box[$j]) % 256]));
+        }
+        if ($operation == 'DECODE') {
+            // 验证数据有效性，请看未加密明文的格式
+            if ((substr($result, 0, 10) == 0 || substr($result, 0, 10) - time() > 0) && substr($result, 10, 16) == substr(md5(substr($result, 26) . $keyb), 0, 16)) {
+                return substr($result, 26);
+            } else {
+                return '';
+            }
+        } else {
+            // 把动态密匙保存在密文里，这也是为什么同样的明文，生产不同密文后能解密的原因
+            // 因为加密后的密文可能是一些特殊字符，复制过程可能会丢失，所以用base64编码
+            $result = $keyc . str_replace('=', '', base64_encode($result));
+            // 转换字符串
+            return str_replace(['/', '='], ['_', ''], $result);
+        }
     }
 }
 
@@ -1193,6 +1271,20 @@ if (!function_exists('json_decode_plus')) {
             return json_decode($jsonStr, $assoc);
         } catch (\Exception $e) {
             return json_decode($jsonStr, $assoc);
+        }
+    }
+}
+
+if (!function_exists('file_put_contents')) {
+    function file_put_contents($filename, $data)
+    {
+        $f = @fopen($filename, 'w');
+        if (!$f) {
+            return false;
+        } else {
+            $bytes = fwrite($f, $data);
+            fclose($f);
+            return $bytes;
         }
     }
 }

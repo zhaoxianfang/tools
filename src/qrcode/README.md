@@ -1,11 +1,13 @@
 # qrcode 生成 二维码和条形码
 
 ## 说明
-> 本库引用自 `composer require codeitnowin/barcode` 的代码库 并进行了部分改良
+
+> 本库引用自 `composer require codeitnowin/barcode` 的代码库[此库已经停止维护] 并进行了部分改良
 
 ## 如何使用
 
 ### 引入库
+
 ```
 use zxf\qrcode\QrCode;
 use zxf\qrcode\BarCode;
@@ -19,13 +21,13 @@ use zxf\qrcode\QrCode;
 echo '<p>Example - QrCode</p>';
 $qrCode = new QrCode();
 $qrCode
-    ->setText('https://www.weisifang.com/apidoc') // 生成二维码的内容
+    ->setText('https://www.weisifang.com/docs') // 生成二维码的内容
     ->setSize(200) // 设置二维码大小
     ->setPadding(10) // 设置边距
     ->setErrorCorrection('high') // 设置二维码纠错级别。 分为 high(30%)、quartile(25%)、medium(15%)、low(7%) 几种
     ->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0)) // 设置颜色
     ->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0)) // 设置背景色
-    ->setLabel('在线文档|起跑线') // 设置图片下面的文字
+    ->setLabel('在线文档|威四方') // 设置图片下面的文字
     ->setLabelFontSize(16) // 设置文字字体大小
     ->setImageType(QrCode::IMAGE_TYPE_PNG) // 设置图片类型 ,默认为 png
 echo '<img src="data:' . $qrCode->getContentType() . ';base64,' . $qrCode->generate() . '" />';
@@ -36,27 +38,79 @@ echo '<img src="data:' . $qrCode->getContentType() . ';base64,' . $qrCode->gener
 ```php
 $qrCode = new QrCode(); // 实例化
 $qrCode
-    ->setText('https://www.weisifang.com/apidoc') // 生成二维码的内容
+    ->setText('https://www.weisifang.com/docs') // 生成二维码的内容
     ->setSize(200) // 设置二维码大小
     ->setPadding(10) // 设置边距
     ->setErrorCorrection('high') // 设置二维码纠错级别。 分为 high(30%)、quartile(25%)、medium(15%)、low(7%) 几种
     ->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0)) // 设置颜色
     ->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0)) // 设置背景色
-    ->setLabel('在线文档|起跑线') // 设置图片下面的文字
+    ->setLabel('在线文档|威四方') // 设置图片下面的文字
     ->setLabelFontSize(16) // 设置文字字体大小
     ->setImageType(QrCode::IMAGE_TYPE_PNG) // 设置图片类型 ,默认为 png
     ->draw() // 把图片直接绘画到浏览器
     ;
 ```
 
+### 设置二维码文字字体
+
+#### 使用自定义字体
+
+```
+$qrCode->setLabelFontPath("你的ttf文件.ttf");
+
+$qrCode->setLabelFontPath(dirname(__DIR__) . "/resource/font/oppo.ttf");
+```
+
+#### 使用内置的字体
+
+```
+$qrCode->useFontFile('字体名称，不带.ttf后缀');
+$qrCode->useFontFile('xingshu');
+```
+
+支持的字体
+
+```
+yuanti    圆体
+diandain   点点像素体-方形
+diandain_yt   点点像素体-圆形
+diandain_lx   点点像素体-菱形
+lishu   隶书
+qiuhong   秋鸿楷体
+taiwan_lishu   台湾隶书
+xingshu   行书
+code   代码体
+caoshu   草书
+kaiti   方正楷体简体
+fangsong   方正仿宋简体
+oppo   OPPO官方字体
+ali_puhui   阿里巴巴普惠体2.0
+baotuxiaobai   包图小白体
+heiti   方正黑体简体
+honglei    鸿雷板书简体
+haoshenti   优设好身体
+myshouxie   沐瑶软笔手写体
+foxi  佛系体
+wzny  亡者农药体
+sj_sjjt  三极瘦金简体
+sh_jjt  三极尖叫体
+sj_qyxz  三极秦韵小篆
+a_kspy  Aa楷书拼音
+fzkt  方正楷体
+sj_kdt  三极空叠体
+sj_ltjhjt  三极立体极黑简体
+```
+
 ## BarCode 创建条形码
 
 例如：
+
 ```php
 echo '<p>Example - Isbn</p>';
 $barcode = new BarCode(); // 实例化
 $barcode->setText("0012345678901"); // 设置条形码内容
 $barcode->setFontSize(10); //  设置字体大小
+$barcode->setThickness(25); // 设置条码高度
 $barcode->setType(BarCode::Isbn); // 设置条形码类型,支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce 类型的条形码
 $code = $barcode->generate(); // 生成条形码 base64 文件流
 echo '<img src="data:image/png;base64,' . $code . '" />';
@@ -74,15 +128,51 @@ $barcode->setType(BarCode::Isbn); // 设置条形码类型,支持Code128、Code1
 $barcode->draw(); // 把图片直接绘画到浏览器
 ```
 
+### 设置条形码文字字体
+
+#### 使用自定义字体
+
+```
+$barcode->setLabelFontPath("你的ttf文件.ttf");
+
+$barcode->setLabelFontPath(dirname(__DIR__) . "/resource/font/oppo.ttf");
+```
+
+#### 使用内置的字体
+
+```
+$barcode->useFontFile('字体名称，不带.ttf后缀');
+$barcode->useFontFile('xingshu');
+```
+
 ### 其他参数
-设置分辨率 `$barcode->setScale(2);`
-设置高度 `$barcode->setThickness(25);`
-`GS1-128`删除 48 个字符的限制 `$barcode->setNoLengthLimit(true);`
-`GS1-128`允许未知标识符 `$barcode->setAllowsUnknownIdentifier(true);`
 
+设置分辨率
 
+```
+$barcode->setScale(2);
+```
+
+设置高度
+
+```
+$barcode->setThickness(25);
+```
+
+`GS1-128`删除 48 个字符的限制
+
+```
+$barcode->setNoLengthLimit(true);
+```
+
+`GS1-128`允许未知标识符
+
+```
+$barcode->setAllowsUnknownIdentifier(true);
+```
 
 ### 其他的demo
+
 ```
 echo '<p>Example - Code128</p>';
 $barcode = new BarCode();

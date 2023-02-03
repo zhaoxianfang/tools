@@ -3,6 +3,7 @@
 namespace zxf\WeChat;
 
 use zxf\req\Curl;
+use zxf\tools\Cache;
 
 class WeChatBase
 {
@@ -14,6 +15,9 @@ class WeChatBase
 
     //curl 对象
     protected $http = '';
+
+    // 缓存对象
+    protected $cache = '';
 
     /**
      * @var object 对象实例
@@ -127,12 +131,18 @@ class WeChatBase
      */
     public function initConfig(array $config = [])
     {
+        $config = !empty($config) ? array_merge($this->config, $config) : [];
         if (empty($config['app_id']) || empty($config['secret'])) {
             throw new \Exception('确少微信小程序配置参数:app_id或secret');
         }
         $this->config = $config;
 
-        $this->http = Curl::instance();
+        $this->http  = Curl::instance();
+        $this->cache = Cache::instance([
+            'cache_dir' => !empty($config['cache_dir']) ? $config['cache_dir'] : "/cache",
+            'type'      => !empty($config['cache_type']) ? $config['cache_type'] : "random",
+            'mode'      => !empty($config['cache_mode']) ? $config['cache_mode'] : 1,
+        ]);
 
         $this->getToken();
         return $this;
@@ -174,7 +184,12 @@ class WeChatBase
      */
     public function getAccessToken(): string
     {
-        //TODO 没有就去微信获取，有就读取缓存
+        if ($this->accessToken) {
+            return $this->accessToken;
+        }
+        if (!$this->accessToken = $this->cache->get('wechat_accessToken')) {
+            $this->initConfig();
+        }
         return $this->accessToken;
     }
 
@@ -194,7 +209,7 @@ class WeChatBase
      */
     public function getToken($refreshToken = false)
     {
-        return $this->getTokenByCustom();
+        return $this->getTokenByCustom($refreshToken);
     }
 
     /**
@@ -209,18 +224,19 @@ class WeChatBase
         $res = $this->http->get($url);
 
         $this->accessToken = $res['access_token'];
-        //TODO 缓存token
+        // 缓存token
+        $this->cache->set('wechat_accessToken', $this->accessToken, 7000);
         return $this;
     }
 
     /**
      * 获取状态码
      *
-     * @param $code
+     * @param string $code
      *
      * @return string
      */
-    public function getCode($code = ''): string
+    public function getCode(string $code = ''): string
     {
         return !empty(self::$errCode[$code]) ? self::$errCode[$code] : self::$errCode['500'];
     }
@@ -270,7 +286,6 @@ class WeChatBase
         }
         $result['message'] = $this->getCode($result['errcode']);
         return $result;
-
     }
 
 }

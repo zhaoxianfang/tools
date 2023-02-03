@@ -14,19 +14,23 @@
  *
  *--------------------------------------------------------------------
  */
+
 namespace zxf\qrcode\Generator;
+
 use zxf\qrcode\Generator\CINParseException;
 use zxf\qrcode\Generator\CINBarcode;
 use zxf\qrcode\Generator\CINean13;
 use zxf\qrcode\Generator\CINLabel;
 
-class CINupca extends CINean13 {
+class CINupca extends CINean13
+{
     protected $labelRight = null;
 
     /**
      * Constructor.
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
     }
 
@@ -35,7 +39,8 @@ class CINupca extends CINean13 {
      *
      * @param resource $im
      */
-    public function draw($im) {
+    public function draw($im)
+    {
         // The following code is exactly the same as EAN13. We just add a 0 in front of the code !
         $this->text = '0' . $this->text; // We will remove it at the end... don't worry
 
@@ -49,9 +54,10 @@ class CINupca extends CINean13 {
      * Draws the extended bars on the image.
      *
      * @param resource $im
-     * @param int $plus
+     * @param int      $plus
      */
-    protected function drawExtendedBars($im, $plus) {
+    protected function drawExtendedBars($im, $plus)
+    {
         $temp_text = $this->text . $this->keys[$this->checksumValue];
         $rememberX = $this->positionX;
         $rememberH = $this->thickness;
@@ -66,7 +72,7 @@ class CINupca extends CINean13 {
 
         // Attemping to increase the 2 following bars
         $this->positionX += 1;
-        $temp_value = $this->findCode($temp_text[1]);
+        $temp_value      = $this->findCode($temp_text[1]);
         $this->drawChar($im, $temp_value, false);
 
         // Center Guard Bar
@@ -77,7 +83,7 @@ class CINupca extends CINean13 {
 
         // Attemping to increase the 2 last bars
         $this->positionX += 37;
-        $temp_value = $this->findCode($temp_text[12]);
+        $temp_value      = $this->findCode($temp_text[12]);
         $this->drawChar($im, $temp_value, true);
 
         // Completly last bars
@@ -92,16 +98,17 @@ class CINupca extends CINean13 {
     /**
      * Adds the default label.
      */
-    protected function addDefaultLabel() {
+    protected function addDefaultLabel()
+    {
         if ($this->isDefaultEanLabelEnabled()) {
             $this->processChecksum();
             $label = $this->getLabel();
-            $font = $this->font;
+            $font  = $this->font;
 
             $this->labelLeft = new CINLabel(substr($label, 0, 1), $font, CINLabel::POSITION_LEFT, CINLabel::ALIGN_BOTTOM);
             $this->labelLeft->setSpacing(4 * $this->scale);
 
-            $this->labelCenter1 = new CINLabel(substr($label, 1, 5), $font, CINLabel::POSITION_BOTTOM, CINLabel::ALIGN_LEFT);
+            $this->labelCenter1    = new CINLabel(substr($label, 1, 5), $font, CINLabel::POSITION_BOTTOM, CINLabel::ALIGN_LEFT);
             $labelCenter1Dimension = $this->labelCenter1->getDimension();
             $this->labelCenter1->setOffset(($this->scale * 44 - $labelCenter1Dimension[0]) / 2 + $this->scale * 6);
 
@@ -132,7 +139,8 @@ class CINupca extends CINean13 {
     /**
      * Check correct length.
      */
-    protected function checkCorrectLength() {
+    protected function checkCorrectLength()
+    {
         // If we have 12 chars, just flush the last one without throwing anything
         $c = strlen($this->text);
         if ($c === 12) {
@@ -142,4 +150,3 @@ class CINupca extends CINean13 {
         }
     }
 }
-?>

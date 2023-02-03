@@ -6,11 +6,14 @@
  *
  *--------------------------------------------------------------------
  */
+
 namespace zxf\qrcode\Generator;
+
 use zxf\qrcode\Generator\CINFont;
 use zxf\qrcode\Generator\CINColor;
 
-class CINFontPhp implements CINFont {
+class CINFontPhp implements CINFont
+{
     private $font;
     private $text;
     private $rotationAngle;
@@ -22,8 +25,9 @@ class CINFontPhp implements CINFont {
      *
      * @param int $font
      */
-    public function __construct($font) {
-        $this->font = max(0, intval($font));
+    public function __construct($font)
+    {
+        $this->font            = max(0, intval($font));
         $this->backgroundColor = new CINColor('white');
         $this->foregroundColor = new CINColor('black');
         $this->setRotationAngle(0);
@@ -34,7 +38,8 @@ class CINFontPhp implements CINFont {
      *
      * @return string
      */
-    public function getText() {
+    public function getText()
+    {
         return $this->text;
     }
 
@@ -43,7 +48,8 @@ class CINFontPhp implements CINFont {
      *
      * @param string text
      */
-    public function setText($text) {
+    public function setText($text)
+    {
         $this->text = $text;
     }
 
@@ -52,7 +58,8 @@ class CINFontPhp implements CINFont {
      *
      * @return int
      */
-    public function getRotationAngle() {
+    public function getRotationAngle()
+    {
         return (360 - $this->rotationAngle) % 360;
     }
 
@@ -61,7 +68,8 @@ class CINFontPhp implements CINFont {
      *
      * @param int
      */
-    public function setRotationAngle($rotationAngle) {
+    public function setRotationAngle($rotationAngle)
+    {
         $this->rotationAngle = (int)$rotationAngle;
         if ($this->rotationAngle !== 90 && $this->rotationAngle !== 180 && $this->rotationAngle !== 270) {
             $this->rotationAngle = 0;
@@ -75,7 +83,8 @@ class CINFontPhp implements CINFont {
      *
      * @return CINColor
      */
-    public function getBackgroundColor() {
+    public function getBackgroundColor()
+    {
         return $this->backgroundColor;
     }
 
@@ -84,7 +93,8 @@ class CINFontPhp implements CINFont {
      *
      * @param CINColor $backgroundColor
      */
-    public function setBackgroundColor($backgroundColor) {
+    public function setBackgroundColor($backgroundColor)
+    {
         $this->backgroundColor = $backgroundColor;
     }
 
@@ -93,7 +103,8 @@ class CINFontPhp implements CINFont {
      *
      * @return CINColor
      */
-    public function getForegroundColor() {
+    public function getForegroundColor()
+    {
         return $this->foregroundColor;
     }
 
@@ -102,7 +113,8 @@ class CINFontPhp implements CINFont {
      *
      * @param CINColor $foregroundColor
      */
-    public function setForegroundColor($foregroundColor) {
+    public function setForegroundColor($foregroundColor)
+    {
         $this->foregroundColor = $foregroundColor;
     }
 
@@ -111,7 +123,8 @@ class CINFontPhp implements CINFont {
      *
      * @return int[]
      */
-    public function getDimension() {
+    public function getDimension()
+    {
         $w = imagefontwidth($this->font) * strlen($this->text);
         $h = imagefontheight($this->font);
 
@@ -128,17 +141,18 @@ class CINFontPhp implements CINFont {
      * $x and $y represent the left bottom corner.
      *
      * @param resource $im
-     * @param int $x
-     * @param int $y
+     * @param int      $x
+     * @param int      $y
      */
-    public function draw($im, $x, $y) {
+    public function draw($im, $x, $y)
+    {
         if ($this->getRotationAngle() !== 0) {
             if (!function_exists('imagerotate')) {
                 throw new CINDrawException('The method imagerotate doesn\'t exist on your server. Do not use any rotation.');
             }
 
-            $w = imagefontwidth($this->font) * strlen($this->text);
-            $h = imagefontheight($this->font);
+            $w  = imagefontwidth($this->font) * strlen($this->text);
+            $h  = imagefontheight($this->font);
             $gd = imagecreatetruecolor($w, $h);
             imagefilledrectangle($gd, 0, 0, $w - 1, $h - 1, $this->backgroundColor->allocate($gd));
             imagestring($gd, $this->font, 0, 0, $this->text, $this->foregroundColor->allocate($gd));
@@ -149,4 +163,3 @@ class CINFontPhp implements CINFont {
         }
     }
 }
-?>

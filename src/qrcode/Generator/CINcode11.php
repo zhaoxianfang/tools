@@ -4,17 +4,21 @@
  *
  * Sub-Class - Code 11
  *
- *--------------------------------------------------------------------  
+ *--------------------------------------------------------------------
  */
+
 namespace zxf\qrcode\Generator;
+
 use zxf\qrcode\Generator\CINParseException;
 use zxf\qrcode\Generator\CINBarcode1D;
 
-class CINcode11 extends CINBarcode1D {
+class CINcode11 extends CINBarcode1D
+{
     /**
      * Constructor.
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
 
         $this->keys = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-');
@@ -38,7 +42,8 @@ class CINcode11 extends CINBarcode1D {
      *
      * @param resource $im
      */
-    public function draw($im) {
+    public function draw($im)
+    {
         // Starting Code
         $this->drawChar($im, '001100', true);
 
@@ -65,13 +70,15 @@ class CINcode11 extends CINBarcode1D {
      *
      * @param int $w
      * @param int $h
+     *
      * @return int[]
      */
-    public function getDimension($w, $h) {
+    public function getDimension($w, $h)
+    {
         $startlength = 8;
 
         $textlength = 0;
-        $c = strlen($this->text);
+        $c          = strlen($this->text);
         for ($i = 0; $i < $c; $i++) {
             $textlength += $this->getIndexLength($this->findIndex($this->text[$i]));
         }
@@ -94,7 +101,8 @@ class CINcode11 extends CINBarcode1D {
     /**
      * Validates the input.
      */
-    protected function validate() {
+    protected function validate()
+    {
         $c = strlen($this->text);
         if ($c === 0) {
             throw new CINParseException('code11', 'No data has been entered.');
@@ -113,7 +121,8 @@ class CINcode11 extends CINBarcode1D {
     /**
      * Overloaded method to calculate checksum.
      */
-    protected function calculateChecksum() {
+    protected function calculateChecksum()
+    {
         // Checksum
         // First CheckSUM "C"
         // The "C" checksum character is the modulo 11 remainder of the sum of the weighted
@@ -125,7 +134,7 @@ class CINcode11 extends CINBarcode1D {
         // Same as CheckSUM "C" but we count the CheckSum "C" at the end
         // After 9, the sequence wraps around back to 1.
         $sequence_multiplier = array(10, 9);
-        $temp_text = $this->text;
+        $temp_text           = $this->text;
         $this->checksumValue = array();
         for ($z = 0; $z < 2; $z++) {
             $c = strlen($temp_text);
@@ -146,21 +155,22 @@ class CINcode11 extends CINBarcode1D {
             }
 
             $this->checksumValue[$z] = $checksum % 11;
-            $temp_text .= $this->keys[$this->checksumValue[$z]];
+            $temp_text               .= $this->keys[$this->checksumValue[$z]];
         }
     }
 
     /**
      * Overloaded method to display the checksum.
      */
-    protected function processChecksum() {
+    protected function processChecksum()
+    {
         if ($this->checksumValue === false) { // Calculate the checksum only once
             $this->calculateChecksum();
         }
 
         if ($this->checksumValue !== false) {
             $ret = '';
-            $c = count($this->checksumValue);
+            $c   = count($this->checksumValue);
             for ($i = 0; $i < $c; $i++) {
                 $ret .= $this->keys[$this->checksumValue[$i]];
             }
@@ -171,7 +181,8 @@ class CINcode11 extends CINBarcode1D {
         return false;
     }
 
-    private function getIndexLength($index) {
+    private function getIndexLength($index)
+    {
         $length = 0;
         if ($index !== false) {
             $length += 6;
@@ -181,4 +192,3 @@ class CINcode11 extends CINBarcode1D {
         return $length;
     }
 }
-?>

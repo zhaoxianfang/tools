@@ -9,7 +9,8 @@
 
 namespace zxf\qrcode\Generator\Drawer;
 
-abstract class CINDraw {
+abstract class CINDraw
+{
     protected $im;
     protected $filename;
 
@@ -18,7 +19,8 @@ abstract class CINDraw {
      *
      * @param resource $im
      */
-    protected function __construct($im) {
+    protected function __construct($im)
+    {
         $this->im = $im;
     }
 
@@ -27,7 +29,8 @@ abstract class CINDraw {
      *
      * @param string $filename
      */
-    public function setFilename($filename) {
+    public function setFilename($filename)
+    {
         $this->filename = $filename;
     }
 
@@ -36,4 +39,3 @@ abstract class CINDraw {
      */
     abstract public function draw();
 }
-?>

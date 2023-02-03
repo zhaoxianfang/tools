@@ -10,15 +10,19 @@
  *
  *--------------------------------------------------------------------
  */
+
 namespace zxf\qrcode\Generator;
+
 use zxf\qrcode\Generator\CINParseException;
 use zxf\qrcode\Generator\CINBarcode1D;
 
-class CINothercode extends CINBarcode1D {
+class CINothercode extends CINBarcode1D
+{
     /**
      * Constructor.
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
 
         $this->keys = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
@@ -29,7 +33,8 @@ class CINothercode extends CINBarcode1D {
      *
      * @param resource $im
      */
-    public function draw($im) {
+    public function draw($im)
+    {
         $this->drawChar($im, $this->text, true);
         $this->drawText($im, 0, 0, $this->positionX, $this->thickness);
     }
@@ -40,7 +45,8 @@ class CINothercode extends CINBarcode1D {
      *
      * @return string
      */
-    public function getLabel() {
+    public function getLabel()
+    {
         $label = $this->label;
         if ($this->label === CINBarcode1D::AUTO_LABEL) {
             $label = '';
@@ -54,10 +60,12 @@ class CINothercode extends CINBarcode1D {
      *
      * @param int $w
      * @param int $h
+     *
      * @return int[]
      */
-    public function getDimension($w, $h) {
-        $array = str_split($this->text, 1);
+    public function getDimension($w, $h)
+    {
+        $array      = str_split($this->text, 1);
         $textlength = array_sum($array) + count($array);
 
         $w += $textlength;
@@ -68,7 +76,8 @@ class CINothercode extends CINBarcode1D {
     /**
      * Validates the input.
      */
-    protected function validate() {
+    protected function validate()
+    {
         $c = strlen($this->text);
         if ($c === 0) {
             throw new CINParseException('othercode', 'No data has been entered.');
@@ -84,4 +93,3 @@ class CINothercode extends CINBarcode1D {
         parent::validate();
     }
 }
-?>

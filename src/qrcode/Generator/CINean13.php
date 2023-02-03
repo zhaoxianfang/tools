@@ -14,15 +14,18 @@
  *
  *--------------------------------------------------------------------
  */
+
 namespace zxf\qrcode\Generator;
+
 use zxf\qrcode\Generator\CINParseException;
 use zxf\qrcode\Generator\CINBarcode;
 use zxf\qrcode\Generator\CINBarcode1D;
 use zxf\qrcode\Generator\CINLabel;
 
-class CINean13 extends CINBarcode1D {
-    protected $codeParity = array();
-    protected $labelLeft = null;
+class CINean13 extends CINBarcode1D
+{
+    protected $codeParity   = array();
+    protected $labelLeft    = null;
     protected $labelCenter1 = null;
     protected $labelCenter2 = null;
     protected $alignLabel;
@@ -30,7 +33,8 @@ class CINean13 extends CINBarcode1D {
     /**
      * Constructor.
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
 
         $this->keys = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
@@ -68,7 +72,8 @@ class CINean13 extends CINBarcode1D {
         $this->alignDefaultLabel(true);
     }
 
-    public function alignDefaultLabel($align) {
+    public function alignDefaultLabel($align)
+    {
         $this->alignLabel = (bool)$align;
     }
 
@@ -77,7 +82,8 @@ class CINean13 extends CINBarcode1D {
      *
      * @param resource $im
      */
-    public function draw($im) {
+    public function draw($im)
+    {
         $this->drawBars($im);
         $this->drawText($im, 0, 0, $this->positionX, $this->thickness);
 
@@ -92,13 +98,15 @@ class CINean13 extends CINBarcode1D {
      *
      * @param int $w
      * @param int $h
+     *
      * @return int[]
      */
-    public function getDimension($w, $h) {
-        $startlength = 3;
+    public function getDimension($w, $h)
+    {
+        $startlength  = 3;
         $centerlength = 5;
-        $textlength = 12 * 7;
-        $endlength = 3;
+        $textlength   = 12 * 7;
+        $endlength    = 3;
 
         $w += $startlength + $centerlength + $textlength + $endlength;
         $h += $this->thickness;
@@ -108,16 +116,17 @@ class CINean13 extends CINBarcode1D {
     /**
      * Adds the default label.
      */
-    protected function addDefaultLabel() {
+    protected function addDefaultLabel()
+    {
         if ($this->isDefaultEanLabelEnabled()) {
             $this->processChecksum();
             $label = $this->getLabel();
-            $font = $this->font;
+            $font  = $this->font;
 
             $this->labelLeft = new CINLabel(substr($label, 0, 1), $font, CINLabel::POSITION_LEFT, CINLabel::ALIGN_BOTTOM);
             $this->labelLeft->setSpacing(4 * $this->scale);
 
-            $this->labelCenter1 = new CINLabel(substr($label, 1, 6), $font, CINLabel::POSITION_BOTTOM, CINLabel::ALIGN_LEFT);
+            $this->labelCenter1    = new CINLabel(substr($label, 1, 6), $font, CINLabel::POSITION_BOTTOM, CINLabel::ALIGN_LEFT);
             $labelCenter1Dimension = $this->labelCenter1->getDimension();
             $this->labelCenter1->setOffset(($this->scale * 44 - $labelCenter1Dimension[0]) / 2 + $this->scale * 2);
 
@@ -143,16 +152,18 @@ class CINean13 extends CINBarcode1D {
      *
      * @return bool
      */
-    protected function isDefaultEanLabelEnabled() {
+    protected function isDefaultEanLabelEnabled()
+    {
         $label = $this->getLabel();
-        $font = $this->font;
+        $font  = $this->font;
         return $label !== null && $label !== '' && $font !== null && $this->defaultLabel !== null;
     }
 
     /**
      * Validates the input.
      */
-    protected function validate() {
+    protected function validate()
+    {
         $c = strlen($this->text);
         if ($c === 0) {
             throw new CINParseException('ean13', 'No data has been entered.');
@@ -167,7 +178,8 @@ class CINean13 extends CINBarcode1D {
     /**
      * Check chars allowed.
      */
-    protected function checkCharsAllowed() {
+    protected function checkCharsAllowed()
+    {
         // Checking if all chars are allowed
         $c = strlen($this->text);
         for ($i = 0; $i < $c; $i++) {
@@ -180,7 +192,8 @@ class CINean13 extends CINBarcode1D {
     /**
      * Check correct length.
      */
-    protected function checkCorrectLength() {
+    protected function checkCorrectLength()
+    {
         // If we have 13 chars, just flush the last one without throwing anything
         $c = strlen($this->text);
         if ($c === 13) {
@@ -193,23 +206,24 @@ class CINean13 extends CINBarcode1D {
     /**
      * Overloaded method to calculate checksum.
      */
-    protected function calculateChecksum() {
+    protected function calculateChecksum()
+    {
         // Calculating Checksum
         // Consider the right-most digit of the message to be in an "odd" position,
         // and assign odd/even to each character moving from right to left
         // Odd Position = 3, Even Position = 1
         // Multiply it by the number
         // Add all of that and do 10-(?mod10)
-        $odd = true;
+        $odd                 = true;
         $this->checksumValue = 0;
-        $c = strlen($this->text);
+        $c                   = strlen($this->text);
         for ($i = $c; $i > 0; $i--) {
             if ($odd === true) {
                 $multiplier = 3;
-                $odd = false;
+                $odd        = false;
             } else {
                 $multiplier = 1;
-                $odd = true;
+                $odd        = true;
             }
 
             if (!isset($this->keys[$this->text[$i - 1]])) {
@@ -225,7 +239,8 @@ class CINean13 extends CINBarcode1D {
     /**
      * Overloaded method to display the checksum.
      */
-    protected function processChecksum() {
+    protected function processChecksum()
+    {
         if ($this->checksumValue === false) { // Calculate the checksum only once
             $this->calculateChecksum();
         }
@@ -242,7 +257,8 @@ class CINean13 extends CINBarcode1D {
      *
      * @param resource $im
      */
-    protected function drawBars($im) {
+    protected function drawBars($im)
+    {
         // Checksum
         $this->calculateChecksum();
         $temp_text = $this->text . $this->keys[$this->checksumValue];
@@ -274,9 +290,10 @@ class CINean13 extends CINBarcode1D {
      * Draws the extended bars on the image.
      *
      * @param resource $im
-     * @param int $plus
+     * @param int      $plus
      */
-    protected function drawExtendedBars($im, $plus) {
+    protected function drawExtendedBars($im, $plus)
+    {
         $rememberX = $this->positionX;
         $rememberH = $this->thickness;
 
@@ -307,10 +324,12 @@ class CINean13 extends CINBarcode1D {
      * Inverses the string when the $inverse parameter is equal to 1.
      *
      * @param string $text
-     * @param int $inverse
+     * @param int    $inverse
+     *
      * @return string
      */
-    private static function inverse($text, $inverse = 1) {
+    private static function inverse($text, $inverse = 1)
+    {
         if ($inverse === 1) {
             $text = strrev($text);
         }
@@ -318,4 +337,3 @@ class CINean13 extends CINBarcode1D {
         return $text;
     }
 }
-?>

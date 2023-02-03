@@ -25,6 +25,7 @@ composer require zxf/tools
 | QrCode     | 生成二维码                                                                                           |
 | BarCode    | 生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
 | Compressor | 图片压缩类                                                                                           |
+| Cache      | 文件缓存                                                                                            |
 | TextToPNG  | 文字转图片                                                                                           |
 | PHPMailer  | 发送邮件                                                                                            |
 | Curl       | http 网络请求                                                                                       |
@@ -39,7 +40,7 @@ composer require zxf/tools
 | Command    | 命令行解析工具                                                                                         |
 | Tree       | 树形结构化                                                                                           |
 | dom        | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                      |
-| Db / Model | Mysql 的基础操作类Db;封装调用类Model                                                                       |
+| Db/Model   | Mysql 的基础操作类Db;封装调用类Model                                                                       |
 | 其他         | 还有一些没有写在此处的工具类                                                                                  |
 
 ### 第三方登录
@@ -207,6 +208,55 @@ class Sina extends Controller
 ```
 
 > 提示:config('callback.sina') 中需要包含3个元素 wb_akey、wb_skey、wb_callback_url
+
+### Cache 文件缓存
+
+#### 实例化
+
+```php
+use zxf\tools\Cache;
+$cache = Cache::instance([
+    'cache_dir' => "./cache", // 缓存地址
+    'type'      => 'random', // 缓存方式 key: 直接使用key存储,random:对key加密存储
+    'mode'      => '1', //缓存模式 1:serialize ;2:保存为可执行php文件
+]);
+```
+
+#### 缓存 api
+
+```php
+//设置存放缓存文件夹路径
+$cache->setCacheDir('./cache'); 
+
+//设置缓存模式
+$cache->setMode(1);
+ //模式1 缓存存储方式
+ //a:3:{s:8:"contents";a:7:{i:0;i:1;i:1;i:2;i:2;i:3;i:3;i:34;i:4;i:5;i:5;i:6;i:6;i:6;}s:6:"expire";i:0;s:5:"mtime";i:1318218422;}
+ //模式2 缓存存储方式
+ // <?php
+ // return array(
+ //   'data'=>'xxx'
+ //);
+
+// 获取缓存
+$cache->get('name');
+
+// 设置缓存
+$cache->set('name', '张三');
+
+// 设置缓存有效期,第三个参数为int 类型表示缓存多少秒，为string 类型时候的缓存时间为 strtotime 函数支持的字符串，例如："+1 day"
+$cache->set('status', '1',55); // 缓存55秒
+$cache->set('status', '1','+5 hours'); // 缓存5小时
+
+// 清空所有缓存
+$cache->flush(); 
+
+// 删除一条缓存
+$cache->delete('name');
+
+// 判断某条缓存是否存在
+$cache->has('name');
+```
 
 ### jsMin 压缩
 

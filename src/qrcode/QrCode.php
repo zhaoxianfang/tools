@@ -2,9 +2,6 @@
 
 /**
  * QrCode
- * @author  Akhtar Khan <er.akhtarkhan@gmail.com>
- * @link http://www.codeitnow.in
- * @package https://github.com/codeitnowin/barcode-generator
  */
 
 namespace zxf\qrcode;
@@ -68,7 +65,7 @@ class QrCode
     /** @const int Vertical label alignment to the top and hide border */
     const LABEL_VALIGN_TOP_NO_BORDER = 2;
 
-    /** @const int Vertical label alignment to the middle*/
+    /** @const int Vertical label alignment to the middle */
     const LABEL_VALIGN_MIDDLE = 3;
 
     /** @const int Vertical label alignment to the bottom */
@@ -546,7 +543,24 @@ class QrCode
      */
     public function setLabelFontPath($label_font_path)
     {
+        if (!file_exists($label_font_path)) {
+            throw new \Exception('字体文件不存在:' . $label_font_path);
+        }
         $this->label_font_path = $label_font_path;
+
+        return $this;
+    }
+
+    /**
+     * 使用内置字体
+     *
+     * @param string $fontName 字体名称
+     *
+     * @return $this
+     */
+    public function useFontFile(string $fontName = 'oppo'): QrCode
+    {
+        $this->setLabelFontPath(dirname(__DIR__) . "/resource/font/" . $fontName . ".ttf");
 
         return $this;
     }
@@ -718,10 +732,10 @@ class QrCode
      * @param null|string $filename File name of the QR Code
      * @param null|string $format   Format of the file (png, jpeg, jpg, gif, wbmp)
      *
-     * @throws Exception
+     * @return QrCode
      * @throws Exception
      *
-     * @return QrCode
+     * @throws Exception
      */
     public function render($filename = null, $format = 'png')
     {
@@ -754,6 +768,7 @@ class QrCode
 
     /**
      * Generate base64 image
+     *
      * @return type
      */
     public function generate()
@@ -779,10 +794,10 @@ class QrCode
      *
      * @param string|null $format Image type (gif, png, wbmp, jpeg)
      *
-     * @throws Exception
+     * @return string
      * @throws Exception
      *
-     * @return string
+     * @throws Exception
      */
     public function get($format = null)
     {
@@ -850,10 +865,12 @@ class QrCode
             throw new Exception('QRCode: data does not exist.');
         }
         $data_counter = 0;
-        if ($qrcode_structureappend_n > 1
+        if (
+            $qrcode_structureappend_n > 1
             && $qrcode_structureappend_n <= 16
             && $qrcode_structureappend_m > 0
-            && $qrcode_structureappend_m <= 16) {
+            && $qrcode_structureappend_m <= 16
+        ) {
             $data_value[0] = 3;
             $data_bits[0]  = 4;
 
@@ -887,9 +904,11 @@ class QrCode
             if (preg_match("/[^0-9A-Z \$\*\%\+\.\/\:\-]/", $qrcode_data_string) != 0) {
                 /*  --- 8bit byte mode */
 
-                $codeword_num_plus = array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                $codeword_num_plus = array(
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-                    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8);
+                    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+                );
 
                 $data_value[$data_counter] = 4;
                 ++$data_counter;
@@ -908,9 +927,11 @@ class QrCode
             } else {
                 /* ---- alphanumeric mode */
 
-                $codeword_num_plus = array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                $codeword_num_plus = array(
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-                    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4);
+                    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+                );
 
                 $data_value[$data_counter] = 2;
                 ++$data_counter;
@@ -918,12 +939,14 @@ class QrCode
                 $data_bits[$data_counter]   = 9; /* #version 1-9 */
                 $codeword_num_counter_value = $data_counter;
 
-                $alphanumeric_character_hash = array('0' => 0, '1'  => 1, '2'  => 2, '3'  => 3, '4'  => 4,
-                    '5'                                      => 5, '6'  => 6, '7'  => 7, '8'  => 8, '9'  => 9, 'A'  => 10, 'B' => 11, 'C' => 12, 'D' => 13, 'E' => 14,
-                    'F'                                      => 15, 'G' => 16, 'H' => 17, 'I' => 18, 'J' => 19, 'K' => 20, 'L' => 21, 'M' => 22, 'N' => 23,
-                    'O'                                      => 24, 'P' => 25, 'Q' => 26, 'R' => 27, 'S' => 28, 'T' => 29, 'U' => 30, 'V' => 31,
-                    'W'                                      => 32, 'X' => 33, 'Y' => 34, 'Z' => 35, ' ' => 36, '$' => 37, '%' => 38, '*' => 39,
-                    '+'                                      => 40, '-' => 41, '.' => 42, '/' => 43, ':' => 44);
+                $alphanumeric_character_hash = array(
+                    '0' => 0, '1' => 1, '2' => 2, '3' => 3, '4' => 4,
+                    '5' => 5, '6' => 6, '7' => 7, '8' => 8, '9' => 9, 'A' => 10, 'B' => 11, 'C' => 12, 'D' => 13, 'E' => 14,
+                    'F' => 15, 'G' => 16, 'H' => 17, 'I' => 18, 'J' => 19, 'K' => 20, 'L' => 21, 'M' => 22, 'N' => 23,
+                    'O' => 24, 'P' => 25, 'Q' => 26, 'R' => 27, 'S' => 28, 'T' => 29, 'U' => 30, 'V' => 31,
+                    'W' => 32, 'X' => 33, 'Y' => 34, 'Z' => 35, ' ' => 36, '$' => 37, '%' => 38, '*' => 39,
+                    '+' => 40, '-' => 41, '.' => 42, '/' => 43, ':' => 44,
+                );
 
                 $i = 0;
                 ++$data_counter;
@@ -942,9 +965,11 @@ class QrCode
         } else {
             /* ---- numeric mode */
 
-            $codeword_num_plus = array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            $codeword_num_plus = array(
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-                4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4);
+                4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+            );
 
             $data_value[$data_counter] = 1;
             ++$data_counter;
@@ -980,14 +1005,16 @@ class QrCode
             ++$i;
         }
 
-        $ecc_character_hash = array('L' => '1',
-            'l'                             => '1',
-            'M'                             => '0',
-            'm'                             => '0',
-            'Q'                             => '3',
-            'q'                             => '3',
-            'H'                             => '2',
-            'h'                             => '2');
+        $ecc_character_hash = array(
+            'L' => '1',
+            'l' => '1',
+            'M' => '0',
+            'm' => '0',
+            'Q' => '3',
+            'q' => '3',
+            'H' => '2',
+            'h' => '2',
+        );
 
         if (!is_numeric($qrcode_error_correct)) {
             $ec = @$ecc_character_hash[$qrcode_error_correct];
@@ -1045,19 +1072,23 @@ class QrCode
             throw new Exception('QRCode : version too large');
         }
 
-        $total_data_bits += $codeword_num_plus[$qrcode_version];
+        $total_data_bits                        += $codeword_num_plus[$qrcode_version];
         $data_bits[$codeword_num_counter_value] += $codeword_num_plus[$qrcode_version];
 
-        $max_codewords_array = array(0, 26, 44, 70, 100, 134, 172, 196, 242,
+        $max_codewords_array = array(
+            0, 26, 44, 70, 100, 134, 172, 196, 242,
             292, 346, 404, 466, 532, 581, 655, 733, 815, 901, 991, 1085, 1156,
             1258, 1364, 1474, 1588, 1706, 1828, 1921, 2051, 2185, 2323, 2465,
-            2611, 2761, 2876, 3034, 3196, 3362, 3532, 3706);
+            2611, 2761, 2876, 3034, 3196, 3362, 3532, 3706,
+        );
 
         $max_codewords     = $max_codewords_array[$qrcode_version];
         $max_modules_1side = 17 + ($qrcode_version << 2);
 
-        $matrix_remain_bit = array(0, 0, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3,
-            4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0);
+        $matrix_remain_bit = array(
+            0, 0, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3,
+            4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0,
+        );
 
         /* ---- read version ECC data file */
 
@@ -1128,10 +1159,10 @@ class QrCode
             while ($flag) {
                 if ($remaining_bits > $buffer_bits) {
                     $codewords[$codewords_counter] = (((isset($codewords[$codewords_counter]) ? $codewords[$codewords_counter] : 0) << $buffer_bits) | $buffer);
-                    $remaining_bits -= $buffer_bits;
-                    $flag = 0;
+                    $remaining_bits                -= $buffer_bits;
+                    $flag                          = 0;
                 } else {
-                    $buffer_bits -= $remaining_bits;
+                    $buffer_bits                   -= $remaining_bits;
                     $codewords[$codewords_counter] = (($codewords[$codewords_counter] << $remaining_bits) | ($buffer >> $buffer_bits));
 
                     if ($buffer_bits == 0) {
@@ -1340,7 +1371,8 @@ class QrCode
         # --- format information
 
         $format_information_value = (($ec << 3) | $mask_number);
-        $format_information_array = array('101010000010010', '101000100100101',
+        $format_information_array = array(
+            '101010000010010', '101000100100101',
             '101111001111100', '101101101001011', '100010111111001', '100000011001110',
             '100111110010111', '100101010100000', '111011111000100', '111001011110011',
             '111110110101010', '111100010011101', '110011000101111', '110001100011000',
@@ -1348,8 +1380,9 @@ class QrCode
             '001110011100111', '001100111010000', '000011101100010', '000001001010101',
             '000110100001100', '000100000111011', '011010101011111', '011000001101000',
             '011111100110001', '011101000000110', '010010010110100', '010000110000011',
-            '010111011011010', '010101111101101');
-        $i = 0;
+            '010111011011010', '010101111101101',
+        );
+        $i                        = 0;
         while ($i < 15) {
             $content = substr($format_information_array[$format_information_value], $i, 1);
 
@@ -1375,8 +1408,8 @@ class QrCode
                 throw new Exception('QRCode: missing function "imagettfbbox". Did you install the FreeType library?');
             }
             $font_box     = imagettfbbox($this->label_font_size, 0, $this->label_font_path, $this->label);
-            $label_width  = (int) $font_box[2] - (int) $font_box[0];
-            $label_height = (int) $font_box[0] - (int) $font_box[7];
+            $label_width  = (int)$font_box[2] - (int)$font_box[0];
+            $label_height = (int)$font_box[0] - (int)$font_box[7];
 
             if ($this->label_valign == self::LABEL_VALIGN_MIDDLE) {
                 $image_height += $label_height + $this->padding;

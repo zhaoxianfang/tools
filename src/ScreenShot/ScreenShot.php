@@ -4,7 +4,7 @@ namespace zxf\ScreenShot;
 
 /**
  * 网页截图
- * $res = ScreenShot::init('/Users/linian/extend')->setUrl('http://www.baidu.com')->run(__DIR__.'/img/'.time().'.png');
+ * $res = ScreenShot::init('/you-path')->setUrl('http://www.baidu.com')->run(__DIR__.'/img/'.time().'.png');
  */
 class ScreenShot
 {

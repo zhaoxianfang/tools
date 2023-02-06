@@ -221,7 +221,7 @@ class Cache
                 'data'        => $contents,
             ]);
         } else {
-            $contents = '<?php' . "\n" . ' return array(' . "\n" . '"expiry_time" => ' . $expiry . ",\n" . '"data"=>' . var_export($contents, true) . ");\n";
+            $contents = '<?php' . "\n" . 'return array(' . "\n" . '"expiry_time" => ' . $expiry . ",\n" . '"data"=>' . var_export($contents, true) . ");\n";
         }
 
         create_folders(dirname($file));
@@ -265,8 +265,14 @@ class Cache
             $fileObject = null;
             return unserialize($content);
         } else {
+            $fileObject->next();
+            $secondLine = $fileObject->current();
             $fileObject = null;
-            return include $file;
+            if (($checkReturnLine = stripos($secondLine, "return array(")) !== false && $checkReturnLine < 1) {
+                return include $file;
+            } else {
+                throw new \Exception('可能存在CSRF');
+            }
         }
     }
 

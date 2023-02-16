@@ -81,7 +81,7 @@ return [
 
 ```php
 // 直播间
-use zxf\WeChat\Live\LiveRoom;
+use zxf\WeChat\MiniProgram\Live\LiveRoom;
 $this->sdk = LiveRoom::instance($this->config);
 ```
 

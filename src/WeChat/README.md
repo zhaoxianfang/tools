@@ -1,7 +1,13 @@
 # 微信模块开发
 
-Live:微信直播
-Material:微信素材管理
+## MiniProgram 小程序模块
+
+- Live:微信直播
+- Material:微信素材管理
+
+## OfficialAccount 公众号模块
+
+- Material:微信素材管理(包含临时素材和永久素材)
 
 ## 直播服务类
 
@@ -22,7 +28,7 @@ class LiveBaseService
 
     public function __construct()
     {
-        $config = setting('mini_wechat');
+        $config = 获取你的配置;
 
         $this->config = [
             'app_id' => $config['mini_wechat_app_id'],
@@ -38,7 +44,7 @@ class LiveBaseService
 #### 实例化
 
 ```
-use zxf\WeChat\Live\LiveGoods;
+use zxf\WeChat\MiniProgram\Live\LiveGoods;
 $this->sdk = LiveGoods::instance($this->config);
 ```
 
@@ -126,7 +132,7 @@ class LiveGoodsService extends LiveBaseService
 #### 实例化
 
 ```
-use zxf\WeChat\Live\LiveRole;
+use zxf\WeChat\MiniProgram\Live\LiveRole;
 $this->sdk = LiveRole::instance($this->config);
 ```
 
@@ -170,7 +176,7 @@ class LiveRoleService extends LiveBaseService
 #### 实例化
 
 ```
-use zxf\WeChat\Live\LiveRoom;
+use zxf\WeChat\MiniProgram\Live\LiveRoom;
 $this->sdk = LiveRoom::instance($this->config);
 ```
 
@@ -389,7 +395,7 @@ class LiveRoomService extends LiveBaseService
 #### 实例化
 
 ```
-use zxf\WeChat\Live\LiveRoomAssistant;
+use zxf\WeChat\MiniProgram\Live\LiveRoomAssistant;
 $this->sdk = LiveRoomAssistant::instance($this->config);
 ```
 
@@ -441,7 +447,7 @@ class LiveRoomAssistantService extends LiveBaseService
 #### 实例化
 
 ```
-use zxf\WeChat\Live\LiveRoomGoods;
+use zxf\WeChat\MiniProgram\Live\LiveRoomGoods;
 $this->sdk = LiveRoomGoods::instance($this->config);
 ```
 
@@ -507,7 +513,7 @@ class LiveRoomGoodsService extends LiveBaseService
 #### 实例化
 
 ```
-use zxf\WeChat\Live\LiveRoomSubAnchor;
+use zxf\WeChat\MiniProgram\Live\LiveRoomSubAnchor;
 $this->sdk = LiveRoomSubAnchor::instance($this->config);
 ```
 
@@ -559,7 +565,7 @@ class LiveRoomSubAnchorService extends LiveBaseService
 #### 实例化
 
 ```
-use zxf\WeChat\Live\LiveSubscribe;
+use zxf\WeChat\MiniProgram\Live\LiveSubscribe;
 $this->sdk = LiveSubscribe::instance($this->config);
 ```
 
@@ -629,14 +635,14 @@ class MaterialBaseService
 
 ```
 
-## 永久素材管理
+## 永久素材管理（公账号）
 
 ```
 <?php
 
 namespace xxx\WeChat;
 
-use zxf\WeChat\Material\PermanentFiles;
+use zxf\WeChat\OfficialAccount\Material\PermanentFiles;
 
 /**
  * 微信素材管理
@@ -684,7 +690,8 @@ class WechatFilesService extends MaterialBaseService
 
 namespace xxx\WeChat;
 
-use zxf\WeChat\Material\TempFiles;
+use zxf\WeChat\OfficialAccount\Material\TempFiles; // 公众号临时素材
+use zxf\WeChat\MiniProgram\Material\TempFiles; // 小程序临时素材
 
 /**
  * 微信素材管理
@@ -702,9 +709,6 @@ class WechatFilesService extends MaterialBaseService
     {
         return res_json($this->sdk->uploadImage($imgPath));
     }
-
-    // 调用方法和永久素材一致
-
 }
 
 ```

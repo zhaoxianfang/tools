@@ -1,13 +1,13 @@
 <?php
 
-namespace zxf\WeChat\Material;
+namespace zxf\WeChat\OfficialAccount\Material;
 
 /**
- * 临时素材
+ * 公众号 永久素材
  */
-class TempFiles extends MaterialBase
+class PermanentFiles extends MaterialBase
 {
-    protected $uploadType = 'media';
+    protected $uploadType = 'material';
 
     /**
      * 上传图片
@@ -18,8 +18,7 @@ class TempFiles extends MaterialBase
      */
     public function uploadImage(string $realPath)
     {
-
-        $result = $this->upload($realPath);
+        $result = $this->uploadFile($realPath, 'image');
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
             throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
@@ -31,7 +30,7 @@ class TempFiles extends MaterialBase
     public function uploadVoice(string $realPath)
     {
 
-        $result = $this->upload($realPath, 'voice');
+        $result = $this->uploadFile($realPath, 'voice');
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
             throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
@@ -42,8 +41,7 @@ class TempFiles extends MaterialBase
 
     public function uploadThumb(string $realPath)
     {
-
-        $result = $this->upload($realPath, 'thumb');
+        $result = $this->uploadFile($realPath, 'thumb');
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
             throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
@@ -61,8 +59,7 @@ class TempFiles extends MaterialBase
      */
     public function uploadVideo(string $realPath, string $videoTitle = '', string $videoDescription = '')
     {
-
-        $result = $this->upload($realPath, 'video', $videoTitle, $videoDescription);
+        $result = $this->uploadFile($realPath, 'video', $videoTitle, $videoDescription);
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
             throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
@@ -83,11 +80,51 @@ class TempFiles extends MaterialBase
      */
     public function getList(string $type = 'image', int $page = 1, int $limit = 10)
     {
-        throw new \Exception('临时素材暂不支持此功能');
+        $offset = max($page - 1, 0) * $limit;
+
+        $result = $this->list($type, $offset, $limit);
+
+
+        if (isset($result['errcode']) && $result['errcode'] != 0) {
+            throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
+        } else {
+            return [
+                'code'    => 0,
+                'message' => '成功',
+                'data'    => [
+                    'total' => $result['total_count'],
+                    'list'  => $result['item'],
+                ],
+            ];
+        }
     }
 
     public function deleteFile(string $mediaId = '')
     {
-        throw new \Exception('临时素材暂不支持此功能');
+        $result = $this->delete($mediaId);
+
+        if (isset($result['errcode']) && $result['errcode'] != 0) {
+            throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
+        } else {
+            return [
+                'code'    => 0,
+                'message' => '操作成功',
+            ];
+        }
+    }
+
+    public function getDetail($mediaId)
+    {
+        $result = $this->detail($mediaId);
+
+        if (isset($result['errcode']) && $result['errcode'] != 0) {
+            throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
+        } else {
+            return [
+                'code'    => 0,
+                'message' => '操作成功',
+                'data'    => $result,
+            ];
+        }
     }
 }

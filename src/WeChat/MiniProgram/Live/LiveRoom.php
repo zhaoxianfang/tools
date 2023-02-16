@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\WeChat\Live;
+namespace zxf\WeChat\MiniProgram\Live;
 
 class LiveRoom extends LiveBase
 {
@@ -43,6 +43,7 @@ class LiveRoom extends LiveBase
                     'code'    => $res['errcode'],
                     'data'    => [
                         'qrcode_url' => $res['qrcode_url'],
+                        'room_id'    => !empty($res['roomId']) ? $res['roomId'] : '',
                     ],
                 ];
             } else {
@@ -55,11 +56,12 @@ class LiveRoom extends LiveBase
             $response = [
                 'code'    => $res['errcode'],
                 'message' => $this->getCode($res['errcode']),
+                'data'    => [
+                    'room_id' => $res['roomId'],
+                ],
             ];
             if (!empty($res['qrcode_url'])) {
-                $response['data'] = [
-                    'qrcode_url' => $res['qrcode_url'],
-                ];
+                $response['data']['qrcode_url'] = $res['qrcode_url'];
             }
             return $response;
         }

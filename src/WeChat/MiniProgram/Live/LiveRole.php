@@ -1,14 +1,14 @@
 <?php
 
-namespace zxf\WeChat\Live;
+namespace zxf\WeChat\MiniProgram\Live;
 
 class LiveRole extends LiveBase
 {
     // 设置成员角色
-    public function add($openId, $role = 2): array
+    public function add($wechatName, $role = 2): array
     {
         $params = [
-            "username" => $openId,// 微信号
+            "username" => $wechatName,// 微信号
             "role"     => $role,// 取值[1-管理员，2-主播，3-运营者]，设置超级管理员将无效
         ];
 
@@ -23,10 +23,10 @@ class LiveRole extends LiveBase
     }
 
     // 解除成员角色
-    public function delete($openId, $role = 2): array
+    public function delete($wechatName, $role = 2): array
     {
         $params = [
-            "username" => $openId,// 微信号
+            "username" => $wechatName,// 微信号
             "role"     => $role,// 取值[1-管理员，2-主播，3-运营者]，删除超级管理员将无效
         ];
 
@@ -41,7 +41,7 @@ class LiveRole extends LiveBase
     }
 
     // 查询成员列表
-    public function list($role = -1, $page = 1, $limit = 10, $keyword = ''): array
+    public function list($role = -1, $keyword = '', $page = 1, $limit = 10): array
     {
         $offset = max($page - 1, 0) * $limit;
         $params = [
@@ -50,8 +50,7 @@ class LiveRole extends LiveBase
             "limit"   => $limit, // 查询个数，最大30，默认10
             "keyword" => $keyword // 搜索的微信号，不传返回全部
         ];
-
-        $res = $this->post('wxaapi/broadcast/role/getrolelist', $params);
+        $res    = $this->get('wxaapi/broadcast/role/getrolelist', $params);
         if ($res['errcode'] != 0) {
             throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
         }

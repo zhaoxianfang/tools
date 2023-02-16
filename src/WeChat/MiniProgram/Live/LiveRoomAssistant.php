@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\WeChat\Live;
+namespace zxf\WeChat\MiniProgram\Live;
 
 class LiveRoomAssistant extends LiveBase
 {

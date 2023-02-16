@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\WeChat\Live;
+namespace zxf\WeChat\MiniProgram\Live;
 
 /**
  * 直播长期订阅

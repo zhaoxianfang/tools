@@ -29,11 +29,18 @@ return [
         'official_account' => [
             'default' => [
                 'token'          => env('TOOLS_WECHAT_OFFICIAL_TOKEN', ''), //填写你设定的key
-                'aes_key'        => env('TOOLS_WECHAT_OFFICIAL_AES_KEY', ''), //填写加密用的EncodingAESKey
-                'app_id'         => env('TOOLS_WECHAT_OFFICIAL_APP_ID', ''), //填写高级调用功能的app id
-                'app_secret'     => env('TOOLS_WECHAT_OFFICIAL_APP_SECRET', ''), //填写高级调用功能的密钥
-                'token_callback' => env('TOOLS_WECHAT_OFFICIAL_TOKEN_CALLBACK_URL', ''), //回调地址
+                'appid'          => env('TOOLS_WECHAT_OFFICIAL_APP_ID', ''), //填写高级调用功能的app id
+                'appsecret'      => env('TOOLS_WECHAT_OFFICIAL_APP_SECRET', ''), //填写高级调用功能的密钥
+                'encodingaeskey' => env('TOOLS_WECHAT_OFFICIAL_AES_KEY', ''), //填写加密用的EncodingAESKey
+                // 配置商户支付参数（可选，在使用支付功能时需要）
+                'mch_id'         => "1235704602",
+                'mch_key'        => 'IKI4kpHjU94ji3oqre5zYaQMwLHuZPmj',
+                // 配置商户支付双向证书目录（可选，在使用退款|打款|红包时需要）
+                'ssl_key'        => '',
+                'ssl_cer'        => '',
+                // 缓存目录配置（可选，需拥有读写权限）
                 'cache_path'     => env('TOOLS_WECHAT_OFFICIAL_CACHE_PATH', ''), //插件 缓存目录
+                'token_callback' => env('TOOLS_WECHAT_OFFICIAL_TOKEN_CALLBACK_URL', ''), //回调地址
             ],
         ],
         // 开发平台

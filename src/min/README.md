@@ -7,3 +7,5 @@
 use zxf\min\JsMin;
 $minifiedCode = JsMin::minify($jsString);
 ```
+
+待接入 https://github.com/matthiasmullie/minify

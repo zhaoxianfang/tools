@@ -1,6 +1,10 @@
 <?php
 
-namespace zxf\Mysqli;
+namespace zxf\mysql;
+
+use Exception;
+use stdClass;
+
 /**
  * Db 类
  *
@@ -16,7 +20,7 @@ class Db
      *
      * @var Db
      */
-    protected static $_instance;
+    protected static $instance;
 
     /**
      * 表前缀
@@ -27,8 +31,6 @@ class Db
 
     /**
      * MySQLi 实例
-     *
-     * @var mysqli[]
      */
     protected $_mysqli = array();
 
@@ -303,7 +305,7 @@ class Db
                 'db'       => $db,
                 'port'     => !empty($port) ? $port : 3306,
                 'socket'   => $socket,
-                'charset'  => $charset
+                'charset'  => $charset,
             ];
         }
         $this->addConnection('default', $options);
@@ -317,32 +319,32 @@ class Db
             $this->setPrefix($prefix);
         }
 
-        self::$_instance = $this;
+    }
+
+    public static function instance($args)
+    {
+        if (is_null(self::$instance)) {
+            self::$instance = new static(...$args);
+        }
+        return self::$instance;
     }
 
     /**
      * 通过表全面名称实例化（不包含前缀）
      */
-    public static function tabale($tableName = '')
+    public function tabale($tableName = '')
     {
-        $db             = new static();
-        $db->_tableName = $tableName;
-
-        self::$_instance = $db;
-
-        return self::$_instance;
+        $this->_tableName = $tableName;
+        return $this;
     }
 
     /**
      * 通过表名称实例化（不包含前缀）
      */
-    public static function name($name = '')
+    public function name($name = '')
     {
-        $db              = new static();
-        $db->_tableName  = self::$prefix . $name;
-        self::$_instance = $db;
-
-        return self::$_instance;
+        $this->_tableName = self::$prefix . $name;
+        return $this;
     }
 
     /**
@@ -401,7 +403,7 @@ class Db
             throw new Exception('MySQL host or socket is not set');
         }
 
-        $mysqlic = new ReflectionClass('mysqli');
+        $mysqlic = new \ReflectionClass('mysqli');
         $mysqli  = $mysqlic->newInstanceArgs($params);
 
         if ($mysqli->connect_error) {
@@ -513,12 +515,9 @@ class Db
      * @uses $db = Db::getInstance();
      *
      */
-    public static function getInstance()
+    public function getInstance()
     {
-        if (empty(self::$_instance)) {
-            return new static();
-        }
-        return self::$_instance;
+        return self::instance();
     }
 
     /**
@@ -778,7 +777,7 @@ class Db
         $allowedOptions = array(
             'ALL', 'DISTINCT', 'DISTINCTROW', 'HIGH_PRIORITY', 'STRAIGHT_JOIN', 'SQL_SMALL_RESULT',
             'SQL_BIG_RESULT', 'SQL_BUFFER_RESULT', 'SQL_CACHE', 'SQL_NO_CACHE', 'SQL_CALC_FOUND_ROWS',
-            'LOW_PRIORITY', 'IGNORE', 'QUICK', 'MYSQLI_NESTJOIN', 'FOR UPDATE', 'LOCK IN SHARE MODE'
+            'LOW_PRIORITY', 'IGNORE', 'QUICK', 'MYSQLI_NESTJOIN', 'FOR UPDATE', 'LOCK IN SHARE MODE',
         );
 
         if (!is_array($options)) {
@@ -1742,10 +1741,10 @@ class Db
 
         while ($stmt->fetch()) {
             if ($this->returnType == 'object') {
-                $result = new stdClass ();
+                $result = new stdClass();
                 foreach ($row as $key => $val) {
                     if (is_array($val)) {
-                        $result->$key = new stdClass ();
+                        $result->$key = new stdClass();
                         foreach ($val as $k => $v) {
                             $result->$key->$k = $v;
                         }
@@ -2197,7 +2196,7 @@ class Db
         $val = array(
             'query'  => $this->_query,
             'params' => $this->_bindParams,
-            'alias'  => isset($this->connectionsSettings[$this->defConnectionName]) ? $this->connectionsSettings[$this->defConnectionName]['host'] : null
+            'alias'  => isset($this->connectionsSettings[$this->defConnectionName]) ? $this->connectionsSettings[$this->defConnectionName]['host'] : null,
         );
         $this->reset();
         return $val;
@@ -2327,7 +2326,7 @@ class Db
      *
      * @return Db
      */
-    public static function subQuery($subQueryAlias = "")
+    public function subQuery($subQueryAlias = "")
     {
         return new self(array('host' => $subQueryAlias, 'isSubQuery' => true));
     }

@@ -18,7 +18,7 @@ class LiveRoomGoods extends LiveBase
         ];
         $res    = $this->post('wxaapi/broadcast/room/addgoods', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']));
+            throw new \Exception($this->getMessage($res['errcode']));
         }
         return [
             'message' => '导入成功',
@@ -37,7 +37,7 @@ class LiveRoomGoods extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/goods/onsale', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
             'message' => '操作成功',
@@ -55,7 +55,7 @@ class LiveRoomGoods extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/goods/deleteInRoom', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']));
+            throw new \Exception($this->getMessage($res['errcode']));
         }
         return [
             'message' => '操作成功',
@@ -73,7 +73,7 @@ class LiveRoomGoods extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/goods/push', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']));
+            throw new \Exception($this->getMessage($res['errcode']));
         }
         return [
             'message' => '操作成功',
@@ -96,7 +96,7 @@ class LiveRoomGoods extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/goods/sort', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']));
+            throw new \Exception($this->getMessage($res['errcode']));
         }
         return [
             'message' => '操作成功',
@@ -114,7 +114,7 @@ class LiveRoomGoods extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/goods/getVideo', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']));
+            throw new \Exception($this->getMessage($res['errcode']));
         }
         return [
             'message' => '操作成功',

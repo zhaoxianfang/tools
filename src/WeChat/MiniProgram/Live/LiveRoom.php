@@ -39,7 +39,7 @@ class LiveRoom extends LiveBase
             // 判断主播有没有实名认证
             if (!empty($res['qrcode_url'])) {
                 return [
-                    'message' => $this->getCode($res['errcode']),
+                    'message' => $this->getMessage($res['errcode']),
                     'code'    => $res['errcode'],
                     'data'    => [
                         'qrcode_url' => $res['qrcode_url'],
@@ -47,7 +47,7 @@ class LiveRoom extends LiveBase
                     ],
                 ];
             } else {
-                throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+                throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
             }
         }
         if (!empty($res['roomId'])) {
@@ -55,7 +55,7 @@ class LiveRoom extends LiveBase
             // 判断主播有没有实名认证
             $response = [
                 'code'    => $res['errcode'],
-                'message' => $this->getCode($res['errcode']),
+                'message' => $this->getMessage($res['errcode']),
                 'data'    => [
                     'room_id' => $res['roomId'],
                 ],
@@ -103,11 +103,11 @@ class LiveRoom extends LiveBase
         ];
         $res    = $this->post('wxaapi/broadcast/room/editroom', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
             'code'    => $res['errcode'],
-            'message' => $this->getCode($res['errcode']),
+            'message' => $this->getMessage($res['errcode']),
         ];
     }
 
@@ -126,7 +126,7 @@ class LiveRoom extends LiveBase
         ];
         $res    = $this->post('wxaapi/broadcast/room/deleteroom', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
             'message' => '操作成功',
@@ -152,7 +152,7 @@ class LiveRoom extends LiveBase
 
         $res = $this->post('wxa/business/getliveinfo', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
             'message' => '成功',
@@ -185,7 +185,7 @@ class LiveRoom extends LiveBase
 
         $res = $this->post('wxa/business/getliveinfo', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
             'message' => '获取成功',
@@ -213,7 +213,7 @@ class LiveRoom extends LiveBase
 
         $res = $this->get('wxaapi/broadcast/room/getpushurl', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
             'message' => '获取成功',
@@ -234,7 +234,7 @@ class LiveRoom extends LiveBase
 
         $res = $this->get('wxaapi/broadcast/room/getsharedcode', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
             'message' => '获取成功',
@@ -257,7 +257,7 @@ class LiveRoom extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/room/updatefeedpublic', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
             'message' => '操作成功',
@@ -275,7 +275,7 @@ class LiveRoom extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/room/updatereplay', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
             'message' => '操作成功',
@@ -293,7 +293,7 @@ class LiveRoom extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/room/updatekf', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
             'message' => '操作成功',
@@ -311,7 +311,7 @@ class LiveRoom extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/room/updatecomment', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
             'message' => '操作成功',

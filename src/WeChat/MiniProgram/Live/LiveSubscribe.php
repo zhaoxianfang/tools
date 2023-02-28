@@ -28,7 +28,7 @@ class LiveSubscribe extends LiveBase
 
         $res = $this->get('wxa/business/push_message', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
             'message' => '操作成功',
@@ -54,7 +54,7 @@ class LiveSubscribe extends LiveBase
 
         $res = $this->get('wxa/business/get_wxa_followers', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
             'message' => '获取成功',

@@ -75,7 +75,7 @@ abstract class Base
      * 初始化
      * @access public
      * @param array $options 参数
-     * @return Auth
+     * @return Base
      */
     public static function instance($key, $secret)
     {

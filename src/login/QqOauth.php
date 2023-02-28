@@ -4,7 +4,7 @@ namespace zxf\login;
 
 use Exception;
 
-use zxf\req\Curl;
+use zxf\http\Curl;
 
 // QQ auth 登录
 class QqOauth implements Handle

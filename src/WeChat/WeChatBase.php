@@ -3,8 +3,10 @@
 namespace zxf\WeChat;
 
 use Exception;
-use zxf\req\Curl;
+use zxf\Facade\Curl;
+use zxf\Facade\Request;
 use zxf\tools\Cache;
+use zxf\tools\DataArray;
 
 class WeChatBase extends WechatCode
 {
@@ -28,16 +30,31 @@ class WeChatBase extends WechatCode
     // 请求接口时候需要的 access_token
     private $accessToken = '';
 
-    public $type = ''; // mini_program（微信小程序） 或者 official_account（微信公众号）
+    public $type = ''; // mini_program（微信小程序） 、 official_account（微信公众号）、server服务端接入
+
+    // Request 请求对象
+    public $request;
 
     // 小程序配置
     protected $config = [
-        'app_id'    => '',
-        'secret'    => '',
-        // 缓存access_token
-        'cache_dir' => "/cache",
-        'type'      => "random",
-        'mode'      => 1,
+        'token'          => '',
+        'appid'          => '',
+        'appsecret'      => '',
+        'encodingaeskey' => '',
+
+        'token_callback' => '',
+
+        // 缓存目录配置（可选，需拥有读写权限）
+        'cache_path'     => "/cache",
+        'type'           => "random",
+        'mode'           => 1,
+
+        // 配置商户支付参数（可选，在使用支付功能时需要）
+        'mch_id'         => "",
+        'mch_key'        => '',
+        // 配置商户支付双向证书目录（可选，在使用退款|打款|红包时需要）
+        'ssl_key'        => '',
+        'ssl_cer'        => '',
     ];
 
     public function __construct(array $config = [])
@@ -58,16 +75,26 @@ class WeChatBase extends WechatCode
      */
     public function initConfig(array $config = [])
     {
-        $this->config = !empty($config) ? array_merge($this->config, $config) : $this->config;
-        if (empty($this->config['app_id']) || empty($this->config['secret'])) {
-            throw new Exception('确少微信小程序配置参数:app_id或secret');
+        $config = !empty($config) ? array_merge($this->config, $config) : $this->config;
+
+        $this->config = new DataArray($config);
+
+        if (empty($this->config['appid'])) {
+            throw new Exception("Missing Config -- [appid]");
+        }
+        if (empty($this->config['appsecret'])) {
+            throw new Exception("Missing Config -- [appsecret]");
+        }
+        if (empty($this->config['token'])) {
+            throw new Exception("Missing Config -- [token]");
         }
 
-        $this->http  = Curl::instance();
-        $this->cache = Cache::instance([
-            'cache_dir' => !empty($this->config['cache_dir']) ? $this->config['cache_dir'] : "/cache",
-            'type'      => !empty($this->config['cache_type']) ? $this->config['cache_type'] : "random",
-            'mode'      => !empty($this->config['cache_mode']) ? $this->config['cache_mode'] : 1,
+        $this->request = Request::instance();
+        $this->http    = Curl::instance();
+        $this->cache   = Cache::instance([
+            'cache_path' => !empty($this->config['cache_path']) ? $this->config['cache_path'] : "/cache",
+            'type'       => !empty($this->config['cache_type']) ? $this->config['cache_type'] : "random",
+            'mode'       => !empty($this->config['cache_mode']) ? $this->config['cache_mode'] : 1,
         ]);
 
         $this->getAccessToken();
@@ -82,6 +109,11 @@ class WeChatBase extends WechatCode
     public function getUrl(): string
     {
         return $this->url;
+    }
+
+    public function error(string $message = '', int $code = 500)
+    {
+        throw new Exception(!empty($message) ? $message : '出错啦', $code);
     }
 
     /**
@@ -124,10 +156,40 @@ class WeChatBase extends WechatCode
         if ($this->accessToken) {
             return $this->accessToken;
         }
-        if (!$this->accessToken = $this->cache->get('wechat_access_token')) {
+        if (!$this->accessToken = $this->cache->get($this->config['appid'] . '_access_token')) {
             $this->requestToken();
         }
         return $this->accessToken;
+    }
+
+    /**
+     * 设置外部接口 AccessToken
+     *
+     * @param $accessToken
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setAccessToken($accessToken = '')
+    {
+        if (!is_string($accessToken)) {
+            throw new Exception("Invalid AccessToken type, need string.");
+        }
+        // 缓存token
+        $this->cache->set($this->config['appid'] . '_access_token', $accessToken, 7200);
+        $this->accessToken = $accessToken;
+        return $this;
+    }
+
+    /**
+     * 清理删除 AccessToken
+     *
+     * @return bool
+     */
+    public function delAccessToken()
+    {
+        $this->accessToken = '';
+        return $this->cache->delete($this->config['appid'] . '_access_token');
     }
 
     /**
@@ -150,15 +212,15 @@ class WeChatBase extends WechatCode
     {
         $this->generateRequestUrl('cgi-bin/token', [
             'grant_type' => 'client_credential',
-            'appid'      => $this->config['app_id'],
-            'secret'     => $this->config['secret'],
+            'appid'      => $this->config['appid'],
+            'appsecret'  => $this->config['appsecret'],
         ]);
         $res = $this->http->get($this->url);
 
         $this->accessToken = $res['access_token'];
         $expiresIn         = !empty($res['expires_in']) ? $res['expires_in'] : 7200;
         // 缓存token
-        $this->cache->set('wechat_access_token', $this->accessToken, $expiresIn);
+        $this->cache->set($this->config['appid'] . '_access_token', $this->accessToken, $expiresIn);
         return $this;
     }
 
@@ -188,11 +250,12 @@ class WeChatBase extends WechatCode
 
         $result = $this->http->setParams($data)->post($this->url);
 
-        if (isset($result['errcode']) && $result['errcode'] == '40001') {
+
+        if (isset($result['errcode']) && in_array($result['errcode'], ['40014', '40001', '41001', '42001'])) {
             $this->getAccessToken(true);
             return $this->post($url, $data);
         }
-        $result['message'] = $this->getCode($result['errcode']);
+        $result['message'] = $this->getMessage($result['errcode']);
         return $result;
     }
 
@@ -212,11 +275,11 @@ class WeChatBase extends WechatCode
 
         $result = $this->http->setParams($data)->get($this->url);
 
-        if (isset($result['errcode']) && $result['errcode'] == '40001') {
+        if (isset($result['errcode']) && in_array($result['errcode'], ['40014', '40001', '41001', '42001'])) {
             $this->getAccessToken(true);
             return $this->get($url, $data);
         }
-        $result['message'] = $this->getCode($result['errcode']);
+        $result['message'] = $this->getMessage($result['errcode']);
         return $result;
     }
 
@@ -240,20 +303,7 @@ class WeChatBase extends WechatCode
      */
     public function upload(string $filePath, string $type = 'image', string $videoTitle = '', string $videoDescription = '')
     {
-        if (!file_exists($filePath) || !is_readable($filePath)) {
-            throw new Exception(sprintf('文件不存在或者不可读: "%s"', $filePath));
-        }
-
-        if (class_exists('\CURLFile')) {
-            $data = ['media' => new \CURLFile(realpath($filePath))];
-        } else {
-            $data = ['media' => '@' . realpath($filePath)];//<=5.5
-        }
-
-        $headers = [
-            'Content-Disposition' => 'form-data; name="media"; filename="' . basename($filePath) . '"',
-        ];
-
+        $data = [];
         if ($type == 'video') {
             $data['description'] = json_encode(
                 [
@@ -263,55 +313,9 @@ class WeChatBase extends WechatCode
                 JSON_UNESCAPED_UNICODE
             );
         }
-
-        return $this->curlPost($this->url, $data, $headers);// 成功时候返回数据 包含media_id 、url，失败时返回数据包含 errcode 和 message
-    }
-
-    /**
-     * 上传文件素材 时候使用的请求方法
-     *
-     * @param $url
-     * @param $data
-     * @param $header
-     *
-     * @return array|bool|mixed|string
-     * @throws Exception
-     */
-    private function curlPost($url, $data, $header = [])
-    {
-        if (function_exists('curl_init')) {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            if (is_array($header) && !empty($header)) {
-                $set_head = array();
-                foreach ($header as $k => $v) {
-                    $set_head[] = "$k:$v";
-                }
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $set_head);
-            }
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 0);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            $response = curl_exec($ch);
-            if (curl_errno($ch)) {
-                throw new Exception(curl_error($ch));
-            }
-            // print_r(curl_getinfo($ch));
-            curl_close($ch);
-            $info = array();
-            if ($response) {
-                $info = $response;
-                try {
-                    $info = json_decode($response, true);
-                } catch (Exception $e) {
-                }
-            }
-            return $info;
-        } else {
-            throw new Exception('不支持CURL功能.');
-        }
+        $headers = [
+            'Content-Disposition' => 'form-data; name="media"; filename="' . basename($filePath) . '"',
+        ];
+        return $this->http->setHeader($headers)->upload($this->url, $filePath, $data);
     }
 }

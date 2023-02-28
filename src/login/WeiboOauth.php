@@ -6,7 +6,7 @@
 
 namespace zxf\login;
 
-use zxf\req\Curl;
+use zxf\http\Curl;
 
 class WeiboOauth implements Handle
 {

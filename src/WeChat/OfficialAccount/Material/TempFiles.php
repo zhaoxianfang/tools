@@ -21,7 +21,7 @@ class TempFiles extends MaterialBase
         $result = $this->uploadFile($realPath, 'image');
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
+            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
         } else {
             return $result; // 包含media_id 和 url
         }
@@ -32,7 +32,7 @@ class TempFiles extends MaterialBase
         $result = $this->uploadFile($realPath, 'voice');
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
+            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
         } else {
             return $result;
         }
@@ -44,7 +44,7 @@ class TempFiles extends MaterialBase
         $result = $this->uploadFile($realPath, 'thumb');
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
+            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
         } else {
             return $result;
         }
@@ -63,7 +63,7 @@ class TempFiles extends MaterialBase
         $result = $this->uploadFile($realPath, 'video', $videoTitle, $videoDescription);
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
+            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
         } else {
             return $result; // 包含media_id
         }
@@ -94,7 +94,7 @@ class TempFiles extends MaterialBase
         $result = $this->detail($mediaId);
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
+            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
         } else {
             return [
                 'code'    => 0,

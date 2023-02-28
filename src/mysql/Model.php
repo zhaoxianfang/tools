@@ -1,8 +1,8 @@
 <?php
 
-namespace zxf\Mysqli;
+namespace zxf\mysql;
 
-use zxf\Mysqli\Db;
+use Exception;
 
 /**
  * Mysqli Model 模型类
@@ -11,33 +11,6 @@ use zxf\Mysqli\Db;
  *
  * @link http://github.com/zhaoxianfang/tools 或者 https://gitee.com/zhaoxianfang/tools
  *
- * @method int count ()
- * @method Model ArrayBuilder()
- * @method Model JsonBuilder()
- * @method Model ObjectBuilder()
- * @method mixed byId(string $id, mixed $fields)
- * @method mixed get(mixed $limit, mixed $fields)
- * @method mixed getOne(mixed $fields)
- * @method mixed paginate(int $page, array $fields)
- * @method Model query($query, $numRows = null)
- * @method Model rawQuery($query, $bindParams = null)
- * @method Model join(string $objectName, string $key, string $joinType, string $primaryKey)
- * @method Model with(string $objectName)
- * @method Model groupBy(string $groupByField)
- * @method Model orderBy($orderByField, $orderbyDirection = "DESC", $customFieldsOrRegExp = null)
- * @method Model where($whereProp, $whereValue = 'DBNULL', $operator = '=', $cond = 'AND')
- * @method Model orWhere($whereProp, $whereValue = 'DBNULL', $operator = '=')
- * @method Model having($havingProp, $havingValue = 'DBNULL', $operator = '=', $cond = 'AND')
- * @method Model orHaving($havingProp, $havingValue = null, $operator = null)
- * @method Model setQueryOption($options)
- * @method Model setTrace($enabled, $stripPrefix = null)
- * @method Model withTotalCount()
- * @method Model startTransaction()
- * @method Model commit()
- * @method Model rollback()
- * @method Model ping()
- * @method string getLastError()
- * @method string getLastQuery()
  */
 class Model
 {
@@ -50,7 +23,6 @@ class Model
     /**
      * Models path
      *
-     * @var modelPath
      */
     protected static $modelPath;
     /**
@@ -106,13 +78,13 @@ class Model
     /**
      * Primary key for an object. 'id' is a default value.
      *
-     * @var stating
+     * @var string
      */
     protected $primaryKey = 'id';
     /**
      * Table name for an object. Class name will be used by default
      *
-     * @var stating
+     * @var string
      */
     protected $dbTable;
 
@@ -126,7 +98,7 @@ class Model
      */
     public function __construct($data = null)
     {
-        $this->db = Db::getInstance();
+        $this->db = Db::instance();
         if (empty ($this->dbTable)) {
             $this->dbTable = $this->underlineConvert(get_class($this));
             $this->db->setTable($this->dbTable);
@@ -160,7 +132,7 @@ class Model
     /**
      * Magic getter function
      *
-     * @param $name Variable name
+     * @param mixed $name  name
      *
      * @return mixed
      */
@@ -261,13 +233,13 @@ class Model
      *
      * @return Model
      */
-    public static function table($tableName)
+    public function table($tableName)
     {
         $tableName = preg_replace("/[^-a-z0-9_]+/i", '', $tableName);
         if (!class_exists($tableName)) {
             eval ("class $tableName extends Model {}");
         }
-        return new $tableName ();
+        return new $tableName();
     }
 
     /**
@@ -471,7 +443,7 @@ class Model
      *                              or only $count
      * @param array|string  $fields Array or coma separated list of fields to fetch
      *
-     * @return array Array of Models
+     * @return array|string|bool Array of Models
      */
     protected function get($limit = null, $fields = null)
     {

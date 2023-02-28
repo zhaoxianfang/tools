@@ -33,10 +33,10 @@ class LiveGoods extends LiveBase
             ],
         ]);
         if ($res['errcode'] != 0) {
-            throw new Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
-            'message' => $this->getCode($res['errcode']),
+            'message' => $this->getMessage($res['errcode']),
             'code'    => $res['errcode'],
             'data'    => [
                 "goodsId" => $res['goodsId'],
@@ -63,10 +63,10 @@ class LiveGoods extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/goods/resetaudit', $params);
         if ($res['errcode'] != 0) {
-            throw new Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
-            'message' => $this->getCode($res['errcode']),
+            'message' => $this->getMessage($res['errcode']),
             'code'    => $res['errcode'],
         ];
     }
@@ -87,10 +87,10 @@ class LiveGoods extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/goods/audit', $params);
         if ($res['errcode'] != 0) {
-            throw new Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
-            'message' => $this->getCode($res['errcode']),
+            'message' => $this->getMessage($res['errcode']),
             'code'    => $res['errcode'],
             'data'    => [
                 'auditId' => $res['auditId'],
@@ -114,10 +114,10 @@ class LiveGoods extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/goods/delete', $params);
         if ($res['errcode'] != 0) {
-            throw new Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
-            'message' => $this->getCode($res['errcode']),
+            'message' => $this->getMessage($res['errcode']),
             'code'    => $res['errcode'],
         ];
     }
@@ -147,10 +147,10 @@ class LiveGoods extends LiveBase
             ],
         ]);
         if ($res['errcode'] != 0) {
-            throw new Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
-            'message' => $this->getCode($res['errcode']),
+            'message' => $this->getMessage($res['errcode']),
             'code'    => $res['errcode'],
         ];
     }
@@ -171,10 +171,10 @@ class LiveGoods extends LiveBase
 
         $res = $this->post('wxa/business/getgoodswarehouse', $params);
         if ($res['errcode'] != 0) {
-            throw new Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
-            'message' => $this->getCode($res['errcode']),
+            'message' => $this->getMessage($res['errcode']),
             'code'    => $res['errcode'],
             'data'    => [
                 'total' => $res['total'],
@@ -204,10 +204,10 @@ class LiveGoods extends LiveBase
 
         $res = $this->get('wxaapi/broadcast/goods/getapproved', $params);
         if ($res['errcode'] != 0) {
-            throw new Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
-            'message' => $this->getCode($res['errcode']),
+            'message' => $this->getMessage($res['errcode']),
             'code'    => $res['errcode'],
             'data'    => [
                 'total' => $res['total'],
@@ -221,10 +221,10 @@ class LiveGoods extends LiveBase
     {
         $res = $this->post('wxaapi/broadcast/goods/setkey', $goodsKey);
         if ($res['errcode'] != 0) {
-            throw new Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
-            'message' => $this->getCode($res['errcode']),
+            'message' => $this->getMessage($res['errcode']),
             'code'    => $res['errcode'],
         ];
     }
@@ -234,10 +234,10 @@ class LiveGoods extends LiveBase
     {
         $res = $this->get('wxaapi/broadcast/goods/getkey');
         if ($res['errcode'] != 0) {
-            throw new Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
-            'message' => $this->getCode($res['errcode']),
+            'message' => $this->getMessage($res['errcode']),
             'code'    => $res['errcode'],
             'data'    => [
                 'vendorGoodsKey' => $res['vendorGoodsKey'],

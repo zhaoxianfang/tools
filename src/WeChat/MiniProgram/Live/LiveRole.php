@@ -14,10 +14,10 @@ class LiveRole extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/role/addrole', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
-            'message' => $this->getCode($res['errcode']),
+            'message' => $this->getMessage($res['errcode']),
             'code'    => $res['errcode'],
         ];
     }
@@ -32,10 +32,10 @@ class LiveRole extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/role/deleterole', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
-            'message' => $this->getCode($res['errcode']),
+            'message' => $this->getMessage($res['errcode']),
             'code'    => $res['errcode'],
         ];
     }
@@ -52,10 +52,10 @@ class LiveRole extends LiveBase
         ];
         $res    = $this->get('wxaapi/broadcast/role/getrolelist', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
         return [
-            'message' => $this->getCode($res['errcode']),
+            'message' => $this->getMessage($res['errcode']),
             'code'    => $res['errcode'],
             'data'    => [
                 'total' => $res['total'],

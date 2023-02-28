@@ -10,14 +10,19 @@
 ```
 // 配置
 public $config = [
-    'app_id'    => '',
-    'secret'    => '',
-    // 缓存access_token
-    'cache_dir' => "/cache",
-    'type'      => "random",
-    'mode'      => 1,
-    // token
-    'token'     => ''
+    'token'          => env('TOOLS_WECHAT_OFFICIAL_TOKEN', ''), //填写你设定的key
+    'appid'          => env('TOOLS_WECHAT_OFFICIAL_APP_ID', ''), //填写高级调用功能的app id
+    'appsecret'      => env('TOOLS_WECHAT_OFFICIAL_APP_SECRET', ''), //填写高级调用功能的密钥
+    'encodingaeskey' => env('TOOLS_WECHAT_OFFICIAL_AES_KEY', ''), //填写加密用的EncodingAESKey
+    // 配置商户支付参数（可选，在使用支付功能时需要）
+    'mch_id'         => "1235704602",
+    'mch_key'        => 'IKI4kpHjU94ji3oqre5zYaQMwLHuZPmj',
+    // 配置商户支付双向证书目录（可选，在使用退款|打款|红包时需要）
+    'ssl_key'        => '',
+    'ssl_cer'        => '',
+    // 缓存目录配置（可选，需拥有读写权限）
+    'cache_path'     => env('TOOLS_WECHAT_OFFICIAL_CACHE_PATH', ''), //插件 缓存目录
+    'token_callback' => env('TOOLS_WECHAT_OFFICIAL_TOKEN_CALLBACK_URL', ''), //回调地址
 ];
 ```
 
@@ -46,10 +51,10 @@ $params: 需要post 发送的部分【非必填】
 $urlParams: 如果请求的url中需要拼接url地址，则可以传入此参数，例如['title'=>'aha','test'=>123]【仅需要时候传参即可】
 $res = $this->sdk->post('wxaapi/broadcast/goods/add', $params=[],$urlParams=[]);
 if ($res['errcode'] != 0) {
-    throw new \Exception($this->getCode($res['errcode']), $res['errcode']);
+    throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
 }
 return [
-    'message' => $this->sdk->getCode($res['errcode']),
+    'message' => $this->sdk->getMessage($res['errcode']),
     'code'    => $res['errcode'],
 ];
 ```

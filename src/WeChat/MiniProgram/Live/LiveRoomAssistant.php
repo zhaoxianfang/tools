@@ -20,7 +20,7 @@ class LiveRoomAssistant extends LiveBase
 
         $res = $this->get('wxaapi/broadcast/room/addassistant', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']));
+            throw new \Exception($this->getMessage($res['errcode']));
         }
         return [
             'message' => '添加成功',
@@ -39,7 +39,7 @@ class LiveRoomAssistant extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/room/modifyassistant', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']));
+            throw new \Exception($this->getMessage($res['errcode']));
         }
         return [
             'message' => '修改成功',
@@ -57,7 +57,7 @@ class LiveRoomAssistant extends LiveBase
 
         $res = $this->post('wxaapi/broadcast/room/removeassistant', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']));
+            throw new \Exception($this->getMessage($res['errcode']));
         }
         return [
             'message' => '删除成功',
@@ -74,7 +74,7 @@ class LiveRoomAssistant extends LiveBase
 
         $res = $this->get('wxaapi/broadcast/room/getassistantlist', $params);
         if ($res['errcode'] != 0) {
-            throw new \Exception($this->getCode($res['errcode']));
+            throw new \Exception($this->getMessage($res['errcode']));
         }
         return [
             'message' => '获取成功',

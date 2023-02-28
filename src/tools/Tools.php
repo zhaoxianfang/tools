@@ -9,9 +9,10 @@ class Tools
 {
     /**
      * 判断当前服务器系统
+     *
      * @return string
      */
-    public static function getOS()
+    public function getOS()
     {
         if (PATH_SEPARATOR == ':') {
             return 'Linux';
@@ -22,9 +23,10 @@ class Tools
 
     /**
      * 当前微妙数
+     *
      * @return float
      */
-    public static function microtime_float()
+    public function microtime_float()
     {
         list ($usec, $sec) = explode(" ", microtime());
         return (( float )$usec + ( float )$sec);
@@ -32,12 +34,8 @@ class Tools
 
     /**
      * 切割utf-8格式的字符串(一个汉字或者字符占一个字节)
-     *
-     * @author zhao jinhan
-     * @version v1.0.0
-     *
      */
-    public static function truncate_utf8_string($string, $length, $etc = '...')
+    public function truncate_utf8_string($string, $length, $etc = '...')
     {
         $result = '';
         $string = html_entity_decode(trim(strip_tags($string)), ENT_QUOTES, 'UTF-8');
@@ -64,11 +62,13 @@ class Tools
 
     /**
      * 遍历文件夹
-     * @param string $dir
+     *
+     * @param string  $dir
      * @param boolean $all true表示递归遍历
+     *
      * @return array
      */
-    public static function scanfDir($dir = '', $all = false, &$ret = array())
+    public function scanfDir($dir = '', $all = false, &$ret = array())
     {
         if (false !== ($handle = opendir($dir))) {
             while (false !== ($file = readdir($handle))) {
@@ -89,14 +89,18 @@ class Tools
 
     /**
      * 判断字符串是utf-8 还是gb2312
-     * @param $str
+     *
+     * @param        $str
      * @param string $default
+     *
      * @return string
      */
-    public static function utf8_gb2312($str, $default = 'gb2312')
+    public function utf8_gb2312($str, $default = 'gb2312')
     {
         $str = preg_replace("/[\x01-\x7F]+/", "", $str);
-        if (empty($str)) return $default;
+        if (empty($str)) {
+            return $default;
+        }
 
         $preg = array(
             "gb2312" => "/^([\xA1-\xF7][\xA0-\xFE])+$/", //正则判断是否是gb2312
@@ -123,16 +127,19 @@ class Tools
 
     /**
      * utf-8和gb2312自动转化
-     * @param $string
+     *
+     * @param        $string
      * @param string $outEncoding
+     *
      * @return false|mixed|string
      */
-    public static function safeEncoding($string, $outEncoding = 'UTF-8')
+    public function safeEncoding($string, $outEncoding = 'UTF-8')
     {
         $encoding = "UTF-8";
         for ($i = 0; $i < strlen($string); $i++) {
-            if (ord($string{$i}) < 128)
+            if (ord($string{$i}) < 128) {
                 continue;
+            }
 
             if ((ord($string{$i}) & 224) == 224) {
                 // 第一个字节判断通过
@@ -156,19 +163,22 @@ class Tools
             }
         }
 
-        if (strtoupper($encoding) == strtoupper($outEncoding))
+        if (strtoupper($encoding) == strtoupper($outEncoding)) {
             return $string;
-        else
+        } else {
             return @iconv($encoding, $outEncoding, $string);
+        }
     }
 
     /**
      * 返回二维数组中某个键名的所有值
-     * @param array $array
+     *
+     * @param array  $array
      * @param string $key
+     *
      * @return array
      */
-    public static function array_key_values($array = array(), $key = '')
+    public function array_key_values($array = array(), $key = '')
     {
         $ret = array();
         foreach ((array)$array as $k => $v) {
@@ -180,10 +190,12 @@ class Tools
 
     /**
      * 判断 文件/目录 是否可写（取代系统自带的 is_writeable 函数）
+     *
      * @param string $file 文件/目录
+     *
      * @return boolean
      */
-    public static function is_writeable($file)
+    public function is_writeable($file)
     {
         if (is_dir($file)) {
             $dir = $file;
@@ -209,7 +221,7 @@ class Tools
     /**
      * 格式化单位
      */
-    static public function byteFormat($size, $dec = 2)
+    public function byteFormat($size, $dec = 2)
     {
         $a   = array("B", "KB", "MB", "GB", "TB", "PB");
         $pos = 0;
@@ -222,12 +234,14 @@ class Tools
 
     /**
      * 下载远程图片
-     * @param string $url 图片的绝对url
+     *
+     * @param string $url      图片的绝对url
      * @param string $filepath 文件的完整路径（例如/www/images/test） ，此函数会自动根据图片url和http头信息确定图片的后缀名
      * @param string $filename 要保存的文件名(不含扩展名)
+     *
      * @return mixed 下载成功返回一个描述图片信息的数组，下载失败则返回false
      */
-    static public function downloadImage(string $url, string $filepath, string $filename)
+    public function downloadImage(string $url, string $filepath, string $filename)
     {
         //服务器返回的头信息
         $responseHeaders = array();
@@ -303,11 +317,13 @@ class Tools
 
     /**
      * 查找ip是否在某个段位里面
-     * @param string $ip 要查询的ip
-     * @param array $arrIP 禁止的ip
+     *
+     * @param string $ip    要查询的ip
+     * @param array  $arrIP 禁止的ip
+     *
      * @return boolean
      */
-    public static function ipAccess(string $ip = '0.0.0.0', array $arrIP = array())
+    public function ipAccess(string $ip = '0.0.0.0', array $arrIP = array())
     {
         $access = true;
         if (empty($ip)) {
@@ -336,10 +352,11 @@ class Tools
     }
 
     /**
-     * @param string $string 原文或者密文
+     * @param string $string    原文或者密文
      * @param string $operation 操作(ENCODE | DECODE), 默认为 DECODE
-     * @param string $key 密钥
-     * @param int $expiry 密文有效期, 加密时候有效， 单位 秒，0 为永久有效
+     * @param string $key       密钥
+     * @param int    $expiry    密文有效期, 加密时候有效， 单位 秒，0 为永久有效
+     *
      * @return string 处理后的 原文或者 经过 base64_encode 处理后的密文
      *
      * @example
@@ -350,7 +367,7 @@ class Tools
      * $a = authcode('abc', 'ENCODE', 'key', 3600);
      * $b = authcode('abc', 'DECODE', 'key'); // 在一个小时内，$b(abc)，否则 $b 为空
      */
-    public static function authcode($string, $operation = 'DECODE', $key = '', $expiry = 3600)
+    public function authcode($string, $operation = 'DECODE', $key = '', $expiry = 3600)
     {
 
         $ckey_length = 4;
@@ -406,7 +423,7 @@ class Tools
 
     }
 
-    public static function strToUtf8($str)
+    public function strToUtf8($str)
     {
         if (!empty($str)) {
             $fileType = mb_detect_encoding($str, array('UTF-8', 'GBK', 'LATIN1', 'BIG5'));
@@ -420,9 +437,8 @@ class Tools
     /**
      * 取得输入目录所包含的所有目录和文件
      * 以关联数组形式返回
-     * author: flynetcn
      */
-    static public function deepScanDir($dir)
+    public function deepScanDir($dir)
     {
         $fileArr = array();
         $dirArr  = array();
@@ -449,9 +465,8 @@ class Tools
     /**
      * 取得输入目录所包含的所有文件
      * 以数组形式返回
-     * author: flynetcn
      */
-    static public function get_dir_files($dir)
+    public function get_dir_files($dir)
     {
         if (is_file($dir)) {
             return array($dir);
@@ -478,7 +493,7 @@ class Tools
     /**
      * 删除文件夹及其文件夹下所有文件
      */
-    public static function deldir($dir)
+    public function deldir($dir)
     {
         //先删除目录下的文件：
         $dh = opendir($dir);
@@ -505,7 +520,7 @@ class Tools
     /**
      * 清理session
      */
-    static public function unSession()
+    public function unSession()
     {
         if (session_start()) {
             session_destroy();
@@ -514,10 +529,12 @@ class Tools
 
     /**
      * 格式化字符串
+     *
      * @param string $str
+     *
      * @return string
      */
-    static public function formatStr($str)
+    public function formatStr($str)
     {
         $arr = array(' ', ' ', '&', '@', '#', '%', '\'', '"', '\\', '/', '.', ',', '$', '^', '*', '(', ')', '[', ']', '{', '}', '|', '~', '`', '?', '!', ';', ':', '-', '_', '+', '=');
         foreach ($arr as $v) {
@@ -528,12 +545,15 @@ class Tools
 
     /**
      * 获得真实IP地址
+     *
      * @return string
      */
-    static public function realIp()
+    public function realIp()
     {
-        static $realip = NULL;
-        if ($realip !== NULL) return $realip;
+        $realip = null;
+        if ($realip !== null) {
+            return $realip;
+        }
         if (isset($_SERVER)) {
             if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
                 $arr = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
@@ -565,9 +585,10 @@ class Tools
 
     /**
      * 创建目录
+     *
      * @param string $dir
      */
-    static public function createDir($dir)
+    public function createDir($dir)
     {
         if (!is_dir($dir)) {
             mkdir($dir, 0777);
@@ -576,28 +597,36 @@ class Tools
 
     /**
      * 创建文件（默认为空）
+     *
      * @param string $filename
      */
-    static public function createFile($filename)
+    public function createFile($filename)
     {
-        if (!is_file($filename)) touch($filename);
+        if (!is_file($filename)) {
+            touch($filename);
+        }
     }
 
     /**
      * 删除文件
+     *
      * @param string $filename
      */
-    static public function delFile($filename)
+    public function delFile($filename)
     {
-        if (file_exists($filename)) unlink($filename);
+        if (file_exists($filename)) {
+            unlink($filename);
+        }
     }
 
     /**
      * 删除目录及它下的全部文件
+     *
      * @param string $dir
+     *
      * @return bool
      */
-    static public function delDirOfAll($dir)
+    public function delDirOfAll($dir)
     {
         //先删除目录下的文件：
         if (is_dir($dir)) {
@@ -629,9 +658,10 @@ class Tools
      * @param $str
      * @param $length
      * @param $start
+     *
      * @return string
      */
-    static public function cn_substr_utf8($str, $length, $start = 0)
+    public function cn_substr_utf8($str, $length, $start = 0)
     {
         if (strlen($str) < $start + 1) {
             return '';
@@ -656,13 +686,14 @@ class Tools
 
     /**
      * 图片等比例缩放
-     * @param resource $im 新建图片资源(imagecreatefromjpeg/imagecreatefrompng/imagecreatefromgif)
-     * @param int $maxwidth 生成图像宽
-     * @param int $maxheight 生成图像高
-     * @param string $name 生成图像名称
-     * @param string $filetype 文件类型 (.jpg/.gif/.png)
+     *
+     * @param resource $im        新建图片资源(imagecreatefromjpeg/imagecreatefrompng/imagecreatefromgif)
+     * @param int      $maxwidth  生成图像宽
+     * @param int      $maxheight 生成图像高
+     * @param string   $name      生成图像名称
+     * @param string   $filetype  文件类型 (.jpg/.gif/.png)
      */
-    static public function resizeImage($im, $maxwidth, $maxheight, $name, $filetype)
+    public function resizeImage($im, $maxwidth, $maxheight, $name, $filetype)
     {
         $pic_width  = imagesx($im);
         $pic_height = imagesy($im);
@@ -676,15 +707,18 @@ class Tools
                 $resizeheight_tag = true;
             }
             if ($resizewidth_tag && $resizeheight_tag) {
-                if ($widthratio < $heightratio)
+                if ($widthratio < $heightratio) {
                     $ratio = $widthratio;
-                else
+                } else {
                     $ratio = $heightratio;
+                }
             }
-            if ($resizewidth_tag && !$resizeheight_tag)
+            if ($resizewidth_tag && !$resizeheight_tag) {
                 $ratio = $widthratio;
-            if ($resizeheight_tag && !$resizewidth_tag)
+            }
+            if ($resizeheight_tag && !$resizewidth_tag) {
                 $ratio = $heightratio;
+            }
             $newwidth  = $pic_width * $ratio;
             $newheight = $pic_height * $ratio;
             if (function_exists("imagecopyresampled")) {
@@ -705,9 +739,10 @@ class Tools
 
     /**
      * 下载文件
+     *
      * @param string $file_path 绝对路径
      */
-    static public function downFile($file_path)
+    public function downloadFile($file_path)
     {
         //判断文件是否存在
         $file_path = iconv('utf-8', 'gb2312', $file_path); //对可能出现的中文名称进行转码
@@ -730,5 +765,75 @@ class Tools
             echo $file_data;
         }
         fclose($fp); //关闭文件
+    }
+
+    /**
+     * 数组对象Emoji编译处理
+     *
+     * @param array $data
+     *
+     * @return array
+     */
+    public function buildEnEmojiData(array $data)
+    {
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $data[$key] = self::buildEnEmojiData($value);
+            } elseif (is_string($value)) {
+                $data[$key] = self::emojiEncode($value);
+            } else {
+                $data[$key] = $value;
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * 数组对象Emoji反解析处理
+     *
+     * @param array $data
+     *
+     * @return array
+     */
+    public function buildDeEmojiData(array $data)
+    {
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $data[$key] = self::buildDeEmojiData($value);
+            } elseif (is_string($value)) {
+                $data[$key] = self::emojiDecode($value);
+            } else {
+                $data[$key] = $value;
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * Emoji原形转换为String
+     *
+     * @param string $content
+     *
+     * @return string
+     */
+    public function emojiEncode($content)
+    {
+        return json_decode(preg_replace_callback("/(\\\u[ed][0-9a-f]{3})/i", function ($string) {
+            return addslashes($string[0]);
+        }, json_encode($content)));
+    }
+
+    /**
+     * Emoji字符串转换为原形
+     *
+     * @param string $content
+     *
+     * @return string
+     */
+    public function emojiDecode($content)
+    {
+        return json_decode(preg_replace_callback('/\\\\\\\\/i', function () {
+            return '\\';
+        }, json_encode($content)));
     }
 }

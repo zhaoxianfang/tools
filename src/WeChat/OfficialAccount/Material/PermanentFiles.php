@@ -21,7 +21,7 @@ class PermanentFiles extends MaterialBase
         $result = $this->uploadFile($realPath, 'image');
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
+            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
         } else {
             return $result; // 包含media_id 和 url
         }
@@ -33,7 +33,7 @@ class PermanentFiles extends MaterialBase
         $result = $this->uploadFile($realPath, 'voice');
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
+            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
         } else {
             return $result;
         }
@@ -44,7 +44,7 @@ class PermanentFiles extends MaterialBase
         $result = $this->uploadFile($realPath, 'thumb');
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
+            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
         } else {
             return $result;
         }
@@ -62,7 +62,7 @@ class PermanentFiles extends MaterialBase
         $result = $this->uploadFile($realPath, 'video', $videoTitle, $videoDescription);
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
+            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
         } else {
             return $result; // 包含media_id
         }
@@ -86,7 +86,7 @@ class PermanentFiles extends MaterialBase
 
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
+            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
         } else {
             return [
                 'code'    => 0,
@@ -104,7 +104,7 @@ class PermanentFiles extends MaterialBase
         $result = $this->delete($mediaId);
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
+            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
         } else {
             return [
                 'code'    => 0,
@@ -118,7 +118,7 @@ class PermanentFiles extends MaterialBase
         $result = $this->detail($mediaId);
 
         if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getCode($result['errcode']), $result['errcode']);
+            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
         } else {
             return [
                 'code'    => 0,

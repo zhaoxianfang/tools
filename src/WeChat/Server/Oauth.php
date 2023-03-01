@@ -25,7 +25,7 @@ class Oauth extends BasicWeChat
      */
     public function getOauthRedirect($redirect_url, $state = '', $scope = 'snsapi_base')
     {
-        $appid        = $this->config->get('appid');
+        $appid        = $this->config['appid'];
         $redirect_uri = urlencode($redirect_url);
         return $this->generateRequestUrl('connect/oauth2/authorize', [
                 'appid'         => $appid,
@@ -46,8 +46,8 @@ class Oauth extends BasicWeChat
      */
     public function getOauthAccessToken($code = '')
     {
-        $appid     = $this->config->get('appid');
-        $appsecret = $this->config->get('appsecret');
+        $appid     = $this->config['appid'];
+        $appsecret = $this->config['appsecret'];
         $code      = !empty($code) ? $code : (isset($_GET['code']) ? $_GET['code'] : '');
 
         return $this->get("sns/oauth2/access_token", [], [
@@ -68,7 +68,7 @@ class Oauth extends BasicWeChat
      */
     public function getOauthRefreshToken($refresh_token)
     {
-        $appid = $this->config->get('appid');
+        $appid = $this->config['appid'];
         return $this->get("sns/oauth2/refresh_token", [], [
             'appid'         => $appid,
             'grant_type'    => 'refresh_token',

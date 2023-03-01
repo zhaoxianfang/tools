@@ -39,7 +39,7 @@ class Curl
      */
     private function initCurl()
     {
-        if (function_exists('curl_init')) {
+        if (!function_exists('curl_init')) {
             throw new Exception('不支持CURL功能.');
         }
         if (empty($this->ch)) {

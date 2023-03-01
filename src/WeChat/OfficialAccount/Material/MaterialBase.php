@@ -27,8 +27,8 @@ class MaterialBase extends WeChatBase
      */
     protected function uploadFile(string $filePath, string $type = 'image', string $videoTitle = '', string $videoDescription = '')
     {
-        $this->generateRequestUrl('cgi-bin/' . $this->uploadType . '/add_material', ['type' => $type]);
-        return $this->upload($filePath, $type, $videoTitle, $videoDescription);
+        $mediaType = $this->uploadType == 'media' ? 20 : 21;
+        return $this->upload($mediaType, $filePath, $type, $videoTitle, $videoDescription);
     }
 
     // 获取素材列表

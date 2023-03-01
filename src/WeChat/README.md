@@ -73,9 +73,7 @@ $this->sdk->get('xxx', $params=[],$urlParams=[]);
 /**
  *  请求上传文件 ,主要用在上传公众号素材或者小程序临时图片
  *
- *  说明：请在调用此方法前调用 $this->generateRequestUrl(URL_NAME) 方法，处理 url,
- *  URL_NAME示例：永久素材cgi-bin/material/add_material、临时素材cgi-bin/media/upload
- *
+ * @param string $mediaType 上传类型：10：小程序临时图片，20：公众号临时素材，21：公众号永久素材
  * @param string $filePath 文件绝对路径
  * @param string $type     image|voice|thumb|video 小程序只有 image 类型
  *                         图片（image）: 10M，支持bmp/png/jpeg/jpg/gif格式       【公众号、小程序】
@@ -88,7 +86,7 @@ $this->sdk->get('xxx', $params=[],$urlParams=[]);
  * @return array|bool|mixed|string
  * @throws Exception
  */
-$this->sdk->upload($filePath, $type,$videoTitle = '',  $videoDescription='');
+$this->sdk->upload(10|29|21,$url,$filePath, $type,$videoTitle = '',  $videoDescription='');
 ```
 
 ## 服务端token验证

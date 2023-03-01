@@ -21,8 +21,7 @@ class TempFiles extends WeChatBase
      */
     public function uploadImage(string $filePath)
     {
-        $this->generateRequestUrl('cgi-bin/media/upload', ['type' => 'image']);
-        $res = $this->upload($filePath, 'image');
+        $res = $this->upload(10, $filePath, 'image');
         if (!empty($res['errcode'])) {
             throw new Exception($this->getMessage($res['errcode']), $res['errcode']);
         }

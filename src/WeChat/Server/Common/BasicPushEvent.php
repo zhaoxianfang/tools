@@ -66,7 +66,7 @@ class BasicPushEvent extends WeChatBase
         parent::__construct($options);
 
         // 参数初始化
-        $this->appid = $this->config->get('appid');
+        $this->appid = $this->config['appid'];
         // 推送消息处理
 
         if ($this->request->method() == "POST") {
@@ -76,7 +76,7 @@ class BasicPushEvent extends WeChatBase
                 if (empty($options['encodingaeskey'])) {
                     throw new Exception("Missing Config -- [encodingaeskey]");
                 }
-                $prpcrypt = new Prpcrypt($this->config->get('encodingaeskey'));
+                $prpcrypt = new Prpcrypt($this->config['encodingaeskey']);
                 $result   = $this->request->post();
                 $array    = $prpcrypt->decrypt($result['Encrypt']);
                 if (intval($array[0]) > 0) {
@@ -117,9 +117,9 @@ class BasicPushEvent extends WeChatBase
     {
         $xml = Xml::array2xml(empty($data) ? $this->message : $data);
         if ($this->isEncrypt() || $isEncrypt) {
-            $prpcrypt = new Prpcrypt($this->config->get('encodingaeskey'));
+            $prpcrypt = new Prpcrypt($this->config['encodingaeskey']);
             // 如果是第三方平台，加密得使用 component_appid
-            $component_appid = $this->config->get('component_appid');
+            $component_appid = $this->config['component_appid'];
             $appid           = empty($component_appid) ? $this->appid : $component_appid;
             $array           = $prpcrypt->encrypt($xml, $appid);
             if ($array[0] > 0) {
@@ -127,7 +127,7 @@ class BasicPushEvent extends WeChatBase
             }
             list($timestamp, $encrypt) = [time(), $array[1]];
             $nonce  = rand(77, 999) * rand(605, 888) * rand(11, 99);
-            $tmpArr = [$this->config->get('token'), $timestamp, $nonce, $encrypt];
+            $tmpArr = [$this->config['token'], $timestamp, $nonce, $encrypt];
             sort($tmpArr, SORT_STRING);
             $signature = sha1(implode($tmpArr));
             $format    = "<xml><Encrypt><![CDATA[%s]]></Encrypt><MsgSignature><![CDATA[%s]]></MsgSignature><TimeStamp>%s</TimeStamp><Nonce><![CDATA[%s]]></Nonce></xml>";
@@ -153,7 +153,7 @@ class BasicPushEvent extends WeChatBase
         $timestamp     = $this->request->get('timestamp');
         $msg_signature = $this->request->get('msg_signature');
         $signature     = empty($msg_signature) ? $this->request->get('signature') : $msg_signature;
-        $tmpArr        = [$this->config->get('token'), $timestamp, $nonce, $str];
+        $tmpArr        = [$this->config['token'], $timestamp, $nonce, $str];
         sort($tmpArr, SORT_STRING);
         return sha1(implode($tmpArr)) === $signature;
     }

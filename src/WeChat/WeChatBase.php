@@ -96,8 +96,9 @@ class WeChatBase extends WechatCode
             'type'       => !empty($this->config['cache_type']) ? $this->config['cache_type'] : "random",
             'mode'       => !empty($this->config['cache_mode']) ? $this->config['cache_mode'] : 1,
         ]);
-
-        $this->getAccessToken();
+        // 不是每个接口都是需要token的
+        // $this->getAccessToken();
+        $this->accessToken = '';
         return $this;
     }
 
@@ -129,9 +130,6 @@ class WeChatBase extends WechatCode
     {
         if (empty($apiUrl)) {
             throw new Exception('接口请求地址不能为空');
-        }
-        if (empty($this->accessToken)) {
-            $this->getAccessToken(true);
         }
         $this->url = str_replace(['API_URL', 'ACCESS_TOKEN'], [$apiUrl, $this->accessToken], $this->urlBase);
         if (!empty($params)) {
@@ -248,6 +246,10 @@ class WeChatBase extends WechatCode
     {
         $this->generateRequestUrl($url, $urlParams);
 
+        if (empty($this->accessToken)) {
+            $this->getAccessToken(true);
+        }
+
         $result = $this->http->setParams($data)->post($this->url);
 
 
@@ -272,6 +274,10 @@ class WeChatBase extends WechatCode
     public function get(string $url = '', array $data = [], $urlParams = [])
     {
         $this->generateRequestUrl($url, $urlParams);
+
+        if (empty($this->accessToken)) {
+            $this->getAccessToken(true);
+        }
 
         $result = $this->http->setParams($data)->get($this->url);
 
@@ -316,6 +322,9 @@ class WeChatBase extends WechatCode
         $headers = [
             'Content-Disposition' => 'form-data; name="media"; filename="' . basename($filePath) . '"',
         ];
+        if (empty($this->accessToken)) {
+            $this->getAccessToken(true);
+        }
         return $this->http->setHeader($headers)->upload($this->url, $filePath, $data);
     }
 }

@@ -4,6 +4,7 @@ namespace zxf\WeChat\Server\Common;
 
 use Exception;
 use zxf\Facade\Xml;
+use zxf\tools\DataArray;
 use zxf\WeChat\Server\Prpcrypt\Prpcrypt;
 use zxf\WeChat\WeChatBase;
 
@@ -62,33 +63,31 @@ class BasicPushEvent extends WeChatBase
      */
     public function __construct(array $options)
     {
-        parent::__construct();
+        parent::__construct($options);
 
         // 参数初始化
-
-        $this->input = $this->request->input();
         $this->appid = $this->config->get('appid');
         // 推送消息处理
 
         if ($this->request->method() == "POST") {
             $this->postxml     = file_get_contents("php://input");
-            $this->encryptType = $this->input->get('encrypt_type');
+            $this->encryptType = $this->request->get('encrypt_type');
             if ($this->isEncrypt()) {
                 if (empty($options['encodingaeskey'])) {
                     throw new Exception("Missing Config -- [encodingaeskey]");
                 }
                 $prpcrypt = new Prpcrypt($this->config->get('encodingaeskey'));
-                $result   = $this->request->post;
+                $result   = $this->request->post();
                 $array    = $prpcrypt->decrypt($result['Encrypt']);
                 if (intval($array[0]) > 0) {
                     throw new Exception($array[1], $array[0]);
                 }
                 list($this->postxml, $this->appid) = [$array[1], $array[2]];
             }
-            $this->receive = $this->request->post;
+            $this->receive = new DataArray($this->request->all());
         } elseif ($this->request->method() == "GET" && $this->checkSignature()) {
             @ob_clean();
-            exit($this->input->get('echostr'));
+            exit($this->request->get('echostr'));
         } else {
             throw new Exception('Invalid interface request.', '0');
         }
@@ -150,10 +149,10 @@ class BasicPushEvent extends WeChatBase
      */
     private function checkSignature($str = '')
     {
-        $nonce         = $this->input->get('nonce');
-        $timestamp     = $this->input->get('timestamp');
-        $msg_signature = $this->input->get('msg_signature');
-        $signature     = empty($msg_signature) ? $this->input->get('signature') : $msg_signature;
+        $nonce         = $this->request->get('nonce');
+        $timestamp     = $this->request->get('timestamp');
+        $msg_signature = $this->request->get('msg_signature');
+        $signature     = empty($msg_signature) ? $this->request->get('signature') : $msg_signature;
         $tmpArr        = [$this->config->get('token'), $timestamp, $nonce, $str];
         sort($tmpArr, SORT_STRING);
         return sha1(implode($tmpArr)) === $signature;

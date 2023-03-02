@@ -220,8 +220,7 @@ class FileTools
             if (@is_dir($cur_dir)) {
                 continue;
             }
-            @mkdir($cur_dir, $mode, true);
-            @chmod($cur_dir, $mode);
+            create_folders($cur_dir);
         }
         return is_dir($path);
 

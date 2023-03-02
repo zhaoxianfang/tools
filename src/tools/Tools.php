@@ -297,7 +297,7 @@ class Tools
             if (!empty($ext)) {
                 //如果目录不存在，则先要创建目录
                 if (!is_dir($filepath)) {
-                    mkdir($filepath, 0777, true);
+                    create_folders($filepath);
                 }
 
                 $filepath   .= '/' . $filename . ".$ext";
@@ -590,9 +590,7 @@ class Tools
      */
     public function createDir($dir)
     {
-        if (!is_dir($dir)) {
-            mkdir($dir, 0777);
-        }
+        return create_folders($dir);
     }
 
     /**

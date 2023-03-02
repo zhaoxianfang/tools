@@ -42,7 +42,7 @@ class Cache
     {
         if (empty($config['cache_path'])) {
             $config['cache_path'] = sys_get_temp_dir() . '/cache';
-            mkdir($config['cache_path']);
+            create_folders($config['cache_path']);
         }
         if (!empty($config)) {
             $this->config = array_merge($this->config, $config);

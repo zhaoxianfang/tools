@@ -413,7 +413,7 @@ if (!function_exists('create_folders')) {
      */
     function create_folders(string $dir): bool
     {
-        return is_dir($dir) or (create_folders(dirname($dir)) and mkdir($dir, 0777));
+        return is_dir($dir) or (create_folders(dirname($dir)) and mkdir($dir, 0755,true));
     }
 }
 
@@ -982,7 +982,7 @@ if (!function_exists('base64_to_image')) {
             $new_file = $path . "/" . date('Ymd', time()) . "/";
             if (!file_exists($new_file)) {
                 //检查是否有该文件夹，如果没有就创建，并给予最高权限
-                mkdir($new_file, 0755, true);
+                create_folders($new_file);
             }
             $new_file = $new_file . md5(time() . mt_rand(1, 1000000)) . ".{$type}";
             if (file_put_contents($new_file, base64_decode(str_replace($result[1], '', $base64_image_content)))) {

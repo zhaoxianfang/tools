@@ -99,7 +99,7 @@ class Img
 
         if (!is_dir(dirname($newFilePath))) {
             //检查是否有该文件夹，如果没有就创建，并给予最高权限
-            mkdir(dirname($newFilePath), 0755, true);
+            create_folders(dirname($newFilePath));
         }
         // dirname
 
@@ -173,7 +173,7 @@ class Img
         }
         if (!is_dir(dirname($newFilePath))) {
             //检查是否有该文件夹，如果没有就创建，并给予最高权限
-            mkdir(dirname($newFilePath), 0755, true);
+            create_folders(dirname($newFilePath));
         }
         if ($newFilePath) {
             if ($ext == "jpg" || $ext == "jpeg") {
@@ -343,7 +343,7 @@ class Img
 
         if (!is_dir(dirname($saveToPath))) {
             //检查是否有该文件夹，如果没有就创建，并给予最高权限
-            mkdir(dirname($saveToPath), 0755, true);
+            create_folders(dirname($saveToPath));
         }
 
         // 水印
@@ -510,7 +510,7 @@ class Img
 
             if (!is_dir(dirname($saveToPath))) {
                 //检查是否有该文件夹，如果没有就创建，并给予最高权限
-                mkdir(dirname($saveToPath), 0755, true);
+                create_folders(dirname($saveToPath));
             }
 
             switch (strtolower($ext)) {

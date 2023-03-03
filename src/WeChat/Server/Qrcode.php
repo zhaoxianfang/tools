@@ -2,7 +2,7 @@
 
 namespace zxf\WeChat\Server;
 
-use zxf\WeChat\Server\Common\BasicWeChat;
+use zxf\WeChat\WeChatBase;
 use Exception;
 
 /**
@@ -10,7 +10,7 @@ use Exception;
  * Class Qrcode
  *
  */
-class Qrcode extends BasicWeChat
+class Qrcode extends WeChatBase
 {
 
     /**
@@ -47,7 +47,7 @@ class Qrcode extends BasicWeChat
      */
     public function url($ticket)
     {
-        return "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=" . urlencode($ticket);
+        return sprintf('https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=%s', urlencode($ticket));
     }
 
     /**

@@ -24,6 +24,7 @@ namespace zxf\Facade;
  * @method static bool putFileFromUrlContent($url, $saveName, $path)    异步将远程链接上的内容(图片或内容)写到本地 ($url远程地址   $saveFile 保存在服务器上的文件名(e.g. /root/a/b.jpg))
  * @method static array|mixed upload(string $url = '', string $filePath = '',array $params = [])    上传文件到某个链接地址
  * @method static array|mixed download($url = '', $filePath = '')       下载远程文件到本地
+ * @method static mixed inject(\Closure $func)                          闭包方式注入Curl
  */
 class Curl extends FacadeBase implements FacadeInterface
 {

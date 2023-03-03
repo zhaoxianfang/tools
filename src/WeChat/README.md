@@ -2,7 +2,7 @@
 
 | 模块    | 路径              |
 |-------|-----------------|
-| 微信小程序 | zxf\WeChat\MiniProgram     |
+| 微信小程序 | zxf\WeChat\Mini     |
 | 微信公众号 | zxf\WeChat\OfficialAccount |
 
 ## 配置文件
@@ -102,7 +102,7 @@ $this->sdk->upload(10|29|21,$url,$filePath, $type,$videoTitle = '',  $videoDescr
 #### 实例化
 
 ```
-use zxf\WeChat\MiniProgram\Live\LiveGoods;
+use zxf\WeChat\Mini\Live\LiveGoods;
 $this->sdk = LiveGoods::instance($this->config);
 ```
 
@@ -166,7 +166,7 @@ $this->sdk->getApproved($status, $page, $limit)
 #### 实例化
 
 ```
-use zxf\WeChat\MiniProgram\Live\LiveRole;
+use zxf\WeChat\Mini\Live\LiveRole;
 $this->sdk = LiveRole::instance($this->config);
 ```
 
@@ -193,7 +193,7 @@ $this->sdk->list($role, $page, $limit, $keyword)
 #### 实例化
 
 ```
-use zxf\WeChat\MiniProgram\Live\LiveRoom;
+use zxf\WeChat\Mini\Live\LiveRoom;
 $this->sdk = LiveRoom::instance($this->config);
 ```
 
@@ -268,7 +268,7 @@ $this->sdk->updateComment($roomId, $banComment)
 #### 实例化
 
 ```
-use zxf\WeChat\MiniProgram\Live\LiveRoomAssistant;
+use zxf\WeChat\Mini\Live\LiveRoomAssistant;
 $this->sdk = LiveRoomAssistant::instance($this->config);
 ```
 
@@ -301,7 +301,7 @@ $this->sdk->info($roomId)
 #### 实例化
 
 ```
-use zxf\WeChat\MiniProgram\Live\LiveRoomGoods;
+use zxf\WeChat\Mini\Live\LiveRoomGoods;
 $this->sdk = LiveRoomGoods::instance($this->config);
 ```
 
@@ -347,7 +347,7 @@ $this->sdk->getVideo($roomId, $goodsId)
 #### 实例化
 
 ```
-use zxf\WeChat\MiniProgram\Live\LiveRoomSubAnchor;
+use zxf\WeChat\Mini\Live\LiveRoomSubAnchor;
 $this->sdk = LiveRoomSubAnchor::instance($this->config);
 ```
 
@@ -380,7 +380,7 @@ $this->sdk->delete($roomId)
 #### 实例化
 
 ```
-use zxf\WeChat\MiniProgram\Live\LiveSubscribe;
+use zxf\WeChat\Mini\Live\LiveSubscribe;
 $this->sdk = LiveSubscribe::instance($this->config);
 ```
 
@@ -459,7 +459,7 @@ $this->sdk->deleteFile($mediaId)
 #### 实例化
 
 ```
-use zxf\WeChat\MiniProgram\Material\TempFiles; 
+use zxf\WeChat\Mini\Material\TempFiles; 
  $this->sdk = TempFiles::instance($this->config);
 ```
 

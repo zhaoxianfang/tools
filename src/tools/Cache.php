@@ -2,6 +2,8 @@
 
 namespace zxf\tools;
 
+use Exception;
+
 /**
  * 缓存类
  */
@@ -11,11 +13,14 @@ class Cache
 
     // 当前操作的key
     private $currentKey = '';
+    // 缓存文件存储的地址
+    private $fileWritePath = '';
+
 
     protected $config = [
-        'cache_dir' => "./cache", // 缓存地址
-        'type'      => 'random', // 缓存方式 key: 直接使用key存储,random:对key加密存储
-        'mode'      => '1', //缓存模式 1:serialize ;2:保存为可执行php文件
+        'cache_path' => "./cache", // 缓存地址
+        'type'       => 'random', // 缓存方式 key: 直接使用key存储,random:对key加密存储
+        'mode'       => '1', //缓存模式 1:serialize ;2:保存为可执行php文件
     ];
 
     /**
@@ -92,7 +97,7 @@ class Cache
                 if (gettype($data) != 'array') {
                     $data = unserialize($data);
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
             }
             if (!empty($data['expiry_time']) && (time() < ($data['expiry_time']))) {
                 return $data['data'];
@@ -118,8 +123,8 @@ class Cache
     public function set(string $key, bool|array|string $value, int|string $expiry = '+99 year'): bool
     {
         $expiry = is_numeric($expiry) ? time() + (int)$expiry : strtotime($expiry);
-        $file   = $this->getKeyFilePath($key);
-        return $this->writeCacheFile($file, $value, $expiry);
+        $path   = $this->getKeyFilePath($key);
+        return $this->writeCacheFile($path, $value, $expiry);
     }
 
     /**
@@ -174,7 +179,7 @@ class Cache
             return '';
         }
         $path = $this->keyToFileName($key);
-        return empty($path) ? '' : $this->config['cache_dir'] . DIRECTORY_SEPARATOR . $path;
+        return empty($path) ? '' : $this->config['cache_path'] . DIRECTORY_SEPARATOR . $path;
     }
 
     /**
@@ -275,7 +280,7 @@ class Cache
             if (($checkReturnLine = stripos($secondLine, "return array(")) !== false && $checkReturnLine < 1) {
                 return include $file;
             } else {
-                throw new \Exception('可能存在CSRF');
+                throw new Exception('可能存在CSRF');
             }
         }
     }
@@ -286,19 +291,19 @@ class Cache
      * @param string $path
      *
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      */
     public function setCacheDir(string $path)
     {
         if (!is_dir($path)) {
-            throw new \Exception('file_cache: ' . $path . ' 不是一个有效路径 ');
+            throw new Exception('file_cache: ' . $path . ' 不是一个有效路径 ');
         }
         if (!is_writable($path)) {
-            throw new \Exception('file_cache: 路径 "' . $path . '" 不可写');
+            throw new Exception('file_cache: 路径 "' . $path . '" 不可写');
         }
 
-        $path                      = rtrim($path, '/') . '/';
-        $this->config['cache_dir'] = $path;
+        $path                       = rtrim($path, '/') . '/';
+        $this->config['cache_path'] = $path;
 
         return $this;
     }
@@ -328,10 +333,42 @@ class Cache
     public function flush(): bool
     {
         try {
-            deldir($this->config['cache_dir'], false);
+            deldir($this->config['cache_path'], false);
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
+    }
+
+    /**
+     * 自定义写入缓存文件 如果写入成功，返回存储文件路径
+     *
+     * @param string $filename 文件名
+     * @param        $contents 内容
+     *
+     * @return false|string
+     * @throws Exception
+     */
+    public function pushFile(string $filename = '', $contents = '')
+    {
+        if (empty($filename)) {
+            return throw new Exception('file name is empty!');
+        }
+        $file = $this->config['cache_path'] . DIRECTORY_SEPARATOR . 'custom_file' . DIRECTORY_SEPARATOR . $filename;
+        create_folders(dirname($file));
+        $result = false;
+        $f      = @fopen($file, 'w');
+        if ($f) {
+            @flock($f, LOCK_EX);
+            fseek($f, 0);
+            ftruncate($f, 0);
+            $tmp = @fwrite($f, $contents);
+            if (!($tmp === false)) {
+                $result = true;
+            }
+            @fclose($f);
+        }
+        @chmod($file, 0755);
+        return $result ? $file : false;
     }
 }

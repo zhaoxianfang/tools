@@ -2,7 +2,7 @@
 
 namespace zxf\WeChat\Server;
 
-use zxf\WeChat\Server\Common\BasicWeChat;
+use zxf\WeChat\WeChatBase;
 use Exception;
 
 /**
@@ -11,7 +11,7 @@ use Exception;
  *
  * @package WeChat
  */
-class Oauth extends BasicWeChat
+class Oauth extends WeChatBase
 {
 
     /**
@@ -27,7 +27,7 @@ class Oauth extends BasicWeChat
     {
         $appid        = $this->config['appid'];
         $redirect_uri = urlencode($redirect_url);
-        return $this->generateRequestUrl('connect/oauth2/authorize', [
+        return $this->enableToken(false)->parseUrl('connect/oauth2/authorize', [
                 'appid'         => $appid,
                 'redirect_uri'  => $redirect_uri,
                 'response_type' => 'code',
@@ -50,7 +50,7 @@ class Oauth extends BasicWeChat
         $appsecret = $this->config['appsecret'];
         $code      = !empty($code) ? $code : (isset($_GET['code']) ? $_GET['code'] : '');
 
-        return $this->get("sns/oauth2/access_token", [], [
+        return $this->enableToken(false)->get("sns/oauth2/access_token", [], [
             'appid'      => $appid,
             'secret'     => $appsecret,
             'code'       => $code,
@@ -69,7 +69,7 @@ class Oauth extends BasicWeChat
     public function getOauthRefreshToken($refresh_token)
     {
         $appid = $this->config['appid'];
-        return $this->get("sns/oauth2/refresh_token", [], [
+        return $this->enableToken(false)->get("sns/oauth2/refresh_token", [], [
             'appid'         => $appid,
             'grant_type'    => 'refresh_token',
             'refresh_token' => $refresh_token,
@@ -87,7 +87,7 @@ class Oauth extends BasicWeChat
      */
     public function checkOauthAccessToken($access_token, $openid)
     {
-        return $this->get("sns/auth?access_token", [], [
+        return $this->enableToken(false)->get("sns/auth?access_token", [], [
             'access_token' => $access_token,
             'openid'       => $openid,
         ]);

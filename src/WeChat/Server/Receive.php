@@ -2,7 +2,7 @@
 
 namespace zxf\WeChat\Server;
 
-use zxf\WeChat\Server\Common\BasicPushEvent;
+use zxf\WeChat\Contracts\BasicPushEvent;
 
 // https://github.com/zoujingli/WeChatDeveloper
 

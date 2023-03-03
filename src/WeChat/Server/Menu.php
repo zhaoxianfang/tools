@@ -2,7 +2,7 @@
 
 namespace zxf\WeChat\Server;
 
-use zxf\WeChat\Server\Common\BasicWeChat;
+use zxf\WeChat\WeChatBase;
 use Exception;
 
 /**
@@ -11,7 +11,7 @@ use Exception;
  *
  * @package WeChat
  */
-class Menu extends BasicWeChat
+class Menu extends WeChatBase
 {
 
     /**

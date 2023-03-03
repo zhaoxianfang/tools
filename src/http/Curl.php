@@ -246,6 +246,16 @@ class Curl
         return curl_version();
     }
 
+    //  闭包方式 注入 Curl
+    //  ...->setCustomParams(function($http){
+    //      curl_setopt($http->ch, CURLOPT_SSLCERTTYPE, 'PEM');
+    //  });
+    public function inject(\Closure $func)
+    {
+        $func($this);
+        return $this;
+    }
+
     /**
      * 模拟GET请求
      *

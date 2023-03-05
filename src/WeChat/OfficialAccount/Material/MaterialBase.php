@@ -23,7 +23,7 @@ class MaterialBase extends WeChatBase
      *                         缩略图（thumb）：64KB，支持 JPG 格式
      *
      * @return array|bool|mixed|string
-     * @throws \Illuminate\Http\Client\RequestException
+     * @throws \Exception
      */
     protected function uploadFile(string $filePath, string $type = "image", string $videoTitle = "", string $videoDescription = "")
     {

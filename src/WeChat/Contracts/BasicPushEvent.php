@@ -115,7 +115,7 @@ class BasicPushEvent extends WeChatBase
      */
     public function reply(array $data = [], $return = false, $isEncrypt = false)
     {
-        $xml = Xml::array2xml(empty($data) ? $this->message : $data);
+        $xml = Xml::arr2xml(empty($data) ? $this->message : $data);
         if ($this->isEncrypt() || $isEncrypt) {
             $prpcrypt = new Prpcrypt($this->config["encodingaeskey"]);
             // 如果是第三方平台，加密得使用 component_appid

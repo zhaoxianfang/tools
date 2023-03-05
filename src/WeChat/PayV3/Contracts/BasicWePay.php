@@ -121,8 +121,8 @@ abstract class BasicWePay
         list($time, $nonce) = [time(), uniqid() . rand(1000, 9999)];
         $signstr = join("\n", [$method, $pathinfo, $time, $nonce, $jsondata, ""]);
         // 生成数据签名TOKEN
-        $token = sprintf("mchid="%s",nonce_str="%s",timestamp="%d",serial_no="%s",signature="%s"",
-            $this->config["mch_id"], $nonce, $time, $this->config["cert_serial"], $this->signBuild($signstr)
+        $token = sprintf('mchid="%s",nonce_str="%s",timestamp="%d",serial_no="%s",signature="%s"',
+            $this->config['mch_id'], $nonce, $time, $this->config['cert_serial'], $this->signBuild($signstr)
         );
         list($header, $content) = $this->_doRequestCurl($method, $this->base . $pathinfo, [
             "data" => $jsondata, "header" => [

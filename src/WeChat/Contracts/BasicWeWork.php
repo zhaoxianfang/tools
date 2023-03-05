@@ -19,7 +19,7 @@ class BasicWeWork extends WeChatBase
      *
      * @return string
      * @throws \Exception
-     * @throws \WeChat\Exceptions\LocalCacheException
+     * @throws \Exception
      */
     public function getAccessToken()
     {

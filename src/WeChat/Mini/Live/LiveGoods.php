@@ -3,6 +3,7 @@
 namespace zxf\WeChat\Mini\Live;
 
 use Exception;
+use JetBrains\PhpStorm\ArrayShape;
 
 /**
  * 直播平台 所有商品管理
@@ -18,6 +19,7 @@ class LiveGoods extends LiveBase
      * @return array
      * @throws Exception
      */
+    #[ArrayShape(["message" => "string", "code" => "mixed", "data" => "array"])]
     public function importAndWaitAudit(array $goods, string $miniWechatPath = ""): array
     {
         $res = $this->post("wxaapi/broadcast/goods/add", [
@@ -54,6 +56,7 @@ class LiveGoods extends LiveBase
      * @return array
      * @throws Exception
      */
+    #[ArrayShape(["message" => "string", "code" => "mixed"])]
     public function cancelAudit(string $goodsId = "", string $auditId = ""): array
     {
         $params = [
@@ -79,6 +82,7 @@ class LiveGoods extends LiveBase
      * @return array
      * @throws Exception
      */
+    #[ArrayShape(["message" => "string", "code" => "mixed", "data" => "array"])]
     public function audit(string $goodsId = ""): array
     {
         $params = [

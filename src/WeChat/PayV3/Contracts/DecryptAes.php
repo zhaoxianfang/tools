@@ -65,8 +65,6 @@ class DecryptAes
             }
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
-        } catch (\SodiumException $exception) {
-            throw new Exception($exception->getMessage(), $exception->getCode());
         }
         throw new Exception("AEAD_AES_256_GCM 需要 PHP 7.1 以上或者安装 libsodium-php");
     }

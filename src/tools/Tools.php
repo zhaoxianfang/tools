@@ -137,24 +137,24 @@ class Tools
     {
         $encoding = "UTF-8";
         for ($i = 0; $i < strlen($string); $i++) {
-            if (ord($string{$i}) < 128) {
+            if (ord($string[$i]) < 128) {
                 continue;
             }
 
-            if ((ord($string{$i}) & 224) == 224) {
+            if ((ord($string[$i]) & 224) == 224) {
                 // 第一个字节判断通过
-                $char = $string{++$i};
+                $char = $string[++$i];
                 if ((ord($char) & 128) == 128) {
                     // 第二个字节判断通过
-                    $char = $string{++$i};
+                    $char = $string[++$i];
                     if ((ord($char) & 128) == 128) {
                         break;
                     }
                 }
             }
-            if ((ord($string{$i}) & 192) == 192) {
+            if ((ord($string[$i]) & 192) == 192) {
                 // 第一个字节判断通过
-                $char = $string{++$i};
+                $char = $string[++$i];
                 if ((ord($char) & 128) == 128) {
                     // 第二个字节判断通过
                     $encoding = "GB2312";

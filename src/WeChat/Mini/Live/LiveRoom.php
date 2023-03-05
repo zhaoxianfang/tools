@@ -76,7 +76,7 @@ class LiveRoom extends LiveBase
      * @param $data
      *
      * @return array
-     * @throws \Illuminate\Http\Client\RequestException
+     * @throws \Exception
      */
     public function update($roomId, $data): array
     {
@@ -117,7 +117,7 @@ class LiveRoom extends LiveBase
      * @param $roomId
      *
      * @return array
-     * @throws \Illuminate\Http\Client\RequestException
+     * @throws \Exception
      */
     public function delete($roomId): array
     {
@@ -141,7 +141,7 @@ class LiveRoom extends LiveBase
      * @param $limit
      *
      * @return array
-     * @throws \Illuminate\Http\Client\RequestException
+     * @throws \Exception
      */
     public function list($page = 1, $limit = 10): array
     {
@@ -172,7 +172,7 @@ class LiveRoom extends LiveBase
      * @param $limit
      *
      * @return array
-     * @throws \Illuminate\Http\Client\RequestException
+     * @throws \Exception
      */
     public function getReplay($roomId, $page = 1, $limit = 5): array
     {
@@ -203,7 +203,7 @@ class LiveRoom extends LiveBase
      * @param $roomId
      *
      * @return array
-     * @throws \Illuminate\Http\Client\RequestException
+     * @throws \Exception
      */
     public function getPushUrl($roomId): array
     {

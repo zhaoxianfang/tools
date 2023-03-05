@@ -4,6 +4,7 @@
 
 namespace zxf\WeChat\Pay;
 
+use Exception;
 use zxf\WeChat\Contracts\BasicWePay;
 
 /**

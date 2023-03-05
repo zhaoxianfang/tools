@@ -551,7 +551,7 @@ class FileTools
      * @param $file file属性信息
      * @return array
      */
-    public function getUploaFileInfo($file)
+    public function getUploaFileInfo(string $file)
     {
         $file_info     = $_FILES[$file];//取得上传文件基本信息
         $info          = array();

@@ -303,7 +303,7 @@ class WeChatBase extends WechatCode
      * @return mixed
      * @throws Exception
      */
-    public function post(string $url = "", array $data = [], $urlParams = [])
+    public function post(string $url = "", array $data = [], $urlParams = []): mixed
     {
         $this->setOriginalUrl($url);
         $this->url = $this->parseUrl($url, $urlParams);
@@ -405,7 +405,7 @@ class WeChatBase extends WechatCode
             );
         }
         $headers = [
-            "Content-Disposition" => "form-data; name="media"; filename="" . basename($filePath) . """,
+            "Content-Disposition" => "form-data; name='media'; filename='" . basename($filePath) . "'",
         ];
         $result  = $this->http->setHeader($headers)->upload($this->url, $filePath, $data);
         if (isset($result["errcode"]) && $result["errcode"] > 0) {
@@ -441,7 +441,7 @@ class WeChatBase extends WechatCode
         $this->setOriginalUrl($url);
 
         $headers = [
-            "Content-Disposition" => "form-data; name="media"; filename="" . basename($filePath) . """,
+            "Content-Disposition" => "form-data; name='media'; filename='" . basename($filePath) . "'",
         ];
         $result  = $this->http->setHeader($headers)->upload($this->url, $filePath);
         if (isset($result["errcode"]) && $result["errcode"] > 0) {

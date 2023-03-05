@@ -31,7 +31,7 @@ class Xml
      *
      * @return null|string|string[]
      */
-    public function array2xml($arr, $level = 1)
+    public function arr2xml($arr, $level = 1)
     {
         $s = $level == 1 ? "<xml>" : '';
         foreach ($arr as $tagname => $value) {
@@ -41,7 +41,7 @@ class Xml
             if (!is_array($value)) {
                 $s .= "<{$tagname}>" . (!is_numeric($value) ? '<![CDATA[' : '') . $value . (!is_numeric($value) ? ']]>' : '') . "</{$tagname}>";
             } else {
-                $s .= "<{$tagname}>" . $this->array2xml($value, $level + 1) . "</{$tagname}>";
+                $s .= "<{$tagname}>" . $this->arr2xml($value, $level + 1) . "</{$tagname}>";
             }
         }
         $s = preg_replace("/([\x01-\x08\x0b-\x0c\x0e-\x1f])+/", ' ', $s);

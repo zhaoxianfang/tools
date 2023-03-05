@@ -76,7 +76,7 @@ class PermanentFiles extends MaterialBase
      * @param int    $limit 每页显示条数
      *
      * @return array|bool|mixed|string
-     * @throws \Illuminate\Http\Client\RequestException
+     * @throws \Exception
      */
     public function getList(string $type = "image", int $page = 1, int $limit = 10)
     {

@@ -232,7 +232,7 @@ class Command
      * 解析命令行参数
      * @return array ['opts'=>[], 'args'=>[]]
      */
-    private final static function parseArgs()
+    private static function parseArgs()
     {
         global $argv;
         if (!self::$isParse) {

@@ -54,6 +54,8 @@ abstract class BasicAliPay
      * AliPay constructor.
      *
      * @param array $options
+     *
+     * @throws Exception
      */
     public function __construct($options)
     {
@@ -112,8 +114,8 @@ abstract class BasicAliPay
      * @param string $out_trade_no
      *
      * @return array|boolean
+     * @throws Exception
      * @throws \Exception
-     * @throws \WeChat\Exceptions\LocalCacheException
      */
     public function query($out_trade_no = "")
     {
@@ -128,8 +130,8 @@ abstract class BasicAliPay
      * @param null         $refund_amount 退款金额
      *
      * @return array|boolean
+     * @throws Exception
      * @throws \Exception
-     * @throws \WeChat\Exceptions\LocalCacheException
      */
     public function refund($options, $refund_amount = null)
     {
@@ -146,8 +148,8 @@ abstract class BasicAliPay
      * @param array|string $options
      *
      * @return array|boolean
+     * @throws Exception
      * @throws \Exception
-     * @throws \WeChat\Exceptions\LocalCacheException
      */
     public function close($options)
     {
@@ -165,7 +167,7 @@ abstract class BasicAliPay
      * @param array   $parameters
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function notify($needSignType = false, array $parameters = [])
     {
@@ -190,7 +192,7 @@ abstract class BasicAliPay
      * @param null|string $sign 数据签名
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     protected function verify($data, $sign)
     {
@@ -281,8 +283,7 @@ abstract class BasicAliPay
      * @param array $options
      *
      * @return array|boolean
-     * @throws \Exception
-     * @throws \WeChat\Exceptions\LocalCacheException
+     * @throws Exception
      */
     protected function getResult($options)
     {
@@ -309,13 +310,13 @@ abstract class BasicAliPay
      */
     protected function buildPayHtml()
     {
-        $html = "<form id="alipaysubmit" name="alipaysubmit" action="{$this->gateway}" method="post">";
+        $html = "<form id='alipaysubmit' name='alipaysubmit' action='{$this->gateway}' method='post'>";
         foreach ($this->options->get() as $key => $value) {
-            $value = str_replace(""", "&apos;", $value);
-            $html  .= "<input type="hidden" name="{$key}" value="{$value}"/>";
+            $value = str_replace("'", '&apos;', $value);
+            $html  .= "<input type='hidden' name='{$key}' value='{$value}'/>";
         }
-        $html .= "<input type="submit" value="ok" style="display:none;"></form>";
-        return "{$html}<script>document.forms["alipaysubmit"].submit();</script>";
+        $html .= "<input type='submit' value='ok' style='display:none;'></form>";
+        return "{$html}<script>document.forms['alipaysubmit'].submit();</script>";
     }
 
     /**

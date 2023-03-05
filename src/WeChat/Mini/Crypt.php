@@ -3,10 +3,8 @@
 namespace zxf\WeChat\Mini;
 
 use zxf\WeChat\WeChatBase;
+use zxf\WeChat\Mini\crypt\WXBizDataCrypt;
 use Exception;
-
-use WXBizDataCrypt;
-
 
 /**
  * 数据加密处理
@@ -28,8 +26,8 @@ class Crypt extends WeChatBase
      */
     public function decode($iv, $sessionKey, $encryptedData)
     {
-        require_once __DIR__ . DIRECTORY_SEPARATOR . "crypt" . DIRECTORY_SEPARATOR . "wxBizDataCrypt.php";
         $pc      = new WXBizDataCrypt($this->config["appid"], $sessionKey);
+        $data    = '';
         $errCode = $pc->decryptData($encryptedData, $iv, $data);
         if ($errCode == 0) {
             return json_decode($data, true);

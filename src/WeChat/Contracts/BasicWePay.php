@@ -75,7 +75,7 @@ class BasicWePay extends WeChatBase
      */
     public function getNotifySuccessReply()
     {
-        return Xml::array2xml(["return_code" => "SUCCESS", "return_msg" => "OK"]);
+        return Xml::arr2xml(["return_code" => "SUCCESS", "return_msg" => "OK"]);
     }
 
     /**
@@ -129,7 +129,7 @@ class BasicWePay extends WeChatBase
      */
     public function toXml(array $data, $isReturn = false)
     {
-        $xml = Xml::array2xml($data);
+        $xml = Xml::arr2xml($data);
         if ($isReturn) {
             return $xml;
         }
@@ -180,7 +180,7 @@ class BasicWePay extends WeChatBase
             $params["sign_type"] = strtoupper($signType);
         }
         $params["sign"] = $this->getPaySign($params, $signType);
-        $result         = Xml::array2xml($this->payPost($url, Xml::array2xml($params), $option));
+        $result         = Xml::arr2xml($this->payPost($url, Xml::arr2xml($params), $option));
         if ($result["return_code"] !== "SUCCESS") {
             throw new Exception($result["return_msg"], "0");
         }

@@ -48,7 +48,7 @@ abstract class BasicAliPay
      *
      * @var string
      */
-    protected $gateway = 'https://openapi.alipay.com/gateway.do?charset=utf-8';
+    protected $gateway = "https://openapi.alipay.com/gateway.do?charset=utf-8";
 
     /**
      * AliPay constructor.
@@ -59,34 +59,34 @@ abstract class BasicAliPay
     {
         $this->params = new DataArray([]);
         $this->config = new DataArray($options);
-        if (empty($options['appid'])) {
+        if (empty($options["appid"])) {
             throw new Exception("Missing Config -- [appid]");
         }
-        if (empty($options['public_key'])) {
+        if (empty($options["public_key"])) {
             throw new Exception("Missing Config -- [public_key]");
         }
-        if (empty($options['private_key'])) {
+        if (empty($options["private_key"])) {
             throw new Exception("Missing Config -- [private_key]");
         }
-        if (!empty($options['debug'])) {
-            $this->gateway = 'https://openapi.alipaydev.com/gateway.do?charset=utf-8';
+        if (!empty($options["debug"])) {
+            $this->gateway = "https://openapi.alipaydev.com/gateway.do?charset=utf-8";
         }
         $this->options = new DataArray([
-            'app_id'    => $this->config['appid'],
-            'charset'   => empty($options['charset']) ? 'utf-8' : $options['charset'],
-            'format'    => 'JSON',
-            'version'   => '1.0',
-            'sign_type' => empty($options['sign_type']) ? 'RSA2' : $options['sign_type'],
-            'timestamp' => date('Y-m-d H:i:s'),
+            "app_id"    => $this->config["appid"],
+            "charset"   => empty($options["charset"]) ? "utf-8" : $options["charset"],
+            "format"    => "JSON",
+            "version"   => "1.0",
+            "sign_type" => empty($options["sign_type"]) ? "RSA2" : $options["sign_type"],
+            "timestamp" => date("Y-m-d H:i:s"),
         ]);
-        if (isset($options['notify_url']) && $options['notify_url'] !== '') {
-            $this->options->set('notify_url', $options['notify_url']);
+        if (isset($options["notify_url"]) && $options["notify_url"] !== "") {
+            $this->options->set("notify_url", $options["notify_url"]);
         }
-        if (isset($options['return_url']) && $options['return_url'] !== '') {
-            $this->options->set('return_url', $options['return_url']);
+        if (isset($options["return_url"]) && $options["return_url"] !== "") {
+            $this->options->set("return_url", $options["return_url"]);
         }
-        if (isset($options['app_auth_token']) && $options['app_auth_token'] !== '') {
-            $this->options->set('app_auth_token', $options['app_auth_token']);
+        if (isset($options["app_auth_token"]) && $options["app_auth_token"] !== "") {
+            $this->options->set("app_auth_token", $options["app_auth_token"]);
         }
     }
 
@@ -115,10 +115,10 @@ abstract class BasicAliPay
      * @throws \Exception
      * @throws \WeChat\Exceptions\LocalCacheException
      */
-    public function query($out_trade_no = '')
+    public function query($out_trade_no = "")
     {
-        $this->options->set('method', 'alipay.trade.query');
-        return $this->getResult(['out_trade_no' => $out_trade_no]);
+        $this->options->set("method", "alipay.trade.query");
+        return $this->getResult(["out_trade_no" => $out_trade_no]);
     }
 
     /**
@@ -134,9 +134,9 @@ abstract class BasicAliPay
     public function refund($options, $refund_amount = null)
     {
         if (!is_array($options)) {
-            $options = ['out_trade_no' => $options, 'refund_amount' => $refund_amount];
+            $options = ["out_trade_no" => $options, "refund_amount" => $refund_amount];
         }
-        $this->options->set('method', 'alipay.trade.refund');
+        $this->options->set("method", "alipay.trade.refund");
         return $this->getResult($options);
     }
 
@@ -152,9 +152,9 @@ abstract class BasicAliPay
     public function close($options)
     {
         if (!is_array($options)) {
-            $options = ['out_trade_no' => $options];
+            $options = ["out_trade_no" => $options];
         }
-        $this->options->set('method', 'alipay.trade.close');
+        $this->options->set("method", "alipay.trade.close");
         return $this->getResult($options);
     }
 
@@ -171,14 +171,14 @@ abstract class BasicAliPay
     {
         $data = empty($parameters) ? $_POST : $parameters;
 
-        if (empty($data) || empty($data['sign'])) {
-            throw new Exception('Illegal push request.', 0, $data);
+        if (empty($data) || empty($data["sign"])) {
+            throw new Exception("Illegal push request.", 0, $data);
         }
         $string  = $this->getSignContent($data, $needSignType);
-        $content = wordwrap($this->config['public_key'], 64, "\n", true);
+        $content = wordwrap($this->config["public_key"], 64, "\n", true);
         $res     = "-----BEGIN PUBLIC KEY-----\n{$content}\n-----END PUBLIC KEY-----";
-        if (openssl_verify($string, base64_decode($data['sign']), $res, OPENSSL_ALGO_SHA256) !== 1) {
-            throw new Exception('Data signature verification failed.', 0, $data);
+        if (openssl_verify($string, base64_decode($data["sign"]), $res, OPENSSL_ALGO_SHA256) !== 1) {
+            throw new Exception("Data signature verification failed.", 0, $data);
         }
         return $data;
     }
@@ -194,15 +194,15 @@ abstract class BasicAliPay
      */
     protected function verify($data, $sign)
     {
-        $content = wordwrap($this->config['public_key'], 64, "\n", true);
+        $content = wordwrap($this->config["public_key"], 64, "\n", true);
         $res     = "-----BEGIN PUBLIC KEY-----\n{$content}\n-----END PUBLIC KEY-----";
-        if ($this->options->get('sign_type') === 'RSA2') {
+        if ($this->options->get("sign_type") === "RSA2") {
             if (openssl_verify(json_encode($data, 256), base64_decode($sign), $res, OPENSSL_ALGO_SHA256) !== 1) {
-                throw new Exception('Data signature verification failed.');
+                throw new Exception("Data signature verification failed.");
             }
         } else {
             if (openssl_verify(json_encode($data, 256), base64_decode($sign), $res, OPENSSL_ALGO_SHA1) !== 1) {
-                throw new Exception('Data signature verification failed.');
+                throw new Exception("Data signature verification failed.");
             }
         }
         return $data;
@@ -215,9 +215,9 @@ abstract class BasicAliPay
      */
     protected function getSign()
     {
-        $content = wordwrap($this->trimCert($this->config['private_key']), 64, "\n", true);
+        $content = wordwrap($this->trimCert($this->config["private_key"]), 64, "\n", true);
         $string  = "-----BEGIN RSA PRIVATE KEY-----\n{$content}\n-----END RSA PRIVATE KEY-----";
-        if ($this->options->get('sign_type') === 'RSA2') {
+        if ($this->options->get("sign_type") === "RSA2") {
             openssl_sign($this->getSignContent($this->options->get(), true), $sign, $string, OPENSSL_ALGO_SHA256);
         } else {
             openssl_sign($this->getSignContent($this->options->get(), true), $sign, $string, OPENSSL_ALGO_SHA1);
@@ -235,7 +235,7 @@ abstract class BasicAliPay
     protected function trimCert($sign)
     {
         // if (file_exists($sign)) $sign = file_get_contents($sign);
-        return preg_replace(['/\s+/', '/\-{5}.*?\-{5}/'], '', $sign);
+        return preg_replace(["/\s+/", "/\-{5}.*?\-{5}/"], "", $sign);
     }
 
     /**
@@ -249,19 +249,19 @@ abstract class BasicAliPay
     private function getSignContent(array $data, $needSignType = false)
     {
         list($attrs,) = [[], ksort($data)];
-        if (isset($data['sign'])) {
-            unset($data['sign']);
+        if (isset($data["sign"])) {
+            unset($data["sign"]);
         }
         if (empty($needSignType)) {
-            unset($data['sign_type']);
+            unset($data["sign_type"]);
         }
         foreach ($data as $key => $value) {
-            if ($value === '' || is_null($value)) {
+            if ($value === "" || is_null($value)) {
                 continue;
             }
             $attrs[] = "{$key}={$value}";
         }
-        return join('&', $attrs);
+        return join("&", $attrs);
     }
 
     /**
@@ -271,8 +271,8 @@ abstract class BasicAliPay
      */
     protected function applyData($options)
     {
-        $this->options->set('biz_content', json_encode($this->params->merge($options), 256));
-        $this->options->set('sign', $this->getSign());
+        $this->options->set("biz_content", json_encode($this->params->merge($options), 256));
+        $this->options->set("sign", $this->getSign());
     }
 
     /**
@@ -287,19 +287,19 @@ abstract class BasicAliPay
     protected function getResult($options)
     {
         $this->applyData($options);
-        $method = str_replace('.', '_', $this->options['method']) . '_response';
+        $method = str_replace(".", "_", $this->options["method"]) . "_response";
         $data   = json_decode(Tools::get($this->gateway, $this->options->get()), true);
-        if (!isset($data[$method]['code']) || $data[$method]['code'] !== '10000') {
+        if (!isset($data[$method]["code"]) || $data[$method]["code"] !== "10000") {
             throw new Exception(
                 "Error: " .
-                (empty($data[$method]['code']) ? '' : "{$data[$method]['msg']} [{$data[$method]['code']}]\r\n") .
-                (empty($data[$method]['sub_code']) ? '' : "{$data[$method]['sub_msg']} [{$data[$method]['sub_code']}]\r\n"),
-                $data[$method]['code'], $data
+                (empty($data[$method]["code"]) ? "" : "{$data[$method]["msg"]} [{$data[$method]["code"]}]\r\n") .
+                (empty($data[$method]["sub_code"]) ? "" : "{$data[$method]["sub_msg"]} [{$data[$method]["sub_code"]}]\r\n"),
+                $data[$method]["code"], $data
             );
         }
         return $data[$method];
         // 去除返回结果签名检查
-        // return $this->verify($data[$method], $data['sign']);
+        // return $this->verify($data[$method], $data["sign"]);
     }
 
     /**
@@ -309,13 +309,13 @@ abstract class BasicAliPay
      */
     protected function buildPayHtml()
     {
-        $html = "<form id='alipaysubmit' name='alipaysubmit' action='{$this->gateway}' method='post'>";
+        $html = "<form id="alipaysubmit" name="alipaysubmit" action="{$this->gateway}" method="post">";
         foreach ($this->options->get() as $key => $value) {
-            $value = str_replace("'", '&apos;', $value);
-            $html  .= "<input type='hidden' name='{$key}' value='{$value}'/>";
+            $value = str_replace(""", "&apos;", $value);
+            $html  .= "<input type="hidden" name="{$key}" value="{$value}"/>";
         }
-        $html .= "<input type='submit' value='ok' style='display:none;'></form>";
-        return "{$html}<script>document.forms['alipaysubmit'].submit();</script>";
+        $html .= "<input type="submit" value="ok" style="display:none;"></form>";
+        return "{$html}<script>document.forms["alipaysubmit"].submit();</script>";
     }
 
     /**
@@ -329,7 +329,7 @@ abstract class BasicAliPay
     {
         // if (file_exists($sign)) $sign = file_get_contents($sign);
         $ssl = openssl_x509_parse($sign);
-        return md5($this->_arr2str(array_reverse($ssl['issuer'])) . $ssl['serialNumber']);
+        return md5($this->_arr2str(array_reverse($ssl["issuer"])) . $ssl["serialNumber"]);
     }
 
     /**
@@ -346,14 +346,14 @@ abstract class BasicAliPay
         $array = explode("-----END CERTIFICATE-----", $sign);
         for ($i = 0; $i < count($array) - 1; $i++) {
             $ssl[$i] = openssl_x509_parse($array[$i] . "-----END CERTIFICATE-----");
-            if (strpos($ssl[$i]['serialNumber'], '0x') === 0) {
-                $ssl[$i]['serialNumber'] = $this->_hex2dec($ssl[$i]['serialNumber']);
+            if (strpos($ssl[$i]["serialNumber"], "0x") === 0) {
+                $ssl[$i]["serialNumber"] = $this->_hex2dec($ssl[$i]["serialNumber"]);
             }
-            if ($ssl[$i]['signatureTypeLN'] == "sha1WithRSAEncryption" || $ssl[$i]['signatureTypeLN'] == "sha256WithRSAEncryption") {
+            if ($ssl[$i]["signatureTypeLN"] == "sha1WithRSAEncryption" || $ssl[$i]["signatureTypeLN"] == "sha256WithRSAEncryption") {
                 if ($sn == null) {
-                    $sn = md5($this->_arr2str(array_reverse($ssl[$i]['issuer'])) . $ssl[$i]['serialNumber']);
+                    $sn = md5($this->_arr2str(array_reverse($ssl[$i]["issuer"])) . $ssl[$i]["serialNumber"]);
                 } else {
-                    $sn = $sn . "_" . md5($this->_arr2str(array_reverse($ssl[$i]['issuer'])) . $ssl[$i]['serialNumber']);
+                    $sn = $sn . "_" . md5($this->_arr2str(array_reverse($ssl[$i]["issuer"])) . $ssl[$i]["serialNumber"]);
                 }
             }
         }
@@ -372,10 +372,10 @@ abstract class BasicAliPay
         $string = [];
         if ($array && is_array($array)) {
             foreach ($array as $key => $value) {
-                $string[] = $key . '=' . $value;
+                $string[] = $key . "=" . $value;
             }
         }
-        return implode(',', $string);
+        return implode(",", $string);
     }
 
 
@@ -390,7 +390,7 @@ abstract class BasicAliPay
     {
         list($dec, $len) = [0, strlen($hex)];
         for ($i = 1; $i <= $len; $i++) {
-            $dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])), bcpow('16', strval($len - $i))));
+            $dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])), bcpow("16", strval($len - $i))));
         }
         return $dec;
     }

@@ -22,7 +22,7 @@ class User extends WeChatBase
      */
     public function updateMark($openid, $remark)
     {
-        return $this->post('cgi-bin/user/info/updateremark', ['openid' => $openid, 'remark' => $remark]);
+        return $this->post("cgi-bin/user/info/updateremark", ["openid" => $openid, "remark" => $remark]);
     }
 
     /**
@@ -34,11 +34,11 @@ class User extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function getUserInfo($openid, $lang = 'zh_CN')
+    public function getUserInfo($openid, $lang = "zh_CN")
     {
-        $this->get('cgi-bin/user/info', [], [
-            'openid' => $openid,
-            'lang'   => $lang,
+        $this->get("cgi-bin/user/info", [], [
+            "openid" => $openid,
+            "lang"   => $lang,
         ]);
     }
 
@@ -51,13 +51,13 @@ class User extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function getBatchUserInfo(array $openids, $lang = 'zh_CN')
+    public function getBatchUserInfo(array $openids, $lang = "zh_CN")
     {
-        $data = ['user_list' => []];
+        $data = ["user_list" => []];
         foreach ($openids as $openid) {
-            $data['user_list'][] = ['openid' => $openid, 'lang' => $lang];
+            $data["user_list"][] = ["openid" => $openid, "lang" => $lang];
         }
-        return $this->post('cgi-bin/user/info/batchget', $data);
+        return $this->post("cgi-bin/user/info/batchget", $data);
     }
 
     /**
@@ -68,10 +68,10 @@ class User extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function getUserList($next_openid = '')
+    public function getUserList($next_openid = "")
     {
-        return $this->get('cgi-bin/user/get', [], [
-            'next_openid' => $next_openid,
+        return $this->get("cgi-bin/user/get", [], [
+            "next_openid" => $next_openid,
         ]);
     }
 
@@ -84,9 +84,9 @@ class User extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function getUserListByTag($tagid, $next_openid = '')
+    public function getUserListByTag($tagid, $next_openid = "")
     {
-        return $this->post('cgi-bin/user/tag/get', ['tagid' => $tagid, 'next_openid' => $next_openid]);
+        return $this->post("cgi-bin/user/tag/get", ["tagid" => $tagid, "next_openid" => $next_openid]);
     }
 
     /**
@@ -97,9 +97,9 @@ class User extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function getBlackList($begin_openid = '')
+    public function getBlackList($begin_openid = "")
     {
-        return $this->post('cgi-bin/tags/members/getblacklist', ['begin_openid' => $begin_openid]);
+        return $this->post("cgi-bin/tags/members/getblacklist", ["begin_openid" => $begin_openid]);
     }
 
     /**
@@ -112,7 +112,7 @@ class User extends WeChatBase
      */
     public function batchBlackList(array $openids)
     {
-        return $this->post('cgi-bin/tags/members/batchblacklist', ['openid_list' => $openids]);
+        return $this->post("cgi-bin/tags/members/batchblacklist", ["openid_list" => $openids]);
     }
 
     /**
@@ -125,7 +125,7 @@ class User extends WeChatBase
      */
     public function batchUnblackList(array $openids)
     {
-        return $this->post('cgi-bin/tags/members/batchunblacklist', ['openid_list' => $openids]);
+        return $this->post("cgi-bin/tags/members/batchunblacklist", ["openid_list" => $openids]);
     }
 
 }

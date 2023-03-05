@@ -25,7 +25,7 @@ class Security extends WeChatBase
      */
     public function imgSecCheck($media)
     {
-        return $this->post('wxa/img_sec_check', ['media' => $media]);
+        return $this->post("wxa/img_sec_check", ["media" => $media]);
     }
 
     /**
@@ -39,7 +39,7 @@ class Security extends WeChatBase
      */
     public function mediaCheckAsync($media_url, $media_type)
     {
-        return $this->post('wxa/media_check_async', ['media_url' => $media_url, 'media_type' => $media_type]);
+        return $this->post("wxa/media_check_async", ["media_url" => $media_url, "media_type" => $media_type]);
     }
 
     /**
@@ -52,6 +52,6 @@ class Security extends WeChatBase
      */
     public function msgSecCheck($content)
     {
-        return $this->post('wxa/msg_sec_check', ['content' => $content]);
+        return $this->post("wxa/msg_sec_check", ["content" => $content]);
     }
 }

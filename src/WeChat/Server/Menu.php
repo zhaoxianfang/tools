@@ -22,7 +22,7 @@ class Menu extends WeChatBase
      */
     public function getMenu()
     {
-        return $this->get('cgi-bin/menu/get');
+        return $this->get("cgi-bin/menu/get");
     }
 
     /**
@@ -33,7 +33,7 @@ class Menu extends WeChatBase
      */
     public function deleteMenu()
     {
-        return $this->get('cgi-bin/menu/delete');
+        return $this->get("cgi-bin/menu/delete");
     }
 
     /**
@@ -46,7 +46,7 @@ class Menu extends WeChatBase
      */
     public function createMenu(array $data)
     {
-        return $this->post('cgi-bin/menu/create', $data);
+        return $this->post("cgi-bin/menu/create", $data);
     }
 
     /**
@@ -59,7 +59,7 @@ class Menu extends WeChatBase
      */
     public function addConditional(array $data)
     {
-        return $this->post('cgi-bin/menu/addconditional', $data);
+        return $this->post("cgi-bin/menu/addconditional", $data);
     }
 
     /**
@@ -72,7 +72,7 @@ class Menu extends WeChatBase
      */
     public function delConditional($menuid)
     {
-        return $this->post('cgi-bin/menu/delconditional', ['menuid' => $menuid]);
+        return $this->post("cgi-bin/menu/delconditional", ["menuid" => $menuid]);
     }
 
     /**
@@ -85,6 +85,6 @@ class Menu extends WeChatBase
      */
     public function tryConditional($openid)
     {
-        return $this->post('cgi-bin/menu/trymatch', ['user_id' => $openid]);
+        return $this->post("cgi-bin/menu/trymatch", ["user_id" => $openid]);
     }
 }

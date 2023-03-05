@@ -7,7 +7,7 @@ namespace zxf\WeChat\OfficialAccount\Material;
  */
 class TempFiles extends MaterialBase
 {
-    protected $uploadType = 'media';
+    protected $uploadType = "media";
 
     /**
      * 上传图片
@@ -18,10 +18,10 @@ class TempFiles extends MaterialBase
      */
     public function uploadImage(string $realPath)
     {
-        $result = $this->uploadFile($realPath, 'image');
+        $result = $this->uploadFile($realPath, "image");
 
-        if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
+        if (isset($result["errcode"]) && $result["errcode"] != 0) {
+            throw new \Exception($this->getMessage($result["errcode"]), $result["errcode"]);
         } else {
             return $result; // 包含media_id 和 url
         }
@@ -29,10 +29,10 @@ class TempFiles extends MaterialBase
 
     public function uploadVoice(string $realPath)
     {
-        $result = $this->uploadFile($realPath, 'voice');
+        $result = $this->uploadFile($realPath, "voice");
 
-        if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
+        if (isset($result["errcode"]) && $result["errcode"] != 0) {
+            throw new \Exception($this->getMessage($result["errcode"]), $result["errcode"]);
         } else {
             return $result;
         }
@@ -41,10 +41,10 @@ class TempFiles extends MaterialBase
     public function uploadThumb(string $realPath)
     {
 
-        $result = $this->uploadFile($realPath, 'thumb');
+        $result = $this->uploadFile($realPath, "thumb");
 
-        if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
+        if (isset($result["errcode"]) && $result["errcode"] != 0) {
+            throw new \Exception($this->getMessage($result["errcode"]), $result["errcode"]);
         } else {
             return $result;
         }
@@ -57,13 +57,13 @@ class TempFiles extends MaterialBase
      *
      * @return string
      */
-    public function uploadVideo(string $realPath, string $videoTitle = '', string $videoDescription = '')
+    public function uploadVideo(string $realPath, string $videoTitle = "", string $videoDescription = "")
     {
 
-        $result = $this->uploadFile($realPath, 'video', $videoTitle, $videoDescription);
+        $result = $this->uploadFile($realPath, "video", $videoTitle, $videoDescription);
 
-        if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
+        if (isset($result["errcode"]) && $result["errcode"] != 0) {
+            throw new \Exception($this->getMessage($result["errcode"]), $result["errcode"]);
         } else {
             return $result; // 包含media_id
         }
@@ -79,27 +79,27 @@ class TempFiles extends MaterialBase
      * @return array|bool|mixed|string
      * @throws \Illuminate\Http\Client\RequestException
      */
-    public function getList(string $type = 'image', int $page = 1, int $limit = 10)
+    public function getList(string $type = "image", int $page = 1, int $limit = 10)
     {
-        throw new \Exception('临时素材暂不支持此功能');
+        throw new \Exception("临时素材暂不支持此功能");
     }
 
-    public function deleteFile(string $mediaId = '')
+    public function deleteFile(string $mediaId = "")
     {
-        throw new \Exception('临时素材暂不支持此功能');
+        throw new \Exception("临时素材暂不支持此功能");
     }
 
     public function getDetail($mediaId)
     {
         $result = $this->detail($mediaId);
 
-        if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
+        if (isset($result["errcode"]) && $result["errcode"] != 0) {
+            throw new \Exception($this->getMessage($result["errcode"]), $result["errcode"]);
         } else {
             return [
-                'code'    => 0,
-                'message' => '操作成功',
-                'data'    => $result,
+                "code"    => 0,
+                "message" => "操作成功",
+                "data"    => $result,
             ];
         }
     }

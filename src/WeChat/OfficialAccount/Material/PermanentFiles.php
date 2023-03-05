@@ -7,7 +7,7 @@ namespace zxf\WeChat\OfficialAccount\Material;
  */
 class PermanentFiles extends MaterialBase
 {
-    protected $uploadType = 'material';
+    protected $uploadType = "material";
 
     /**
      * 上传图片
@@ -18,10 +18,10 @@ class PermanentFiles extends MaterialBase
      */
     public function uploadImage(string $realPath)
     {
-        $result = $this->uploadFile($realPath, 'image');
+        $result = $this->uploadFile($realPath, "image");
 
-        if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
+        if (isset($result["errcode"]) && $result["errcode"] != 0) {
+            throw new \Exception($this->getMessage($result["errcode"]), $result["errcode"]);
         } else {
             return $result; // 包含media_id 和 url
         }
@@ -30,10 +30,10 @@ class PermanentFiles extends MaterialBase
     public function uploadVoice(string $realPath)
     {
 
-        $result = $this->uploadFile($realPath, 'voice');
+        $result = $this->uploadFile($realPath, "voice");
 
-        if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
+        if (isset($result["errcode"]) && $result["errcode"] != 0) {
+            throw new \Exception($this->getMessage($result["errcode"]), $result["errcode"]);
         } else {
             return $result;
         }
@@ -41,10 +41,10 @@ class PermanentFiles extends MaterialBase
 
     public function uploadThumb(string $realPath)
     {
-        $result = $this->uploadFile($realPath, 'thumb');
+        $result = $this->uploadFile($realPath, "thumb");
 
-        if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
+        if (isset($result["errcode"]) && $result["errcode"] != 0) {
+            throw new \Exception($this->getMessage($result["errcode"]), $result["errcode"]);
         } else {
             return $result;
         }
@@ -57,12 +57,12 @@ class PermanentFiles extends MaterialBase
      *
      * @return string
      */
-    public function uploadVideo(string $realPath, string $videoTitle = '', string $videoDescription = '')
+    public function uploadVideo(string $realPath, string $videoTitle = "", string $videoDescription = "")
     {
-        $result = $this->uploadFile($realPath, 'video', $videoTitle, $videoDescription);
+        $result = $this->uploadFile($realPath, "video", $videoTitle, $videoDescription);
 
-        if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
+        if (isset($result["errcode"]) && $result["errcode"] != 0) {
+            throw new \Exception($this->getMessage($result["errcode"]), $result["errcode"]);
         } else {
             return $result; // 包含media_id
         }
@@ -78,37 +78,37 @@ class PermanentFiles extends MaterialBase
      * @return array|bool|mixed|string
      * @throws \Illuminate\Http\Client\RequestException
      */
-    public function getList(string $type = 'image', int $page = 1, int $limit = 10)
+    public function getList(string $type = "image", int $page = 1, int $limit = 10)
     {
         $offset = max($page - 1, 0) * $limit;
 
         $result = $this->list($type, $offset, $limit);
 
 
-        if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
+        if (isset($result["errcode"]) && $result["errcode"] != 0) {
+            throw new \Exception($this->getMessage($result["errcode"]), $result["errcode"]);
         } else {
             return [
-                'code'    => 0,
-                'message' => '成功',
-                'data'    => [
-                    'total' => $result['total_count'],
-                    'list'  => $result['item'],
+                "code"    => 0,
+                "message" => "成功",
+                "data"    => [
+                    "total" => $result["total_count"],
+                    "list"  => $result["item"],
                 ],
             ];
         }
     }
 
-    public function deleteFile(string $mediaId = '')
+    public function deleteFile(string $mediaId = "")
     {
         $result = $this->delete($mediaId);
 
-        if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
+        if (isset($result["errcode"]) && $result["errcode"] != 0) {
+            throw new \Exception($this->getMessage($result["errcode"]), $result["errcode"]);
         } else {
             return [
-                'code'    => 0,
-                'message' => '操作成功',
+                "code"    => 0,
+                "message" => "操作成功",
             ];
         }
     }
@@ -117,13 +117,13 @@ class PermanentFiles extends MaterialBase
     {
         $result = $this->detail($mediaId);
 
-        if (isset($result['errcode']) && $result['errcode'] != 0) {
-            throw new \Exception($this->getMessage($result['errcode']), $result['errcode']);
+        if (isset($result["errcode"]) && $result["errcode"] != 0) {
+            throw new \Exception($this->getMessage($result["errcode"]), $result["errcode"]);
         } else {
             return [
-                'code'    => 0,
-                'message' => '操作成功',
-                'data'    => $result,
+                "code"    => 0,
+                "message" => "操作成功",
+                "data"    => $result,
             ];
         }
     }

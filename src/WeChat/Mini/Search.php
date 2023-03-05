@@ -24,6 +24,6 @@ class Search extends WeChatBase
      */
     public function submitPages($pages)
     {
-        return $this->post('cgi-bin/guide/getguideacct', ['pages' => $pages]);
+        return $this->post("cgi-bin/guide/getguideacct", ["pages" => $pages]);
     }
 }

@@ -23,7 +23,7 @@ class Template extends WeChatBase
      */
     public function getTemplateLibraryList()
     {
-        return $this->post('cgi-bin/wxopen/template/library/list', ['offset' => '0', 'count' => '20']);
+        return $this->post("cgi-bin/wxopen/template/library/list", ["offset" => "0", "count" => "20"]);
     }
 
     /**
@@ -36,7 +36,7 @@ class Template extends WeChatBase
      */
     public function getTemplateLibrary($template_id)
     {
-        return $this->post('cgi-bin/wxopen/template/library/get', ['id' => $template_id]);
+        return $this->post("cgi-bin/wxopen/template/library/get", ["id" => $template_id]);
     }
 
     /**
@@ -50,7 +50,7 @@ class Template extends WeChatBase
      */
     public function addTemplate($template_id, array $keyword_id_list)
     {
-        return $this->post('cgi-bin/wxopen/template/add', ['id' => $template_id, 'keyword_id_list' => $keyword_id_list]);
+        return $this->post("cgi-bin/wxopen/template/add", ["id" => $template_id, "keyword_id_list" => $keyword_id_list]);
     }
 
     /**
@@ -61,7 +61,7 @@ class Template extends WeChatBase
      */
     public function getTemplateList()
     {
-        return $this->post('cgi-bin/wxopen/template/list', ['offset' => '0', 'count' => '20']);
+        return $this->post("cgi-bin/wxopen/template/list", ["offset" => "0", "count" => "20"]);
     }
 
     /**
@@ -74,7 +74,7 @@ class Template extends WeChatBase
      */
     public function delTemplate($template_id)
     {
-        return $this->post('cgi-bin/wxopen/template/del', ['template_id' => $template_id]);
+        return $this->post("cgi-bin/wxopen/template/del", ["template_id" => $template_id]);
     }
 
     /**
@@ -87,6 +87,6 @@ class Template extends WeChatBase
      */
     public function send(array $data)
     {
-        return $this->post('cgi-bin/message/wxopen/template/send', $data);
+        return $this->post("cgi-bin/message/wxopen/template/send", $data);
     }
 }

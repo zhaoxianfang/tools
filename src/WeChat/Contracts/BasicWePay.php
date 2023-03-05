@@ -32,24 +32,24 @@ class BasicWePay extends WeChatBase
     {
         parent::__construct($options);
 
-        if (empty($options['mch_id'])) {
+        if (empty($options["mch_id"])) {
             throw new Exception("Missing Config -- [mch_id]");
         }
-        if (empty($options['mch_key'])) {
+        if (empty($options["mch_key"])) {
             throw new Exception("Missing Config -- [mch_key]");
         }
         // 商户基础参数
         $this->params = new DataArray([
-            'appid'     => $this->config['appid'],
-            'mch_id'    => $this->config['mch_id'],
-            'nonce_str' => Random::alnum(32),
+            "appid"     => $this->config["appid"],
+            "mch_id"    => $this->config["mch_id"],
+            "nonce_str" => Random::alnum(32),
         ]);
         // 商户参数支持
-        if ($this->config['sub_appid']) {
-            $this->params->set('sub_appid', $this->config['sub_appid']);
+        if ($this->config["sub_appid"]) {
+            $this->params->set("sub_appid", $this->config["sub_appid"]);
         }
-        if ($this->config['sub_mch_id']) {
-            $this->params->set('sub_mch_id', $this->config['sub_mch_id']);
+        if ($this->config["sub_mch_id"]) {
+            $this->params->set("sub_mch_id", $this->config["sub_mch_id"]);
         }
     }
 
@@ -62,10 +62,10 @@ class BasicWePay extends WeChatBase
     public function getNotify()
     {
         $data = $this->request->all();
-        if (isset($data['sign']) && $this->getPaySign($data) === $data['sign']) {
+        if (isset($data["sign"]) && $this->getPaySign($data) === $data["sign"]) {
             return $data;
         }
-        throw new Exception('Invalid Notify.', '0');
+        throw new Exception("Invalid Notify.", "0");
     }
 
     /**
@@ -75,7 +75,7 @@ class BasicWePay extends WeChatBase
      */
     public function getNotifySuccessReply()
     {
-        return Xml::array2xml(['return_code' => 'SUCCESS', 'return_msg' => 'OK']);
+        return Xml::array2xml(["return_code" => "SUCCESS", "return_msg" => "OK"]);
     }
 
     /**
@@ -87,23 +87,23 @@ class BasicWePay extends WeChatBase
      *
      * @return string
      */
-    public function getPaySign(array $data, $signType = 'MD5', $buff = '')
+    public function getPaySign(array $data, $signType = "MD5", $buff = "")
     {
         ksort($data);
-        if (isset($data['sign'])) {
-            unset($data['sign']);
+        if (isset($data["sign"])) {
+            unset($data["sign"]);
         }
         foreach ($data as $k => $v) {
-            if ('' === $v || null === $v) {
+            if ("" === $v || null === $v) {
                 continue;
             }
             $buff .= "{$k}={$v}&";
         }
-        $buff .= ("key=" . $this->config['mch_key']);
-        if (strtoupper($signType) === 'MD5') {
+        $buff .= ("key=" . $this->config["mch_key"]);
+        if (strtoupper($signType) === "MD5") {
             return strtoupper(md5($buff));
         }
-        return strtoupper(hash_hmac('SHA256', $buff, $this->config['mch_key']));
+        return strtoupper(hash_hmac("SHA256", $buff, $this->config["mch_key"]));
     }
 
     /**
@@ -116,7 +116,7 @@ class BasicWePay extends WeChatBase
      */
     public function shortUrl($longUrl)
     {
-        return $this->enableToken(false)->post("tools/shorturl", ['long_url' => $longUrl]);
+        return $this->enableToken(false)->post("tools/shorturl", ["long_url" => $longUrl]);
     }
 
     /**
@@ -149,40 +149,40 @@ class BasicWePay extends WeChatBase
      * @return array
      * @throws Exception
      */
-    protected function callPostApi($url, array $data, $isCert = false, $signType = 'HMAC-SHA256', $needSignType = true, $needNonceStr = true)
+    protected function callPostApi($url, array $data, $isCert = false, $signType = "HMAC-SHA256", $needSignType = true, $needNonceStr = true)
     {
         $option = [];
         if ($isCert) {
-            $option['ssl_p12'] = $this->config['ssl_p12'];
-            $option['ssl_cer'] = $this->config['ssl_cer'];
-            $option['ssl_key'] = $this->config['ssl_key'];
-            if (is_string($option['ssl_p12']) && file_exists($option['ssl_p12'])) {
-                $content = file_get_contents($option['ssl_p12']);
-                if (openssl_pkcs12_read($content, $certs, $this->config['mch_id'])) {
-                    $option['ssl_key'] = $this->cache->pushFile(md5($certs['pkey']) . '.pem', $certs['pkey']);
-                    $option['ssl_cer'] = $this->cache->pushFile(md5($certs['cert']) . '.pem', $certs['cert']);
+            $option["ssl_p12"] = $this->config["ssl_p12"];
+            $option["ssl_cer"] = $this->config["ssl_cer"];
+            $option["ssl_key"] = $this->config["ssl_key"];
+            if (is_string($option["ssl_p12"]) && file_exists($option["ssl_p12"])) {
+                $content = file_get_contents($option["ssl_p12"]);
+                if (openssl_pkcs12_read($content, $certs, $this->config["mch_id"])) {
+                    $option["ssl_key"] = $this->cache->pushFile(md5($certs["pkey"]) . ".pem", $certs["pkey"]);
+                    $option["ssl_cer"] = $this->cache->pushFile(md5($certs["cert"]) . ".pem", $certs["cert"]);
                 } else {
                     throw new Exception("P12 certificate does not match MCH_ID --- ssl_p12");
                 }
             }
-            if (empty($option['ssl_cer']) || !file_exists($option['ssl_cer'])) {
-                throw new Exception("Missing Config -- ssl_cer", '0');
+            if (empty($option["ssl_cer"]) || !file_exists($option["ssl_cer"])) {
+                throw new Exception("Missing Config -- ssl_cer", "0");
             }
-            if (empty($option['ssl_key']) || !file_exists($option['ssl_key'])) {
-                throw new Exception("Missing Config -- ssl_key", '0');
+            if (empty($option["ssl_key"]) || !file_exists($option["ssl_key"])) {
+                throw new Exception("Missing Config -- ssl_key", "0");
             }
         }
         $params = $this->params->merge($data);
         if (!$needNonceStr) {
-            unset($params['nonce_str']);
+            unset($params["nonce_str"]);
         }
         if ($needSignType) {
-            $params['sign_type'] = strtoupper($signType);
+            $params["sign_type"] = strtoupper($signType);
         }
-        $params['sign'] = $this->getPaySign($params, $signType);
+        $params["sign"] = $this->getPaySign($params, $signType);
         $result         = Xml::array2xml($this->payPost($url, Xml::array2xml($params), $option));
-        if ($result['return_code'] !== 'SUCCESS') {
-            throw new Exception($result['return_msg'], '0');
+        if ($result["return_code"] !== "SUCCESS") {
+            throw new Exception($result["return_msg"], "0");
         }
         return $result;
     }
@@ -200,34 +200,34 @@ class BasicWePay extends WeChatBase
     public function payPost($method, $url, $options = [])
     {
         // GET参数设置
-        if (!empty($options['query'])) {
-            $url .= (stripos($url, '?') !== false ? '&' : '?') . http_build_query($options['query']);
+        if (!empty($options["query"])) {
+            $url .= (stripos($url, "?") !== false ? "&" : "?") . http_build_query($options["query"]);
         }
 
         return $this->http->inject(function ($http) use ($method, $options) {
             // 证书文件设置
-            if (!empty($options['ssl_cer'])) {
-                if (file_exists($options['ssl_cer'])) {
-                    curl_setopt($http->ch, CURLOPT_SSLCERTTYPE, 'PEM');
-                    curl_setopt($http->ch, CURLOPT_SSLCERT, $options['ssl_cer']);
+            if (!empty($options["ssl_cer"])) {
+                if (file_exists($options["ssl_cer"])) {
+                    curl_setopt($http->ch, CURLOPT_SSLCERTTYPE, "PEM");
+                    curl_setopt($http->ch, CURLOPT_SSLCERT, $options["ssl_cer"]);
                 } else {
                     throw new Exception("Certificate files that do not exist. --- [ssl_cer]");
                 }
             }
             // 证书文件设置
-            if (!empty($options['ssl_key'])) {
-                if (file_exists($options['ssl_key'])) {
-                    curl_setopt($http->ch, CURLOPT_SSLKEYTYPE, 'PEM');
-                    curl_setopt($http->ch, CURLOPT_SSLKEY, $options['ssl_key']);
+            if (!empty($options["ssl_key"])) {
+                if (file_exists($options["ssl_key"])) {
+                    curl_setopt($http->ch, CURLOPT_SSLKEYTYPE, "PEM");
+                    curl_setopt($http->ch, CURLOPT_SSLKEY, $options["ssl_key"]);
                 } else {
                     throw new Exception("Certificate files that do not exist. --- [ssl_key]");
                 }
             }
         })
             ->showResponseHeader(false)
-            ->setParams($options['data'])
+            ->setParams($options["data"])
             ->setTimeout(60)
-            ->setHeader($options['headers'])
+            ->setHeader($options["headers"])
             ->post($url);
 
     }

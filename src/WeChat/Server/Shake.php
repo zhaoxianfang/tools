@@ -51,9 +51,9 @@ class Shake extends WeChatBase
      */
     public function createApply($quantity, $apply_reason, $comment = null, $poi_id = null)
     {
-        $data = ['quantity' => $quantity, 'apply_reason' => $apply_reason];
-        is_null($poi_id) || $data['poi_id'] = $poi_id;
-        is_null($comment) || $data['comment'] = $comment;
+        $data = ["quantity" => $quantity, "apply_reason" => $apply_reason];
+        is_null($poi_id) || $data["poi_id"] = $poi_id;
+        is_null($comment) || $data["comment"] = $comment;
 
         return $this->post("shakearound/device/applyid", $data);
     }
@@ -68,7 +68,7 @@ class Shake extends WeChatBase
      */
     public function getApplyStatus($applyId)
     {
-        return $this->post("shakearound/device/applyid", ['apply_id' => $applyId]);
+        return $this->post("shakearound/device/applyid", ["apply_id" => $applyId]);
     }
 
     /**
@@ -159,7 +159,7 @@ class Shake extends WeChatBase
      */
     public function deletePage($page_id)
     {
-        return $this->post("shakearound/page/delete", ['page_id' => $page_id]);
+        return $this->post("shakearound/page/delete", ["page_id" => $page_id]);
     }
 
     /**
@@ -171,9 +171,9 @@ class Shake extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function uploadIcon($filename, $type = 'icon')
+    public function uploadIcon($filename, $type = "icon")
     {
-        return $this->customUpload("shakearound/material/add", $filename, ['type' => $type]);
+        return $this->customUpload("shakearound/material/add", $filename, ["type" => $type]);
     }
 
     /**
@@ -226,7 +226,7 @@ class Shake extends WeChatBase
      */
     public function totalDeviceList($date, $page_index = 1)
     {
-        return $this->post("shakearound/statistics/devicelist", ['date' => $date, 'page_index' => $page_index]);
+        return $this->post("shakearound/statistics/devicelist", ["date" => $date, "page_index" => $page_index]);
     }
 
     /**
@@ -241,7 +241,7 @@ class Shake extends WeChatBase
      */
     public function totalPage($page_id, $begin_date, $end_date)
     {
-        return $this->post("shakearound/statistics/page", ['page_id' => $page_id, 'begin_date' => $begin_date, 'end_date' => $end_date]);
+        return $this->post("shakearound/statistics/page", ["page_id" => $page_id, "begin_date" => $begin_date, "end_date" => $end_date]);
     }
 
     /**
@@ -255,7 +255,7 @@ class Shake extends WeChatBase
      */
     public function updateGroup($group_id, $group_name)
     {
-        return $this->post("shakearound/device/group/update", ['group_id' => $group_id, 'group_name' => $group_name]);
+        return $this->post("shakearound/device/group/update", ["group_id" => $group_id, "group_name" => $group_name]);
     }
 
     /**
@@ -268,7 +268,7 @@ class Shake extends WeChatBase
      */
     public function deleteGroup($group_id)
     {
-        return $this->post("shakearound/device/group/delete", ['group_id' => $group_id]);
+        return $this->post("shakearound/device/group/delete", ["group_id" => $group_id]);
     }
 
     /**
@@ -282,7 +282,7 @@ class Shake extends WeChatBase
      */
     public function getGroupList($begin = 0, $count = 10)
     {
-        return $this->post("shakearound/device/group/getlist", ['begin' => $begin, 'count' => $count]);
+        return $this->post("shakearound/device/group/getlist", ["begin" => $begin, "count" => $count]);
     }
 
 
@@ -298,7 +298,7 @@ class Shake extends WeChatBase
      */
     public function getGroupDetail($group_id, $begin = 0, $count = 100)
     {
-        return $this->post("shakearound/device/group/getdetail", ['group_id' => $group_id, 'begin' => $begin, 'count' => $count]);
+        return $this->post("shakearound/device/group/getdetail", ["group_id" => $group_id, "begin" => $begin, "count" => $count]);
     }
 
     /**

@@ -22,13 +22,13 @@ class Bill extends BasicWePay
      */
     public function download(array $options, $outType = null)
     {
-        $this->params->set('sign_type', 'MD5');
+        $this->params->set("sign_type", "MD5");
         $params = $this->params->merge($options);
-        $params['sign'] = $this->getPaySign($params, 'MD5');
-        $result = Tools::post('https://api.mch.weixin.qq.com/pay/downloadbill', Tools::arr2xml($params));
+        $params["sign"] = $this->getPaySign($params, "MD5");
+        $result = Tools::post("https://api.mch.weixin.qq.com/pay/downloadbill", Tools::arr2xml($params));
         if (is_array($jsonData = Tools::xml3arr($result))) {
-            if ($jsonData['return_code'] !== 'SUCCESS') {
-                throw new Exception($jsonData['return_msg'], '0');
+            if ($jsonData["return_code"] !== "SUCCESS") {
+                throw new Exception($jsonData["return_msg"], "0");
             }
         }
         return is_null($outType) ? $result : $outType($result);
@@ -43,7 +43,7 @@ class Bill extends BasicWePay
      */
     public function comment(array $options)
     {
-        $url = 'https://api.mch.weixin.qq.com/billcommentsp/batchquerycomment';
+        $url = "https://api.mch.weixin.qq.com/billcommentsp/batchquerycomment";
         return $this->callPostApi($url, $options, true);
     }
 }

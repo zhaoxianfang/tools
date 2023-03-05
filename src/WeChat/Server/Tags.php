@@ -33,7 +33,7 @@ class Tags extends WeChatBase
      */
     public function createTags($name)
     {
-        return $this->post("cgi-bin/tags/create", ['tag' => ['name' => $name]]);
+        return $this->post("cgi-bin/tags/create", ["tag" => ["name" => $name]]);
     }
 
     /**
@@ -47,7 +47,7 @@ class Tags extends WeChatBase
      */
     public function updateTags($id, $name)
     {
-        return $this->post("cgi-bin/tags/update", ['tag' => ['name' => $name, 'id' => $id]]);
+        return $this->post("cgi-bin/tags/update", ["tag" => ["name" => $name, "id" => $id]]);
     }
 
     /**
@@ -60,7 +60,7 @@ class Tags extends WeChatBase
      */
     public function deleteTags($tagId)
     {
-        return $this->post("cgi-bin/tags/delete", ['tag' => ['id' => $tagId]]);
+        return $this->post("cgi-bin/tags/delete", ["tag" => ["id" => $tagId]]);
     }
 
     /**
@@ -74,7 +74,7 @@ class Tags extends WeChatBase
      */
     public function batchTagging(array $openids, $tagId)
     {
-        return $this->post("cgi-bin/tags/members/batchtagging", ['openid_list' => $openids, 'tagid' => $tagId]);
+        return $this->post("cgi-bin/tags/members/batchtagging", ["openid_list" => $openids, "tagid" => $tagId]);
     }
 
     /**
@@ -88,7 +88,7 @@ class Tags extends WeChatBase
      */
     public function batchUntagging(array $openids, $tagId)
     {
-        return $this->post("cgi-bin/tags/members/batchuntagging", ['openid_list' => $openids, 'tagid' => $tagId]);
+        return $this->post("cgi-bin/tags/members/batchuntagging", ["openid_list" => $openids, "tagid" => $tagId]);
     }
 
     /**
@@ -101,6 +101,6 @@ class Tags extends WeChatBase
      */
     public function getUserTagId($openid)
     {
-        return $this->post("cgi-bin/tags/getidlist", ['openid' => $openid]);
+        return $this->post("cgi-bin/tags/getidlist", ["openid" => $openid]);
     }
 }

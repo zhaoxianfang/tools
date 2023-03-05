@@ -10,7 +10,7 @@ use zxf\WeChat\WeChatBase;
 class MaterialBase extends WeChatBase
 {
     // 上传类型 material：永久; media: 临时
-    protected $uploadType = 'material';
+    protected $uploadType = "material";
 
     /**
      * 请求上传
@@ -25,40 +25,40 @@ class MaterialBase extends WeChatBase
      * @return array|bool|mixed|string
      * @throws \Illuminate\Http\Client\RequestException
      */
-    protected function uploadFile(string $filePath, string $type = 'image', string $videoTitle = '', string $videoDescription = '')
+    protected function uploadFile(string $filePath, string $type = "image", string $videoTitle = "", string $videoDescription = "")
     {
-        $mediaType = $this->uploadType == 'media' ? 20 : 21;
+        $mediaType = $this->uploadType == "media" ? 20 : 21;
         return $this->upload($mediaType, $filePath, $type, $videoTitle, $videoDescription);
     }
 
     // 获取素材列表
-    protected function list(string $type = 'image', int $offset = 0, int $count = 10)
+    protected function list(string $type = "image", int $offset = 0, int $count = 10)
     {
         $data = [
             "type"   => $type,
             "offset" => $offset,
             "count"  => $count,
         ];
-        return $this->post('cgi-bin/' . $this->uploadType . '/batchget_material', $data);// 成功时候返回数据 包含media_id 、url，失败时返回数据包含 errcode 和 errmsg
+        return $this->post("cgi-bin/" . $this->uploadType . "/batchget_material", $data);// 成功时候返回数据 包含media_id 、url，失败时返回数据包含 errcode 和 errmsg
     }
 
     // 删除素材
-    protected function delete(string $mediaId = '')
+    protected function delete(string $mediaId = "")
     {
         $data = [
             "media_id" => $mediaId,
         ];
-        return $this->post('cgi-bin/' . $this->uploadType . '/del_material', $data);
+        return $this->post("cgi-bin/" . $this->uploadType . "/del_material", $data);
     }
 
     // 获取素材内容
-    protected function detail(string $mediaId = '')
+    protected function detail(string $mediaId = "")
     {
         $data = [
             "media_id" => $mediaId,
         ];
-        $url  = $this->uploadType == 'material' ? 'material/get_material' : 'media/get';
-        return $this->post('cgi-bin/' . $url, $data);
+        $url  = $this->uploadType == "material" ? "material/get_material" : "media/get";
+        return $this->post("cgi-bin/" . $url, $data);
     }
 
 }

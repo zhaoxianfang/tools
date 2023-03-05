@@ -37,7 +37,7 @@ class Card extends WeChatBase
      */
     public function setPaycell($card_id, $is_open = true)
     {
-        return $this->post("card/paycell/set", ['card_id' => $card_id, 'is_open' => $is_open]);
+        return $this->post("card/paycell/set", ["card_id" => $card_id, "is_open" => $is_open]);
     }
 
     /**
@@ -51,7 +51,7 @@ class Card extends WeChatBase
      */
     public function setConsumeCell($card_id, $is_open = true)
     {
-        return $this->post("card/selfconsumecell/set", ['card_id' => $card_id, 'is_open' => $is_open]);
+        return $this->post("card/selfconsumecell/set", ["card_id" => $card_id, "is_open" => $is_open]);
     }
 
     /**
@@ -91,7 +91,7 @@ class Card extends WeChatBase
      */
     public function deposit($card_id, array $code)
     {
-        return $this->post("card/code/deposit", ['card_id' => $card_id, 'code' => $code]);
+        return $this->post("card/code/deposit", ["card_id" => $card_id, "code" => $code]);
     }
 
     /**
@@ -104,7 +104,7 @@ class Card extends WeChatBase
      */
     public function getDepositCount($card_id)
     {
-        return $this->post("card/code/getdepositcount", ['card_id' => $card_id]);
+        return $this->post("card/code/getdepositcount", ["card_id" => $card_id]);
     }
 
     /**
@@ -118,7 +118,7 @@ class Card extends WeChatBase
      */
     public function checkCode($card_id, array $code)
     {
-        return $this->post("card/code/checkcode", ['card_id' => $card_id, 'code' => $code]);
+        return $this->post("card/code/checkcode", ["card_id" => $card_id, "code" => $code]);
     }
 
     /**
@@ -131,7 +131,7 @@ class Card extends WeChatBase
      */
     public function getNewsHtml($card_id)
     {
-        return $this->post("card/mpnews/gethtml", ['card_id' => $card_id]);
+        return $this->post("card/mpnews/gethtml", ["card_id" => $card_id]);
     }
 
     /**
@@ -145,7 +145,7 @@ class Card extends WeChatBase
      */
     public function setTestWhiteList($openids = [], $usernames = [])
     {
-        return $this->post("card/testwhitelist/set", ['openid' => $openids, 'username' => $usernames]);
+        return $this->post("card/testwhitelist/set", ["openid" => $openids, "username" => $usernames]);
     }
 
     /**
@@ -160,9 +160,9 @@ class Card extends WeChatBase
      */
     public function getCode($code, $card_id = null, $check_consume = null)
     {
-        $data = ['code' => $code];
-        is_null($card_id) || $data['card_id'] = $card_id;
-        is_null($check_consume) || $data['check_consume'] = $check_consume;
+        $data = ["code" => $code];
+        is_null($card_id) || $data["card_id"] = $card_id;
+        is_null($check_consume) || $data["check_consume"] = $check_consume;
 
         return $this->post("card/code/get", $data);
     }
@@ -178,8 +178,8 @@ class Card extends WeChatBase
      */
     public function consume($code, $card_id = null)
     {
-        $data = ['code' => $code];
-        is_null($card_id) || $data['card_id'] = $card_id;
+        $data = ["code" => $code];
+        is_null($card_id) || $data["card_id"] = $card_id;
 
         return $this->post("card/code/consume", $data);
     }
@@ -194,7 +194,7 @@ class Card extends WeChatBase
      */
     public function decrypt($encrypt_code)
     {
-        return $this->post("card/code/decrypt", ['encrypt_code' => $encrypt_code]);
+        return $this->post("card/code/decrypt", ["encrypt_code" => $encrypt_code]);
     }
 
     /**
@@ -208,8 +208,8 @@ class Card extends WeChatBase
      */
     public function getCardList($openid, $card_id = null)
     {
-        $data = ['openid' => $openid];
-        is_null($card_id) || $data['card_id'] = $card_id;
+        $data = ["openid" => $openid];
+        is_null($card_id) || $data["card_id"] = $card_id;
 
         return $this->post("card/user/getcardlist", $data);
     }
@@ -224,7 +224,7 @@ class Card extends WeChatBase
      */
     public function getCard($card_id)
     {
-        return $this->post("card/get", ['card_id' => $card_id]);
+        return $this->post("card/get", ["card_id" => $card_id]);
     }
 
     /**
@@ -239,8 +239,8 @@ class Card extends WeChatBase
      */
     public function batchGet($offset, $count = 50, array $status_list = [])
     {
-        $data = ['offset' => $offset, 'count' => $count];
-        empty($status_list) || $data['status_list'] = $status_list;
+        $data = ["offset" => $offset, "count" => $count];
+        empty($status_list) || $data["status_list"] = $status_list;
         return $this->post("card/batchget", $data);
     }
 
@@ -255,7 +255,7 @@ class Card extends WeChatBase
      */
     public function updateCard($card_id, array $member_card)
     {
-        return $this->post("card/update", ['card_id' => $card_id, 'member_card' => $member_card]);
+        return $this->post("card/update", ["card_id" => $card_id, "member_card" => $member_card]);
     }
 
     /**
@@ -270,9 +270,9 @@ class Card extends WeChatBase
      */
     public function modifyStock($card_id, $increase_stock_value = null, $reduce_stock_value = null)
     {
-        $data = ['card_id' => $card_id];
-        is_null($increase_stock_value) || $data['increase_stock_value'] = $increase_stock_value;
-        is_null($reduce_stock_value) || $data['reduce_stock_value'] = $reduce_stock_value;
+        $data = ["card_id" => $card_id];
+        is_null($increase_stock_value) || $data["increase_stock_value"] = $increase_stock_value;
+        is_null($reduce_stock_value) || $data["reduce_stock_value"] = $reduce_stock_value;
 
         return $this->post("card/modifystock", $data);
     }
@@ -289,8 +289,8 @@ class Card extends WeChatBase
      */
     public function updateCode($code, $new_code, $card_id = null)
     {
-        $data = ['code' => $code, 'new_code' => $new_code];
-        is_null($card_id) || $data['card_id'] = $card_id;
+        $data = ["code" => $code, "new_code" => $new_code];
+        is_null($card_id) || $data["card_id"] = $card_id;
 
         return $this->post("card/code/update", $data);
     }
@@ -305,7 +305,7 @@ class Card extends WeChatBase
      */
     public function deleteCard($card_id)
     {
-        return $this->post("card/delete", ['card_id' => $card_id]);
+        return $this->post("card/delete", ["card_id" => $card_id]);
     }
 
     /**
@@ -320,8 +320,8 @@ class Card extends WeChatBase
      */
     public function unAvailable($code, $card_id, $reason = null)
     {
-        $data = ['code' => $code, 'card_id' => $card_id];
-        is_null($reason) || $data['reason'] = $reason;
+        $data = ["code" => $code, "card_id" => $card_id];
+        is_null($reason) || $data["reason"] = $reason;
         return $this->post("card/code/unavailable", $data);
     }
 
@@ -337,7 +337,7 @@ class Card extends WeChatBase
      */
     public function getCardBizuininfo($begin_date, $end_date, $cond_source)
     {
-        $data = ['begin_date' => $begin_date, 'end_date' => $end_date, 'cond_source' => $cond_source];
+        $data = ["begin_date" => $begin_date, "end_date" => $end_date, "cond_source" => $cond_source];
         return $this->post("datacube/getcardbizuininfo", $data);
     }
 
@@ -354,8 +354,8 @@ class Card extends WeChatBase
      */
     public function getCardCardinfo($begin_date, $end_date, $cond_source, $card_id = null)
     {
-        $data = ['begin_date' => $begin_date, 'end_date' => $end_date, 'cond_source' => $cond_source];
-        is_null($card_id) || $data['card_id'] = $card_id;
+        $data = ["begin_date" => $begin_date, "end_date" => $end_date, "cond_source" => $cond_source];
+        is_null($card_id) || $data["card_id"] = $card_id;
 
         return $this->post("datacube/getcardcardinfo", $data);
     }
@@ -371,7 +371,7 @@ class Card extends WeChatBase
      */
     public function activateMemberCard(array $data)
     {
-        return $this->post('card/membercard/activate', $data);
+        return $this->post("card/membercard/activate", $data);
     }
 
     /**
@@ -385,7 +385,7 @@ class Card extends WeChatBase
      */
     public function setActivateMemberCardUser(array $data)
     {
-        return $this->post('card/membercard/activateuserform/set', $data);
+        return $this->post("card/membercard/activateuserform/set", $data);
     }
 
     /**
@@ -399,7 +399,7 @@ class Card extends WeChatBase
      */
     public function getActivateMemberCardTempinfo($activate_ticket)
     {
-        return $this->post('card/membercard/activatetempinfo/get', ['activate_ticket' => $activate_ticket]);
+        return $this->post("card/membercard/activatetempinfo/get", ["activate_ticket" => $activate_ticket]);
     }
 
     /**
@@ -412,7 +412,7 @@ class Card extends WeChatBase
      */
     public function updateMemberCardUser(array $data)
     {
-        return $this->post('card/membercard/updateuser', $data);
+        return $this->post("card/membercard/updateuser", $data);
     }
 
     /**
@@ -427,7 +427,7 @@ class Card extends WeChatBase
      */
     public function getCardMemberCardinfo($begin_date, $end_date, $cond_source)
     {
-        $data = ['begin_date' => $begin_date, 'end_date' => $end_date, 'cond_source' => $cond_source];
+        $data = ["begin_date" => $begin_date, "end_date" => $end_date, "cond_source" => $cond_source];
 
         return $this->post("datacube/getcardmembercardinfo", $data);
     }
@@ -444,7 +444,7 @@ class Card extends WeChatBase
      */
     public function getCardMemberCardDetail($begin_date, $end_date, $card_id)
     {
-        $data = ['begin_date' => $begin_date, 'end_date' => $end_date, 'card_id' => $card_id];
+        $data = ["begin_date" => $begin_date, "end_date" => $end_date, "card_id" => $card_id];
         return $this->post("datacube/getcardmembercarddetail", $data);
     }
 
@@ -459,7 +459,7 @@ class Card extends WeChatBase
      */
     public function getCardMemberCard($card_id, $code)
     {
-        $data = ['card_id' => $card_id, 'code' => $code];
+        $data = ["card_id" => $card_id, "code" => $code];
         return $this->post("card/membercard/userinfo/get", $data);
     }
 
@@ -486,7 +486,7 @@ class Card extends WeChatBase
      */
     public function delPayGiftCard($rule_id)
     {
-        return $this->post("card/paygiftcard/delete", ['rule_id' => $rule_id]);
+        return $this->post("card/paygiftcard/delete", ["rule_id" => $rule_id]);
     }
 
     /**
@@ -499,7 +499,7 @@ class Card extends WeChatBase
      */
     public function getPayGiftCard($rule_id)
     {
-        return $this->post("card/paygiftcard/getbyid", ['rule_id' => $rule_id]);
+        return $this->post("card/paygiftcard/getbyid", ["rule_id" => $rule_id]);
     }
 
     /**
@@ -514,7 +514,7 @@ class Card extends WeChatBase
      */
     public function batchGetPayGiftCard($offset = 0, $count = 10, $effective = true)
     {
-        $data = ['type' => 'RULE_TYPE_PAY_MEMBER_CARD', 'offset' => $offset, 'count' => $count, 'effective' => $effective];
+        $data = ["type" => "RULE_TYPE_PAY_MEMBER_CARD", "offset" => $offset, "count" => $count, "effective" => $effective];
         return $this->post("card/paygiftcard/batchget", $data);
     }
 
@@ -553,7 +553,7 @@ class Card extends WeChatBase
      */
     public function getPayprice($card_id, $quantity)
     {
-        return $this->post("card/pay/getpayprice", ['card_id' => $card_id, 'quantity' => $quantity]);
+        return $this->post("card/pay/getpayprice", ["card_id" => $card_id, "quantity" => $quantity]);
     }
 
     /**
@@ -579,7 +579,7 @@ class Card extends WeChatBase
      */
     public function payConfirm($card_id, $quantity, $order_id)
     {
-        $data = ['card_id' => $card_id, 'quantity' => $quantity, 'order_id' => $order_id];
+        $data = ["card_id" => $card_id, "quantity" => $quantity, "order_id" => $order_id];
         return $this->post("card/pay/confirm", $data);
     }
 
@@ -593,7 +593,7 @@ class Card extends WeChatBase
      */
     public function payRecharge($coin_count)
     {
-        return $this->post("card/pay/recharge", ['coin_count' => $coin_count]);
+        return $this->post("card/pay/recharge", ["coin_count" => $coin_count]);
     }
 
     /**
@@ -606,7 +606,7 @@ class Card extends WeChatBase
      */
     public function payGetOrder($order_id)
     {
-        return $this->post("card/pay/getorder", ['order_id' => $order_id]);
+        return $this->post("card/pay/getorder", ["order_id" => $order_id]);
     }
 
     /**

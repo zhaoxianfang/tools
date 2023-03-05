@@ -24,7 +24,7 @@ class Draft extends WeChatBase
      */
     public function add($articles)
     {
-        return $this->post("cgi-bin/draft/add", ['articles' => $articles]);
+        return $this->post("cgi-bin/draft/add", ["articles" => $articles]);
     }
 
     /**
@@ -38,7 +38,7 @@ class Draft extends WeChatBase
      */
     public function getDraft($media_id, $outType = null)
     {
-        return $this->post("cgi-bin/draft/get", ['media_id' => $media_id]);
+        return $this->post("cgi-bin/draft/get", ["media_id" => $media_id]);
     }
 
 
@@ -52,7 +52,7 @@ class Draft extends WeChatBase
      */
     public function delete($media_id)
     {
-        return $this->post("cgi-bin/draft/delete", ['media_id' => $media_id]);
+        return $this->post("cgi-bin/draft/delete", ["media_id" => $media_id]);
     }
 
     /**
@@ -80,7 +80,7 @@ class Draft extends WeChatBase
      */
     public function update($media_id, $index, $articles)
     {
-        $data = ['media_id' => $media_id, 'index' => $index, 'articles' => $articles];
+        $data = ["media_id" => $media_id, "index" => $index, "articles" => $articles];
 
         return $this->post("cgi-bin/draft/update", $data);
     }
@@ -108,7 +108,7 @@ class Draft extends WeChatBase
      */
     public function batchGet($offset = 0, $count = 20, $no_content = 0)
     {
-        return $this->post("cgi-bin/draft/batchget", ['no_content' => $no_content, 'offset' => $offset, 'count' => $count]);
+        return $this->post("cgi-bin/draft/batchget", ["no_content" => $no_content, "offset" => $offset, "count" => $count]);
     }
 
 }

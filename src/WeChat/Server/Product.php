@@ -23,9 +23,9 @@ class Product extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function modStatus($keystandard, $keystr, $status = 'on')
+    public function modStatus($keystandard, $keystr, $status = "on")
     {
-        $data = ['keystandard' => $keystandard, 'keystr' => $keystr, 'status' => $status];
+        $data = ["keystandard" => $keystandard, "keystr" => $keystr, "status" => $status];
 
         return $this->post("scan/product/modstatus", $data);
     }
@@ -41,7 +41,7 @@ class Product extends WeChatBase
      */
     public function setTestWhiteList(array $openids = [], array $usernames = [])
     {
-        $data = ['openid' => $openids, 'username' => $usernames];
+        $data = ["openid" => $openids, "username" => $usernames];
 
         return $this->post("scan/testwhitelist/set", $data);
     }
@@ -59,8 +59,8 @@ class Product extends WeChatBase
      */
     public function getQrcode($keystandard, $keystr, $qrcode_size, $extinfo = [])
     {
-        $data = ['keystandard' => $keystandard, 'keystr' => $keystr, 'qrcode_size' => $qrcode_size];
-        empty($extinfo) || $data['extinfo'] = $extinfo;
+        $data = ["keystandard" => $keystandard, "keystr" => $keystr, "qrcode_size" => $qrcode_size];
+        empty($extinfo) || $data["extinfo"] = $extinfo;
 
         return $this->post("scan/product/getqrcode", $data);
     }
@@ -76,8 +76,8 @@ class Product extends WeChatBase
      */
     public function getProduct($keystandard, $keystr)
     {
-        $data = ['keystandard' => $keystandard, 'keystr' => $keystr];
-        empty($extinfo) || $data['extinfo'] = $extinfo;
+        $data = ["keystandard" => $keystandard, "keystr" => $keystr];
+        empty($extinfo) || $data["extinfo"] = $extinfo;
 
         return $this->post("scan/product/get", $data);
     }
@@ -93,11 +93,11 @@ class Product extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function getProductList($offset, $limit = 10, $status = null, $keystr = '')
+    public function getProductList($offset, $limit = 10, $status = null, $keystr = "")
     {
-        $data = ['offset' => $offset, 'limit' => $limit];
-        is_null($status) || $data['status'] = $status;
-        empty($keystr) || $data['keystr'] = $keystr;
+        $data = ["offset" => $offset, "limit" => $limit];
+        is_null($status) || $data["status"] = $status;
+        empty($keystr) || $data["keystr"] = $keystr;
 
         return $this->post("scan/product/get", $data);
     }
@@ -126,7 +126,7 @@ class Product extends WeChatBase
      */
     public function clearProduct($keystandard, $keystr)
     {
-        return $this->post("scan/product/clear", ['keystandard' => $keystandard, 'keystr' => $keystr]);
+        return $this->post("scan/product/clear", ["keystandard" => $keystandard, "keystr" => $keystr]);
     }
 
     /**
@@ -139,7 +139,7 @@ class Product extends WeChatBase
      */
     public function scanTicketCheck($ticket)
     {
-        return $this->post("scan/scanticket/check", ['ticket' => $ticket]);
+        return $this->post("scan/scanticket/check", ["ticket" => $ticket]);
     }
 
     /**
@@ -154,7 +154,7 @@ class Product extends WeChatBase
      */
     public function clearScanticket($keystandard, $keystr, $extinfo)
     {
-        $data = ['keystandard' => $keystandard, 'keystr' => $keystr, 'extinfo' => $extinfo];
+        $data = ["keystandard" => $keystandard, "keystr" => $keystr, "extinfo" => $extinfo];
 
         return $this->post("scan/scanticket/check", $data);
     }

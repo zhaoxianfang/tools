@@ -24,6 +24,6 @@ class Soter extends WeChatBase
      */
     public function verifySignature($data)
     {
-        return $this->post('cgi-bin/soter/verify_signature', $data);
+        return $this->post("cgi-bin/soter/verify_signature", $data);
     }
 }

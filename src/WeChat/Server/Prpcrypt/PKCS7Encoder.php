@@ -24,7 +24,7 @@ class PKCS7Encoder
         if ($amount_to_pad == 0) {
             $amount_to_pad = PKCS7Encoder::$blockSize;
         }
-        list($pad_chr, $tmp) = [chr($amount_to_pad), ''];
+        list($pad_chr, $tmp) = [chr($amount_to_pad), ""];
         for ($index = 0; $index < $amount_to_pad; $index++) {
             $tmp .= $pad_chr;
         }

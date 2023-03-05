@@ -22,10 +22,10 @@ class Redpack extends BasicWePay
      */
     public function create(array $options)
     {
-        $this->params->offsetUnset('appid');
-        $this->params->set('wxappid', $this->config['appid']);
+        $this->params->offsetUnset("appid");
+        $this->params->set("wxappid", $this->config["appid"]);
         $url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/sendredpack";
-        return $this->callPostApi($url, $options, true, 'MD5', false);
+        return $this->callPostApi($url, $options, true, "MD5", false);
     }
 
     /**
@@ -36,10 +36,10 @@ class Redpack extends BasicWePay
      */
     public function groups(array $options)
     {
-        $this->params->offsetUnset('appid');
-        $this->params->set('wxappid', $this->config['appid']);
+        $this->params->offsetUnset("appid");
+        $this->params->set("wxappid", $this->config["appid"]);
         $url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/sendgroupredpack";
-        return $this->callPostApi($url, $options, true, 'MD5', false);
+        return $this->callPostApi($url, $options, true, "MD5", false);
     }
 
     /**
@@ -50,10 +50,10 @@ class Redpack extends BasicWePay
      */
     public function query($mchBillno)
     {
-        $this->params->offsetUnset('wxappid');
-        $this->params->set('appid', $this->config['appid']);
+        $this->params->offsetUnset("wxappid");
+        $this->params->set("appid", $this->config["appid"]);
         $url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/gethbinfo";
-        return $this->callPostApi($url, ['mch_billno' => $mchBillno, 'bill_type' => 'MCHT'], true, 'MD5', false);
+        return $this->callPostApi($url, ["mch_billno" => $mchBillno, "bill_type" => "MCHT"], true, "MD5", false);
     }
 
 }

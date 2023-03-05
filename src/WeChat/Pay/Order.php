@@ -1,9 +1,8 @@
 <?php
 
-
-
 namespace zxf\WeChat\Pay;
 
+use Exception;
 use zxf\WeChat\Contracts\BasicWePay;
 
 
@@ -23,8 +22,8 @@ class Order extends BasicWePay
      */
     public function create(array $options)
     {
-        $url = 'https://api.mch.weixin.qq.com/pay/unifiedorder';
-        return $this->callPostApi($url, $options, false, 'MD5');
+        $url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
+        return $this->callPostApi($url, $options, false, "MD5");
     }
 
     /**
@@ -35,8 +34,8 @@ class Order extends BasicWePay
      */
     public function micropay(array $options)
     {
-        $url = 'https://api.mch.weixin.qq.com/pay/micropay';
-        return $this->callPostApi($url, $options, false, 'MD5');
+        $url = "https://api.mch.weixin.qq.com/pay/micropay";
+        return $this->callPostApi($url, $options, false, "MD5");
     }
 
     /**
@@ -47,7 +46,7 @@ class Order extends BasicWePay
      */
     public function query(array $options)
     {
-        $url = 'https://api.mch.weixin.qq.com/pay/orderquery';
+        $url = "https://api.mch.weixin.qq.com/pay/orderquery";
         return $this->callPostApi($url, $options);
     }
 
@@ -59,8 +58,8 @@ class Order extends BasicWePay
      */
     public function close($outTradeNo)
     {
-        $url = 'https://api.mch.weixin.qq.com/pay/closeorder';
-        return $this->callPostApi($url, ['out_trade_no' => $outTradeNo]);
+        $url = "https://api.mch.weixin.qq.com/pay/closeorder";
+        return $this->callPostApi($url, ["out_trade_no" => $outTradeNo]);
     }
 
     /**
@@ -71,13 +70,13 @@ class Order extends BasicWePay
     public function jsapiParams($prepayId)
     {
         $option = [];
-        $option["appId"] = $this->config['appid'];
+        $option["appId"] = $this->config["appid"];
         $option["timeStamp"] = (string)time();
         $option["nonceStr"] = Tools::createNoncestr();
         $option["package"] = "prepay_id={$prepayId}";
         $option["signType"] = "MD5";
-        $option["paySign"] = $this->getPaySign($option, 'MD5');
-        $option['timestamp'] = $option['timeStamp'];
+        $option["paySign"] = $this->getPaySign($option, "MD5");
+        $option["timestamp"] = $option["timeStamp"];
         return $option;
     }
 
@@ -89,13 +88,13 @@ class Order extends BasicWePay
     public function qrcParams($productId)
     {
         $data = [
-            'appid'      => $this->config['appid'],
-            'mch_id'     => $this->config['mch_id'],
-            'time_stamp' => (string)time(),
-            'nonce_str'  => Tools::createNoncestr(),
-            'product_id' => (string)$productId,
+            "appid"      => $this->config["appid"],
+            "mch_id"     => $this->config["mch_id"],
+            "time_stamp" => (string)time(),
+            "nonce_str"  => Tools::createNoncestr(),
+            "product_id" => (string)$productId,
         ];
-        $data['sign'] = $this->getPaySign($data, 'MD5');
+        $data["sign"] = $this->getPaySign($data, "MD5");
         return "weixin://wxpay/bizpayurl?" . http_build_query($data);
     }
 
@@ -107,14 +106,14 @@ class Order extends BasicWePay
     public function appParams($prepayId)
     {
         $data = [
-            'appid'     => $this->config['appid'],
-            'partnerid' => $this->config['mch_id'],
-            'prepayid'  => (string)$prepayId,
-            'package'   => 'Sign=WXPay',
-            'timestamp' => (string)time(),
-            'noncestr'  => Tools::createNoncestr(),
+            "appid"     => $this->config["appid"],
+            "partnerid" => $this->config["mch_id"],
+            "prepayid"  => (string)$prepayId,
+            "package"   => "Sign=WXPay",
+            "timestamp" => (string)time(),
+            "noncestr"  => Tools::createNoncestr(),
         ];
-        $data['sign'] = $this->getPaySign($data, 'MD5');
+        $data["sign"] = $this->getPaySign($data, "MD5");
         return $data;
     }
 
@@ -126,7 +125,7 @@ class Order extends BasicWePay
      */
     public function reverse(array $options)
     {
-        $url = 'https://api.mch.weixin.qq.com/secapi/pay/reverse';
+        $url = "https://api.mch.weixin.qq.com/secapi/pay/reverse";
         return $this->callPostApi($url, $options, true);
     }
 
@@ -138,8 +137,8 @@ class Order extends BasicWePay
      */
     public function queryAuthCode($authCode)
     {
-        $url = 'https://api.mch.weixin.qq.com/tools/authcodetoopenid';
-        return $this->callPostApi($url, ['auth_code' => $authCode], false, 'MD5', false);
+        $url = "https://api.mch.weixin.qq.com/tools/authcodetoopenid";
+        return $this->callPostApi($url, ["auth_code" => $authCode], false, "MD5", false);
     }
 
     /**
@@ -150,7 +149,7 @@ class Order extends BasicWePay
      */
     public function report(array $options)
     {
-        $url = 'https://api.mch.weixin.qq.com/payitil/report';
+        $url = "https://api.mch.weixin.qq.com/payitil/report";
         return $this->callPostApi($url, $options);
     }
 }

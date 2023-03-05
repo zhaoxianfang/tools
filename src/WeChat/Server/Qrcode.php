@@ -25,17 +25,17 @@ class Qrcode extends WeChatBase
     public function create($scene, $expire_seconds = 0)
     {
         if (is_integer($scene)) { // 二维码场景类型
-            $data = ['action_info' => ['scene' => ['scene_id' => $scene]]];
+            $data = ["action_info" => ["scene" => ["scene_id" => $scene]]];
         } else {
-            $data = ['action_info' => ['scene' => ['scene_str' => $scene]]];
+            $data = ["action_info" => ["scene" => ["scene_str" => $scene]]];
         }
         if ($expire_seconds > 0) { // 临时二维码
-            $data['expire_seconds'] = $expire_seconds;
-            $data['action_name']    = is_integer($scene) ? 'QR_SCENE' : 'QR_STR_SCENE';
+            $data["expire_seconds"] = $expire_seconds;
+            $data["action_name"]    = is_integer($scene) ? "QR_SCENE" : "QR_STR_SCENE";
         } else { // 永久二维码
-            $data['action_name'] = is_integer($scene) ? 'QR_LIMIT_SCENE' : 'QR_LIMIT_STR_SCENE';
+            $data["action_name"] = is_integer($scene) ? "QR_LIMIT_SCENE" : "QR_LIMIT_STR_SCENE";
         }
-        return $this->post('cgi-bin/qrcode/create', $data);
+        return $this->post("cgi-bin/qrcode/create", $data);
     }
 
     /**
@@ -47,7 +47,7 @@ class Qrcode extends WeChatBase
      */
     public function url($ticket)
     {
-        return sprintf('https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=%s', urlencode($ticket));
+        return sprintf("https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=%s", urlencode($ticket));
     }
 
     /**
@@ -60,6 +60,6 @@ class Qrcode extends WeChatBase
      */
     public function shortUrl($longUrl)
     {
-        return $this->post('cgi-bin/shorturl', ['action' => 'long2short', 'long_url' => $longUrl]);
+        return $this->post("cgi-bin/shorturl", ["action" => "long2short", "long_url" => $longUrl]);
     }
 }

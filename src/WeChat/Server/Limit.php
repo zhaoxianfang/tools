@@ -22,7 +22,7 @@ class Limit extends WeChatBase
      */
     public function clearQuota()
     {
-        return $this->post("cgi-bin/clear_quota", ['appid' => $this->config['appid']]);
+        return $this->post("cgi-bin/clear_quota", ["appid" => $this->config["appid"]]);
     }
 
     /**
@@ -34,9 +34,9 @@ class Limit extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function ping($action = 'all', $operator = 'DEFAULT')
+    public function ping($action = "all", $operator = "DEFAULT")
     {
-        return $this->post("cgi-bin/callback/check", ['action' => $action, 'check_operator' => $operator]);
+        return $this->post("cgi-bin/callback/check", ["action" => $action, "check_operator" => $operator]);
     }
 
     /**

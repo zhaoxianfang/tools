@@ -47,9 +47,9 @@ class Scan extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function modProduct($keystandard, $keystr, $status = 'on')
+    public function modProduct($keystandard, $keystr, $status = "on")
     {
-        $data = ['keystandard' => $keystandard, 'keystr' => $keystr, 'status' => $status];
+        $data = ["keystandard" => $keystandard, "keystr" => $keystr, "status" => $status];
 
         return $this->post("scan/product/modstatus", $data);
     }
@@ -65,7 +65,7 @@ class Scan extends WeChatBase
      */
     public function setTestWhiteList($openids = [], $usernames = [])
     {
-        $data = ['openid' => $openids, 'username' => $usernames];
+        $data = ["openid" => $openids, "username" => $usernames];
 
         return $this->post("scan/product/modstatus", $data);
     }
@@ -83,8 +83,8 @@ class Scan extends WeChatBase
      */
     public function getQrc($keystandard, $keystr, $extinfo = null, $qrcode_size = 64)
     {
-        $data = ['keystandard' => $keystandard, 'keystr' => $keystr, 'qrcode_size' => $qrcode_size];
-        is_null($extinfo) || $data['extinfo'] = $extinfo;
+        $data = ["keystandard" => $keystandard, "keystr" => $keystr, "qrcode_size" => $qrcode_size];
+        is_null($extinfo) || $data["extinfo"] = $extinfo;
         return $this->post("scan/product/getqrcode", $data);
     }
 
@@ -99,7 +99,7 @@ class Scan extends WeChatBase
      */
     public function getProductInfo($keystandard, $keystr)
     {
-        return $this->post("scan/product/get", ['keystandard' => $keystandard, 'keystr' => $keystr]);
+        return $this->post("scan/product/get", ["keystandard" => $keystandard, "keystr" => $keystr]);
     }
 
     /**
@@ -115,9 +115,9 @@ class Scan extends WeChatBase
      */
     public function getProductList($offset = 1, $limit = 10, $status = null, $keystr = null)
     {
-        $data = ['offset' => $offset, 'limit' => $limit];
-        is_null($status) || $data['status'] = $status;
-        is_null($keystr) || $data['keystr'] = $keystr;
+        $data = ["offset" => $offset, "limit" => $limit];
+        is_null($status) || $data["status"] = $status;
+        is_null($keystr) || $data["keystr"] = $keystr;
         return $this->post("scan/product/getlist", $data);
     }
 
@@ -145,7 +145,7 @@ class Scan extends WeChatBase
      */
     public function clearProduct($keystandard, $keystr)
     {
-        return $this->post("scan/product/clear", ['keystandard' => $keystandard, 'keystr' => $keystr]);
+        return $this->post("scan/product/clear", ["keystandard" => $keystandard, "keystr" => $keystr]);
     }
 
     /**
@@ -158,7 +158,7 @@ class Scan extends WeChatBase
      */
     public function checkTicket($ticket)
     {
-        return $this->post("scan/scanticket/check", ['ticket' => $ticket]);
+        return $this->post("scan/scanticket/check", ["ticket" => $ticket]);
     }
 
     /**
@@ -173,7 +173,7 @@ class Scan extends WeChatBase
      */
     public function clearScanTicket($keystandard, $keystr, $extinfo)
     {
-        return $this->post("scan/scanticket/check", ['keystandard' => $keystandard, 'keystr' => $keystr, 'extinfo' => $extinfo]);
+        return $this->post("scan/scanticket/check", ["keystandard" => $keystandard, "keystr" => $keystr, "extinfo" => $extinfo]);
     }
 
 }

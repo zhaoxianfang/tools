@@ -23,10 +23,10 @@ class Media extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function add($filename, $type = 'image')
+    public function add($filename, $type = "image")
     {
-        if (!in_array($type, ['image', 'voice', 'video', 'thumb'])) {
-            throw new Exception('Invalid Media Type.', '0');
+        if (!in_array($type, ["image", "voice", "video", "thumb"])) {
+            throw new Exception("Invalid Media Type.", "0");
         }
         return $this->upload(10, $filename);
     }
@@ -72,7 +72,7 @@ class Media extends WeChatBase
      */
     public function updateNews($media_id, $index, $news)
     {
-        $data = ['media_id' => $media_id, 'index' => $index, 'articles' => $news];
+        $data = ["media_id" => $media_id, "index" => $index, "articles" => $news];
         return $this->post("cgi-bin/material/update_news", $data);
     }
 
@@ -99,10 +99,10 @@ class Media extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function addMaterial($filename, $type = 'image', $videoTitle = '', $videoDescription = '')
+    public function addMaterial($filename, $type = "image", $videoTitle = "", $videoDescription = "")
     {
-        if (!in_array($type, ['image', 'voice', 'video', 'thumb'])) {
-            throw new Exception('Invalid Media Type.', '0');
+        if (!in_array($type, ["image", "voice", "video", "thumb"])) {
+            throw new Exception("Invalid Media Type.", "0");
         }
         // 上传类型：10：小程序临时图片，20：公众号临时素材，21：公众号永久素材
         return $this->upload(21, $filename, $type, $videoTitle, $videoDescription);
@@ -117,7 +117,7 @@ class Media extends WeChatBase
      * @return array|string
      * @throws Exception
      */
-    public function getMaterial($media_id, $savePath = '')
+    public function getMaterial($media_id, $savePath = "")
     {
         return $this->download("cgi-bin/material/get_material", $savePath, [
             "media_id" => $media_id,
@@ -134,7 +134,7 @@ class Media extends WeChatBase
      */
     public function delMaterial($media_id)
     {
-        return $this->post("cgi-bin/material/del_material", ['media_id' => $media_id]);
+        return $this->post("cgi-bin/material/del_material", ["media_id" => $media_id]);
     }
 
     /**
@@ -158,11 +158,11 @@ class Media extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function batchGetMaterial($type = 'image', $offset = 0, $count = 20)
+    public function batchGetMaterial($type = "image", $offset = 0, $count = 20)
     {
-        if (!in_array($type, ['image', 'voice', 'video', 'news'])) {
-            throw new Exception('Invalid Media Type.', '0');
+        if (!in_array($type, ["image", "voice", "video", "news"])) {
+            throw new Exception("Invalid Media Type.", "0");
         }
-        return $this->post("cgi-bin/material/batchget_material", ['type' => $type, 'offset' => $offset, 'count' => $count]);
+        return $this->post("cgi-bin/material/batchget_material", ["type" => $type, "offset" => $offset, "count" => $count]);
     }
 }

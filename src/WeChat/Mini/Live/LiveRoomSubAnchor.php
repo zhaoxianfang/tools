@@ -14,15 +14,15 @@ class LiveRoomSubAnchor extends LiveBase
             "roomId" => $roomId,
         ];
 
-        $res = $this->get('wxaapi/broadcast/room/getsubanchor', $params);
-        if ($res['errcode'] != 0) {
-            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
+        $res = $this->get("wxaapi/broadcast/room/getsubanchor", $params);
+        if ($res["errcode"] != 0) {
+            throw new \Exception($this->getMessage($res["errcode"]), $res["errcode"]);
         }
         return [
-            'message' => '获取成功',
-            'code'    => $res['errcode'],
-            'data'    => [
-                'username' => $res['username'],
+            "message" => "获取成功",
+            "code"    => $res["errcode"],
+            "data"    => [
+                "username" => $res["username"],
             ],
         ];
     }
@@ -35,13 +35,13 @@ class LiveRoomSubAnchor extends LiveBase
             "username" => $openId, // 用户微信号
         ];
 
-        $res = $this->post('wxaapi/broadcast/room/addsubanchor', $params);
-        if ($res['errcode'] != 0) {
-            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
+        $res = $this->post("wxaapi/broadcast/room/addsubanchor", $params);
+        if ($res["errcode"] != 0) {
+            throw new \Exception($this->getMessage($res["errcode"]), $res["errcode"]);
         }
         return [
-            'message' => '添加成功',
-            'code'    => $res['errcode'],
+            "message" => "添加成功",
+            "code"    => $res["errcode"],
         ];
     }
 
@@ -53,13 +53,13 @@ class LiveRoomSubAnchor extends LiveBase
             "username" => $openId, // 用户微信号
         ];
 
-        $res = $this->post('wxaapi/broadcast/room/modifysubanchor', $params);
-        if ($res['errcode'] != 0) {
-            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
+        $res = $this->post("wxaapi/broadcast/room/modifysubanchor", $params);
+        if ($res["errcode"] != 0) {
+            throw new \Exception($this->getMessage($res["errcode"]), $res["errcode"]);
         }
         return [
-            'message' => '修改成功',
-            'code'    => $res['errcode'],
+            "message" => "修改成功",
+            "code"    => $res["errcode"],
         ];
     }
 
@@ -70,13 +70,13 @@ class LiveRoomSubAnchor extends LiveBase
             "roomId" => $roomId,
         ];
 
-        $res = $this->post('wxaapi/broadcast/room/deletesubanchor', $params);
-        if ($res['errcode'] != 0) {
-            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
+        $res = $this->post("wxaapi/broadcast/room/deletesubanchor", $params);
+        if ($res["errcode"] != 0) {
+            throw new \Exception($this->getMessage($res["errcode"]), $res["errcode"]);
         }
         return [
-            'message' => '删除成功',
-            'code'    => $res['errcode'],
+            "message" => "删除成功",
+            "code"    => $res["errcode"],
         ];
     }
 }

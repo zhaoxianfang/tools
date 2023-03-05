@@ -23,17 +23,17 @@ class Oauth extends WeChatBase
      *
      * @return string
      */
-    public function getOauthRedirect($redirect_url, $state = '', $scope = 'snsapi_base')
+    public function getOauthRedirect($redirect_url, $state = "", $scope = "snsapi_base")
     {
-        $appid        = $this->config['appid'];
+        $appid        = $this->config["appid"];
         $redirect_uri = urlencode($redirect_url);
-        return $this->enableToken(false)->parseUrl('connect/oauth2/authorize', [
-                'appid'         => $appid,
-                'redirect_uri'  => $redirect_uri,
-                'response_type' => 'code',
-                'scope'         => $scope,
-                'state'         => $state,
-            ]) . '#wechat_redirect';
+        return $this->enableToken(false)->parseUrl("connect/oauth2/authorize", [
+                "appid"         => $appid,
+                "redirect_uri"  => $redirect_uri,
+                "response_type" => "code",
+                "scope"         => $scope,
+                "state"         => $state,
+            ]) . "#wechat_redirect";
     }
 
     /**
@@ -44,17 +44,17 @@ class Oauth extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function getOauthAccessToken($code = '')
+    public function getOauthAccessToken($code = "")
     {
-        $appid     = $this->config['appid'];
-        $appsecret = $this->config['appsecret'];
-        $code      = !empty($code) ? $code : (isset($_GET['code']) ? $_GET['code'] : '');
+        $appid     = $this->config["appid"];
+        $appsecret = $this->config["appsecret"];
+        $code      = !empty($code) ? $code : (isset($_GET["code"]) ? $_GET["code"] : "");
 
         return $this->enableToken(false)->get("sns/oauth2/access_token", [], [
-            'appid'      => $appid,
-            'secret'     => $appsecret,
-            'code'       => $code,
-            'grant_type' => 'authorization_code',
+            "appid"      => $appid,
+            "secret"     => $appsecret,
+            "code"       => $code,
+            "grant_type" => "authorization_code",
         ]);
     }
 
@@ -68,11 +68,11 @@ class Oauth extends WeChatBase
      */
     public function getOauthRefreshToken($refresh_token)
     {
-        $appid = $this->config['appid'];
+        $appid = $this->config["appid"];
         return $this->enableToken(false)->get("sns/oauth2/refresh_token", [], [
-            'appid'         => $appid,
-            'grant_type'    => 'refresh_token',
-            'refresh_token' => $refresh_token,
+            "appid"         => $appid,
+            "grant_type"    => "refresh_token",
+            "refresh_token" => $refresh_token,
         ]);
     }
 
@@ -88,8 +88,8 @@ class Oauth extends WeChatBase
     public function checkOauthAccessToken($access_token, $openid)
     {
         return $this->enableToken(false)->get("sns/auth?access_token", [], [
-            'access_token' => $access_token,
-            'openid'       => $openid,
+            "access_token" => $access_token,
+            "openid"       => $openid,
         ]);
     }
 
@@ -103,12 +103,12 @@ class Oauth extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function getUserInfo($access_token, $openid, $lang = 'zh_CN')
+    public function getUserInfo($access_token, $openid, $lang = "zh_CN")
     {
         return $this->get("sns/userinfo", [], [
-            'access_token' => $access_token,
-            'openid'       => $openid,
-            'lang'         => $lang,
+            "access_token" => $access_token,
+            "openid"       => $openid,
+            "lang"         => $lang,
         ]);
     }
 }

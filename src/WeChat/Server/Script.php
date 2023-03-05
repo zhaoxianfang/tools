@@ -22,9 +22,9 @@ class Script extends WeChatBase
      *
      * @return void
      */
-    public function delTicket($type = 'jsapi', $appid = null)
+    public function delTicket($type = "jsapi", $appid = null)
     {
-        is_null($appid) && $appid = $this->config['appid'];
+        is_null($appid) && $appid = $this->config["appid"];
         $cache_name = "{$appid}_ticket_{$type}";
         $this->cache->delete($cache_name);
     }
@@ -38,17 +38,17 @@ class Script extends WeChatBase
      * @return string
      * @throws Exception
      */
-    public function getTicket($type = 'jsapi', $appid = null)
+    public function getTicket($type = "jsapi", $appid = null)
     {
-        is_null($appid) && $appid = $this->config['appid'];
+        is_null($appid) && $appid = $this->config["appid"];
         $cache_name = "{$appid}_ticket_{$type}";
         $ticket     = $this->cache->get($cache_name);
         if (empty($ticket)) {
-            $result = $this->get("cgi-bin/ticket/getticket", [], ['type' => $type]);
-            if (empty($result['ticket'])) {
-                throw new Exception('Invalid Resoponse Ticket.', '0');
+            $result = $this->get("cgi-bin/ticket/getticket", [], ["type" => $type]);
+            if (empty($result["ticket"])) {
+                throw new Exception("Invalid Resoponse Ticket.", "0");
             }
-            $ticket = $result['ticket'];
+            $ticket = $result["ticket"];
             $this->cache->set($cache_name, $ticket, 7000);
         }
         return $ticket;
@@ -67,24 +67,24 @@ class Script extends WeChatBase
      */
     public function getJsSign($url, $appid = null, $ticket = null, $jsApiList = null)
     {
-        list($url,) = explode('#', $url);
-        is_null($ticket) && $ticket = $this->getTicket('jsapi');
-        is_null($appid) && $appid = $this->config['appid'];
+        list($url,) = explode("#", $url);
+        is_null($ticket) && $ticket = $this->getTicket("jsapi");
+        is_null($appid) && $appid = $this->config["appid"];
         is_null($jsApiList) && $jsApiList = [
-            'updateAppMessageShareData', 'updateTimelineShareData', 'onMenuShareTimeline', 'onMenuShareAppMessage', 'onMenuShareQQ', 'onMenuShareWeibo', 'onMenuShareQZone',
-            'startRecord', 'stopRecord', 'onVoiceRecordEnd', 'playVoice', 'pauseVoice', 'stopVoice', 'onVoicePlayEnd', 'uploadVoice', 'downloadVoice',
-            'chooseImage', 'previewImage', 'uploadImage', 'downloadImage', 'translateVoice', 'getNetworkType', 'openLocation', 'getLocation',
-            'hideOptionMenu', 'showOptionMenu', 'hideMenuItems', 'showMenuItems', 'hideAllNonBaseMenuItem', 'showAllNonBaseMenuItem',
-            'closeWindow', 'scanQRCode', 'chooseWXPay', 'openProductSpecificView', 'addCard', 'chooseCard', 'openCard',
+            "updateAppMessageShareData", "updateTimelineShareData", "onMenuShareTimeline", "onMenuShareAppMessage", "onMenuShareQQ", "onMenuShareWeibo", "onMenuShareQZone",
+            "startRecord", "stopRecord", "onVoiceRecordEnd", "playVoice", "pauseVoice", "stopVoice", "onVoicePlayEnd", "uploadVoice", "downloadVoice",
+            "chooseImage", "previewImage", "uploadImage", "downloadImage", "translateVoice", "getNetworkType", "openLocation", "getLocation",
+            "hideOptionMenu", "showOptionMenu", "hideMenuItems", "showMenuItems", "hideAllNonBaseMenuItem", "showAllNonBaseMenuItem",
+            "closeWindow", "scanQRCode", "chooseWXPay", "openProductSpecificView", "addCard", "chooseCard", "openCard",
         ];
-        $data = ["url" => $url, "timestamp" => '' . time(), "jsapi_ticket" => $ticket, "noncestr" => \zxf\Facade\Random::alnum(16)];
+        $data = ["url" => $url, "timestamp" => "" . time(), "jsapi_ticket" => $ticket, "noncestr" => \zxf\Facade\Random::alnum(16)];
         return [
-            'debug'     => false,
+            "debug"     => false,
             "appId"     => $appid,
-            "nonceStr"  => $data['noncestr'],
-            "timestamp" => $data['timestamp'],
-            "signature" => $this->getSignature($data, 'sha1'),
-            'jsApiList' => $jsApiList,
+            "nonceStr"  => $data["noncestr"],
+            "timestamp" => $data["timestamp"],
+            "signature" => $this->getSignature($data, "sha1"),
+            "jsApiList" => $jsApiList,
         ];
     }
 
@@ -106,6 +106,6 @@ class Script extends WeChatBase
         foreach ($data as $k => $v) {
             $params[] = "{$k}={$v}";
         }
-        return $method(join('&', $params));
+        return $method(join("&", $params));
     }
 }

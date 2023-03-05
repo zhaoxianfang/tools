@@ -25,7 +25,7 @@ class Wifi extends WeChatBase
      */
     public function getShopList($pageindex = 1, $pagesize = 2)
     {
-        return $this->post('bizwifi/shop/list', ['pageindex' => $pageindex, 'pagesize' => $pagesize]);
+        return $this->post("bizwifi/shop/list", ["pageindex" => $pageindex, "pagesize" => $pagesize]);
     }
 
     /**
@@ -38,7 +38,7 @@ class Wifi extends WeChatBase
      */
     public function getShopWifi($shop_id)
     {
-        return $this->post('bizwifi/shop/list', ['shop_id' => $shop_id]);
+        return $this->post("bizwifi/shop/list", ["shop_id" => $shop_id]);
     }
 
     /**
@@ -54,10 +54,10 @@ class Wifi extends WeChatBase
      */
     public function upShopWifi($shop_id, $old_ssid, $ssid, $password = null)
     {
-        $data = ['shop_id' => $shop_id, 'old_ssid' => $old_ssid, 'ssid' => $ssid];
-        is_null($password) || $data['password'] = $password;
+        $data = ["shop_id" => $shop_id, "old_ssid" => $old_ssid, "ssid" => $ssid];
+        is_null($password) || $data["password"] = $password;
 
-        return $this->post('bizwifi/shop/update', $data);
+        return $this->post("bizwifi/shop/update", $data);
     }
 
     /**
@@ -70,7 +70,7 @@ class Wifi extends WeChatBase
      */
     public function clearShopWifi($shop_id)
     {
-        return $this->post('bizwifi/shop/clean', ['shop_id' => $shop_id]);
+        return $this->post("bizwifi/shop/clean", ["shop_id" => $shop_id]);
     }
 
     /**
@@ -85,9 +85,9 @@ class Wifi extends WeChatBase
      */
     public function addShopWifi($shop_id, $ssid, $password = null)
     {
-        $data = ['shop_id' => $shop_id, 'ssid' => $ssid, 'password' => $password];
+        $data = ["shop_id" => $shop_id, "ssid" => $ssid, "password" => $password];
 
-        return $this->post('bizwifi/device/add', $data);
+        return $this->post("bizwifi/device/add", $data);
     }
 
     /**
@@ -102,9 +102,9 @@ class Wifi extends WeChatBase
      */
     public function addShopPortal($shop_id, $ssid, $reset = false)
     {
-        $data = ['shop_id' => $shop_id, 'ssid' => $ssid, 'reset' => $reset];
+        $data = ["shop_id" => $shop_id, "ssid" => $ssid, "reset" => $reset];
 
-        return $this->post('bizwifi/apportal/register', $data);
+        return $this->post("bizwifi/apportal/register", $data);
     }
 
     /**
@@ -120,11 +120,11 @@ class Wifi extends WeChatBase
     public function queryShopWifi($shop_id = null, $pageindex = null, $pagesize = null)
     {
         $data = [];
-        is_null($pagesize) || $data['pagesize'] = $pagesize;
-        is_null($pageindex) || $data['pageindex'] = $pageindex;
-        is_null($shop_id) || $data['shop_id'] = $shop_id;
+        is_null($pagesize) || $data["pagesize"] = $pagesize;
+        is_null($pageindex) || $data["pageindex"] = $pageindex;
+        is_null($shop_id) || $data["shop_id"] = $shop_id;
 
-        return $this->post('bizwifi/device/list', $data);
+        return $this->post("bizwifi/device/list", $data);
     }
 
     /**
@@ -137,7 +137,7 @@ class Wifi extends WeChatBase
      */
     public function delShopWifi($bssid)
     {
-        return $this->post('bizwifi/device/delete', ['bssid' => $bssid]);
+        return $this->post("bizwifi/device/delete", ["bssid" => $bssid]);
     }
 
     /**
@@ -152,7 +152,7 @@ class Wifi extends WeChatBase
      */
     public function getQrc($shop_id, $ssid, $img_id = 1)
     {
-        return $this->post('bizwifi/qrcode/get', ['shop_id' => $shop_id, 'ssid' => $ssid, 'img_id' => $img_id]);
+        return $this->post("bizwifi/qrcode/get", ["shop_id" => $shop_id, "ssid" => $ssid, "img_id" => $img_id]);
     }
 
     /**
@@ -167,10 +167,10 @@ class Wifi extends WeChatBase
      */
     public function setHomePage($shop_id, $template_id, $url = null)
     {
-        $data = ['shop_id' => $shop_id, 'template_id' => $template_id];
-        is_null($url) && $data['struct'] = ['url' => $url];
+        $data = ["shop_id" => $shop_id, "template_id" => $template_id];
+        is_null($url) && $data["struct"] = ["url" => $url];
 
-        return $this->post('bizwifi/homepage/set', $data);
+        return $this->post("bizwifi/homepage/set", $data);
     }
 
     /**
@@ -183,7 +183,7 @@ class Wifi extends WeChatBase
      */
     public function getHomePage($shop_id)
     {
-        return $this->post('bizwifi/homepage/get', ['shop_id' => $shop_id]);
+        return $this->post("bizwifi/homepage/get", ["shop_id" => $shop_id]);
     }
 
     /**
@@ -197,7 +197,7 @@ class Wifi extends WeChatBase
      */
     public function setBar($shop_id, $bar_type = 1)
     {
-        return $this->post('bizwifi/bar/set', ['shop_id' => $shop_id, 'bar_type' => $bar_type]);
+        return $this->post("bizwifi/bar/set", ["shop_id" => $shop_id, "bar_type" => $bar_type]);
     }
 
     /**
@@ -211,7 +211,7 @@ class Wifi extends WeChatBase
      */
     public function setFinishPage($shop_id, $finishpage_url)
     {
-        return $this->post('bizwifi/finishpage/set', ['shop_id' => $shop_id, 'finishpage_url' => $finishpage_url]);
+        return $this->post("bizwifi/finishpage/set", ["shop_id" => $shop_id, "finishpage_url" => $finishpage_url]);
     }
 
     /**
@@ -226,7 +226,7 @@ class Wifi extends WeChatBase
      */
     public function staticList($begin_date, $end_date, $shop_id = -1)
     {
-        return $this->post('bizwifi/statistics/list', ['shop_id' => $shop_id, 'begin_date' => $begin_date, 'end_date' => $end_date]);
+        return $this->post("bizwifi/statistics/list", ["shop_id" => $shop_id, "begin_date" => $begin_date, "end_date" => $end_date]);
     }
 
     /**
@@ -243,9 +243,9 @@ class Wifi extends WeChatBase
      */
     public function setCouponput($shop_id, $card_id, $card_describe, $start_time, $end_time)
     {
-        $data = ['shop_id' => $shop_id, 'card_id' => $card_id, 'card_describe' => $card_describe, 'start_time' => $start_time, 'end_time' => $end_time];
+        $data = ["shop_id" => $shop_id, "card_id" => $card_id, "card_describe" => $card_describe, "start_time" => $start_time, "end_time" => $end_time];
 
-        return $this->post('bizwifi/couponput/set', $data);
+        return $this->post("bizwifi/couponput/set", $data);
     }
 
     /**
@@ -258,7 +258,7 @@ class Wifi extends WeChatBase
      */
     public function getCouponput($shop_id)
     {
-        return $this->post('bizwifi/couponput/get', ['shop_id' => $shop_id]);
+        return $this->post("bizwifi/couponput/get", ["shop_id" => $shop_id]);
     }
 
 }

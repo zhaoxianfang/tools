@@ -22,12 +22,12 @@ class Transfers extends BasicWePay
      */
     public function create(array $options)
     {
-        $this->params->offsetUnset('appid');
-        $this->params->offsetUnset('mch_id');
-        $this->params->set('mchid', $this->config['mch_id']);
-        $this->params->set('mch_appid', $this->config['appid']);
-        $url = 'https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers';
-        return $this->callPostApi($url, $options, true, 'MD5', false);
+        $this->params->offsetUnset("appid");
+        $this->params->offsetUnset("mch_id");
+        $this->params->set("mchid", $this->config["mch_id"]);
+        $this->params->set("mch_appid", $this->config["appid"]);
+        $url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers";
+        return $this->callPostApi($url, $options, true, "MD5", false);
     }
 
     /**
@@ -38,12 +38,12 @@ class Transfers extends BasicWePay
      */
     public function query($partnerTradeNo)
     {
-        $this->params->offsetUnset('mchid');
-        $this->params->offsetUnset('mch_appid');
-        $this->params->set('appid', $this->config['appid']);
-        $this->params->set('mch_id', $this->config['mch_id']);
-        $url = 'https://api.mch.weixin.qq.com/mmpaymkttransfers/gettransferinfo';
-        return $this->callPostApi($url, ['partner_trade_no' => $partnerTradeNo], true, 'MD5', false);
+        $this->params->offsetUnset("mchid");
+        $this->params->offsetUnset("mch_appid");
+        $this->params->set("appid", $this->config["appid"]);
+        $this->params->set("mch_id", $this->config["mch_id"]);
+        $url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/gettransferinfo";
+        return $this->callPostApi($url, ["partner_trade_no" => $partnerTradeNo], true, "MD5", false);
     }
 
 }

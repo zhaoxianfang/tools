@@ -25,7 +25,7 @@ class Total extends WeChatBase
      */
     public function getWeanalysisAppidDailySummarytrend($begin_date, $end_date)
     {
-        return $this->post('datacube/getweanalysisappiddailysummarytrend', ['begin_date' => $begin_date, 'end_date' => $end_date]);
+        return $this->post("datacube/getweanalysisappiddailysummarytrend", ["begin_date" => $begin_date, "end_date" => $end_date]);
     }
 
     /**
@@ -39,7 +39,7 @@ class Total extends WeChatBase
      */
     public function getWeanalysisAppidDailyVisittrend($begin_date, $end_date)
     {
-        return $this->post('datacube/getweanalysisappiddailyvisittrend', ['begin_date' => $begin_date, 'end_date' => $end_date]);
+        return $this->post("datacube/getweanalysisappiddailyvisittrend", ["begin_date" => $begin_date, "end_date" => $end_date]);
     }
 
     /**
@@ -53,7 +53,7 @@ class Total extends WeChatBase
      */
     public function getWeanalysisAppidWeeklyVisittrend($begin_date, $end_date)
     {
-        return $this->post('datacube/getweanalysisappidweeklyvisittrend', ['begin_date' => $begin_date, 'end_date' => $end_date]);
+        return $this->post("datacube/getweanalysisappidweeklyvisittrend", ["begin_date" => $begin_date, "end_date" => $end_date]);
     }
 
     /**
@@ -67,7 +67,7 @@ class Total extends WeChatBase
      */
     public function getWeanalysisAppidMonthlyVisittrend($begin_date, $end_date)
     {
-        return $this->post('datacube/getweanalysisappidmonthlyvisittrend', ['begin_date' => $begin_date, 'end_date' => $end_date]);
+        return $this->post("datacube/getweanalysisappidmonthlyvisittrend", ["begin_date" => $begin_date, "end_date" => $end_date]);
     }
 
     /**
@@ -81,7 +81,7 @@ class Total extends WeChatBase
      */
     public function getWeanalysisAppidVisitdistribution($begin_date, $end_date)
     {
-        return $this->post('datacube/getweanalysisappidvisitdistribution', ['begin_date' => $begin_date, 'end_date' => $end_date]);
+        return $this->post("datacube/getweanalysisappidvisitdistribution", ["begin_date" => $begin_date, "end_date" => $end_date]);
     }
 
     /**
@@ -95,7 +95,7 @@ class Total extends WeChatBase
      */
     public function getWeanalysisAppidDailyRetaininfo($begin_date, $end_date)
     {
-        return $this->post('datacube/getweanalysisappiddailyretaininfo', ['begin_date' => $begin_date, 'end_date' => $end_date]);
+        return $this->post("datacube/getweanalysisappiddailyretaininfo", ["begin_date" => $begin_date, "end_date" => $end_date]);
     }
 
     /**
@@ -109,7 +109,7 @@ class Total extends WeChatBase
      */
     public function getWeanalysisAppidWeeklyRetaininfo($begin_date, $end_date)
     {
-        return $this->post('datacube/getweanalysisappidweeklyretaininfo', ['begin_date' => $begin_date, 'end_date' => $end_date]);
+        return $this->post("datacube/getweanalysisappidweeklyretaininfo", ["begin_date" => $begin_date, "end_date" => $end_date]);
     }
 
     /**
@@ -123,7 +123,7 @@ class Total extends WeChatBase
      */
     public function getWeanalysisAppidMonthlyRetaininfo($begin_date, $end_date)
     {
-        return $this->post('datacube/getweanalysisappidmonthlyretaininfo', ['begin_date' => $begin_date, 'end_date' => $end_date]);
+        return $this->post("datacube/getweanalysisappidmonthlyretaininfo", ["begin_date" => $begin_date, "end_date" => $end_date]);
     }
 
     /**
@@ -137,7 +137,7 @@ class Total extends WeChatBase
      */
     public function getWeanalysisAppidVisitPage($begin_date, $end_date)
     {
-        return $this->post('datacube/getweanalysisappidvisitpage', ['begin_date' => $begin_date, 'end_date' => $end_date]);
+        return $this->post("datacube/getweanalysisappidvisitpage", ["begin_date" => $begin_date, "end_date" => $end_date]);
     }
 
     /**
@@ -151,6 +151,6 @@ class Total extends WeChatBase
      */
     public function getWeanalysisAppidUserportrait($begin_date, $end_date)
     {
-        return $this->post('datacube/getweanalysisappiduserportrait', ['begin_date' => $begin_date, 'end_date' => $end_date]);
+        return $this->post("datacube/getweanalysisappiduserportrait", ["begin_date" => $begin_date, "end_date" => $end_date]);
     }
 }

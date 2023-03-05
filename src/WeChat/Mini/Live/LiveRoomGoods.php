@@ -16,13 +16,13 @@ class LiveRoomGoods extends LiveBase
             "ids"    => $goodsIdsArr,  // 数组列表，可传入多个，里面填写 商品 ID
             "roomId" => $roomId,
         ];
-        $res    = $this->post('wxaapi/broadcast/room/addgoods', $params);
-        if ($res['errcode'] != 0) {
-            throw new \Exception($this->getMessage($res['errcode']));
+        $res    = $this->post("wxaapi/broadcast/room/addgoods", $params);
+        if ($res["errcode"] != 0) {
+            throw new \Exception($this->getMessage($res["errcode"]));
         }
         return [
-            'message' => '导入成功',
-            'code'    => $res['errcode'],
+            "message" => "导入成功",
+            "code"    => $res["errcode"],
         ];
     }
 
@@ -35,13 +35,13 @@ class LiveRoomGoods extends LiveBase
             "onSale"  => $onSale,
         ];
 
-        $res = $this->post('wxaapi/broadcast/goods/onsale', $params);
-        if ($res['errcode'] != 0) {
-            throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
+        $res = $this->post("wxaapi/broadcast/goods/onsale", $params);
+        if ($res["errcode"] != 0) {
+            throw new \Exception($this->getMessage($res["errcode"]), $res["errcode"]);
         }
         return [
-            'message' => '操作成功',
-            'code'    => $res['errcode'],
+            "message" => "操作成功",
+            "code"    => $res["errcode"],
         ];
     }
 
@@ -53,13 +53,13 @@ class LiveRoomGoods extends LiveBase
             "goodsId" => $goodsId,
         ];
 
-        $res = $this->post('wxaapi/broadcast/goods/deleteInRoom', $params);
-        if ($res['errcode'] != 0) {
-            throw new \Exception($this->getMessage($res['errcode']));
+        $res = $this->post("wxaapi/broadcast/goods/deleteInRoom", $params);
+        if ($res["errcode"] != 0) {
+            throw new \Exception($this->getMessage($res["errcode"]));
         }
         return [
-            'message' => '操作成功',
-            'code'    => $res['errcode'],
+            "message" => "操作成功",
+            "code"    => $res["errcode"],
         ];
     }
 
@@ -71,13 +71,13 @@ class LiveRoomGoods extends LiveBase
             "goodsId" => $goodsId,
         ];
 
-        $res = $this->post('wxaapi/broadcast/goods/push', $params);
-        if ($res['errcode'] != 0) {
-            throw new \Exception($this->getMessage($res['errcode']));
+        $res = $this->post("wxaapi/broadcast/goods/push", $params);
+        if ($res["errcode"] != 0) {
+            throw new \Exception($this->getMessage($res["errcode"]));
         }
         return [
-            'message' => '操作成功',
-            'code'    => $res['errcode'],
+            "message" => "操作成功",
+            "code"    => $res["errcode"],
         ];
 
     }
@@ -87,20 +87,20 @@ class LiveRoomGoods extends LiveBase
     {
         $goods = [];
         foreach ($goodsIds as $id) {
-            $goods[] = ['goodsId' => $id];
+            $goods[] = ["goodsId" => $id];
         }
         $params = [
             "roomId" => $roomId,
             "goods"  => $goods,
         ];
 
-        $res = $this->post('wxaapi/broadcast/goods/sort', $params);
-        if ($res['errcode'] != 0) {
-            throw new \Exception($this->getMessage($res['errcode']));
+        $res = $this->post("wxaapi/broadcast/goods/sort", $params);
+        if ($res["errcode"] != 0) {
+            throw new \Exception($this->getMessage($res["errcode"]));
         }
         return [
-            'message' => '操作成功',
-            'code'    => $res['errcode'],
+            "message" => "操作成功",
+            "code"    => $res["errcode"],
         ];
     }
 
@@ -112,15 +112,15 @@ class LiveRoomGoods extends LiveBase
             "goodsId" => $goodsId,
         ];
 
-        $res = $this->post('wxaapi/broadcast/goods/getVideo', $params);
-        if ($res['errcode'] != 0) {
-            throw new \Exception($this->getMessage($res['errcode']));
+        $res = $this->post("wxaapi/broadcast/goods/getVideo", $params);
+        if ($res["errcode"] != 0) {
+            throw new \Exception($this->getMessage($res["errcode"]));
         }
         return [
-            'message' => '操作成功',
-            'code'    => $res['errcode'],
-            'data'    => [
-                'url' => $res['url'],
+            "message" => "操作成功",
+            "code"    => $res["errcode"],
+            "data"    => [
+                "url" => $res["url"],
             ],
         ];
     }

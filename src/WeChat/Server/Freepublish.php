@@ -25,7 +25,7 @@ class Freepublish extends WeChatBase
      */
     public function submit($media_id)
     {
-        return $this->post("cgi-bin/freepublish/submit", ['media_id' => $media_id]);
+        return $this->post("cgi-bin/freepublish/submit", ["media_id" => $media_id]);
     }
 
     /**
@@ -38,7 +38,7 @@ class Freepublish extends WeChatBase
      */
     public function getFreePublish($publish_id)
     {
-        return $this->post("cgi-bin/freepublish/get", ['publish_id' => $publish_id]);
+        return $this->post("cgi-bin/freepublish/get", ["publish_id" => $publish_id]);
     }
 
     /**
@@ -53,7 +53,7 @@ class Freepublish extends WeChatBase
      */
     public function delete($article_id, $index = 0)
     {
-        return $this->post("cgi-bin/freepublish/delete", ['article_id' => $article_id, 'index' => $index]);
+        return $this->post("cgi-bin/freepublish/delete", ["article_id" => $article_id, "index" => $index]);
     }
 
     /**
@@ -66,7 +66,7 @@ class Freepublish extends WeChatBase
      */
     public function getArticle($article_id)
     {
-        return $this->post("cgi-bin/freepublish/getarticle", ['article_id' => $article_id]);
+        return $this->post("cgi-bin/freepublish/getarticle", ["article_id" => $article_id]);
     }
 
     /**
@@ -81,6 +81,6 @@ class Freepublish extends WeChatBase
      */
     public function batchGet($offset = 0, $count = 20, $no_content = 0)
     {
-        return $this->post("cgi-bin/freepublish/batchget", ['no_content' => $no_content, 'offset' => $offset, 'count' => $count]);
+        return $this->post("cgi-bin/freepublish/batchget", ["no_content" => $no_content, "offset" => $offset, "count" => $count]);
     }
 }

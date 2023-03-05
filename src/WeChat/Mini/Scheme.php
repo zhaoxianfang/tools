@@ -25,7 +25,7 @@ class Scheme extends WeChatBase
      */
     public function create($data)
     {
-        return $this->post('wxa/generatescheme', $data);
+        return $this->post("wxa/generatescheme", $data);
     }
 
     /**
@@ -38,7 +38,7 @@ class Scheme extends WeChatBase
      */
     public function query($scheme)
     {
-        return $this->post('wxa/queryscheme', ['scheme' => $scheme]);
+        return $this->post("wxa/queryscheme", ["scheme" => $scheme]);
     }
 
     /**
@@ -64,6 +64,6 @@ class Scheme extends WeChatBase
      */
     public function urlQuery($urllink)
     {
-        return $this->post('wxa/query_urllink', ['url_link' => $urllink]);
+        return $this->post("wxa/query_urllink", ["url_link" => $urllink]);
     }
 }

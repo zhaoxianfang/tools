@@ -9,5 +9,5 @@ use zxf\WeChat\WeChatBase;
  */
 class LiveBase extends WeChatBase
 {
-    public $type = 'mini_program';
+    public $type = "mini_program";
 }

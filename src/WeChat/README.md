@@ -10,19 +10,19 @@
 ```
 // 配置
 public $config = [
-    'token'          => env('TOOLS_WECHAT_OFFICIAL_TOKEN', ''), //填写你设定的key
-    'appid'          => env('TOOLS_WECHAT_OFFICIAL_APP_ID', ''), //填写高级调用功能的app id
-    'appsecret'      => env('TOOLS_WECHAT_OFFICIAL_APP_SECRET', ''), //填写高级调用功能的密钥
-    'encodingaeskey' => env('TOOLS_WECHAT_OFFICIAL_AES_KEY', ''), //填写加密用的EncodingAESKey
+    "token"          => env("TOOLS_WECHAT_OFFICIAL_TOKEN", ""), //填写你设定的key
+    "appid"          => env("TOOLS_WECHAT_OFFICIAL_APP_ID", ""), //填写高级调用功能的app id
+    "appsecret"      => env("TOOLS_WECHAT_OFFICIAL_APP_SECRET", ""), //填写高级调用功能的密钥
+    "encodingaeskey" => env("TOOLS_WECHAT_OFFICIAL_AES_KEY", ""), //填写加密用的EncodingAESKey
     // 配置商户支付参数（可选，在使用支付功能时需要）
-    'mch_id'         => "1235704602",
-    'mch_key'        => 'IKI4kpHjU94ji3oqre5zYaQMwLHuZPmj',
+    "mch_id"         => "1235704602",
+    "mch_key"        => "IKI4kpHjU94ji3oqre5zYaQMwLHuZPmj",
     // 配置商户支付双向证书目录（可选，在使用退款|打款|红包时需要）
-    'ssl_key'        => '',
-    'ssl_cer'        => '',
+    "ssl_key"        => "",
+    "ssl_cer"        => "",
     // 缓存目录配置（可选，需拥有读写权限）
-    'cache_path'     => env('TOOLS_WECHAT_OFFICIAL_CACHE_PATH', ''), //插件 缓存目录
-    'token_callback' => env('TOOLS_WECHAT_OFFICIAL_TOKEN_CALLBACK_URL', ''), //回调地址
+    "cache_path"     => env("TOOLS_WECHAT_OFFICIAL_CACHE_PATH", ""), //插件 缓存目录
+    "token_callback" => env("TOOLS_WECHAT_OFFICIAL_TOKEN_CALLBACK_URL", ""), //回调地址
 ];
 ```
 
@@ -48,14 +48,14 @@ $this->sdk-getAccessToken(bool $refreshToken = false)
 
 ```
 $params: 需要post 发送的部分【非必填】
-$urlParams: 如果请求的url中需要拼接url地址，则可以传入此参数，例如['title'=>'aha','test'=>123]【仅需要时候传参即可】
-$res = $this->sdk->post('wxaapi/broadcast/goods/add', $params=[],$urlParams=[]);
-if ($res['errcode'] != 0) {
-    throw new \Exception($this->getMessage($res['errcode']), $res['errcode']);
+$urlParams: 如果请求的url中需要拼接url地址，则可以传入此参数，例如["title"=>"aha","test"=>123]【仅需要时候传参即可】
+$res = $this->sdk->post("wxaapi/broadcast/goods/add", $params=[],$urlParams=[]);
+if ($res["errcode"] != 0) {
+    throw new \Exception($this->getMessage($res["errcode"]), $res["errcode"]);
 }
 return [
-    'message' => $this->sdk->getMessage($res['errcode']),
-    'code'    => $res['errcode'],
+    "message" => $this->sdk->getMessage($res["errcode"]),
+    "code"    => $res["errcode"],
 ];
 ```
 
@@ -64,7 +64,7 @@ return [
 > 调用同post一样，把`post`换为`get`即可
 
 ```
-$this->sdk->get('xxx', $params=[],$urlParams=[]);
+$this->sdk->get("xxx", $params=[],$urlParams=[]);
 ```
 
 ### 上传素材
@@ -86,7 +86,7 @@ $this->sdk->get('xxx', $params=[],$urlParams=[]);
  * @return array|bool|mixed|string
  * @throws Exception
  */
-$this->sdk->upload(10|29|21,$url,$filePath, $type,$videoTitle = '',  $videoDescription='');
+$this->sdk->upload(10|29|21,$url,$filePath, $type,$videoTitle = "",  $videoDescription="");
 ```
 
 ## 服务端token验证
@@ -110,14 +110,14 @@ $this->sdk = LiveGoods::instance($this->config);
 
 ```
 
-$path      = 'pages/goods/show?id=' . $goods_id; // 小程序路径
+$path      = "pages/goods/show?id=" . $goods_id; // 小程序路径
 $goodsInfo = [
-    'name'        => '',商品名称
-    'coverImgUrl' => '', // 商品图片封面 mediaID
-    'price'       => '',
-    'price2'      => '',
-    'priceType'   => 1,
-    'goodsKey'   => ['id'],
+    "name"        => "",商品名称
+    "coverImgUrl" => "", // 商品图片封面 mediaID
+    "price"       => "",
+    "price2"      => "",
+    "priceType"   => 1,
+    "goodsKey"   => ["id"],
 ];
 return $this->sdk->importAndWaitAudit($goodsInfo, $path);
 
@@ -138,13 +138,13 @@ $this->sdk->delete($wechat_goods_id)
 #### 更新商品
 
 ```
-$path      = 'pages/goods/show?id=' . $goods_id;
+$path      = "pages/goods/show?id=" . $goods_id;
 $goodsInfo = [
-    'name'        => $title,
-    'coverImgUrl' => '', // 商品图片封面 mediaID
-    'price'       => $price,
-    'price2'      => '',
-    'priceType'   => 1,
+    "name"        => $title,
+    "coverImgUrl" => "", // 商品图片封面 mediaID
+    "price"       => $price,
+    "price2"      => "",
+    "priceType"   => 1,
 ];
 return $this->sdk->update($liveGoods->mini_wechat_goods_id, $goodsInfo, $path);
 ```

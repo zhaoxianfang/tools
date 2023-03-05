@@ -25,7 +25,7 @@ class Custom extends WeChatBase
      */
     public function addAccount($kf_account, $nickname)
     {
-        $data = ['kf_account' => $kf_account, 'nickname' => $nickname];
+        $data = ["kf_account" => $kf_account, "nickname" => $nickname];
 
         return $this->post("customservice/kfaccount/add", $data);
     }
@@ -41,7 +41,7 @@ class Custom extends WeChatBase
      */
     public function updateAccount($kf_account, $nickname)
     {
-        $data = ['kf_account' => $kf_account, 'nickname' => $nickname];
+        $data = ["kf_account" => $kf_account, "nickname" => $nickname];
 
         return $this->post("customservice/kfaccount/update", $data);
     }
@@ -56,7 +56,7 @@ class Custom extends WeChatBase
      */
     public function deleteAccount($kf_account)
     {
-        $data = ['kf_account' => $kf_account];
+        $data = ["kf_account" => $kf_account];
 
         return $this->post("customservice/kfaccount/del", $data);
     }
@@ -72,7 +72,7 @@ class Custom extends WeChatBase
      */
     public function inviteWorker($kf_account, $invite_wx)
     {
-        return $this->callPostApi('customservice/kfaccount/inviteworker', ['kf_account' => $kf_account, 'invite_wx' => $invite_wx]);
+        return $this->callPostApi("customservice/kfaccount/inviteworker", ["kf_account" => $kf_account, "invite_wx" => $invite_wx]);
     }
 
     /**
@@ -97,7 +97,7 @@ class Custom extends WeChatBase
      */
     public function uploadHeadimg($kf_account, $image)
     {
-        return $this->customUpload("customservice/kfaccount/uploadheadimg", $image, ['kf_account' => $kf_account]);
+        return $this->customUpload("customservice/kfaccount/uploadheadimg", $image, ["kf_account" => $kf_account]);
     }
 
     /**
@@ -122,9 +122,9 @@ class Custom extends WeChatBase
      * @return array
      * @throws Exception
      */
-    public function typing(string $openid, string $command = 'Typing')
+    public function typing(string $openid, string $command = "Typing")
     {
-        return $this->post("cgi-bin/message/custom/typing", ['touser' => $openid, 'command' => $command]);
+        return $this->post("cgi-bin/message/custom/typing", ["touser" => $openid, "command" => $command]);
     }
 
     /**
@@ -164,8 +164,8 @@ class Custom extends WeChatBase
      */
     public function massDelete($msg_id, $article_idx = null)
     {
-        $data = ['msg_id' => $msg_id];
-        is_null($article_idx) || $data['article_idx'] = $article_idx;
+        $data = ["msg_id" => $msg_id];
+        is_null($article_idx) || $data["article_idx"] = $article_idx;
 
         return $this->post("cgi-bin/message/mass/delete", $data);
     }
@@ -193,7 +193,7 @@ class Custom extends WeChatBase
      */
     public function massGet($msg_id)
     {
-        return $this->post("cgi-bin/message/mass/get", ['msg_id' => $msg_id]);
+        return $this->post("cgi-bin/message/mass/get", ["msg_id" => $msg_id]);
     }
 
     /**
@@ -217,7 +217,7 @@ class Custom extends WeChatBase
      */
     public function massSetSeed($speed)
     {
-        return $this->post("cgi-bin/message/mass/speed/set", ['speed' => $speed]);
+        return $this->post("cgi-bin/message/mass/speed/set", ["speed" => $speed]);
     }
 
 

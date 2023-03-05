@@ -24,7 +24,7 @@ class Template extends WeChatBase
      */
     public function setIndustry($industry_id1, $industry_id2)
     {
-        return $this->post('cgi-bin/template/api_set_industry', ['industry_id1' => $industry_id1, 'industry_id2' => $industry_id2]);
+        return $this->post("cgi-bin/template/api_set_industry", ["industry_id1" => $industry_id1, "industry_id2" => $industry_id2]);
     }
 
     /**
@@ -48,7 +48,7 @@ class Template extends WeChatBase
      */
     public function addTemplate($tpl_id)
     {
-        return $this->post("cgi-bin/template/api_add_template", ['template_id_short' => $tpl_id]);
+        return $this->post("cgi-bin/template/api_add_template", ["template_id_short" => $tpl_id]);
     }
 
     /**
@@ -59,7 +59,7 @@ class Template extends WeChatBase
      */
     public function getAllPrivateTemplate()
     {
-        return $this->get('cgi-bin/template/get_all_private_template');
+        return $this->get("cgi-bin/template/get_all_private_template");
     }
 
     /**
@@ -72,7 +72,7 @@ class Template extends WeChatBase
      */
     public function delPrivateTemplate($tpl_id)
     {
-        return $this->post('cgi-bin/template/del_private_template', ['template_id' => $tpl_id]);
+        return $this->post("cgi-bin/template/del_private_template", ["template_id" => $tpl_id]);
     }
 
     /**
@@ -85,7 +85,7 @@ class Template extends WeChatBase
      */
     public function send(array $data)
     {
-        return $this->post('cgi-bin/message/template/send', $data);
+        return $this->post("cgi-bin/message/template/send", $data);
     }
 
 

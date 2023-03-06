@@ -134,13 +134,14 @@ class WeChatBase extends WechatCode
     /**
      * 解析url
      *
-     * @param string $apiUrl 接口请求地址
-     * @param array  $params 拼接在url中的附加参数
+     * @param string $apiUrl   接口请求地址
+     * @param array  $params   拼接在url中的附加参数
+     * @param bool   $reqToken 仅 requestToken() 方法调用
      *
      * @return string
      * @throws Exception
      */
-    public function parseUrl(string $apiUrl = "", $params = []): string
+    public function parseUrl(string $apiUrl = "", $params = [], $reqToken = false): string
     {
         if (empty($apiUrl)) {
             throw new Exception("接口请求地址不能为空");
@@ -148,11 +149,13 @@ class WeChatBase extends WechatCode
         $baseUrl = substr($apiUrl, 0, 4) == "http" ? $apiUrl : $this->urlBase;
 
         // 是否需要拼接 access_token
-        $token    = $this->useToken ? "access_token=" . $this->getAccessToken() : "";
+        $token    = ($reqToken || $this->useToken) ? "" : "access_token=" . $this->getAccessToken();
         $url      = str_replace(["API_URL", "ACCESS_TOKEN"], [$apiUrl, $token], $baseUrl);
         $urlQuery = !empty($params) ? http_build_query($params) : "";
-        if (!empty($urlQuery) && stripos($baseUrl, $urlQuery)) {
-            $url .= (stripos($url, "?") ? "&" : "?") . http_build_query($params);
+
+        if (!empty($urlQuery) && is_bool(stripos($url, $urlQuery))) {
+            $url = trim($url, '?');
+            $url .= ((stripos($url, "?")) ? "&" : "?") . $urlQuery;
         }
 
         return $url;
@@ -260,11 +263,12 @@ class WeChatBase extends WechatCode
      */
     private function requestToken(): void
     {
-        $url = $this->enableToken(false)->parseUrl("cgi-bin/token", [
+        $url = $this->parseUrl("cgi-bin/token", [
             "grant_type" => "client_credential",
             "appid"      => $this->config["appid"],
             "secret"     => $this->config["appsecret"],
-        ]);
+        ], true);
+
         $res = $this->http->get($url, "json");
 
         if (isset($res["errcode"]) && $res["errcode"] > 0) {
@@ -295,14 +299,14 @@ class WeChatBase extends WechatCode
     /**
      * 发送 post 请求
      *
-     * @param string $url
-     * @param array  $data
-     * @param string $urlParams 拼接在url中的参数
+     * @param string       $url
+     * @param array|string $data
+     * @param string       $urlParams 拼接在url中的参数
      *
      * @return mixed
      * @throws Exception
      */
-    public function post(string $url = "", array $data = [], $urlParams = []): mixed
+    public function post(string $url = "", array|string $data = [], $urlParams = []): mixed
     {
         $this->setOriginalUrl($url);
         $this->url = $this->parseUrl($url, $urlParams);
@@ -329,14 +333,14 @@ class WeChatBase extends WechatCode
     /**
      *  发送get 请求
      *
-     * @param string $url
-     * @param array  $data
-     * @param string $urlParams 拼接在url中的参数
+     * @param string       $url
+     * @param array|string $data
+     * @param string       $urlParams 拼接在url中的参数
      *
      * @return mixed
      * @throws Exception
      */
-    public function get(string $url = "", array $data = [], $urlParams = [])
+    public function get(string $url = "", array|string $data = [], $urlParams = [])
     {
         $this->setOriginalUrl($url);
         $this->url = $this->parseUrl($url, $urlParams);

@@ -37,7 +37,7 @@ class Qrcode extends WeChatBase
         } else { // 永久二维码
             $data["action_name"] = is_integer($scene) ? "QR_LIMIT_SCENE" : "QR_LIMIT_STR_SCENE";
         }
-        return $this->post("cgi-bin/qrcode/create", $data);
+        return $this->post("cgi-bin/qrcode/create", json_encode($data));
     }
 
     /**

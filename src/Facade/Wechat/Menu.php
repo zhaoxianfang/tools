@@ -4,6 +4,7 @@ namespace zxf\Facade\Wechat;
 
 use zxf\Facade\FacadeBase;
 use zxf\Facade\FacadeInterface;
+
 /**
  * 微信公众号菜单
  *
@@ -18,6 +19,6 @@ class Menu extends FacadeBase implements FacadeInterface
 {
     public static function getFacadeAccessor()
     {
-        return \zxf\WeChat\Server\Menu::class;
+        return \zxf\WeChat\Offiaccount\Menu::class;
     }
 }

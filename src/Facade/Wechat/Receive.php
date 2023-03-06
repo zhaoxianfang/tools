@@ -24,6 +24,6 @@ class Receive extends FacadeBase implements FacadeInterface
 {
     public static function getFacadeAccessor()
     {
-        return \zxf\WeChat\Server\Receive::class;
+        return \zxf\WeChat\Offiaccount\Receive::class;
     }
 }

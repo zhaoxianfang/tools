@@ -3,8 +3,8 @@
 namespace zxf\ali\Pay;
 
 use Exception;
-use zxf\WeChat\Contracts\BasicAliPay;
 use WeChat\Exceptions\InvalidArgumentException;
+use zxf\ali\Pay\Contracts\BasicAliPay;
 
 /**
  * 支付宝转账到账户

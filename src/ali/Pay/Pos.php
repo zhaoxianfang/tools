@@ -2,7 +2,7 @@
 
 namespace zxf\ali\Pay;
 
-use zxf\WeChat\Contracts\BasicAliPay;
+use zxf\ali\Pay\Contracts\BasicAliPay;
 
 /**
  * 支付宝刷卡支付

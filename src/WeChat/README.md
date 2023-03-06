@@ -1,9 +1,19 @@
 # 微信模块开发
 
-| 模块    | 路径              |
-|-------|-----------------|
-| 微信小程序 | zxf\WeChat\Mini     |
-| 微信公众号 | zxf\WeChat\OfficialAccount |
+// https://github.com/zoujingli/WeChatDeveloper
+
+| 模块 | 路径 |
+|--|------------------------|
+| 视频号 | zxf\WeChat\Channels |
+| 小游戏 | zxf\WeChat\Game |
+| 小程序 | zxf\WeChat\Mini |
+| 公众号 | zxf\WeChat\Offiaccount |
+| 开发平台 | zxf\WeChat\Oplatform |
+| 微信支付 | zxf\WeChat\Pay |
+| 智能对话 | zxf\WeChat\Robot |
+| 小商店 | zxf\WeChat\Store |
+| 企业微信 | zxf\WeChat\Work |
+| 腾讯小微 | zxf\WeChat\XiaoWei |
 
 ## 配置文件
 

@@ -17,6 +17,12 @@ use Exception;
  */
 class BasicWePay extends WeChatBase
 {
+    // 微信请求地址
+    private $urlBase = "https://api.mch.weixin.qq.com/API_URL?ACCESS_TOKEN";
+
+    // 接口url中是否使用 $accessToken 参数
+    public $useToken = false;
+
     /**
      * 当前请求数据
      */

@@ -3,8 +3,9 @@
 
 namespace zxf\WeChat\Contracts;
 
-use zxf\WeChat\Server\Common\Tools;
-use zxf\WeChat\Server\Common\WeChatBase;
+use zxf\Facade\Cache;
+use zxf\WeChat\WeChatBase;
+
 
 /**
  * 企业微信基础类
@@ -19,21 +20,20 @@ class BasicWeWork extends WeChatBase
      *
      * @return string
      * @throws \Exception
-     * @throws \Exception
      */
-    public function getAccessToken()
+    public function getAccessToken(): string
     {
         if ($this->access_token) {
             return $this->access_token;
         }
         $ckey = $this->config["appid"] . "_access_token";
-        if ($this->access_token = Tools::getCache($ckey)) {
+        if ($this->access_token = Cache::get($ckey)) {
             return $this->access_token;
         }
         list($appid, $secret) = [$this->config["appid"], $this->config["appsecret"]];
-        $result = Tools::json2arr(Tools::get("https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={$appid}&corpsecret={$secret}"));
+        $result = $this->get("https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={$appid}&corpsecret={$secret}");
         if (isset($result["access_token"]) && $result["access_token"]) {
-            Tools::setCache($ckey, $result["access_token"], 7000);
+            Cache::set($ckey, $result["access_token"], 7000);
         }
         return $this->access_token = $result["access_token"];
     }

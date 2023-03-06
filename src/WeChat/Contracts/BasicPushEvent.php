@@ -5,7 +5,7 @@ namespace zxf\WeChat\Contracts;
 use Exception;
 use zxf\Facade\Xml;
 use zxf\tools\DataArray;
-use zxf\WeChat\Server\Prpcrypt\Prpcrypt;
+use zxf\WeChat\Offiaccount\Prpcrypt\Prpcrypt;
 use zxf\WeChat\WeChatBase;
 
 /**

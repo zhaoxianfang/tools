@@ -3,6 +3,7 @@
 namespace zxf\WeChat\PayV3\Contracts;
 
 use Exception;
+use zxf\Facade\Cache;
 use zxf\WeChat\PayV3\Cert;
 
 /**
@@ -126,8 +127,9 @@ abstract class BasicWePay
         );
         list($header, $content) = $this->_doRequestCurl($method, $this->base . $pathinfo, [
             "data" => $jsondata, "header" => [
-                "Accept: application/json", "Content-Type: application/json",
-                "User-Agent: https://thinkadmin.top", "Authorization: WECHATPAY2-SHA256-RSA2048 {$token}",
+                "Accept: application/json",
+                "Content-Type: application/json",
+                "Authorization: WECHATPAY2-SHA256-RSA2048 {$token}",
             ],
         ]);
         if ($verify) {
@@ -230,9 +232,9 @@ abstract class BasicWePay
     protected function tmpFile($name, $content = null)
     {
         if (is_null($content)) {
-            return base64_decode(Tools::getCache($name) ?: "");
+            return base64_decode(Cache::get($name) ?: '');
         } else {
-            return Tools::setCache($name, base64_encode($content), 7200);
+            return Cache::set($name, base64_encode($content), 7200);
         }
     }
 }

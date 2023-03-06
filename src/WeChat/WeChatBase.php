@@ -6,7 +6,6 @@ use Exception;
 use zxf\Facade\Curl;
 use zxf\Facade\Request;
 use zxf\tools\Cache;
-use zxf\tools\DataArray;
 
 class WeChatBase extends WechatCode
 {

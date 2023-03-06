@@ -1,22 +1,22 @@
 <?php
 
 
-
 namespace zxf\WeChat\Pay;
 
+use Exception;
 use zxf\WeChat\Contracts\BasicWePay;
 
 /**
  * 微信红包支持
- * Class Redpack
- * @package WePay
  */
 class Redpack extends BasicWePay
 {
 
     /**
      * 发放普通红包
+     *
      * @param array $options
+     *
      * @return array
      * @throws Exception
      */
@@ -30,7 +30,9 @@ class Redpack extends BasicWePay
 
     /**
      * 发放裂变红包
+     *
      * @param array $options
+     *
      * @return array
      * @throws Exception
      */
@@ -44,7 +46,9 @@ class Redpack extends BasicWePay
 
     /**
      * 查询红包记录
+     *
      * @param string $mchBillno 商户发放红包的商户订单号
+     *
      * @return array
      * @throws Exception
      */

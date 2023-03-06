@@ -3,20 +3,19 @@
 namespace zxf\ali\Pay;
 
 use Exception;
-use WeChat\Exceptions\InvalidArgumentException;
 use zxf\ali\Pay\Contracts\BasicAliPay;
 
 /**
  * 支付宝转账到账户
- * Class Transfer
- * @package AliPay
  */
 class Transfer extends BasicAliPay
 {
 
     /**
      * 旧版 向指定支付宝账户转账
+     *
      * @param array $options
+     *
      * @return array|bool
      * @throws Exception
      */
@@ -28,7 +27,9 @@ class Transfer extends BasicAliPay
 
     /**
      * 新版 向指定支付宝账户转账
+     *
      * @param array $options
+     *
      * @return array|bool
      * @throws Exception
      */
@@ -41,7 +42,9 @@ class Transfer extends BasicAliPay
 
     /**
      * 新版 转账业务单据查询接口
+     *
      * @param array $options
+     *
      * @return array|bool
      * @throws Exception
      */
@@ -55,7 +58,9 @@ class Transfer extends BasicAliPay
 
     /**
      * 新版 支付宝资金账户资产查询接口
+     *
      * @param array $options
+     *
      * @return array|bool
      * @throws Exception
      */

@@ -1,6 +1,8 @@
 <?php
 
 namespace zxf\tools;
+use Exception;
+
 /**
  *  app版本校验工具类
  *  Class VersionTools
@@ -45,30 +47,34 @@ class Version
 
     /**
      * @desc 将版本转为数字
+     *
      * @param String $version 版本
+     *
      * @return Int
+     * @throws Exception
      */
     public function versionToInteger($version)
     {
-
         if ($this->check($version)) {
             list($major, $minor, $sub) = explode('.', $version);
             $integer_version = $major * 10000 + $minor * 100 + $sub;
             return intval($integer_version);
         } else {
-            throw new \Exception('version Validate Error');
+            throw new Exception('version Validate Error');
         }
 
     }
 
     /**
      * @desc 将数字转为版本
+     *
      * @param Int $version_code 版本的数字表示
+     *
      * @return String
+     * @throws Exception
      */
     public function integerToVersion($version_code)
     {
-
         if (is_numeric($version_code) && $version_code >= 10000) {
             $version    = array();
             $version[0] = (int)($version_code / 10000);
@@ -76,7 +82,7 @@ class Version
             $version[2] = $version_code % 100;
             return implode('.', $version);
         } else {
-            throw new \Exception('version code Validate Error');
+            throw new Exception('version code Validate Error');
         }
     }
 
@@ -87,15 +93,17 @@ class Version
      */
     public function check($version)
     {
-        $ret = preg_match('/^[0-9]{1,3}\.[0-9]{1,2}\.[0-9]{1,2}$/', $version);
-        return $ret ? true : false;
+        return (bool)preg_match('/^[0-9]{1,3}\.[0-9]{1,2}\.[0-9]{1,2}$/', $version);
     }
 
     /**
      * @desc 比较两个版本的值
+     *
      * @param String $version1 版本1
      * @param String $version2 版本2
+     *
      * @return Int                -1:1<2, 0:相等, 1:1>2
+     * @throws Exception
      */
     public function compare($version1, $version2)
     {
@@ -111,7 +119,7 @@ class Version
                 return 0;
             }
         } else {
-            throw new \Exception('version1 or version2 Validate Error');
+            throw new Exception('version1 or version2 Validate Error');
         }
     }
 }

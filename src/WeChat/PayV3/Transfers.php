@@ -7,9 +7,6 @@ use zxf\WeChat\PayV3\Contracts\BasicWePay;
 
 /**
  * 普通商户商家转账到零钱
- * Class Transfers
- *
- * @package zxf\WeChat\PayV3
  */
 class Transfers extends BasicWePay
 {

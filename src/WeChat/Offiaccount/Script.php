@@ -3,6 +3,7 @@
 namespace zxf\WeChat\Offiaccount;
 
 use Exception;
+use zxf\Facade\Random;
 use zxf\WeChat\WeChatBase;
 
 /**
@@ -77,7 +78,7 @@ class Script extends WeChatBase
             "hideOptionMenu", "showOptionMenu", "hideMenuItems", "showMenuItems", "hideAllNonBaseMenuItem", "showAllNonBaseMenuItem",
             "closeWindow", "scanQRCode", "chooseWXPay", "openProductSpecificView", "addCard", "chooseCard", "openCard",
         ];
-        $data = ["url" => $url, "timestamp" => "" . time(), "jsapi_ticket" => $ticket, "noncestr" => \zxf\Facade\Random::alnum(16)];
+        $data = ["url" => $url, "timestamp" => "" . time(), "jsapi_ticket" => $ticket, "noncestr" => Random::alnum(32)];
         return [
             "debug"     => false,
             "appId"     => $appid,

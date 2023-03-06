@@ -5,6 +5,7 @@ namespace zxf\WeChat\PayV3;
 
 
 use Exception;
+use zxf\Facade\Random;
 use zxf\WeChat\PayV3\Contracts\BasicWePay;
 use zxf\WeChat\PayV3\Contracts\DecryptAes;
 
@@ -50,7 +51,7 @@ class Order extends BasicWePay
             $time     = (string)time();
             $appid    = $this->config["appid"];
             $prepayId = $result["prepay_id"];
-            $nonceStr = Tools::createNoncestr();
+            $nonceStr = Random::alnum(32);
             if ($type === "app") {
                 $sign = $this->signBuild(join("\n", [$appid, $time, $nonceStr, $prepayId, ""]));
                 return ["partnerId" => $this->config["mch_id"], "prepayId" => $prepayId, "package" => "Sign=WXPay", "nonceStr" => $nonceStr, "timeStamp" => $time, "sign" => $sign];

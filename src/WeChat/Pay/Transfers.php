@@ -1,22 +1,22 @@
 <?php
 
 
-
 namespace zxf\WeChat\Pay;
 
+use Exception;
 use zxf\WeChat\Contracts\BasicWePay;
 
 /**
  * 微信商户打款到零钱
- * Class Transfers
- * @package WePay
  */
 class Transfers extends BasicWePay
 {
 
     /**
      * 企业付款到零钱
+     *
      * @param array $options
+     *
      * @return array
      * @throws Exception
      */
@@ -32,7 +32,9 @@ class Transfers extends BasicWePay
 
     /**
      * 查询企业付款到零钱
+     *
      * @param string $partnerTradeNo 商户调用企业付款API时使用的商户订单号
+     *
      * @return array
      * @throws Exception
      */

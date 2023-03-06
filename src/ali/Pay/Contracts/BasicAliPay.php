@@ -8,9 +8,6 @@ use zxf\tools\DataArray;
 
 /**
  * 支付宝支付基类
- * Class AliPay
- *
- * @package AliPay\Contracts
  */
 abstract class BasicAliPay
 {

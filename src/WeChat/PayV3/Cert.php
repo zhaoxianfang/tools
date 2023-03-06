@@ -9,9 +9,6 @@ use zxf\WeChat\PayV3\Contracts\DecryptAes;
 
 /**
  * 平台证书管理
- * Class Cert
- *
- * @package zxf\WeChat\PayV3
  */
 class Cert extends BasicWePay
 {

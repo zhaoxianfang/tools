@@ -7,9 +7,6 @@ use Exception;
 
 /**
  * Aes 解密工具类
- * Class DecryptAes
- *
- * @package zxf\WeChat\PayV3\Contracts
  */
 class DecryptAes
 {
@@ -23,6 +20,8 @@ class DecryptAes
      * Constructor
      *
      * @param string $aesKey
+     *
+     * @throws Exception
      */
     public function __construct($aesKey)
     {

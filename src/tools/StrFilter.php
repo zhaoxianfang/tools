@@ -33,9 +33,9 @@ class StrFilter
     private $_RTAG        = '##]]';
 
     /**
-     * @param Array $white_list
-     * @param Array $black_list
-     * @param String $replacement
+     * @param array  $white_list
+     * @param array  $black_list
+     * @param string $replacement
      */
     public function __construct($white_list = array(), $black_list = array(), $replacement = '*')
     {
@@ -46,7 +46,9 @@ class StrFilter
 
     /**
      * @desc 替换非法字符
+     *
      * @param String $content 要替換的字符串
+     *
      * @return String          替換后的字符串
      */
     public function replace($content)
@@ -74,7 +76,9 @@ class StrFilter
 
     /**
      * @desc 检查是否含有非法自符
+     *
      * @param String $content 字符串
+     *
      * @return boolean
      */
     public function check($content)
@@ -101,7 +105,9 @@ class StrFilter
 
     /**
      * @desc 保护白名单
+     *
      * @param String $content 字符串
+     *
      * @return String
      */
     private function protect_white_list($content)
@@ -116,7 +122,9 @@ class StrFilter
 
     /**
      * @desc 还原白名单
+     *
      * @param String $content
+     *
      * @return String
      */
     private function resume_white_list($content)
@@ -129,7 +137,9 @@ class StrFilter
 
     /**
      * @desc 白名单 key还原为value
+     *
      * @param Array $matches 匹配white_list的key
+     *
      * @return String white_list val
      */
     private function getval($matches)

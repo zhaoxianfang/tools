@@ -13,14 +13,16 @@ class Xml
      *
      * @param $xml
      *
-     * @return mixed
+     * @return array|mixed|string
      */
-    public function xmlToArray($xml)
+    public function xml2arr($xml)
     {
-        //禁止引用外部xml实体
-        libxml_disable_entity_loader(true);
-        $xml_string = simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA);
-        return json_decode(json_encode($xml_string), true);
+        if (PHP_VERSION_ID < 80000) {
+            //禁止引用外部xml实体
+            libxml_disable_entity_loader(true);
+        }
+        $data = (array)simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA);
+        return json_decode(json_encode($data), true);
     }
 
     /**
@@ -50,32 +52,13 @@ class Xml
     }
 
     /**
-     * @desc xml转数组
-     *
-     * @param $xml
-     *
-     * @return array|mixed|string
-     */
-    public function xml2array($xml)
-    {
-        if (PHP_VERSION_ID < 80000) {
-            $backup = libxml_disable_entity_loader(true);
-            $data   = (array)simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA);
-            libxml_disable_entity_loader($backup);
-        } else {
-            $data = (array)simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA);
-        }
-        return json_decode(json_encode($data), true);
-    }
-
-    /**
      * 解析XML文本内容
      *
      * @param string $xml
      *
      * @return array|false
      */
-    public static function xml3array($xml)
+    public static function xml3arr($xml)
     {
         $state = xml_parse($parser = xml_parser_create(), $xml, true);
         return xml_parser_free($parser) && $state ? self::xml2arr($xml) : false;

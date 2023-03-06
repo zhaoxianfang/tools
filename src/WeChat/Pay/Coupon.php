@@ -1,21 +1,21 @@
 <?php
 
 
-
 namespace zxf\WeChat\Pay;
 
+use Exception;
 use zxf\WeChat\Contracts\BasicWePay;
 
 /**
  * 微信商户代金券
- * Class Coupon
- * @package WePay
  */
 class Coupon extends BasicWePay
 {
     /**
      * 发放代金券
+     *
      * @param array $options
+     *
      * @return array
      * @throws Exception
      */
@@ -27,26 +27,28 @@ class Coupon extends BasicWePay
 
     /**
      * 查询代金券批次
+     *
      * @param array $options
+     *
      * @return array
      * @throws Exception
      */
     public function queryStock(array $options)
     {
-        $url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/query_coupon_stock";
-        return $this->callPostApi($url, $options, false);
+        return $this->post("mmpaymkttransfers/query_coupon_stock", $options);
     }
 
     /**
      * 查询代金券信息
+     *
      * @param array $options
+     *
      * @return array
      * @throws Exception
      */
     public function queryInfo(array $options)
     {
-        $url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/query_coupon_stock";
-        return $this->callPostApi($url, $options, false);
+        return $this->post("mmpaymkttransfers/query_coupon_stock", $options);
     }
 
 }

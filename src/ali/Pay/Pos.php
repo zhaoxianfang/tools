@@ -2,18 +2,20 @@
 
 namespace zxf\ali\Pay;
 
+use Exception;
 use zxf\ali\Pay\Contracts\BasicAliPay;
 
 /**
  * 支付宝刷卡支付
- * Class Pos
- * @package AliPay
  */
 class Pos extends BasicAliPay
 {
     /**
      * Pos constructor.
+     *
      * @param array $options
+     *
+     * @throws Exception
      */
     public function __construct(array $options)
     {
@@ -24,9 +26,11 @@ class Pos extends BasicAliPay
 
     /**
      * 创建数据操作
+     *
      * @param array $options
+     *
      * @return array|bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function apply($options)
     {

@@ -2,18 +2,20 @@
 
 namespace zxf\ali\Pay;
 
+use Exception;
 use zxf\ali\Pay\Contracts\BasicAliPay;
 
 /**
  * 手机WAP网站支付支持
- * Class Wap
- * @package AliPay
  */
 class Wap extends BasicAliPay
 {
     /**
      * Wap constructor.
+     *
      * @param array $options
+     *
+     * @throws Exception
      */
     public function __construct(array $options)
     {
@@ -24,7 +26,9 @@ class Wap extends BasicAliPay
 
     /**
      * 创建数据操作
+     *
      * @param array $options
+     *
      * @return string
      */
     public function apply($options)

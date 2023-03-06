@@ -5,13 +5,11 @@ namespace zxf\WeChat\PayV3;
 
 
 use Exception;
+use zxf\Facade\Xml;
 use zxf\WeChat\PayV3\Contracts\BasicWePay;
 
 /**
  * 订单退款接口
- * Class Refund
- *
- * @package zxf\WeChat\PayV3
  */
 class Refund extends BasicWePay
 {
@@ -50,7 +48,7 @@ class Refund extends BasicWePay
      */
     public function notify()
     {
-        $data = Tools::xml2arr(file_get_contents("php://input"));
+        $data = Xml::xml2arr(file_get_contents("php://input"));
         if (!isset($data["return_code"]) || $data["return_code"] !== "SUCCESS") {
             throw new Exception("获取退款通知XML失败！");
         }
@@ -58,7 +56,7 @@ class Refund extends BasicWePay
             $key            = md5($this->config["mch_v3_key"]);
             $decrypt        = base64_decode($data["req_info"]);
             $response       = openssl_decrypt($decrypt, "aes-256-ecb", $key, OPENSSL_RAW_DATA);
-            $data["result"] = Tools::xml2arr($response);
+            $data["result"] = Xml::xml2arr($response);
             return $data;
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());

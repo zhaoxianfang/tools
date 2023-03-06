@@ -36,7 +36,7 @@ class User extends WeChatBase
      */
     public function getUserInfo($openid, $lang = "zh_CN")
     {
-        $this->get("cgi-bin/user/info", [], [
+        return $this->get("cgi-bin/user/info", [], [
             "openid" => $openid,
             "lang"   => $lang,
         ]);

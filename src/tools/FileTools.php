@@ -68,7 +68,7 @@ class FileTools
      *
      * @param string $file_path 绝对路径
      */
-    static public function downFile(string $file_path)
+    static public function downloadFile(string $file_path)
     {
         //判断文件是否存在
         $file_path = iconv('utf-8', 'gb2312', $file_path); //对可能出现的中文名称进行转码

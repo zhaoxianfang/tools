@@ -29,7 +29,8 @@ class LiveGoods extends LiveBase
                 "priceType"       => (empty($goods["priceType"]) || !in_array($goods["priceType"], [1, 2, 3])) ? 1 : $goods["priceType"],// 价格类型，1：一口价（只需要传入price，price2不传） 2：价格区间（price字段为左边界，price2字段为右边界，price和price2必传） 3：显示折扣价（price字段为原价，price2字段为现价， price和price2必传）
                 "price"           => $goods["price"],// 数字，最多保留两位小数，单位元
                 "price2"          => !empty($goods["price2"]) ? $goods["price2"] : "",// 数字，最多保留两位小数，单位元
-                "url"             => urlencode($miniWechatPath),// 商品详情页的小程序路径，路径参数存在 url 的，该参数的值需要进行 encode 处理再填入
+                // "url"             => urlencode($miniWechatPath),// 商品详情页的小程序路径，路径参数存在 url 的，该参数的值需要进行 encode 处理再填入
+                "url"             => $miniWechatPath,// 商品详情页的小程序路径，路径参数存在 url 的，该参数的值需要进行 encode 处理再填入
                 "thirdPartyAppid" => !empty($goods["thirdPartyAppid"]) ? $goods["thirdPartyAppid"] : "",// 当商品为第三方小程序的商品则填写为对应第三方小程序的appid，自身小程序商品则为""
                 "goodsKey"        => !empty($goods["goodsKey"]) ? $goods["goodsKey"] : [],// goodsKey格式为 json 数组，其内容是 url 的参数 key,例如["id","pid",...]则匹配 $miniWechatPath 路径中的id,pid,....参数
             ],

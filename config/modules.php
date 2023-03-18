@@ -125,7 +125,7 @@ return [
             'jobs'            => ['path' => 'Jobs', 'generate' => false],
             'emails'          => ['path' => 'Emails', 'generate' => false],
             'notifications'   => ['path' => 'Notifications', 'generate' => false],
-            'resource'        => ['path' => 'Transformers', 'generate' => false],
+            'resource'        => ['path' => 'Http/Resources', 'generate' => false],
             'component-view'  => ['path' => 'Resources/views/components', 'generate' => false],
             'component-class' => ['path' => 'View/Components', 'generate' => false],
         ],

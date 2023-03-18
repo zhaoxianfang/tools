@@ -23,12 +23,10 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
     public function register()
     {
-
         // 注册modules 模块服务
         $this->registerModulesServices();
 
         $this->registerProviders();
-
 
         $this->mergeConfigFrom(__DIR__ . '/../../config/modules.php', 'modules');
 

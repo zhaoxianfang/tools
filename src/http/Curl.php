@@ -464,6 +464,24 @@ class Curl
         return $res;
     }
 
+    // 判断远程资源是否存在
+    public function exists($url = '')
+    {
+        $curl = curl_init($url);
+        curl_setopt($curl, CURLOPT_NOBODY, true);          // 不取回数据
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); // https请求 不验证证书和hosts
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($curl, CURLOPT_SSLVERSION, 1);
+        $found = false; // 如果请求没有发送失败
+        if (curl_exec($curl) !== false) {
+            if (curl_getinfo($curl, CURLINFO_HTTP_CODE) == 200) {// 再检查http响应码是否为200
+                $found = true;
+            }
+        }
+        curl_close($curl);
+        return $found;
+    }
+
     protected function run($data_type = 'json')
     {
         $content = curl_exec($this->ch);

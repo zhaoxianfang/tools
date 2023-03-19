@@ -240,7 +240,7 @@ class Menu
         $usePkArr = []; ////记录被处理过的pid
         //第一步，将分类id作为数组key,并创建children单元
         foreach ($arrData as $arr) {
-            $arr                                     = object_to_array($arr);
+            $arr                                     = obj2Arr($arr);
             $tree[$arr[$this->pk]]                   = $arr;
             $tree[$arr[$this->pk]][$this->childlist] = array();
 
@@ -955,7 +955,7 @@ class Menu
         $newAuthArr = [];
         //先设置数组的键值和名称到新数组
         foreach ($dataArr as $key => $auth) {
-            $auth = object_to_array($auth);
+            $auth = obj2Arr($auth);
 
             $nameArr = explode('/', str_replace(".", "/", $auth[$uri]));
             if (count($nameArr) < 2) {

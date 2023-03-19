@@ -47,7 +47,7 @@ class Cache
     {
         if (empty($config['cache_path'])) {
             $config['cache_path'] = sys_get_temp_dir() . '/cache';
-            create_folders($config['cache_path']);
+            create_dir($config['cache_path']);
         }
         if (!empty($config)) {
             $this->config = array_merge($this->config, $config);
@@ -233,7 +233,7 @@ class Cache
             $contents = '<?php' . "\n" . 'return array(' . "\n" . '"expiry_time" => ' . $expiry . ",\n" . '"data"=>' . var_export($contents, true) . ");\n";
         }
 
-        create_folders(dirname($file));
+        create_dir(dirname($file));
         $result = false;
         $f      = @fopen($file, 'w');
         if ($f) {
@@ -355,7 +355,7 @@ class Cache
             return throw new Exception('file name is empty!');
         }
         $file = $this->config['cache_path'] . DIRECTORY_SEPARATOR . 'custom_file' . DIRECTORY_SEPARATOR . $filename;
-        create_folders(dirname($file));
+        create_dir(dirname($file));
         $result = false;
         $f      = @fopen($file, 'w');
         if ($f) {

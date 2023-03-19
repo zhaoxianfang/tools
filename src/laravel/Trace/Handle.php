@@ -33,7 +33,7 @@ class Handle
         $this->startTime   = constant('LARAVEL_START') ?? microtime(true);
         $this->startMemory = memory_get_usage();
         $this->fileList    = $this->getFileInfo();
-        listan_sql($this->sqlList, false);
+        listen_sql($this->sqlList, false);
         return $this;
     }
 

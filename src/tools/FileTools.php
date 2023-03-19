@@ -221,7 +221,7 @@ class FileTools
             if (@is_dir($cur_dir)) {
                 continue;
             }
-            create_folders($cur_dir);
+            create_dir($cur_dir);
         }
         return is_dir($path);
 

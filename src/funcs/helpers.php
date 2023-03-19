@@ -4,11 +4,13 @@
  * 常用的一些函数归纳
  */
 
-if (!function_exists('i_session')) {
+use JetBrains\PhpStorm\NoReturn;
+
+if (!function_exists('session')) {
     /**
-     * 简易session 助手函数
+     * 简易 session 助手函数
      */
-    function i_session($name, $value = null)
+    function session($name, $value = null)
     {
         $handle = \zxf\tools\Session::instance();
         if ($value != null) {
@@ -20,135 +22,78 @@ if (!function_exists('i_session')) {
         }
     }
 }
-
-if (!function_exists('zxf_substr')) {
+if (!function_exists('cache')) {
     /**
-     * 字符串截取
+     * cache 助手函数
      */
-    function zxf_substr($string, $start = 0, $length = 5)
+    function cache($name, $value = null, $expiry = '+1 day')
     {
-        $string = str_ireplace(' ', '', $string); // 去除空格
-        if (function_exists('mb_substr')) {
-            $newstr = mb_substr($string, $start, $length, "UTF-8");
-        } elseif (function_exists('iconv_substr')) {
-            $newstr = iconv_substr($string, $start, $length, "UTF-8");
-        } else {
-            for ($i = 0; $i < $length; $i++) {
-                $tempstring = substr($string, $start, 1);
-                if (ord($tempstring) > 127) {
-                    $i++;
-                    if ($i < $length) {
-                        $newstring[] = substr($string, $start, 3);
-                        $string      = substr($string, 3);
-                    }
-                } else {
-                    $newstring[] = substr($string, $start, 1);
-                    $string      = substr($string, 1);
-                }
-            }
-            $newstr = join($newstring);
+        $handle = \zxf\tools\Cache::instance();
+        if (is_null($value)) {
+            return $handle->delete($name);
         }
-        return $newstr;
+        if (!empty($value)) {
+            $value = (is_array($value) || is_object($value)) ? json_encode($value) : $value;
+            return $handle->set($name, $value, $expiry);
+        } else {
+            $val = $handle->get($name);
+            return is_json($val) ? json_decode_plus($val, true) : $val;
+        }
     }
 }
 
 if (!function_exists('truncate')) {
     /**
-     * 文章去去除标签截取文字
+     * 文章去除标签截取文字
      *
      * @Author   ZhaoXianFang
      * @DateTime 2018-09-12
      *
      * @param string  $string [被截取字符串]
+     * @param integer $start  [起始位置]
      * @param integer $length [长度]
      * @param boolean $append [是否加...]
      *
      * @return   string
      */
-    function truncate($string, $length = 150, $append = true)
+    function truncate(string $string, int $start = 0, int $length = 150, bool $append = true): string
     {
-        $string    = html_entity_decode($string);
-        $string    = trim(strip_tags($string, '<em>'));
-        $strlength = strlen($string);
-        if ($length == 0 || $length >= $strlength) {
+        if (empty($string)) {
+            return $string;
+        }
+        $string = detach_html($string);
+        $strLen = strlen($string);
+        if ($length == 0 || $length >= $strLen) {
             return $string;
         } elseif ($length < 0) {
-            $length = $strlength + $length;
+            $length = $strLen + $length;
             if ($length < 0) {
-                $length = $strlength;
+                $length = $strLen;
             }
         }
         if (function_exists('mb_substr')) {
-            $newstr = mb_substr($string, 0, $length, "UTF-8");
+            $newStr = mb_substr($string, 0, $length, "UTF-8");
         } elseif (function_exists('iconv_substr')) {
-            $newstr = iconv_substr($string, 0, $length, "UTF-8");
+            $newStr = iconv_substr($string, 0, $length, "UTF-8");
         } else {
-            for ($i = 0; $i < $length; $i++) {
-                $tempstring = substr($string, 0, 1);
-                if (ord($tempstring) > 127) {
-                    $i++;
-                    if ($i < $length) {
-                        $newstring[] = substr($string, 0, 3);
-                        $string      = substr($string, 3);
-                    }
+            $length = abs($length);
+            $len    = $start + $length;
+            $newStr = '';
+            for ($i = $start; $i < $len && $i < $strLen; $i++) {
+                if (ord(substr($string, $i, 1)) > 0xa0) {
+                    //utf8编码中一个汉字是占据3个字节的，对于其他的编码的字符串，中文占据的字节各有不同，自己需要去修改这个数a
+                    $newStr .= substr($string, $i, 3);//此处a=3;
+                    $i      += 2;
+                    $len    += 2; //截取了三个字节之后，截取字符串的终止偏移量也要随着每次汉字的截取增加a-1;
                 } else {
-                    $newstring[] = substr($string, 0, 1);
-                    $string      = substr($string, 1);
+                    $newStr .= substr($string, $i, 1);
                 }
             }
-            $newstr = join($newstring);
         }
-        if ($append && $string != $newstr) {
-            $newstr .= '...';
-        }
-        return $newstr;
+        return $newStr . (($append && $string != $newStr) ? '...' : '');
     }
 }
 
-if (!function_exists('check_file_exists')) {
-    /**
-     * 判断远程资源是否存在
-     *
-     * @param $url
-     *
-     * @return bool
-     */
-    function check_file_exists($url): bool
-    {
-        $curl = curl_init($url);
-        curl_setopt($curl, CURLOPT_NOBODY, true);          // 不取回数据
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); // https请求 不验证证书和hosts
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($curl, CURLOPT_SSLVERSION, 1);
-        $result = curl_exec($curl); // 发送请求
-
-        $found = false; // 如果请求没有发送失败
-        if ($result !== false) {
-            $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE); // 再检查http响应码是否为200
-            if ($statusCode == 200) {
-                $found = true;
-            }
-        }
-        curl_close($curl);
-        return $found;
-    }
-}
-
-if (!function_exists('default_img')) {
-    /**
-     * 判断图片是否存在，如果不存在则使用默认图 [若使用第三个参数，则用第三个参数替换第二个参数里面的固定字符串 __str__ ]
-     * $imgPath 展示的图片地址
-     * $defaultImgOrReplaceStr :1、如果 $imgPath 不存在且 $replaceStr 为空时候表示 默认图片地址; 2、如果 $imgPath 不存在且 $replaceStr 不为空则用 $replaceStr 替换  $defaultImgOrReplaceStr 中的 固定字符串 __str__
-     */
-    function default_img($imgPath = '', $defaultImgOrReplaceStr = '', $replaceStr = '')
-    {
-        if (substr($imgPath, 0, 4) == 'http' && check_file_exists($imgPath)) {
-            return $imgPath;
-        }
-        $imgPath = substr($imgPath, 0, 1) == '/' ? '.' . $imgPath : $imgPath;
-        return is_file($imgPath) ? ltrim($imgPath, '.') : str_ireplace('__str__', $replaceStr, $defaultImgOrReplaceStr);
-    }
-}
 if (!function_exists('remove_str_emoji')) {
     // 移除字符串中的 emoji 表情
     function remove_str_emoji($str): string
@@ -323,16 +268,16 @@ if (!function_exists('img_to_gray')) {
     }
 }
 
-if (!function_exists('rmdirs')) {
+if (!function_exists('del_dirs')) {
     /**
      * 删除文件夹
      *
-     * @param string $dirname  目录
-     * @param bool   $withself 是否删除自身
+     * @param string $dirname 目录
+     * @param bool   $delSelf 是否删除自身
      *
      * @return boolean
      */
-    function rmdirs(string $dirname, bool $withself = true)
+    function del_dirs(string $dirname, bool $delSelf = true): bool
     {
         if (!is_dir($dirname)) {
             return false;
@@ -340,45 +285,14 @@ if (!function_exists('rmdirs')) {
         $files = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($dirname, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST
         );
-        foreach ($files as $fileinfo) {
-            $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
-            $todo($fileinfo->getRealPath());
+        foreach ($files as $item) {
+            $todo = ($item->isDir() ? 'rmdir' : 'unlink');
+            $todo($item->getRealPath());
         }
-        if ($withself) {
-            @rmdir($dirname);
+        if ($delSelf) {
+            rmdir($dirname);
         }
         return true;
-    }
-}
-
-if (!function_exists('deldir')) {
-
-    /**
-     * 删除文件夹
-     *
-     * @param string $dir     目录
-     * @param bool   $delSelf 是否删除目录自身
-     *
-     * @return boolean
-     */
-    function deldir(string $dir, $delSelf = true): bool
-    {
-        //先删除目录下的文件：
-        $dh = opendir($dir);
-        while ($file = readdir($dh)) {
-            if ($file != "." && $file != "..") {
-                $fullpath = $dir . "/" . $file;
-                $fullpath = str_replace(['//', '\\\\', '\\/'], ['/', '\\', '/'], $fullpath);
-                if (!is_dir($fullpath)) {
-                    unlink($fullpath);
-                } else {
-                    deldir($fullpath);
-                }
-            }
-        }
-        closedir($dh);
-        //删除当前文件夹：
-        return $delSelf ? rmdir($dir) : true;
     }
 }
 
@@ -392,28 +306,31 @@ if (!function_exists('dir_is_empty')) {
      */
     function dir_is_empty(string $dir): bool
     {
+        $res = false;
         if ($handle = opendir($dir)) {
-            while ($item = readdir($handle)) {
-                if ($item != "." && $item != " ..") {
-                    return true;
+            while (!$res && ($item = readdir($handle))) {
+                if ($item != "." && $item != "..") {
+                    $res = true;
                 }
             }
         }
-        return false;
+        closedir($handle);
+        return $res;
     }
 }
 
-if (!function_exists('create_folders')) {
+if (!function_exists('create_dir')) {
     /**
      * 递归创建目录
      *
-     * @param string $dir 目录
+     * @param string $dir         目录
+     * @param int    $permissions 权限
      *
      * @return boolean
      */
-    function create_folders(string $dir): bool
+    function create_dir(string $dir, int $permissions = 0755): bool
     {
-        return is_dir($dir) or (create_folders(dirname($dir)) and mkdir($dir, 0755,true));
+        return is_dir($dir) or (create_dir(dirname($dir), $permissions) and mkdir($dir, $permissions, true));
     }
 }
 
@@ -421,16 +338,13 @@ if (!function_exists('get_filesize')) {
     /**
      * 获取文件的大小
      *
-     * @param string $file 文件名称
-     * @param string $dir  路径
+     * @param string $filePath 文件路径
      *
      * @return string
      */
-    function get_filesize(string $file, string $dir = '')
+    function get_filesize(string $filePath): string
     {
-        $perms = stat($dir . $file);
-        $size  = $perms['size'];
-        return byteFormat($size);
+        return byteFormat(stat($filePath)['size']);
     }
 
 }
@@ -462,17 +376,17 @@ if (!function_exists('response_and_continue')) {
      * @Author   ZhaoXianFang
      * @DateTime 2019-01-07
      *
-     * @param $responseDara   立即响应的数组数据
-     * @param $backendFun     需要在后台执行的方法
-     * @param $backendFunArgs 给在后台执行的方法传递的参数
-     * @param $setTimeLimit   设置后台响应可执行时间
+     * @param array        $responseDara   立即响应的数组数据
+     * @param string|array $backendFun     需要在后台执行的方法
+     * @param array        $backendFunArgs 给在后台执行的方法传递的参数
+     * @param int          $setTimeLimit   设置后台响应可执行时间
      *
      * @return void
      *
      * @demo     ：先以json格式返回$data，然后在后台执行 $this->pushSuggestToJyblSys(array('suggId' => $id))
      *         response_and_continue($data, array($this, "pushSuggestToJyblSys"), array('suggId' => $id));
      */
-    function response_and_continue($responseDara, $backendFun, $backendFunArgs = array(), $setTimeLimit = 0)
+    function response_and_continue(array $responseDara, string|array $backendFun, array $backendFunArgs = [], int $setTimeLimit = 0)
     {
         ignore_user_abort(true);
         set_time_limit($setTimeLimit);
@@ -507,19 +421,19 @@ if (!function_exists('response_and_continue')) {
     }
 }
 
-if (!function_exists('num_to_zhcn')) {
+if (!function_exists('num_to_cn')) {
     /**
      * 数字转换为中文
      *
      * @Author   ZhaoXianFang
      *
-     * @param string|integer|float $num  目标数字
-     * @param integer              $mode 模式[true:金额（默认）,false:普通数字表示]
-     * @param boolean              $sim  使用小写（默认）
+     * @param float|int|string $num  目标数字
+     * @param bool             $mode 模式[true:金额（默认）,false:普通数字表示]
+     * @param bool             $sim  使用小写（默认）
      *
      * @return string
      */
-    function num_to_zhcn($num, $mode = true, $sim = true): string
+    function num_to_cn(float|int|string $num, bool $mode = true, bool $sim = true): string
     {
         if (!is_numeric($num)) {
             return '含有非数字非小数点字符！';
@@ -528,21 +442,22 @@ if (!function_exists('num_to_zhcn')) {
             : array('零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖');
         $unit = $sim ? array('', '十', '百', '千', '', '万', '亿', '兆')
             : array('', '拾', '佰', '仟', '', '萬', '億', '兆');
-        // $retval = $mode ? '元' : '点';
-        $retval = $mode ? '' : '点';
+        // $retStr = $mode ? '元' : '点';
+        $retStr = $mode ? '' : '点';
         //小数部分
         if (strpos($num, '.')) {
             list($num, $dec) = explode('.', $num);
             $dec = strval(round($dec, 2));
             if ($mode) {
-                $retval .= "{$char[$dec['0']]}角{$char[$dec['1']]}分";
+                $retStr .= "{$char[$dec['0']]}角{$char[$dec['1']]}分";
             } else {
                 for ($i = 0, $c = strlen($dec); $i < $c; $i++) {
-                    $retval .= $char[$dec[$i]];
+                    $retStr .= $char[$dec[$i]];
                 }
             }
         }
         //整数部分
+        $out = [];
         $str = $mode ? strrev(intval($num)) : strrev($num);
         for ($i = 0, $c = strlen($str); $i < $c; $i++) {
             $out[$i] = $char[$str[$i]];
@@ -563,29 +478,13 @@ if (!function_exists('num_to_zhcn')) {
             }
         }
         $num_val = array_reverse($out);
-        return join('', $num_val) . $retval;
-    }
-}
-
-if (!function_exists('object_to_array')) {
-    //对象转数组
-    function object_to_array($array)
-    {
-        if (is_object($array)) {
-            $array = (array)$array;
-        }
-        if (is_array($array)) {
-            foreach ($array as $key => $value) {
-                $array[$key] = object_to_array($value);
-            }
-        }
-        return $array;
+        return join('', $num_val) . $retStr;
     }
 }
 
 if (!function_exists('array_to_tree')) {
     //二维数组转树tree型结构
-    function array_to_tree($items, $pid = 'pid', $id = 'id', $child = 'childlist')
+    function array_to_tree($items, $pid = 'pid', $id = 'id', $child = 'childlist'): array
     {
         $tree = array(); //格式化好的树
         foreach ($items as $item) {
@@ -605,15 +504,14 @@ if (!function_exists('show_img')) {
     function show_img($imgFile = '')
     {
         header('Content-type:image/png');
-        echo file_get_contents($imgFile);
-        die;
+        die(file_get_contents($imgFile));
     }
 }
 if (!function_exists('string_to_utf8')) {
     /*
      * 字符串自动转utf8编码
      */
-    function string_to_utf8($str = '')
+    function string_to_utf8($str = ''): array|bool|string|null
     {
         return mb_convert_encoding($str, "UTF-8", "auto");
     }
@@ -622,7 +520,7 @@ if (!function_exists('string_to_gbk')) {
     /*
      * 字符串自动转gbk编码
      */
-    function string_to_gbk($str = '')
+    function string_to_gbk($str = ''): array|bool|string|null
     {
         return mb_convert_encoding($str, "GBK", "auto");
     }
@@ -631,46 +529,9 @@ if (!function_exists('show_json')) {
     /*
      * 对json数据格式化输入展示 [转化为json格式，并格式化样式]
      */
-    function show_json($array = [])
+    function show_json($array = []): bool|string
     {
         return json_encode($array, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-    }
-}
-
-if (!function_exists('get_laravel_route')) {
-    /**
-     * 获取 laravel 模块 控制器 方法名
-     */
-    function get_laravel_route()
-    {
-        try {
-            list($class, $method) = explode('@', request()->route()->getActionName());
-
-            # 模块名
-            $modules = str_replace('\\', '.', str_replace('App\\Http\\Controllers\\', '', trim(implode('\\', array_slice(explode('\\', $class), 0, -1)), '\\')));
-
-            # 控制器名称
-            $controller = str_replace(
-                'Controller',
-                '',
-                substr(strrchr($class, '\\'), 1)
-            );
-            # 方法名
-            // $method = strtolower($method);
-
-            return [strtolower($modules), strtolower($controller), strtolower($method)];
-        } catch (Exception $e) {
-            try {
-                $uriParams  = explode('/', request()->route()->uri);
-                $modules    = $uriParams['0'];
-                $controller = $uriParams['1'];
-                $method     = $uriParams['2'];
-                return [strtolower($modules), strtolower($controller), strtolower($method)];
-            } catch (Exception $e) {
-                return ['index', 'index', 'index'];
-            }
-
-        }
     }
 }
 
@@ -678,25 +539,25 @@ if (!function_exists('is_idcard')) {
     /**
      * 判断是否为身份证
      *
-     * @param $idcard
+     * @param $idCard
      *
      * @return bool
      */
-    function is_idcard($idcard)
+    function is_idcard($idCard): bool
     {
-        $id_card = trim($idcard);
+        $id_card = trim($idCard);
         if (strlen($id_card) == 18) {
             return idcard_checksum18($id_card);
         } elseif ((strlen($id_card) == 15)) {
             $id_card = idcard_15to18($id_card);
             return idcard_checksum18($id_card);
-        } else {
-            return false;
         }
+        return false;
+
     }
 
     // 计算身份证校验码，根据国家标准GB 11643-1999
-    function idcard_verify_number($idcard_base)
+    function idcard_verify_number($idcard_base): bool|string
     {
         if (strlen($idcard_base) != 17) {
             return false;
@@ -709,13 +570,12 @@ if (!function_exists('is_idcard')) {
         for ($i = 0; $i < strlen($idcard_base); $i++) {
             $checksum += substr($idcard_base, $i, 1) * $factor[$i];
         }
-        $mod           = $checksum % 11;
-        $verify_number = $verify_number_list[$mod];
-        return $verify_number;
+        $mod = $checksum % 11;
+        return $verify_number_list[$mod];
     }
 
     // 将15位身份证升级到18位
-    function idcard_15to18($idcard)
+    function idcard_15to18($idcard): bool|string
     {
         if (strlen($idcard) != 15) {
             return false;
@@ -727,12 +587,11 @@ if (!function_exists('is_idcard')) {
                 $idcard = substr($idcard, 0, 6) . '19' . substr($idcard, 6, 9);
             }
         }
-        $idcard = $idcard . idcard_verify_number($idcard);
-        return $idcard;
+        return $idcard . idcard_verify_number($idcard);
     }
 
     // 18位身份证校验码有效性检查
-    function idcard_checksum18($idcard)
+    function idcard_checksum18($idcard): bool
     {
         if (strlen($idcard) != 18) {
             return false;
@@ -746,11 +605,12 @@ if (!function_exists('is_idcard')) {
     }
 }
 
-if (!function_exists('cutstr_html')) {
+if (!function_exists('detach_html')) {
     // 去除所有html标签
-    function cutstr_html($string): string
+    function detach_html($string): string
     {
         $string = htmlspecialchars_decode($string);
+        $string = html_entity_decode($string);
         $string = strip_tags($string);
         $string = trim($string);
         $string = str_replace(PHP_EOL, '', $string);                                      // 过滤换行
@@ -796,7 +656,7 @@ if (!function_exists('str_rand')) {
      * @param integer $length 字符串长度
      * @param string  $tack   附加值
      *
-     * @return   string               字符串
+     * @return   string 字符串
      */
     function str_rand(int $length = 6, string $tack = ''): string
     {
@@ -840,7 +700,7 @@ if (!function_exists('wx_decrypt_data')) {
         $aesCipher = base64_decode($encryptedData);
         $result    = openssl_decrypt($aesCipher, "AES-128-CBC", $aesKey, 1, $aesIV);
 
-        $dataObj = json_decode_plus(object_array($result), true);
+        $dataObj = json_decode_plus(obj2Arr($result), true);
         if ($dataObj == null) {
             return array(
                 'code' => 500,
@@ -857,7 +717,7 @@ if (!function_exists('wx_decrypt_data')) {
     }
 }
 
-if (!function_exists('img_base64')) {
+if (!function_exists('img_to_base64')) {
     /**
      * 图片转 base64
      *
@@ -868,11 +728,38 @@ if (!function_exists('img_base64')) {
      *
      * @return   string                   [description]
      */
-    function img_base64($image_file)
+    function img_base64($image_file): string
     {
         $image_info = getimagesize($image_file);
         $image_data = fread(fopen($image_file, 'r'), filesize($image_file));
         return 'data:' . $image_info['mime'] . ';base64,' . chunk_split(base64_encode($image_data));
+    }
+}
+
+if (!function_exists('base64_to_image')) {
+    /**
+     * base64图片转文件图片
+     * base64_to_image($row['cover'],"./uploads/images")
+     */
+    function base64_to_image($base64_image_content, $path)
+    {
+        //匹配出图片的格式
+        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $base64_image_content, $result)) {
+            $type     = $result[2];
+            $new_file = $path . "/" . date('Ymd', time()) . "/";
+            if (!file_exists($new_file)) {
+                //检查是否有该文件夹，如果没有就创建，并给予最高权限
+                create_dir($new_file);
+            }
+            $new_file = $new_file . md5(time() . mt_rand(1, 1000000)) . ".{$type}";
+            if (file_put_contents($new_file, base64_decode(str_replace($result[1], '', $base64_image_content)))) {
+                return ltrim($new_file, '.');
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }
 
@@ -906,12 +793,10 @@ if (!function_exists('get_full_path')) {
      *
      * @param string $path 相对路径
      */
-    if (!function_exists('get_full_path')) {
-        function get_full_path($path)
-        {
-            $info = pathinfo($path);
-            return $_SERVER['DOCUMENT_ROOT'] . '/' . $info['dirname'] . '/' . $info['basename'];
-        }
+    function get_full_path($path)
+    {
+        $info = pathinfo($path);
+        return $_SERVER['DOCUMENT_ROOT'] . '/' . $info['dirname'] . '/' . $info['basename'];
     }
 }
 
@@ -921,9 +806,12 @@ if (!function_exists('convert_underline')) {
      *
      * @Author   ZhaoXianFang
      * @DateTime 2018-08-29
-     * @return   [type]       [description]
+     *
+     * @param string $str
+     *
+     * @return array|string|null [type]       [description]
      */
-    function convert_underline($str)
+    function convert_underline(string $str): array|string|null
     {
         return preg_replace_callback('/([-_]+([a-z]{1}))/i', function ($matches) {
             return strtoupper($matches[2]);
@@ -939,10 +827,9 @@ if (!function_exists('underline_convert')) {
      * @DateTime 2018-08-29
      * @return   string       [description]
      */
-    function underline_convert($str): string
+    function underline_convert(string $str): string
     {
-        $str = strtolower(preg_replace('/(?<=[a-z])([A-Z])/', '_$1', $str));
-        return $str;
+        return strtolower(preg_replace('/(?<=[a-z])([A-Z])/', '_$1', $str));
     }
 }
 
@@ -969,32 +856,6 @@ if (!function_exists('check_pass_strength')) {
     }
 }
 
-if (!function_exists('base64_to_image')) {
-    /**
-     * base64图片转文件图片
-     * base64_to_image($row['cover'],"./uploads/images")
-     */
-    function base64_to_image($base64_image_content, $path)
-    {
-        //匹配出图片的格式
-        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $base64_image_content, $result)) {
-            $type     = $result[2];
-            $new_file = $path . "/" . date('Ymd', time()) . "/";
-            if (!file_exists($new_file)) {
-                //检查是否有该文件夹，如果没有就创建，并给予最高权限
-                create_folders($new_file);
-            }
-            $new_file = $new_file . md5(time() . mt_rand(1, 1000000)) . ".{$type}";
-            if (file_put_contents($new_file, base64_decode(str_replace($result[1], '', $base64_image_content)))) {
-                return ltrim($new_file, '.');
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
-}
 
 if (!function_exists('buildRequestFormAndSend')) {
     /**
@@ -1070,7 +931,6 @@ if (!function_exists('uuid')) {
      */
     function uuid()
     {
-        $time    = microtime(true);
         $timeStr = date('ymdHis') . substr(explode(' ', microtime())[0], 2, 6) . random_int(3600, 215999);
         return from10to60($timeStr);
     }
@@ -1080,7 +940,7 @@ if (!function_exists('from60to10')) {
     /**
      * 60进制转10进制
      */
-    function from60to10($str)
+    function from60to10($str): string
     {
         // (去掉oO)
         $dict = '0123456789abcdefghijklmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ';
@@ -1099,7 +959,7 @@ if (!function_exists('from10to60')) {
     /**
      * 10进制转60进制
      */
-    function from10to60($dec)
+    function from10to60($dec): string
     {
         // (去掉oO,因为和0很像)
         $dict   = '0123456789abcdefghijklmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ';
@@ -1116,6 +976,7 @@ if (!function_exists('download_url_file')) {
     /**
      * 下载url文件
      */
+    #[NoReturn]
     function download_url_file($url = '')
     {
         $filename = !empty($url) ? $url : (!empty($_GPC['url']) ? $_GPC['url'] : '');
@@ -1148,7 +1009,7 @@ if (!function_exists('str_en_code')) {
      *
      * @return false|string
      */
-    function str_en_code(string $string, string $operation = 'en', int|string $expiry = 312206400, string $key = '')
+    function str_en_code(string $string, string $operation = 'en', int|string $expiry = 312206400, string $key = ''): bool|string
     {
         $operation = in_array($operation, ['de', 'DECODE']) ? 'DECODE' : 'ENCODE';
         // 转换字符串
@@ -1223,7 +1084,7 @@ if (!function_exists('get_protected_value')) {
      *
      * @return mixed
      */
-    function get_protected_value($obj, $name)
+    function get_protected_value($obj, $name): mixed
     {
         $array  = (array)$obj;
         $prefix = chr(0) . '*' . chr(0);
@@ -1260,10 +1121,11 @@ if (!function_exists('json_decode_plus')) {
      * json_decode 加强版， 主要是为了了处理 json 字符串中包含了 \\" 和 \\ 转义字符导致无法解析的问题
      *
      * @param string $jsonStr json 字符串
+     * @param null   $assoc
      *
      * @return mixed
      */
-    function json_decode_plus(string $jsonStr, $assoc = null)
+    function json_decode_plus(string $jsonStr, $assoc = null): mixed
     {
         try {
             $jsonStr = preg_replace('/\\"/', '"', $jsonStr);
@@ -1271,20 +1133,6 @@ if (!function_exists('json_decode_plus')) {
             return json_decode($jsonStr, $assoc);
         } catch (\Exception $e) {
             return json_decode($jsonStr, $assoc);
-        }
-    }
-}
-
-if (!function_exists('file_put_contents')) {
-    function file_put_contents($filename, $data)
-    {
-        $f = @fopen($filename, 'w');
-        if (!$f) {
-            return false;
-        } else {
-            $bytes = fwrite($f, $data);
-            fclose($f);
-            return $bytes;
         }
     }
 }

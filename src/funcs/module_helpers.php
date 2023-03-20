@@ -17,17 +17,17 @@ if (!function_exists('get_module_name')) {
      *
      * @return mixed|string
      */
-    function get_module_name(): mixed
+    function get_module_name()
     {
         try {
-            // $uriArr = explode('/', request()->path());
-            // return $uriArr[0];
-
             $routeNamespace      = request()->route()->action['namespace'];
             $modulesNamespaceArr = array_filter(explode('\\', explode('Http\Controllers', $routeNamespace)[0]));
-            return strtolower($modulesNamespaceArr[1]);
+            if (empty($modulesNamespaceArr) || $modulesNamespaceArr[0] != config('modules.namespace', 'Modules')) {
+                return 'App';
+            }
+            return $modulesNamespaceArr[1];
         } catch (\Exception $err) {
-            return 'app';
+            return 'App';
         }
     }
 }
@@ -39,34 +39,11 @@ if (!function_exists('get_laravel_route')) {
      */
     function get_laravel_route(): array
     {
-        try {
-            list($class, $method) = explode('@', request()->route()->getActionName());
-
-            # 模块名
-            $modules = str_replace('\\', '.', str_replace('App\\Http\\Controllers\\', '', trim(implode('\\', array_slice(explode('\\', $class), 0, -1)), '\\')));
-
-            # 控制器名称
-            $controller = str_replace(
-                'Controller',
-                '',
-                substr(strrchr($class, '\\'), 1)
-            );
-            # 方法名
-            // $method = strtolower($method);
-
-            return [strtolower($modules), strtolower($controller), strtolower($method)];
-        } catch (Exception $e) {
-            try {
-                $uriParams  = explode('/', request()->route()->uri);
-                $modules    = $uriParams['0'];
-                $controller = $uriParams['1'];
-                $method     = $uriParams['2'];
-                return [strtolower($modules), strtolower($controller), strtolower($method)];
-            } catch (Exception $e) {
-                return ['index', 'index', 'index'];
-            }
-
-        }
+        // 模块名
+        $modules      = get_module_name();
+        $actionName   = request()->route()->getActionName(); // 获取当前的控制器名称(不带Controller) ,闭包返回 Closure
+        $actionMethod = request()->route()->getActionMethod(); // 获取当前方法名称  ,闭包返回 Closure
+        return [$modules, $actionName, $actionMethod];
     }
 }
 

@@ -57,24 +57,25 @@ class Cache
     /**
      * 得到缓存信息
      *
-     * @param string $key
+     * @param string                 $key
+     * @param bool|array|null|string $default 默认值
      *
      * @return bool|array|null|string
      */
-    public function get(string $key = '')
+    public function get(string $key = '', bool|array|null|string $default = null)
     {
         if (empty($key)) {
-            return null;
+            return $default;
         }
 
         //缓存文件不存在
         if (!$this->has($key)) {
-            return null;
+            return $default;
         }
         $file = $this->getKeyFilePath($key);
         $res  = $this->checkFileExpiryOrContent($file);
         if ($res === false) {
-            return null;
+            return $default;
         }
         return $res;
     }
@@ -122,8 +123,7 @@ class Cache
      */
     public function set(string $key, bool|array|string $value, int|string $expiry = '+99 year'): bool
     {
-        $expiry = is_numeric($expiry) ? time() + (int)$expiry : strtotime($expiry);
-        $path   = $this->getKeyFilePath($key);
+        $path = $this->getKeyFilePath($key);
         return $this->writeCacheFile($path, $value, $expiry);
     }
 
@@ -223,6 +223,9 @@ class Cache
      */
     protected function writeCacheFile(string $file, $contents, int|string $expiry = '+99 year'): bool
     {
+        if ($expiry <= 0) {
+            $expiry = '+99 year';
+        }
         $expiry = (is_numeric($expiry) || empty($expiry)) ? time() + (int)$expiry : strtotime($expiry);
         if ($this->config['mode'] == 1) {
             $contents = serialize([
@@ -256,6 +259,7 @@ class Cache
      * @param string $file
      *
      * @return boolean|array
+     * @throws Exception
      */
     protected function getCacheFileContents(string $file)
     {

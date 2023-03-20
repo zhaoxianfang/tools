@@ -85,6 +85,13 @@ class WeChatBase extends WechatCode
      */
     private function init(array $config = []): self
     {
+        $this->request = Request::instance();
+        $this->http    = Curl::instance();
+        $this->cache   = Cache::instance();
+
+        if (empty($config)) {
+            $config = $this->cache->get('lately_wechat_config', []);
+        }
         $this->config = $config + $this->config;
 
         if (empty($this->config["appid"])) {
@@ -97,13 +104,12 @@ class WeChatBase extends WechatCode
             $this->error("Missing Config -- [token]");
         }
 
-        $this->request = Request::instance();
-        $this->http    = Curl::instance();
-        $this->cache   = Cache::instance();
-
         $this->url         = "";
         $this->accessToken = "";
         $this->tryAgainNum = 0;
+        // 缓存最近一次的配置
+        $this->cache->set('lately_wechat_config', $config);
+
         return $this;
     }
 

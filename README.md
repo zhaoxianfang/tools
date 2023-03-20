@@ -15,33 +15,35 @@ composer require zxf/tools
 
 ## 涵盖模块
 
-| 模块         | 需要包含的文件夹/说明                                                                                     |
-|------------|-------------------------------------------------------------------------------------------------|
-| QQ登录       | Qqlogin                                                                                         |
-| 微信         | WeChat                                                                                          |
-| 截图         | ScreenShot                                                                                      |
-| 微博登录       | sina                                                                                            |
-| JsMin      | js 压缩工具                                                                                         |
-| QrCode     | 生成二维码                                                                                           |
-| BarCode    | 生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
-| Compressor | 图片压缩类                                                                                           |
-| Cache      | 文件缓存                                                                                            |
-| TextToPNG  | 文字转图片                                                                                           |
-| PHPMailer  | 发送邮件                                                                                            |
-| Curl       | http 网络请求                                                                                       |
-| Sms        | 发送短信: ali(阿里云)[默认] 或者 tencent（腾讯云）                                                              |
-| MysqlTool  | 创建mysql数据库字典                                                                                    |
-| Img        | 修改图片尺寸、给图片上添加文字等                                                                                |
-| Pinyin     | 中文转拼音                                                                                           |
-| Menu       | 生成目录菜单(adminlte、layuiadmin、nazox、inspinia)                                                      |
-| Random     | 生成随机数                                                                                           |
-| ImgToIco   | 图片转ico 格式                                                                                       |
-| Modules    | laravel 多模块应用                                                                                   |
-| Command    | 命令行解析工具                                                                                         |
-| Tree       | 树形结构化                                                                                           |
-| dom        | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                      |
-| Db/Model   | Mysql 的基础操作类Db;封装调用类Model                                                                       |
-| 其他         | 还有一些没有写在此处的工具类                                                                                  |
+| 模块            | 需要包含的文件夹/说明                                                                                     |
+|---------------|-------------------------------------------------------------------------------------------------|
+| QQ登录          | Qqlogin                                                                                         |
+| 微信            | WeChat                                                                                          |
+| 截图            | ScreenShot                                                                                      |
+| 微博登录          | sina                                                                                            |
+| zxf\min\JsMin | js 压缩工具                                                                                         |
+| zxf\min\JS    | js 压缩工具(推荐)                                                                                     |
+| zxf\min\CSS   | css 压缩工具(推荐)                                                                                    |
+| QrCode        | 生成二维码                                                                                           |
+| BarCode       | 生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
+| Compressor    | 图片压缩类                                                                                           |
+| Cache         | 文件缓存                                                                                            |
+| TextToPNG     | 文字转图片                                                                                           |
+| PHPMailer     | 发送邮件                                                                                            |
+| Curl          | http 网络请求                                                                                       |
+| Sms           | 发送短信: ali(阿里云)[默认] 或者 tencent（腾讯云）                                                              |
+| MysqlTool     | 创建mysql数据库字典                                                                                    |
+| Img           | 修改图片尺寸、给图片上添加文字等                                                                                |
+| Pinyin        | 中文转拼音                                                                                           |
+| Menu          | 生成目录菜单(adminlte、layuiadmin、nazox、inspinia)                                                      |
+| Random        | 生成随机数                                                                                           |
+| ImgToIco      | 图片转ico 格式                                                                                       |
+| Modules       | laravel 多模块应用                                                                                   |
+| Command       | 命令行解析工具                                                                                         |
+| Tree          | 树形结构化                                                                                           |
+| dom           | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                      |
+| Db/Model      | Mysql 的基础操作类Db;封装调用类Model                                                                       |
+| 其他            | 还有一些没有写在此处的工具类                                                                                  |
 
 ### 第三方登录
 

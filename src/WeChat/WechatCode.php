@@ -10,6 +10,7 @@ class WechatCode
         "0"       => "请求成功",
         "1"       => "未创建直播间",
         "1003"    => "POST参数非法",
+        "7000"    => "参数错误",
         "40001"   => "AppSecret错误或者 AppSecret 不属于这个公众号",
         "40002"   => "请确保grant_type字段值为client_credential",
         "40003"   => "计算签名失败",

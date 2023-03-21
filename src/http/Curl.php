@@ -349,13 +349,6 @@ class Curl
 
         // 设置post body
         if (!empty($this->httpParams)) {
-            //    if (is_array($this->httpParams)) {
-            //        curl_setopt($this->ch, CURLOPT_POSTFIELDS, http_build_query($this->httpParams));
-            //    } else {
-            //        if (is_string($this->httpParams)) {
-            //            curl_setopt($this->ch, CURLOPT_POSTFIELDS, $this->httpParams);
-            //        }
-            //    }
             curl_setopt($this->ch, CURLOPT_POSTFIELDS, $this->httpParams);
         }
         return $this->run($data_type);
@@ -371,13 +364,6 @@ class Curl
         curl_setopt($this->ch, CURLOPT_USERAGENT, $this->randUserAgent());
         // 设置post body
         if (!empty($this->httpParams)) {
-            //    if (is_array($this->httpParams)) {
-            //        curl_setopt($this->ch, CURLOPT_POSTFIELDS, http_build_query($this->httpParams));
-            //    } else {
-            //        if (is_string($this->httpParams)) {
-            //            curl_setopt($this->ch, CURLOPT_POSTFIELDS, $this->httpParams);
-            //        }
-            //    }
             curl_setopt($this->ch, CURLOPT_POSTFIELDS, $this->httpParams);
         }
         return $this->run($data_type);
@@ -393,13 +379,6 @@ class Curl
         curl_setopt($this->ch, CURLOPT_USERAGENT, $this->randUserAgent());
         // curl_setopt($this->ch, CURLOPT_POSTFIELDS, $data);
         if (!empty($this->httpParams)) {
-            //    if (is_array($this->httpParams)) {
-            //        curl_setopt($this->ch, CURLOPT_POSTFIELDS, http_build_query($this->httpParams));
-            //    } else {
-            //        if (is_string($this->httpParams)) {
-            //            curl_setopt($this->ch, CURLOPT_POSTFIELDS, $this->httpParams);
-            //        }
-            //    }
             curl_setopt($this->ch, CURLOPT_POSTFIELDS, $this->httpParams);
         }
         return $this->run($data_type);
@@ -415,13 +394,6 @@ class Curl
         curl_setopt($this->ch, CURLOPT_USERAGENT, $this->randUserAgent());
         // curl_setopt($this->ch, CURLOPT_POSTFIELDS, $data); //20170611修改接口，用/id的方式传递，直接写在url中了
         if (!empty($this->httpParams)) {
-            //    if (is_array($this->httpParams)) {
-            //        curl_setopt($this->ch, CURLOPT_POSTFIELDS, http_build_query($this->httpParams));
-            //    } else {
-            //        if (is_string($this->httpParams)) {
-            //            curl_setopt($this->ch, CURLOPT_POSTFIELDS, $this->httpParams);
-            //        }
-            //    }
             curl_setopt($this->ch, CURLOPT_POSTFIELDS, $this->httpParams);
         }
         return $this->run($data_type);

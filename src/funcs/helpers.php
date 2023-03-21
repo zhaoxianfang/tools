@@ -511,7 +511,7 @@ if (!function_exists('string_to_utf8')) {
     /*
      * 字符串自动转utf8编码
      */
-    function string_to_utf8($str = ''): array|bool|string|null
+    function string_to_utf8(string $str = '')
     {
         return mb_convert_encoding($str, "UTF-8", "auto");
     }
@@ -520,7 +520,7 @@ if (!function_exists('string_to_gbk')) {
     /*
      * 字符串自动转gbk编码
      */
-    function string_to_gbk($str = ''): array|bool|string|null
+    function string_to_gbk(string $str = '')
     {
         return mb_convert_encoding($str, "GBK", "auto");
     }
@@ -529,7 +529,7 @@ if (!function_exists('show_json')) {
     /*
      * 对json数据格式化输入展示 [转化为json格式，并格式化样式]
      */
-    function show_json($array = []): bool|string
+    function show_json(array $array = [])
     {
         return json_encode($array, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
@@ -811,7 +811,7 @@ if (!function_exists('convert_underline')) {
      *
      * @return array|string|null [type]       [description]
      */
-    function convert_underline(string $str): array|string|null
+    function convert_underline(string $str)
     {
         return preg_replace_callback('/([-_]+([a-z]{1}))/i', function ($matches) {
             return strtoupper($matches[2]);

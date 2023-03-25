@@ -18,12 +18,15 @@ class MysqlTool
 {
     /**
      * 生成mysql数据字典
+     *
      * @Author   ZhaoXianFang
      * @DateTime 2020-11-27
-     * @param string $dbserver [服务器地址ip或域名]
+     *
+     * @param string $dbserver   [服务器地址ip或域名]
      * @param string $dbusername [账号]
      * @param string $dbpassword [密码]
-     * @param string $database [数据库名称]
+     * @param string $database   [数据库名称]
+     *
      * @return   [type]                   [description]
      */
     public static function dictionary($dbserver = '127.0.0.1', $dbusername = '', $dbpassword = '', $database = '')
@@ -33,12 +36,15 @@ class MysqlTool
             //其他配置
             $title = '数据字典';
             $mysql_conn = mysqli_connect("$dbserver", "$dbusername", "$dbpassword", "$database") or die("Mysql connect is error.");
-            mysqli_query($mysql_conn, "set names utf8");
-            mysqli_set_charset($mysql_conn, 'UTF-8'); // 设置数据库字符集
-            $table_result = mysqli_query($mysql_conn, 'show tables');
+            mysqli_query($mysql_conn, "set names utf8mb4");
+//            $table_result = mysqli_query($mysql_conn, 'show tables');
+            $table_result = mysqli_query($mysql_conn, 'SELECT table_name, table_comment FROM information_schema.tables WHERE table_schema = ' . "'" . $database . "';");
             //取得所有的表名
             while ($row = mysqli_fetch_array($table_result)) {
-                $tables[]['TABLE_NAME'] = $row[0];
+                $tables[] = [
+                    'TABLE_NAME'    => $row[0],
+                    'TABLE_COMMENT' => $row[1],
+                ];
             }
             //循环取得所有表的备注及表中列消息
             foreach ($tables as $k => $v) {

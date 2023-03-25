@@ -134,15 +134,16 @@ if (!function_exists('is_crawler')) {
      * @Author   ZhaoXianFang
      * @DateTime 2019-12-24
      *
-     * @param boolean $returnName [是否返回爬虫名称]
+     * @param boolean $returnName          [是否返回爬虫名称]
+     * @param boolean $forbidUnknownSpider [是否阻止未知的爬虫高频访问]
      *
      * @return   boolean                  [description]
      */
-    function is_crawler(bool $returnName = false)
+    function is_crawler(bool $returnName = false, bool $forbidUnknownSpider = false)
     {
         $agent = strtolower(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '');
         if (!empty($agent)) {
-            $spiderSite = array(
+            $spiderSite = [
                 "TencentTraveler",
                 "Baiduspider+",
                 "Baiduspider",
@@ -189,16 +190,29 @@ if (!function_exists('is_crawler')) {
                 "larbin",
                 "Fish search",
                 "360Spider",
-            );
+            ];
             foreach ($spiderSite as $val) {
                 $str = strtolower($val);
                 if (strpos($agent, $str) !== false) {
                     return $returnName ? $val : true;
+                } else {
+                    // 没有在上面定义的爬虫名称范围内
+                    // 检查访问频率
+                    $last_request_time    = $_SESSION['last_request_time'];
+                    $current_request_time = $_SERVER['REQUEST_TIME'];
+
+                    if ($current_request_time - $last_request_time < 1) {
+                        // 如果两次请求之间的时间差小于 1 秒，则认为是爬虫访问
+                        if ($forbidUnknownSpider) {
+                            throw new \Exception('服务器忙');
+                        }
+                    }
                 }
             }
         } else {
             return $returnName ? "" : false;
         }
+
     }
 }
 
@@ -1136,3 +1150,4 @@ if (!function_exists('json_decode_plus')) {
         }
     }
 }
+

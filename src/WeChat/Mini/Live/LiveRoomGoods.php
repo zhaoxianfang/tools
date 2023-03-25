@@ -54,7 +54,7 @@ class LiveRoomGoods extends LiveBase
         ];
 
         $res = $this->post("wxaapi/broadcast/goods/deleteInRoom", $params);
-        if ($res["errcode"] != 0) {
+        if ($res['errcode'] != 0 && $res['errcode'] != 7000) {
             throw new \Exception($this->getMessage($res["errcode"]));
         }
         return [
@@ -87,7 +87,7 @@ class LiveRoomGoods extends LiveBase
     {
         $goods = [];
         foreach ($goodsIds as $id) {
-            $goods[] = ["goodsId" => $id];
+            $goods[] = ['goodsId' => (string)$id];
         }
         $params = [
             "roomId" => $roomId,

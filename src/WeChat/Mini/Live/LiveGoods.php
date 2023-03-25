@@ -91,7 +91,7 @@ class LiveGoods extends LiveBase
         ];
 
         $res = $this->post("wxaapi/broadcast/goods/audit", $params);
-        if ($res["errcode"] != 0) {
+        if (!in_array($res['errcode'], ['0', '300024', '300015'])) {
             throw new Exception($this->getMessage($res["errcode"]), $res["errcode"]);
         }
         return [

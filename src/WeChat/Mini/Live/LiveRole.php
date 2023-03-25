@@ -31,7 +31,7 @@ class LiveRole extends LiveBase
         ];
 
         $res = $this->post("wxaapi/broadcast/role/deleterole", $params);
-        if ($res["errcode"] != 0) {
+        if ($res['errcode'] != 0 && $res['errcode'] != 2003) {
             throw new \Exception($this->getMessage($res["errcode"]), $res["errcode"]);
         }
         return [

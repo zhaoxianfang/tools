@@ -1,25 +1,191 @@
 <?php
 
-namespace zxf\mysql;
+namespace zxf\mysql\Driver;
 
+use Closure;
 use Exception;
+use zxf\mysql\Contracts\MysqlInterface;
 
 /**
  * mysqli 基础操作类
  * 需要php 开启mysqli 扩展
  */
-class MysqliBase
+class MysqliDriver implements MysqlInterface
 {
     private $conn;
 
     // 构造函数
-    public function __construct($servername, $username, $password, $dbname)
+    public function __construct($hostname = null, $username = null, $password = null, $database = null, $port = 3306, $charset = 'utf8mb4', $socket = null)
     {
-        $this->conn = new mysqli($servername, $username, $password, $dbname);
+        if (!extension_loaded('mysqli')) {
+            throw new Exception('不支持的扩展:mysqli');
+        }
+        $params = compact('hostname', 'username', 'password', 'database', 'port', 'socket');
+
+        $mysqlIc    = new \ReflectionClass('mysqli');
+        $this->conn = $mysqlIc->newInstanceArgs($params);
         if ($this->conn->connect_error) {
             throw new Exception("连接失败: " . $this->conn->connect_error);
         }
+        if ($charset) {
+            $this->setCharset($charset);
+        }
     }
+
+    // 设置字符集
+    public function setCharset(string $charset = 'utf8mb4')
+    {
+        return $this->conn->set_charset($charset);
+    }
+
+    // 批量插入数据
+    public function insertBatch($tableName, $data)
+    {
+        $fields = implode(",", array_keys($data[0]));
+        $values = "";
+        foreach ($data as $item) {
+            $values .= "('" . implode("','", array_values($item)) . "'),";
+        }
+        $values = rtrim($values, ",");
+        $sql    = "INSERT INTO $tableName ($fields) VALUES $values";
+        if ($this->conn->query($sql) === true) {
+            return true;
+        } else {
+            echo "数据插入失败: " . $this->conn->error;
+        }
+    }
+
+    // 批量更新数据
+    public function updateBatch($tableName, $data, $primaryKey)
+    {
+        $sql = "UPDATE $tableName SET ";
+        foreach ($data as $item) {
+            $values = "";
+            foreach ($item as $key => $value) {
+                if ($key != $primaryKey) {
+                    $values .= "$key='$value',";
+                }
+            }
+            $values = rtrim($values, ",");
+            $sql    .= "$values WHERE $primaryKey=" . $item[$primaryKey] . ";";
+        }
+        if ($this->conn->multi_query($sql) === true) {
+            return true;
+        } else {
+            echo "数据更新失败: " . $this->conn->error;
+        }
+    }
+
+    // 子查询
+    public function subQuery($tableName, $fields, $subQuery, $joinField = 'id')
+    {
+        $sql    = "SELECT $fields FROM $tableName WHERE $joinField IN ($subQuery)";
+        $result = $this->conn->query($sql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                print_r($row);
+            }
+        } else {
+            return null;
+        }
+    }
+
+    // 事务操作
+    public function transaction($callback): bool
+    {
+        $this->conn->autocommit(false);
+        try {
+            $callback($this);
+            $this->conn->commit();
+            $this->conn->autocommit(true);
+            return true;
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            $this->conn->autocommit(true);
+            return false;
+        }
+    }
+
+    // 批量更新
+    public function batchUpdate($tableName, $data, $where)
+    {
+        $set = "";
+        foreach ($data as $row) {
+            $set .= "(";
+            foreach ($row as $key => $value) {
+                $set .= "$key = '$value', ";
+            }
+            $set = rtrim($set, ", ");
+            $set .= "), ";
+        }
+        $set = rtrim($set, ", ");
+        $sql = "UPDATE $tableName SET $set WHERE $where";
+        return $this->conn->query($sql);
+    }
+
+
+
+    public function when($column, Closure $callback)
+    {
+        // TODO: Implement when() method.
+    }
+
+    public function whenNull($column, Closure $callback)
+    {
+        // TODO: Implement whenNull() method.
+    }
+
+    public function where($column, $operator = null, $value = null, $boolean = 'and')
+    {
+        // TODO: Implement where() method.
+    }
+
+    public function orWhere($column, $operator = null, $value = null)
+    {
+        // TODO: Implement orWhere() method.
+    }
+
+    public function whereNot($column, $operator = null, $value = null, $boolean = 'and')
+    {
+        // TODO: Implement whereNot() method.
+    }
+
+    public function whereIn($column, $values, $boolean = 'and', $not = false)
+    {
+        // TODO: Implement whereIn() method.
+    }
+
+    public function limit($value)
+    {
+        // TODO: Implement limit() method.
+    }
+
+    public function groupBy($groupByField)
+    {
+        // TODO: Implement groupBy() method.
+    }
+
+    public function get($columns = ['*'])
+    {
+        // TODO: Implement get() method.
+    }
+
+    public function first($columns = ['*'])
+    {
+        // TODO: Implement first() method.
+    }
+
+    public function fill(array $attributes)
+    {
+        // TODO: Implement fill() method.
+    }
+
+    public function save(array $options = [])
+    {
+        // TODO: Implement save() method.
+    }
+
+    //  未继承接口部分  ===============================
 
     // 执行 SQL 查询
     public function query($sql)
@@ -151,12 +317,6 @@ class MysqliBase
     public function transaction_status()
     {
         return $this->conn->transaction_status();
-    }
-
-    // 设置字符集
-    public function set_charset($charset)
-    {
-        return $this->conn->set_charset($charset);
     }
 
     // 获取最后一次 SQL 查询的错误信息
@@ -387,91 +547,6 @@ class MysqliBase
             $data[] = $row;
         }
         return $data;
-    }
-
-    // 批量插入数据
-    public function insertBatch($tableName, $data)
-    {
-        $fields = implode(",", array_keys($data[0]));
-        $values = "";
-        foreach ($data as $item) {
-            $values .= "('" . implode("','", array_values($item)) . "'),";
-        }
-        $values = rtrim($values, ",");
-        $sql    = "INSERT INTO $tableName ($fields) VALUES $values";
-        if ($this->conn->query($sql) === true) {
-            echo "数据插入成功";
-        } else {
-            echo "数据插入失败: " . $this->conn->error;
-        }
-    }
-
-    // 批量更新数据
-    public function updateBatch($tableName, $data, $primaryKey)
-    {
-        $sql = "UPDATE $tableName SET ";
-        foreach ($data as $item) {
-            $values = "";
-            foreach ($item as $key => $value) {
-                if ($key != $primaryKey) {
-                    $values .= "$key='$value',";
-                }
-            }
-            $values = rtrim($values, ",");
-            $sql    .= "$values WHERE $primaryKey=" . $item[$primaryKey] . ";";
-        }
-        if ($this->conn->multi_query($sql) === true) {
-            return true;
-        } else {
-            echo "数据更新失败: " . $this->conn->error;
-        }
-    }
-
-    // 子查询
-    public function subQuery($tableName, $fields, $subQuery, $joinField = 'id')
-    {
-        $sql    = "SELECT $fields FROM $tableName WHERE $joinField IN ($subQuery)";
-        $result = $this->conn->query($sql);
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                print_r($row);
-            }
-        } else {
-            return null;
-        }
-    }
-
-    // 事务操作
-    public function transaction($callback): bool
-    {
-        $this->conn->autocommit(false);
-        try {
-            $callback($this);
-            $this->conn->commit();
-            $this->conn->autocommit(true);
-            return true;
-        } catch (Exception $e) {
-            $this->conn->rollback();
-            $this->conn->autocommit(true);
-            return false;
-        }
-    }
-
-    // 批量更新
-    public function batchUpdate($table, $data, $where)
-    {
-        $set = "";
-        foreach ($data as $row) {
-            $set .= "(";
-            foreach ($row as $key => $value) {
-                $set .= "$key = '$value', ";
-            }
-            $set = rtrim($set, ", ");
-            $set .= "), ";
-        }
-        $set = rtrim($set, ", ");
-        $sql = "UPDATE $table SET $set WHERE $where";
-        return $this->conn->query($sql);
     }
 
 }

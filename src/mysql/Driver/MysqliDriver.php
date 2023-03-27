@@ -38,6 +38,145 @@ class MysqliDriver implements MysqlInterface
         return $this->conn->set_charset($charset);
     }
 
+    public function insert($table, $data)
+    {
+        $columns = implode(', ', array_keys($data));
+        $values = implode(', ', array_map(function ($value) {
+            return "'" . $this->conn->real_escape_string($value) . "'";
+        }, array_values($data)));
+        $sql = 'INSERT INTO ' . $table . ' (' . $columns . ') VALUES (' . $values . ')';
+        $result = $this->query($sql);
+        if (!$result) {
+            die('插入错误: ' . $this->conn->error);
+        }
+        return $this->conn->insert_id;
+    }
+
+    public function update($table, $data, $where = "")
+    {
+        $sets = [];
+
+        foreach ($data as $key => $value) {
+            $sets[] = "$key='" . $this->conn->real_escape_string($value) . "'";
+        }
+
+        $query = "UPDATE $table SET " . implode(", ", $sets);
+
+        if ($where != "") {
+            $query .= " WHERE $where";
+        }
+
+        $result = $this->conn->query($query);
+
+        if (!$result) {
+            die("更新失败: " . $this->conn->error);
+        }
+
+        return $this->conn->affected_rows;
+    }
+
+    public function delete($table, $where = "")
+    {
+        $query = "DELETE FROM $table";
+
+        if ($where != "") {
+            $query .= " WHERE $where";
+        }
+
+        $result = $this->conn->query($query);
+
+        if (!$result) {
+            die("删除失败: " . $this->conn->error);
+        }
+
+        return $this->conn->affected_rows;
+    }
+
+    public function count($table, $where = "")
+    {
+        $query = "SELECT COUNT(*) AS count FROM $table";
+
+        if ($where != "") {
+            $query .= " WHERE $where";
+        }
+
+        $result = $this->conn->query($query);
+
+        if (!$result) {
+            die("查询失败: " . $this->conn->error);
+        }
+
+        return $result->fetch_assoc()['count'];
+    }
+
+    public function sum($table, $column, $where = "")
+    {
+        $query = "SELECT SUM($column) AS sum FROM $table";
+
+        if ($where != "") {
+            $query .= " WHERE $where";
+        }
+
+        $result = $this->conn->query($query);
+
+        if (!$result) {
+            die("查询失败: " . $this->conn->error);
+        }
+
+        return $result->fetch_assoc()['sum'];
+    }
+
+    public function avg($table, $column, $where = "")
+    {
+        $query = "SELECT AVG($column) AS avg FROM $table";
+
+        if ($where != "") {
+            $query .= " WHERE $where";
+        }
+
+        $result = $this->conn->query($query);
+
+        if (!$result) {
+            die("查询失败: " . $this->conn->error);
+        }
+
+        return $result->fetch_assoc()['avg'];
+    }
+
+    public function max($table, $column, $where = "")
+    {
+        $query = "SELECT MAX($column) AS max FROM $table";
+
+        if ($where != "") {
+            $query .= " WHERE $where";
+        }
+
+        $result = $this->conn->query($query);
+
+        if (!$result) {
+            die("查询失败: " . $this->conn->error);
+        }
+
+        return $result->fetch_assoc()['max'];
+    }
+
+    public function min($table, $column, $where = "")
+    {
+        $query = "SELECT MIN($column) AS min FROM $table";
+
+        if ($where != "") {
+            $query .= " WHERE $where";
+        }
+
+        $result = $this->conn->query($query);
+
+        if (!$result) {
+            die("查询失败: " . $this->conn->error);
+        }
+
+        return $result->fetch_assoc()['min'];
+    }
+
     // 批量插入数据
     public function insertBatch($tableName, $data)
     {
@@ -76,25 +215,204 @@ class MysqliDriver implements MysqlInterface
         }
     }
 
-    // 子查询
-    public function subQuery($tableName, $fields, $subQuery, $joinField = 'id')
+    public function hasMany($table, $foreign_key, $where = "")
     {
-        $sql    = "SELECT $fields FROM $tableName WHERE $joinField IN ($subQuery)";
-        $result = $this->conn->query($sql);
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                print_r($row);
-            }
-        } else {
-            return null;
+        $query = "SELECT * FROM $table WHERE $foreign_key = ?";
+
+        if ($where != "") {
+            $query .= " AND $where";
         }
+
+        $stmt = $this->conn->prepare($query);
+
+        if (!$stmt) {
+            die("预处理失败: " . $this->conn->error);
+        }
+
+        $stmt->bind_param("i", $this->id);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        if (!$result) {
+            die("查询失败: " . $this->conn->error);
+        }
+
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function belongsTo($table, $foreign_key, $where = "")
+    {
+        $query = "SELECT * FROM $table WHERE id = (SELECT $foreign_key FROM " . get_class($this) . " WHERE id = ?)";
+
+        if ($where != "") {
+            $query .= " AND $where";
+        }
+
+        $stmt = $this->conn->prepare($query);
+
+        if (!$stmt) {
+            die("预处理失败: " . $this->conn->error);
+        }
+
+        $stmt->bind_param("i", $this->id);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        if (!$result) {
+            die("查询失败: " . $this->conn->error);
+        }
+
+        return $result->fetch_assoc();
+    }
+
+    public function hasOne($table, $foreign_key, $where = "")
+    {
+        $query = "SELECT * FROM $table WHERE $foreign_key = ?";
+
+        if ($where != "") {
+            $query .= " AND $where";
+        }
+
+        $stmt = $this->conn->prepare($query);
+
+        if (!$stmt) {
+            die("预处理失败: " . $this->conn->error);
+        }
+
+        $stmt->bind_param("i", $this->id);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        if (!$result) {
+            die("查询失败: " . $this->conn->error);
+        }
+
+        return $result->fetch_assoc();
+    }
+
+    public function hasManyThrough($table, $through_table, $foreign_key, $through_foreign_key, $where = "")
+    {
+        $query = "SELECT $table.* FROM $table JOIN $through_table ON $table.id = $through_table.$foreign_key WHERE $through_table.$through_foreign_key = ?";
+
+        if ($where != "") {
+            $query .= " AND $where";
+        }
+
+        $stmt = $this->conn->prepare($query);
+
+        if (!$stmt) {
+            die("预处理失败: " . $this->conn->error);
+        }
+
+        $stmt->bind_param("i", $this->id);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        if (!$result) {
+            die("查询失败: " . $this->conn->error);
+        }
+
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function preload($table, $foreign_key, $where = "")
+    {
+        $query = "SELECT * FROM $table WHERE $foreign_key IN (?)";
+
+        if ($where != "") {
+            $query .= " AND $where";
+        }
+
+        $ids = array_column($this->hasMany($table, $foreign_key), 'id');
+
+        if (count($ids) == 0) {
+            return [];
+        }
+
+        $stmt = $this->conn->prepare(str_replace("?", implode(",", array_fill(0, count($ids), "?")), $query));
+
+        if (!$stmt) {
+            die("预处理失败: " . $this->conn->error);
+        }
+
+        $stmt->bind_param(str_repeat("i", count($ids)), ...$ids);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        if (!$result) {
+            die("查询失败: " . $this->conn->error);
+        }
+
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function subQuery($table, $columns = "*", $where = "", $limit = "", $offset = "", $orderBy = "", $groupBy = "")
+    {
+        $query = "SELECT $columns FROM $table";
+
+        if ($where != "") {
+            $query .= " WHERE $where";
+        }
+
+        if ($groupBy != "") {
+            $query .= " GROUP BY $groupBy";
+        }
+
+        if ($orderBy != "") {
+            $query .= " ORDER BY $orderBy";
+        }
+
+        if ($limit != "") {
+            $query .= " LIMIT $limit";
+        }
+
+        if ($offset != "") {
+            $query .= " OFFSET $offset";
+        }
+
+        return "($query)";
+    }
+
+    public function lockForUpdate($table, $data, $where = "")
+    {
+        $this->conn->autocommit(false);
+
+        $sets = [];
+
+        foreach ($data as $key => $value) {
+            $sets[] = "$key = '$value'";
+        }
+
+        $query = "UPDATE $table SET " . implode(", ", $sets);
+
+        if ($where != "") {
+            $query .= " WHERE $where";
+        }
+
+        $query .= " FOR UPDATE";
+
+        $result = $this->conn->query($query);
+
+        if (!$result) {
+            $this->conn->rollback();
+            die("更新失败: " . $this->conn->error);
+        }
+
+        $this->conn->commit();
+
+        return $this->conn->affected_rows;
     }
 
     // 事务操作
     public function transaction($callback): bool
     {
-        $this->conn->autocommit(false);
         try {
+            $this->conn->autocommit(false);
             $callback($this);
             $this->conn->commit();
             $this->conn->autocommit(true);
@@ -123,11 +441,11 @@ class MysqliDriver implements MysqlInterface
         return $this->conn->query($sql);
     }
 
-
-
-    public function when($column, Closure $callback)
-    {
-        // TODO: Implement when() method.
+    public function when($column, Closure $callback) {
+        if ($column) {
+            $callback($this);
+        }
+        return $this;
     }
 
     public function whenNull($column, Closure $callback)
@@ -155,14 +473,15 @@ class MysqliDriver implements MysqlInterface
         // TODO: Implement whereIn() method.
     }
 
-    public function limit($value)
-    {
-        // TODO: Implement limit() method.
+    public function limit($value) {
+        $this->query .= " LIMIT $value";
+        return $this;
     }
 
     public function groupBy($groupByField)
     {
-        // TODO: Implement groupBy() method.
+        $this->query .= "GROUP BY $groupByField ";
+        return $this;
     }
 
     public function get($columns = ['*'])
@@ -182,7 +501,16 @@ class MysqliDriver implements MysqlInterface
 
     public function save(array $options = [])
     {
-        // TODO: Implement save() method.
+//        if (isset($this->fields['id'])) {
+//            $id = $this->fields['id'];
+//            unset($this->fields['id']);
+//            $result = $this->conn->update($this->table, $this->fields, "id=$id");
+//            $this->fields['id'] = $id;
+//        } else {
+//            $id = $this->conn->insert($this->table, $this->fields);
+//            $this->fields['id'] = $id;
+//        }
+//        return $id;
     }
 
     //  未继承接口部分  ===============================

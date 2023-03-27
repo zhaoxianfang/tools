@@ -13,13 +13,42 @@ interface  MysqlInterface
     // 设置类型
     public function setCharset(string $charset = 'utf8mb4');
 
+    public function insert($table, $data);
+
+    public function update($table, $data, $where = "");
+
+    public function delete($table, $where = "");
+
+    public function count($table, $where = "");
+
+    public function sum($table, $column, $where = "");
+
+    public function avg($table, $column, $where = "");
+
+    public function max($table, $column, $where = "");
+
+    public function min($table, $column, $where = "");
+
+    public function hasMany($table, $foreign_key, $where = "");
+
+    public function belongsTo($table, $foreign_key, $where = "");
+
+    public function hasOne($table, $foreign_key, $where = "");
+
+    public function hasManyThrough($table, $through_table, $foreign_key, $through_foreign_key, $where = "");
+
+    public function preload($table, $foreign_key, $where = "");
+
+    // 子查询
+    public function subQuery($table, $columns = "*", $where = "", $limit = "", $offset = "", $orderBy = "", $groupBy = "");
+
+    public function lockForUpdate($table, $data, $where = "");
+
     // 批量插入数据
     public function insertBatch($tableName, $data);
 
     // 批量更新数据
     public function updateBatch($tableName, $data, $primaryKey);
-
-    public function subQuery($tableName, $fields, $subQuery, $joinField = 'id');
 
     // 事务操作
     public function transaction($callback): bool;

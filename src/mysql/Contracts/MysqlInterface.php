@@ -13,7 +13,7 @@ interface  MysqlInterface
     // 设置类型
     public function setCharset(string $charset = 'utf8mb4');
 
-    public function insert($table, $data);
+    public function insert(array $data);
 
     public function update($table, $data, $where = "");
 

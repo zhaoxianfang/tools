@@ -12,20 +12,82 @@ use zxf\mysql\Contracts\MysqlInterface;
  */
 class MysqliDriver implements MysqlInterface
 {
+    // mysqli 连接信息
     private $conn;
+    // 查询的SQL
+    protected string $query = '';
+
+    /**
+     * 被查询字段列表,
+     * eg:[id,name]、[SUM(number)]
+     *
+     * @var array|string[]
+     */
+    protected array $fieldAssemble = ['*'];
+
+    /**
+     * 关联查询数组列表
+     * eg:[table_name,on_where,left|right|inner]、[sql_str]
+     *
+     * @var array
+     */
+    protected array $joinAssemble = [];
+    /**
+     * where 查询条件
+     * eg:[$column, $operator = null, $value = null, $type = 'and|or']
+     *
+     * @var array
+     */
+    protected array $whereAssemble = [];
+    /**
+     * 分组
+     * eg:[$field]、[$field,$condition,$operator=having]
+     *
+     * @var array
+     */
+    protected array $groupAssemble = [];
+    /**
+     * 排序
+     * eg:[$field,$handle='ASC|DESC'],
+     *
+     * @var array
+     */
+    protected array $orderAssemble = [];
+
+    /**
+     * 批量更新修改或插入的数据
+     * eg:['name'=>'','gender'=>'']
+     *
+     * @var array
+     */
+    protected array $fillAssemble = [];
+    /**
+     * eg: 0,10
+     *
+     * @var string
+     */
+    protected string $limit = '';
+    // sql string
+    protected string $subQuery = '';
+    // 表名
+    protected string $tableName = '';
+    // 错误信息
+    protected string $error = '';
 
     // 构造函数
     public function __construct($hostname = null, $username = null, $password = null, $database = null, $port = 3306, $charset = 'utf8mb4', $socket = null)
     {
         if (!extension_loaded('mysqli')) {
-            throw new Exception('不支持的扩展:mysqli');
+            $this->error = '不支持的扩展:mysqli';
+            throw new Exception($this->error);
         }
         $params = compact('hostname', 'username', 'password', 'database', 'port', 'socket');
 
         $mysqlIc    = new \ReflectionClass('mysqli');
         $this->conn = $mysqlIc->newInstanceArgs($params);
         if ($this->conn->connect_error) {
-            throw new Exception("连接失败: " . $this->conn->connect_error);
+            $this->error = "连接失败: " . $this->conn->connect_error;
+            throw new Exception($this->error);
         }
         if ($charset) {
             $this->setCharset($charset);
@@ -35,19 +97,95 @@ class MysqliDriver implements MysqlInterface
     // 设置字符集
     public function setCharset(string $charset = 'utf8mb4')
     {
-        return $this->conn->set_charset($charset);
+        $this->conn->set_charset($charset);
+        return $this;
     }
 
-    public function insert($table, $data)
+    // 设置表名
+    public function table(string $tableName = '')
     {
+        $this->tableName = $tableName;
+        return $this;
+    }
+
+    private function analyseFields()
+    {
+        if (!empty($this->fieldAssemble)) {
+            $this->query .= ' ' . implode(', ', array_map(function ($value) {
+                    return $this->conn->real_escape_string($value);
+                }, $this->fieldAssemble));
+        } else {
+            $this->query .= ' *';
+        }
+        return $this;
+
+    }
+
+    private function analyseJoin()
+    {
+//        eg:[table_name,on_where,left|right|inner]、[sql_str]
+        if (!empty($this->joinAssemble)) {
+            $this->query .= ' ' . implode(', ', array_map(function ($value) {
+                    return $this->conn->real_escape_string($value);
+                }, $this->joinAssemble));
+        }
+        return $this;
+    }
+
+    private function analyseWhere()
+    {
+
+    }
+
+    private function analyseGroup()
+    {
+
+    }
+
+    private function analyseOrder()
+    {
+
+    }
+
+    private function analyseLimit()
+    {
+
+    }
+
+    private function analyseFill()
+    {
+        $data = $this->fillAssemble;
+
         $columns = implode(', ', array_keys($data));
-        $values = implode(', ', array_map(function ($value) {
+        $values  = implode(', ', array_map(function ($value) {
             return "'" . $this->conn->real_escape_string($value) . "'";
         }, array_values($data)));
-        $sql = 'INSERT INTO ' . $table . ' (' . $columns . ') VALUES (' . $values . ')';
-        $result = $this->query($sql);
+
+        $this->query .= ' (' . $columns . ') VALUES (' . $values . ')';
+        return $this;
+    }
+
+    private function analyseQuery()
+    {
+        $this->analyseFields();
+        $this->analyseJoin();
+        $this->analyseWhere();
+        $this->analyseGroup();
+        $this->analyseOrder();
+        $this->analyseLimit();
+        return $this;
+    }
+
+    public function insert(array $data)
+    {
+        $this->fillAssemble = $data;
+
+        $this->query = 'INSERT INTO ' . $this->tableName;
+        $this->analyseQuery();
+
+        $result = $this->query($this->query);
         if (!$result) {
-            die('插入错误: ' . $this->conn->error);
+            throw new \Exception($this->conn->error);
         }
         return $this->conn->insert_id;
     }
@@ -90,6 +228,31 @@ class MysqliDriver implements MysqlInterface
         }
 
         return $this->conn->affected_rows;
+    }
+
+    /**
+     * 聚合查询
+     *
+     * @param string $table    表名
+     * @param string $field    聚合字段名
+     * @param string $function 聚合函数名称，例如 COUNT,AVG,SUM,MAX 等
+     * @param string $where
+     *
+     * @return false|mixed
+     */
+    public function aggregate($table, $field, $function, $where = "")
+    {
+        $sql = "SELECT $function($field) AS $function FROM $table";
+        if ($where != "") {
+            $sql .= " WHERE $where";
+        }
+        $result = $this->connection->query($sql);
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            return $row[$function];
+        } else {
+            return false;
+        }
     }
 
     public function count($table, $where = "")
@@ -319,6 +482,7 @@ class MysqliDriver implements MysqlInterface
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
+    // 预加载
     public function preload($table, $foreign_key, $where = "")
     {
         $query = "SELECT * FROM $table WHERE $foreign_key IN (?)";
@@ -351,6 +515,7 @@ class MysqliDriver implements MysqlInterface
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
+    // 子查询
     public function subQuery($table, $columns = "*", $where = "", $limit = "", $offset = "", $orderBy = "", $groupBy = "")
     {
         $query = "SELECT $columns FROM $table";
@@ -378,6 +543,7 @@ class MysqliDriver implements MysqlInterface
         return "($query)";
     }
 
+    // 锁表更新
     public function lockForUpdate($table, $data, $where = "")
     {
         $this->conn->autocommit(false);
@@ -441,21 +607,45 @@ class MysqliDriver implements MysqlInterface
         return $this->conn->query($sql);
     }
 
-    public function when($column, Closure $callback) {
+    /**
+     * 当 $column 不为空时候执行闭包查询
+     *
+     * @param         $column
+     * @param Closure $callback
+     *
+     * @return $this
+     */
+    public function when($column, Closure $callback)
+    {
         if ($column) {
             $callback($this);
         }
         return $this;
     }
 
+    /**
+     * 当 $column 为空时候执行闭包查询
+     *
+     * @param         $column
+     * @param Closure $callback
+     *
+     * @return $this
+     */
     public function whenNull($column, Closure $callback)
     {
-        // TODO: Implement whenNull() method.
+        if (empty($column)) {
+            $callback($this);
+        }
+        return $this;
     }
 
     public function where($column, $operator = null, $value = null, $boolean = 'and')
     {
-        // TODO: Implement where() method.
+        if ($column instanceof Closure) {
+            return $column($this);
+        }
+        $this->where[] = [$column, $operator, $value, $boolean];
+        return $this;
     }
 
     public function orWhere($column, $operator = null, $value = null)
@@ -470,47 +660,103 @@ class MysqliDriver implements MysqlInterface
 
     public function whereIn($column, $values, $boolean = 'and', $not = false)
     {
-        // TODO: Implement whereIn() method.
+        $this->whereAssemble[] = [$column, $values, $boolean, $not];
+        return $this;
     }
 
-    public function limit($value) {
-        $this->query .= " LIMIT $value";
+    public function limit($offset = 0, $limit = 10)
+    {
+        $this->limit = " $offset,$limit";
         return $this;
     }
 
     public function groupBy($groupByField)
     {
-        $this->query .= "GROUP BY $groupByField ";
+        $this->groupAssemble[] = $groupByField;
         return $this;
-    }
-
-    public function get($columns = ['*'])
-    {
-        // TODO: Implement get() method.
     }
 
     public function first($columns = ['*'])
     {
-        // TODO: Implement first() method.
+        $this->fieldAssemble = $columns;
     }
 
     public function fill(array $attributes)
     {
-        // TODO: Implement fill() method.
+        $this->dataAssemble = $attributes;
+        return $this;
     }
 
     public function save(array $options = [])
     {
-//        if (isset($this->fields['id'])) {
-//            $id = $this->fields['id'];
-//            unset($this->fields['id']);
-//            $result = $this->conn->update($this->table, $this->fields, "id=$id");
-//            $this->fields['id'] = $id;
-//        } else {
-//            $id = $this->conn->insert($this->table, $this->fields);
-//            $this->fields['id'] = $id;
-//        }
-//        return $id;
+        if (isset($this->fields['id'])) {
+            $id = $this->fields['id'];
+            unset($this->fields['id']);
+            $result             = $this->conn->update($this->table, $this->fields, "id=$id");
+            $this->fields['id'] = $id;
+        } else {
+            $id                 = $this->conn->insert($this->table, $this->fields);
+            $this->fields['id'] = $id;
+        }
+        return $id;
+    }
+
+
+    public function get($columns = ['*'])
+    {
+        $this->fieldAssemble = $columns;
+
+        $fields = implode(", ", array_keys($this->fields));
+        $where  = $this->where;
+        $order  = $this->order;
+        $limit  = $this->limit;
+        $joins  = $this->joins;
+        $sql    = "SELECT $fields FROM $this->table";
+        if ($where != "") {
+            $sql .= " WHERE $where";
+        }
+        if ($order != "") {
+            $sql .= " ORDER BY $order";
+        }
+        if ($limit != "") {
+            $sql .= " LIMIT $limit";
+        }
+        foreach ($joins as $join) {
+            $table  = $join[0];
+            $field1 = $join[1];
+            $field2 = $join[2];
+            $type   = $join[3];
+            switch ($type) {
+                case "hasOne":
+                    $sql .= " LEFT JOIN $table ON $this->table.$field1=$table.$field2";
+                    break;
+                case "hasMany":
+                    $sql .= " LEFT JOIN $table ON $this->table.$field1=$table.$field2";
+                    break;
+                case "belongsTo":
+                    $sql .= " LEFT JOIN $table ON $this->table.$field1=$table.$field2";
+                    break;
+                case "belongsToMany":
+                    $pivot = $this->table . "_" . $table;
+                    $sql   .= " LEFT JOIN $pivot ON $this->table.id=$pivot.$field1";
+                    $sql   .= " LEFT JOIN $table ON $pivot.$field2=$table.id";
+                    break;
+            }
+        }
+        $result = $this->connection->query($sql);
+        if ($result->num_rows > 0) {
+            $rows = array();
+            while ($row = $result->fetch_assoc()) {
+                $model = new Model($this->connection, $this->table);
+                foreach ($row as $key => $value) {
+                    $model->$key = $value;
+                }
+                $rows[] = $model;
+            }
+            return $rows;
+        } else {
+            return false;
+        }
     }
 
     //  未继承接口部分  ===============================
@@ -530,7 +776,7 @@ class MysqliDriver implements MysqlInterface
     // 获取错误信息
     public function error()
     {
-        return $this->conn->error;
+        return !empty($this->conn->error) ? $this->conn->error : $this->error;
     }
 
     // 获取错误编号

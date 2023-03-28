@@ -3,11 +3,10 @@
 namespace zxf\Facade;
 
 /**
- * Mysqli Model 模型类 未整合完成
+ * Mysqli Model 模型类
  *
- * 该类由 http://github.com/joshcam/PHP-MySQLi-Database-Class 仓库 改造而来，避免了每次都需要单独传入表名参数字段
- *
- * @link http://github.com/zhaoxianfang/tools 或者 https://gitee.com/zhaoxianfang/tools
+ * @link http://github.com/zhaoxianfang/tools
+ * @link https://gitee.com/zhaoxianfang/tools
  *
  * @method int table($tableName)
  * @method int count ()

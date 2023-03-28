@@ -206,6 +206,7 @@ if (!function_exists('is_crawler')) {
                         if ($forbidUnknownSpider) {
                             throw new \Exception('服务器忙');
                         }
+                        return $returnName ? 'unknow:' . $_SERVER['SERVER_ADDR'] : true;
                     }
                 }
             }

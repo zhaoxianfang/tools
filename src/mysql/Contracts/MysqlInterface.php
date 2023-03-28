@@ -3,7 +3,6 @@
 namespace zxf\mysql\Contracts;
 
 use Closure;
-use Exception;
 
 interface  MysqlInterface
 {
@@ -13,31 +12,29 @@ interface  MysqlInterface
     // 设置类型
     public function setCharset(string $charset = 'utf8mb4');
 
+    public function reset();
+
+    // 设置表名
+    public function table(string $tableName = '');
+
+    // 查询字段
+    public function field(array $columns = ["*"]);
+
     public function insert(array $data);
 
-    public function update($table, $data, $where = "");
+    public function update($data);
 
-    public function delete($table, $where = "");
+    public function delete();
 
-    public function count($table, $where = "");
+    public function count(string $field = '*');
 
-    public function sum($table, $column, $where = "");
+    public function sum(string $field = '*');
 
-    public function avg($table, $column, $where = "");
+    public function avg(string $field = '*');
 
-    public function max($table, $column, $where = "");
+    public function max(string $field = '*');
 
-    public function min($table, $column, $where = "");
-
-    public function hasMany($table, $foreign_key, $where = "");
-
-    public function belongsTo($table, $foreign_key, $where = "");
-
-    public function hasOne($table, $foreign_key, $where = "");
-
-    public function hasManyThrough($table, $through_table, $foreign_key, $through_foreign_key, $where = "");
-
-    public function preload($table, $foreign_key, $where = "");
+    public function min(string $field = '*');
 
     // 子查询
     public function subQuery($table, $columns = "*", $where = "", $limit = "", $offset = "", $orderBy = "", $groupBy = "");
@@ -45,16 +42,13 @@ interface  MysqlInterface
     public function lockForUpdate($table, $data, $where = "");
 
     // 批量插入数据
-    public function insertBatch($tableName, $data);
+    public function insertBatch(array $data);
 
     // 批量更新数据
-    public function updateBatch($tableName, $data, $primaryKey);
+    public function updateBatch(array $data);
 
     // 事务操作
     public function transaction($callback): bool;
-
-    // 批量更新
-    public function batchUpdate($tableName, $data, $where);
 
     // 当 $column 不为空时执行闭包
     public function when($column, Closure $callback);
@@ -68,11 +62,11 @@ interface  MysqlInterface
      * @param Closure|string|array $column
      * @param mixed                $operator
      * @param mixed                $value
-     * @param string               $boolean
+     * @param string               $type
      *
      * @return mixed
      */
-    public function where($column, $operator = null, $value = null, $boolean = 'and');
+    public function where($column, $operator = null, $value = null, $type = 'and');
 
     /**
      * Add an "or where" clause to the query.
@@ -88,40 +82,37 @@ interface  MysqlInterface
     /**
      * 添加一个 "where not" 闭包查询
      *
-     * @param \Closure|string|array $column
-     * @param mixed                 $operator
-     * @param mixed                 $value
-     * @param string                $boolean
+     * @param Closure|string|array $column
+     * @param mixed                $value
      *
      * @return $this
      */
-    public function whereNot($column, $operator = null, $value = null, $boolean = 'and');
+    public function whereNot($column, $value = null);
 
     /**
      * 添加一个 "where in" 闭包查询
      *
      * @param string $column
-     * @param mixed  $values
-     * @param string $boolean
-     * @param bool   $not
+     * @param mixed  $value
      *
      * @return $this
      */
-    public function whereIn($column, $values, $boolean = 'and', $not = false);
+    public function whereIn(string $column, $value = null);
 
     /**
      * Set the "limit" value of the query.
      *
-     * @param int $value
+     * @param int $offset
+     * @param int $limit
      *
      * @return $this
      */
-    public function limit($value);
+    public function limit(int $offset = 0, int $limit = 10);
 
     /**
      * This method allows you to specify multiple (method chaining optional) GROUP BY statements for SQL queries.
      *
-     * @param string $groupByField The name of the database field.
+     * @param string|array $groupByField The name of the database field.
      */
     public function groupBy($groupByField);
 
@@ -154,18 +145,14 @@ interface  MysqlInterface
     /**
      * Save the model to the database.
      *
-     * @param array $options
+     * @param array $data
      *
      * @return bool
      */
-    public function save(array $options = []);
+    public function save(array $data = []);
 
-    /**
-     * Set the columns to be selected.
-     *
-     * @param array|mixed $columns
-     *
-     * @return $this
-     */
-    public function select($columns = ['*']);
+
+    public function query($sql);
+
+    public function toSQL(): string;
 }

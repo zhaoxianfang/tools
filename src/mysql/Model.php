@@ -28,12 +28,15 @@ class Model
      */
     protected $dbTable;
 
+    public $connectionName = 'default';
+
     public function __construct($data = null)
     {
         $this->db = Db::instance();
+        $this->db->connect($this->connectionName);
         if (empty ($this->dbTable)) {
             $this->dbTable = $this->underlineConvert(get_class($this));
-            $this->db->setTable($this->dbTable);
+            $this->db->table($this->dbTable);
         }
         if ($data) {
             $this->data = $data;
@@ -48,8 +51,7 @@ class Model
 
     public static function query()
     {
-        $obj = new static();
-        $obj->db->reset();
+        return new static();
     }
 
     /**
@@ -214,8 +216,7 @@ class Model
             return call_user_func_array(array($this, $method), $arg);
         }
 
-        call_user_func_array(array($this->db, $method), $arg);
-        return $this;
+        return call_user_func_array(array($this->db, $method), $arg);
     }
 
     /**
@@ -230,11 +231,14 @@ class Model
      */
     public static function __callStatic($method, $arg)
     {
-        $obj    = new static;
-        $result = call_user_func_array(array($obj, $method), $arg);
-        if (method_exists($obj, $method)) {
-            return $result;
+        $class = self::class;
+        if (method_exists($class, $method)) {
+            return call_user_func_array(array($class, $method), $arg);
         }
-        return $obj;
+
+        if (empty($class->db)) {
+            $class = self::query();
+        }
+        return call_user_func_array(array($class->db, $method), $arg);
     }
 }

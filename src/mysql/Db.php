@@ -53,6 +53,8 @@ class Db
     {
         if (extension_loaded('mysqli')) {
             $this->driver = MysqliDriver::class;
+        } else {
+            throw new Exception('未配置mysqli扩展');
         }
 
         // 如果参数作为数组传递
@@ -90,8 +92,10 @@ class Db
         return self::instance();
     }
 
-    public function reset(){
-        $this->driver->reset();
+    public function reset()
+    {
+        $this->connect();
+        self::$activeConnectionObj->reset();
         return $this;
     }
 
@@ -159,15 +163,18 @@ class Db
      * @param mixed  $arg
      *
      * @return mixed
+     * @throws Exception
      */
     public function __call($method, $arg)
     {
         if (method_exists($this, $method)) {
             return call_user_func_array(array($this, $method), $arg);
         }
+        if (empty(self::$activeConnectionObj)) {
+            $this->connect();
+        }
 
-        call_user_func_array(array(self::$activeConnectionObj, $method), $arg);
-        return $this;
+        return call_user_func_array(array(self::$activeConnectionObj, $method), $arg);
     }
 
     /**
@@ -179,14 +186,19 @@ class Db
      * @param mixed  $arg
      *
      * @return mixed
+     * @throws Exception
      */
-    public static function __callStatic($method, $arg)
+    public static function __callStatic(string $method, $arg)
     {
-        $obj    = self::instance();
-        $result = call_user_func_array(array($obj::$activeConnectionObj, $method), $arg);
-        if (method_exists($obj, $method)) {
-            return $result;
+        $class = self::class;
+        if (method_exists($class, $method)) {
+            return call_user_func_array(array($class, $method), $arg);
         }
-        return $obj;
+
+        if (empty(self::$activeConnectionObj)) {
+            $class = new static;
+            $class->connect();
+        }
+        return call_user_func_array(array($class::$activeConnectionObj, $method), $arg);
     }
 }

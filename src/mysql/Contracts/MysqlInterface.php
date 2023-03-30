@@ -155,4 +155,8 @@ interface  MysqlInterface
     public function query($sql);
 
     public function toSQL(): string;
+
+    public function toArray(): array;
+
+    public function toJson(): string;
 }

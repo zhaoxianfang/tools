@@ -281,19 +281,20 @@ class MysqliDriver implements MysqlInterface
 
     private function analyseLimit($limit = '')
     {
-        $str         = '';
         $onlyAnalyse = !empty($limit);
-        $limitStr    = !empty($limit) ? $limit : $this->limit;
-        if (is_string($limitStr) && !empty($limitStr)) {
-            return 'LIMIT ' . $limitStr;
+        $str         = empty($limit) ? $this->limit : $limit;
+        if (!empty($str) && is_array($str)) {
+            $str = $str[0] . ',' . $str[1];
         }
-        if (!empty($limitStr) && is_array($limitStr)) {
-            $str = 'LIMIT ' . $limitStr[0] . ',' . $limitStr[1];
+        if (empty($str)) {
+            $str = 1;
         }
-        if (!$onlyAnalyse) {
-            $this->query .= $str;
+        if ($onlyAnalyse) {
+            return ' LIMIT ' . $str;
         }
-        return $onlyAnalyse ? $str : $this;
+        $this->query .= ' LIMIT ' . $str;
+
+        return $this;
     }
 
     private function analyseFill()
@@ -314,7 +315,7 @@ class MysqliDriver implements MysqlInterface
     {
         $this->query = 'SELECT ';
         $this->analyseFields();
-        $this->query .= ' FORM ' . $this->tableName;
+        $this->query .= ' FROM ' . $this->tableName;
         $this->analyseJoin();
         $this->analyseWhere();
         $this->analyseGroup();
@@ -646,11 +647,11 @@ class MysqliDriver implements MysqlInterface
         $this->fieldAssemble = (is_array($columns) && count($columns) < 2 && in_array('*', $columns)) ? $this->fieldAssemble : $columns;
         $this->limit         = 1;
         $this->packageQuery();
-        $result = $this->conn->query($this->query);
-        if (!$result) {
+        $this->result = $this->conn->query($this->query);
+        if (!$this->result) {
             throw new Exception('查询失败:' . $this->conn->error);
         }
-        return $result->fetch_assoc();
+        return $this;
     }
 
     public function save(array $data = [])
@@ -675,15 +676,11 @@ class MysqliDriver implements MysqlInterface
 
         $this->packageQuery();
 
-        $result = $this->conn->query($this->query);
-        if (!$result) {
+        $this->result = $this->conn->query($this->query);
+        if (!$this->result) {
             throw new Exception('查询失败:' . $this->conn->error);
         }
-        $data = [];
-        while ($row = $result->fetch_assoc()) {
-            $data[] = $row;
-        }
-        return $data;
+        return $this;
     }
 
     public function toSQL(): string
@@ -703,6 +700,26 @@ class MysqliDriver implements MysqlInterface
     public function query($sql)
     {
         return $this->conn->query($sql);
+    }
+
+    // 结果转为数组
+    public function toArray()
+    {
+        $rows = [];
+        while ($row = $this->result->fetch_assoc()) {
+            $rows[] = $row;
+        }
+        return $rows;
+    }
+
+    // 结果转为数组
+    public function toJson():string
+    {
+        $rows = [];
+        while ($row = $this->result->fetch_assoc()) {
+            $rows[] = $row;
+        }
+        return json_encode($rows);
     }
 
     //  未继承接口部分  ===============================

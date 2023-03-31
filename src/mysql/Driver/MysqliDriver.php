@@ -189,7 +189,7 @@ class MysqliDriver implements MysqlInterface
         $str         = '';
         $onlyAnalyse = !empty($where);
         $whereList   = !empty($where) ? $where : $this->whereAssemble;
-        if (is_string($where)) {
+        if (is_string($where) && !empty($where)) {
             return $where;
         }
         if (!empty($whereList)) {
@@ -286,13 +286,10 @@ class MysqliDriver implements MysqlInterface
         if (!empty($str) && is_array($str)) {
             $str = $str[0] . ',' . $str[1];
         }
-        if (empty($str)) {
-            $str = 1;
-        }
         if ($onlyAnalyse) {
-            return ' LIMIT ' . $str;
+            return empty($str) ? '' : ' LIMIT ' . $str;
         }
-        $this->query .= ' LIMIT ' . $str;
+        $this->query .= empty($str) ? '' : ' LIMIT ' . $str;
 
         return $this;
     }
@@ -683,10 +680,11 @@ class MysqliDriver implements MysqlInterface
         return $this;
     }
 
-    public function toSQL(): string
+    public function toSql()
     {
         $this->packageQuery();
-        return $this->conn->prepare($this->query);
+//        return $this->conn->prepare($this->query);
+        return $this->query;
     }
 
     // 查询的数据字段
@@ -713,13 +711,13 @@ class MysqliDriver implements MysqlInterface
     }
 
     // 结果转为数组
-    public function toJson():string
+    public function toJson()
     {
         $rows = [];
         while ($row = $this->result->fetch_assoc()) {
             $rows[] = $row;
         }
-        return json_encode($rows);
+        return json_encode($rows, true);
     }
 
     //  未继承接口部分  ===============================

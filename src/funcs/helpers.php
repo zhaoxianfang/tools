@@ -497,21 +497,66 @@ if (!function_exists('num_to_cn')) {
     }
 }
 
-if (!function_exists('array_to_tree')) {
-    //二维数组转树tree型结构
-    function array_to_tree($items, $pid = 'pid', $id = 'id', $child = 'childlist'): array
+if (!function_exists('arr2tree')) {
+    /**
+     * 二维数组 转为 树形结构 和 tree2arr 互逆
+     *
+     * @param array  $array        二维数组
+     * @param int    $superior_id  上级ID
+     * @param string $superior_key 父级键名
+     * @param string $primary_key  主键名
+     * @param string $son_key      子级键名
+     *
+     * @return array
+     */
+    function arr2tree(array $array, int $superior_id = 0, string $superior_key = 'pid', string $primary_key = 'id', string $son_key = 'son'): array
     {
-        $tree = array(); //格式化好的树
-        foreach ($items as $item) {
-            if (isset($items[$item[$pid]])) {
-                $items[$item[$pid]][$child][] = &$items[$item[$id]];
-            } else {
-                $tree[] = &$items[$item[$id]];
+        $return = [];
+        foreach ($array as $k => $v) {
+            if ($v[$superior_key] == $superior_id) {
+                $son = arr2tree($array, $v[$primary_key], $superior_key, $primary_key, $son_key);
+                if ($son) {
+                    $v[$son_key] = $son;
+                }
+                $return[] = $v;
             }
         }
-        return $tree;
+        return $return;
+    }
+
+}
+
+if (!function_exists('tree2arr')) {
+    /**
+     * 树形结构 转为 二维数组  和 arr2tree 互逆
+     *
+     * @param array  $array   树形数据
+     * @param string $son_key 子级的键名
+     * @param int    $level   层级
+     *
+     * @return array
+     */
+    function tree2arr(array $array, string $son_key = 'son', int $level = 0): array
+    {
+        $return = [];
+        $level  += 1;
+        if (!empty($array)) {
+            foreach ($array as $key => $value) {
+                $son = isset($value[$son_key]) ? $value[$son_key] : '';
+                if ($son) {
+                    unset($value[$son_key]);
+                }
+                $value['level'] = $level;
+                array_push($return, $value);
+                if ($son) {
+                    $return = array_merge($return, tree2arr($son, $son_key, $level));
+                }
+            }
+        }
+        return $return;
     }
 }
+
 if (!function_exists('show_img')) {
     /*
      * 页面直接输出图片

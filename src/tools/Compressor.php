@@ -241,7 +241,7 @@ class Compressor
         } else if ($width <= 0 && $height <= 0) {
             throw new \Exception('illegal size!');
         }
-
+        ini_set('memory_limit','3072M'); // 处理图片过大导致 imagecreatetruecolor 提示空白错误问题
         $image_thump = imagecreatetruecolor($width, $height);
         if ($this->imageInfo['mime'] == 'image/png') {
             //分配颜色 + alpha，将颜色填充到新图上

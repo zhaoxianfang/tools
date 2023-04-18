@@ -44,9 +44,12 @@ class TextToImg
         return $this;
     }
 
-    public function setFontAngle($angle = 0)
+    public function setFontAngle($rotate = 0)
     {
-        $this->font_angle = $angle; // 设置字体旋转角度
+        // 角度转换到0-360度内
+        $rotate           = $rotate > 0 ? ($rotate % 360) : ($rotate % -360);
+        $rotate           = $rotate > 0 ? $rotate : (360 + $rotate);
+        $this->font_angle = (int)$rotate; // 设置字体旋转角度
         return $this;
     }
 
@@ -62,6 +65,31 @@ class TextToImg
         return $this;
     }
 
+    //计算一个字符串占用的宽高
+    private function getWordArea($size = 12, $angle = 0)
+    {
+        // 中文
+        $cnText   = imagettfbbox($size, $angle, $this->font_file, '我');
+        $cnWidth  = $cnText[2] - $cnText[0]; //字符串所占宽度
+        $cnHeight = $cnText[5] - $cnText[3]; //字符串所占高度
+
+        // 字母
+        $enText   = imagettfbbox($size, $angle, $this->font_file, 'W');
+        $enWidth  = $enText[2] - $enText[0]; //字符串所占宽度
+        $enHeight = $enText[5] - $enText[3]; //字符串所占高度
+        return [
+            'cn' => [
+                'width'  => $cnWidth,
+                'height' => $cnHeight,
+            ],
+            'en' => [
+                'width'  => $enWidth,
+                'height' => $enHeight,
+            ],
+        ];
+
+    }
+
     public function generate()
     {
         $bg_color = imagecolorallocate($this->image, $this->bg_color[0], $this->bg_color[1], $this->bg_color[2]); // 创建背景颜色
@@ -69,11 +97,25 @@ class TextToImg
 
         $font_color = imagecolorallocate($this->image, $this->font_color[0], $this->font_color[1], $this->font_color[2]); // 创建字体颜色
 
-        $box         = imagettfbbox($this->font_size, $this->font_angle, $this->font_file, $this->text); // 获取字体的边界框
-        $text_width  = abs($box[4] - $box[0]); // 计算字体的宽度
-        $text_height = abs($box[5] - $box[1]); // 计算字体的高度
+//        $box         = imagettfbbox($this->font_size, $this->font_angle, $this->font_file, $this->text); // 获取字体的边界框
+//        $text_width  = abs($box[4] - $box[0]); // 计算字体的宽度
+//        $text_height = abs($box[5] - $box[1]); // 计算字体的高度
 
-        $max_text_width = $this->getWidth() * $this->textArea; // 计算最大的字体宽度，不能超过图片宽度的 70%
+        $max_text_width  = $this->getWidth() * $this->textArea; // 计算最大的字体宽度，不能超过图片宽度的 70%
+        $max_text_height = $this->getHeight() * $this->textArea; // 计算最大的字体高度，不能超过图片宽度的 70%
+        $maxArea         = bcmul($max_text_width, $max_text_height, 2);
+
+        list($cnWord, $enWord) = $this->getWordArea($this->font_size);
+//        $max_text_width
+        $rowCnWordNum = floor(bcdiv($max_text_width, $cnWord['width'], 1)); // 一行能容纳多少个汉字
+        $rowEnWordNum = floor(bcdiv($max_text_width, $enWord['width'], 1)); // 一行能容纳多少个字母
+
+        $columnCnWordNum = floor(bcdiv($max_text_width, $cnWord['height'])); // 一列能容纳多少个汉字
+        $columnEnWordNum = floor(bcdiv($max_text_width, $enWord['height'])); // 一列能容纳多少个字母
+
+        $maxCnArea = bcmul($rowCnWordNum, $this->text, 2);// 平均每个字的最大面积
+
+//        imagefontheight
         if ($text_width > $max_text_width) {
             $this->font_size = $this->font_size * ($max_text_width / $text_width); // 根据最大宽度调整字体大小
             $box             = imagettfbbox($this->font_size, $this->font_angle, $this->font_file, $this->text); // 重新获取字体的边界框

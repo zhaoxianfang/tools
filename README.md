@@ -29,6 +29,7 @@ composer require zxf/tools
 | Compressor    | 图片压缩类                                                                                           |
 | Cache         | 文件缓存                                                                                            |
 | TextToPNG     | 文字转图片                                                                                           |
+| TextToImg     | 文字转图片                                                                                           |
 | PHPMailer     | 发送邮件                                                                                            |
 | Curl          | http 网络请求                                                                                       |
 | Sms           | 发送短信: ali(阿里云)[默认] 或者 tencent（腾讯云）                                                              |
@@ -83,13 +84,13 @@ return [
 
 ```php
 // 直播间
-use zxf\WeChat\MiniProgram\Live\LiveRoom;
-$this->sdk = LiveRoom::instance($this->config);
+use zxf\WeChat\Mini\Live\LiveGoods;
+$this->sdk = LiveGoods::instance($this->config);
 ```
 
 ```php
 // 永久素材
-use zxf\WeChat\Material\PermanentFiles;
+use zxf\WeChat\OfficialAccount\Material\PermanentFiles;
 $this->sdk = PermanentFiles::instance($this->config);
 ```
 
@@ -97,7 +98,7 @@ $this->sdk = PermanentFiles::instance($this->config);
 
 ``` php
 
-zxf\tools\Curl::instance()->setParams(['path'=>'pages/index/index'])->post($url,'json');
+\zxf\http\Curl::instance()->setParams(['path'=>'pages/index/index'])->post($url,'json');
 
 ```
 
@@ -265,6 +266,17 @@ $cache->has('name');
 ``` php
 use zxf\min\JsMin;
 $minifiedCode = JsMin::minify($jsString);
+```
+
+### js压缩
+```
+$minifier   = new \zxf\min\JS('var a = "hello";',$jsFilePath,...); // 实例化 并混合自动引入 任意个 需要压缩的 js 文件路径 和 代码段
+$res = $minifier->minify();
+```
+### css压缩
+```
+$minifier   = new \zxf\min\CSS('body { color: #000000; }',$cssFilePath,...); // 实例化 并混合自动引入 任意个 需要压缩的 css 文件路径 和 代码段
+$res = $minifier->minify();
 ```
 
 ### QrCode 创建二维码
@@ -564,8 +576,30 @@ $font = 'diandian'; // 使用的字体
 
 TextToPNG::instance()->setFontStyle($font)->setText($text)->setSize('900', '500')->setColor($color)->setBackgroundColor($bgcolor)->setTransparent(false)->setRotate($rotate)->draw();
 ```
+### TextToImage 文字转图片
 
-#### 附 TextToPNG 文字转图片 可使用的字体参照
+``` php
+use zxf\tools\TextToImage;
+
+/**
+ * 文字生成图片
+ *
+ * // 创建一个实例
+ * $textToImage = new TextToImage(1200, 800);
+ *
+ * $textToImage->setFontFile('./arial.ttf'); // 设置自定义字体路径
+ * $textToImage->setFontStyle('foxi'); // 选择本库中支持的一种字体
+ * $textToImage->setText('这是\n一段\n测试文字'); // 设置文字内容，支持使用 \n 换行
+ * $textToImage->setColor('FF00FF'); // 设置文字颜色
+ * $textToImage->setBgColor('00FF00'); // 设置图片背景色
+ * $textToImage->setAngle(90);// 设置文字旋转
+ * $textToImage->setSize(20);// 设置文字固定字号为20【提示：本库默认会自动计算字体大小，如果设置该属性就使用传入的固定值】
+ * $textToImage->render();// 显示图片到浏览器
+ * $textToImage->render('test.png');// 将图片保存至本地
+ */
+```
+
+#### 附 文字转图片 可使用的字体参照
 
 ```
 yuanti        圆体

@@ -1,7 +1,7 @@
 {
     "name": "zxf/tools",
-    "description": "第三方登录、条形码Barcode、二维码QrCode、生成菜单、发送短信、图片处理、随机数、字符压缩、发送邮件、生成数据字典、远程截图、Redis、laravel多模块应用和一些常用方法集合等",
-    "keywords": ["mysql", "mysqli","php", "sms", "tools", "laravel", "redis", "tree", "命令行参数解析", "类库", "工具"],
+    "description": "第三方登录、条形码Barcode、二维码QrCode、生成菜单、发送短信、图片处理、随机数、字符压缩、文字转图片、生成数据字典、远程截图、Redis、laravel多模块应用和一些常用方法集合等",
+    "keywords": ["mysqli","php", "sms", "tools", "laravel", "redis", "tree","js/css压缩", "命令行参数解析", "类库", "工具"],
     "homepage": "https://github.com/zhaoxianfang/",
     "license": "Apache-2.0",
     "support": {

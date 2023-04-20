@@ -12,7 +12,7 @@ use Exception;
  *
  * $textToImage->setFontFile('./arial.ttf'); // 设置自定义字体路径
  * $textToImage->setFontStyle('foxi'); // 选择本库中支持的一种字体
- * $textToImage->setText('这是\n一段\n测试文字'); // 设置文字内容，支持使用 \n 换行
+ * $textToImage->setText('这是<br>一段<br>测试文字'); // 设置文字内容，支持使用 <br> 换行
  * $textToImage->setColor('FF00FF'); // 设置文字颜色
  * $textToImage->setBgColor('00FF00'); // 设置图片背景色
  * $textToImage->setAngle(90);// 设置文字旋转
@@ -199,7 +199,7 @@ class TextToImg
     /**
      * 绘制文字
      *
-     * @param string   $text  文字 支持使用 \n换行
+     * @param string   $text  文字 支持使用 <br>换行
      * @param int      $angle 旋转角度
      * @param int|null $size  设置文字字号，不设置时候 回自动计算文字字体大小
      *
@@ -216,7 +216,7 @@ class TextToImg
         );
         imagefill($this->image, 0, 0, $bgColor);
 
-        $text = str_ireplace('\n', PHP_EOL, $text);
+        $text = str_ireplace('<br>', PHP_EOL, $text);
         // 获取前景色
         $foregroundColor = imagecolorallocate(
             $this->image,

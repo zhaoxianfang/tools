@@ -589,7 +589,7 @@ use zxf\tools\TextToImage;
  *
  * $textToImage->setFontFile('./arial.ttf'); // 设置自定义字体路径
  * $textToImage->setFontStyle('foxi'); // 选择本库中支持的一种字体
- * $textToImage->setText('这是\n一段\n测试文字'); // 设置文字内容，支持使用 \n 换行
+ * $textToImage->setText('这是<br>一段<br>测试文字'); // 设置文字内容，支持使用 <br> 换行
  * $textToImage->setColor('FF00FF'); // 设置文字颜色
  * $textToImage->setBgColor('00FF00'); // 设置图片背景色
  * $textToImage->setAngle(90);// 设置文字旋转

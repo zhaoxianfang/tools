@@ -233,14 +233,20 @@ class TextToImg
         $textInfo = $this->getTextDimensions($text, (int)$size, $angle);
 
         // 计算居中文字的偏移量
-        $offsetX = ($this->width - $textInfo['width']) / 2;
-        $offsetY = ($this->height - $textInfo['height']) / 2;
-        // 文字开始位置 + 偏移
-        $x           = abs($textInfo['position'][0] - abs($textInfo['min_x'])) + $offsetX;
-        $y           = abs(abs($textInfo['position'][1]) - abs($textInfo['min_y'])) + $offsetY;
-        $offsetAngle = abs(abs($textInfo['position'][5]) - abs($textInfo['position'][7]));// 角度产生的偏移值
-        $y           = $y + $offsetAngle;
-        $y           = $y + ($offsetAngle > 0 ? 0 : $textInfo['word_height'] * 0.8);
+        //$offsetX = ($this->width - $textInfo['width']) / 2;
+        //$offsetY = ($this->height - $textInfo['height']) / 2;
+        //// 文字开始位置 + 偏移
+        //$x           = abs($textInfo['position'][0] - abs($textInfo['min_x'])) + $offsetX;
+        //$y           = abs(abs($textInfo['position'][1]) - abs($textInfo['min_y'])) + $offsetY;
+        //$offsetAngle = abs(abs($textInfo['position'][5]) - abs($textInfo['position'][7]));// 角度产生的偏移值
+        //$y           = $y + $offsetAngle;
+        //$y           = $y + ($offsetAngle > 0 ? 0 : $textInfo['word_height'] * 0.8);
+
+        $textWidth  = bcsub($textInfo['max_x'], $textInfo['min_x']);
+        $textHeight = bcsub($textInfo['max_y'], $textInfo['min_y']);
+        // 居中显示
+        $x = ($this->width - $textWidth) / 2 + abs($textInfo['min_x']);
+        $y = ($this->height - $textHeight) / 2 + abs($textInfo['min_y']);
 
         // 在图片上添加文字
         imagettftext($this->image, $size, $angle, (int)$x, (int)$y, $foregroundColor, $this->fontFile, $text);
@@ -311,12 +317,6 @@ class TextToImg
     {
         // 获取文字的宽度和高度
         $bbox = imagettfbbox($size, $angle, $this->fontFile, $text);
-
-        // y 坐标系取反
-        $bbox[1] = -$bbox[1];
-        $bbox[3] = -$bbox[3];
-        $bbox[5] = -$bbox[5];
-        $bbox[7] = -$bbox[7];
 
         $minX = min($bbox[0], $bbox[2], $bbox[4], $bbox[6]);
         $minY = min($bbox[1], $bbox[3], $bbox[5], $bbox[7]);

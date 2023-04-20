@@ -2,180 +2,339 @@
 
 namespace zxf\tools;
 
-// 使用php8实现的文字生成图片的高级封装类，可以动态设置文字颜色、图片背景色、可以根据图片大小自动计算文字的字体大小，图片空白区不能超过70%、文字可以换行和旋转角度
+use Exception;
 
+/**
+ * 文字生成图片
+ *
+ * // 创建一个实例
+ * $textToImage = new TextToImage(1200, 800);
+ *
+ * $textToImage->setFontFile('./arial.ttf'); // 设置自定义字体路径
+ * $textToImage->setFontStyle('foxi'); // 选择本库中支持的一种字体
+ * $textToImage->setText('这是\n一段\n测试文字'); // 设置文字内容，支持使用 \n 换行
+ * $textToImage->setColor('FF00FF'); // 设置文字颜色
+ * $textToImage->setBgColor('00FF00'); // 设置图片背景色
+ * $textToImage->setAngle(90);// 设置文字旋转
+ * $textToImage->setSize(20);// 设置文字固定字号为20【提示：本库默认会自动计算字体大小，如果设置该属性就使用传入的固定值】
+ * $textToImage->render();// 显示图片到浏览器
+ * $textToImage->render('test.png');// 将图片保存至本地
+ */
 class TextToImg
 {
-    private $image; // 图片资源
-    private $font_size  = 14; // 字体大小
-    private $font_color; // 字体颜色
-    private $bg_color; // 背景颜色
-    private $font_angle = 0; // 字体旋转角度
-    private $font_file; // 字体文件
-    private $text; // 文字内容
-    private $textArea   = 0.9; // 文字区域
+    private $image;
+    private $fontFile        = '';
+    private $angle           = 0; // 旋转角度
+    private $text            = 'hello'; // 文字内容
+    private $size            = null; // 设置了值就使用设置的值，未设置就自动计算
+    private $textColor       = [0, 0, 0]; // 文字颜色
+    private $backgroundColor = [255, 255, 255];   // 图片背景颜色
+    private $width           = 800;   // 图片宽度
+    private $height          = 600;   // 图片高度
 
-    public function __construct($width, $height)
+    protected static $instance;
+
+    public function __construct(int $width = 800, int $height = 600)
     {
-        $this->image = imagecreatetruecolor($width, $height); // 创建指定大小的图片资源
+        $this->width  = $width;
+        $this->height = $height;
+
+        // 初始化一种字体
+        $this->fontFile = dirname(__FILE__, 2) . '/resource/font/oppo.ttf';
+
+        // 创建一张新图片，并设置背景色
+        $this->image = imagecreatetruecolor($this->width, $this->height);
     }
 
-    public function setFontSize($size)
+    public static function instance(int $width = 800, int $height = 600)
     {
-        $this->font_size = $size; // 设置字体大小
+        self::$instance = new static($width, $height);
+        return self::$instance;
+    }
+
+    /**
+     * 设置字体文件 路径
+     *
+     * @param string $file
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setFontFile(string $file = '')
+    {
+        if (!is_file($file)) {
+            throw new Exception('字体文件不存在:' . $file);
+        }
+        $this->fontFile = $file;
         return $this;
     }
 
-    public function setFontColor($color)
+    /**
+     * 选择本库中已有的字体
+     *
+     * @param string $style
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setFontStyle(string $style = 'xingshu')
     {
-        $this->font_color = $color; // 设置字体颜色
+        $this->fontFile = dirname(__FILE__, 2) . '/resource/font/' . $style . '.ttf';
+        if (!is_file($this->fontFile)) {
+            throw new Exception('不支持的字体:' . $style);
+        }
         return $this;
     }
 
-    public function setBgColor($color)
-    {
-        $this->bg_color = $color; // 设置背景颜色
-        return $this;
-    }
-
-    public function setTextArea($area = 0.9)
-    {
-        $this->textArea = $area; // 设置文字宽度最多不能超过多少比例，例如 0.8 表示文字的最大宽度为图片宽度的 80%
-        return $this;
-    }
-
-    public function setFontAngle($rotate = 0)
+    /**
+     * 设置旋转角度
+     *
+     * @param int $angle
+     *
+     * @return $this
+     */
+    public function setAngle(int $angle = 0)
     {
         // 角度转换到0-360度内
-        $rotate           = $rotate > 0 ? ($rotate % 360) : ($rotate % -360);
-        $rotate           = $rotate > 0 ? $rotate : (360 + $rotate);
-        $this->font_angle = (int)$rotate; // 设置字体旋转角度
+        $angle       = $angle > 0 ? ($angle % 360) : ($angle % -360);
+        $angle       = $angle > 0 ? $angle : (360 + $angle);
+        $this->angle = (int)$angle;
         return $this;
     }
 
-    public function setFontFile($file)
+    /**
+     * 设置文字颜色
+     *
+     * @param string $hexVal
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setColor(string $hexVal = '000000')
     {
-        $this->font_file = $file; // 设置字体文件
+        $this->transformColor($hexVal, false);
         return $this;
     }
 
-    public function setText($text)
+    /**
+     * 设置图片背景色
+     *
+     * @param string $hexVal
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setBgColor(string $hexVal = 'FFFFFF')
     {
-        $this->text = $text; // 设置文字内容
+        $this->transformColor($hexVal, true);
         return $this;
     }
 
-    //计算一个字符串占用的宽高
-    private function getWordArea($size = 12, $angle = 0)
+    /**
+     * 颜色值转换
+     *
+     * @param string $hexVal 颜色值（支持1位，3位，6位）
+     * @param bool   $isBackground
+     *
+     * @return $this
+     * @throws Exception
+     */
+    private function transformColor(string $hexVal = '0000FF', bool $isBackground = true)
     {
-        // 中文
-        $cnText   = imagettfbbox($size, $angle, $this->font_file, '我');
-        $cnWidth  = $cnText[2] - $cnText[0]; //字符串所占宽度
-        $cnHeight = $cnText[5] - $cnText[3]; //字符串所占高度
+        $colorLeng = strlen($hexVal);
+        $colorArr  = [];
+        switch ($colorLeng) {
+            case '6':
+                $colorArr[0] = hexdec('0x' . substr($hexVal, 0, 2)); //截取两位
+                $colorArr[1] = hexdec('0x' . substr($hexVal, 2, 2)); //截取两位
+                $colorArr[2] = hexdec('0x' . substr($hexVal, 4, 2)); //截取两位
+                break;
+            case '3':
+                $colorArr[0] = hexdec('0x' . substr($hexVal, 0, 1) . substr($hexVal, 0, 1)); //截取一位
+                $colorArr[1] = hexdec('0x' . substr($hexVal, 1, 1) . substr($hexVal, 1, 1)); //截取一位
+                $colorArr[2] = hexdec('0x' . substr($hexVal, 2, 1) . substr($hexVal, 2, 1)); //截取一位
+                break;
+            case '1':
+                $colorArr[0] = hexdec('0x' . $hexVal . $hexVal);
+                $colorArr[1] = hexdec('0x' . $hexVal . $hexVal);
+                $colorArr[2] = hexdec('0x' . $hexVal . $hexVal);
+                break;
+            default:
+                throw new Exception(($isBackground ? '背景' : '前景') . '色有误');
+        }
+        if ($isBackground) {
+            $this->backgroundColor = $colorArr;
+        } else {
+            $this->textColor = $colorArr;
+        }
+        return $this;
+    }
 
-        // 字母
-        $enText   = imagettfbbox($size, $angle, $this->font_file, 'W');
-        $enWidth  = $enText[2] - $enText[0]; //字符串所占宽度
-        $enHeight = $enText[5] - $enText[3]; //字符串所占高度
+    /**
+     * 设置文字
+     *
+     * @param string $text
+     *
+     * @return $this
+     */
+    public function setText(string $text = '')
+    {
+        $this->text = $text;
+        return $this;
+    }
+
+    /**
+     * 设置文字固定字号为 $size【提示：本库默认会自动计算字体大小，如果设置该属性就使用传入的固定值】
+     *
+     * @param $size
+     *
+     * @return $this
+     */
+    public function setSize($size = null)
+    {
+        $this->size = $size;
+        return $this;
+    }
+
+    /**
+     * 绘制文字
+     *
+     * @param string   $text  文字 支持使用 \n换行
+     * @param int      $angle 旋转角度
+     * @param int|null $size  设置文字字号，不设置时候 回自动计算文字字体大小
+     *
+     * @return $this
+     */
+    private function drawText(string $text, int $angle = 0, $size = null)
+    {
+        // 图片背景色
+        $bgColor = imagecolorallocate(
+            $this->image,
+            $this->backgroundColor[0],
+            $this->backgroundColor[1],
+            $this->backgroundColor[2]
+        );
+        imagefill($this->image, 0, 0, $bgColor);
+
+        $text = str_ireplace('\n', PHP_EOL, $text);
+        // 获取前景色
+        $foregroundColor = imagecolorallocate(
+            $this->image,
+            $this->textColor[0],
+            $this->textColor[1],
+            $this->textColor[2]
+        );
+
+        if (empty($size)) {
+            // 如果没有设置字号时候 动态设置字体大小
+            $size = $this->calculateFontSize($text, $size, $angle);
+        }
+
+        $textInfo = $this->getTextDimensions($text, (int)$size, $angle);
+
+        // 计算居中文字的偏移量
+        $offsetX = ($this->width - $textInfo['width']) / 2;
+        $offsetY = ($this->height - $textInfo['height']) / 2;
+        // 文字开始位置 + 偏移
+        $x           = abs($textInfo['position'][0] - abs($textInfo['min_x'])) + $offsetX;
+        $y           = abs(abs($textInfo['position'][1]) - abs($textInfo['min_y'])) + $offsetY;
+        $offsetAngle = abs(abs($textInfo['position'][5]) - abs($textInfo['position'][7]));// 角度产生的偏移值
+        $y           = $y + $offsetAngle;
+        $y           = $y + ($offsetAngle > 0 ? 0 : $textInfo['word_height'] * 0.8);
+
+        // 在图片上添加文字
+        imagettftext($this->image, $size, $angle, (int)$x, (int)$y, $foregroundColor, $this->fontFile, $text);
+        return $this;
+    }
+
+    /**
+     * 渲染图片
+     *
+     * @param $fileName
+     *
+     * @return void
+     */
+    public function render($fileName = null)
+    {
+        $this->drawText($this->text, $this->angle, $this->size);
+        if (!empty($fileName)) {
+            create_dir(dirname(realpath($fileName)));
+            // 保存图片到文件
+            imagepng($this->image, $fileName);
+        } else {
+            // 输出图片到浏览器
+            header('Content-Type: image/png');
+            imagepng($this->image);
+        }
+        // 销毁图片
+        imagedestroy($this->image);
+    }
+
+    /**
+     * 计算文字大小
+     *
+     * @param $text
+     * @param $size
+     * @param $angle
+     *
+     * @return float
+     */
+    private function calculateFontSize($text, $size = null, $angle = 0)
+    {
+        // 如果用户没有指定字体大小，根据文本长度动态计算
+        if (empty((int)$size) || !is_numeric($size)) {
+            $size = min($this->height, $this->width) / strlen($text);
+        }
+
+        // 获取文字的宽度和高度
+        $dimensions = $this->getTextDimensions($text, (int)$size, $angle);
+
+        // 计算字号调整比例
+        $widthRatio  = $this->width / $dimensions['width'];
+        $heightRatio = $this->height / $dimensions['height'];
+        $ratio       = min($widthRatio, $heightRatio) * 0.95;
+
+        // 重新计算最终的字体大小
+        return $size * $ratio;
+    }
+
+    /**
+     * 获取绘制文字的宽度和高度
+     *
+     * @param string $text  文字
+     * @param int    $size  字号
+     * @param int    $angle 旋转角度
+     *
+     * @return array
+     */
+    private function getTextDimensions(string $text = 'hello', $size = 12, int $angle = 0): array
+    {
+        // 获取文字的宽度和高度
+        $bbox = imagettfbbox($size, $angle, $this->fontFile, $text);
+
+        // y 坐标系取反
+        $bbox[1] = -$bbox[1];
+        $bbox[3] = -$bbox[3];
+        $bbox[5] = -$bbox[5];
+        $bbox[7] = -$bbox[7];
+
+        $minX = min($bbox[0], $bbox[2], $bbox[4], $bbox[6]);
+        $minY = min($bbox[1], $bbox[3], $bbox[5], $bbox[7]);
+        // 计算文字区域的宽高
+        $maxX = max($bbox[0], $bbox[2], $bbox[4], $bbox[6]);
+        $maxY = max($bbox[1], $bbox[3], $bbox[5], $bbox[7]);
+
+        $wordBox = imagettfbbox($size, 0, $this->fontFile, mb_substr($text, 0, 1, "utf-8"));// 单个字符
+
         return [
-            'cn' => [
-                'width'  => $cnWidth,
-                'height' => $cnHeight,
-            ],
-            'en' => [
-                'width'  => $enWidth,
-                'height' => $enHeight,
-            ],
+            'width'       => abs($maxX - $minX),
+            'height'      => abs($maxY - $minY),
+            'min_x'       => $minX,
+            'min_y'       => $minY,
+            'max_x'       => $maxX,
+            'max_y'       => $maxY,
+            'position'    => $bbox, // 四个角的坐标
+            'word_height' => abs($wordBox[7] - $wordBox[1]), // 单个字符高度
         ];
-
-    }
-
-    public function generate()
-    {
-        $bg_color = imagecolorallocate($this->image, $this->bg_color[0], $this->bg_color[1], $this->bg_color[2]); // 创建背景颜色
-        imagefill($this->image, 0, 0, $bg_color); // 填充背景颜色
-
-        $font_color = imagecolorallocate($this->image, $this->font_color[0], $this->font_color[1], $this->font_color[2]); // 创建字体颜色
-
-//        $box         = imagettfbbox($this->font_size, $this->font_angle, $this->font_file, $this->text); // 获取字体的边界框
-//        $text_width  = abs($box[4] - $box[0]); // 计算字体的宽度
-//        $text_height = abs($box[5] - $box[1]); // 计算字体的高度
-
-        $max_text_width  = $this->getWidth() * $this->textArea; // 计算最大的字体宽度，不能超过图片宽度的 70%
-        $max_text_height = $this->getHeight() * $this->textArea; // 计算最大的字体高度，不能超过图片宽度的 70%
-        $maxArea         = bcmul($max_text_width, $max_text_height, 2);
-
-        list($cnWord, $enWord) = $this->getWordArea($this->font_size);
-//        $max_text_width
-        $rowCnWordNum = floor(bcdiv($max_text_width, $cnWord['width'], 1)); // 一行能容纳多少个汉字
-        $rowEnWordNum = floor(bcdiv($max_text_width, $enWord['width'], 1)); // 一行能容纳多少个字母
-
-        $columnCnWordNum = floor(bcdiv($max_text_width, $cnWord['height'])); // 一列能容纳多少个汉字
-        $columnEnWordNum = floor(bcdiv($max_text_width, $enWord['height'])); // 一列能容纳多少个字母
-
-        $maxCnArea = bcmul($rowCnWordNum, $this->text, 2);// 平均每个字的最大面积
-
-//        imagefontheight
-        if ($text_width > $max_text_width) {
-            $this->font_size = $this->font_size * ($max_text_width / $text_width); // 根据最大宽度调整字体大小
-            $box             = imagettfbbox($this->font_size, $this->font_angle, $this->font_file, $this->text); // 重新获取字体的边界框
-            $text_width      = abs($box[4] - $box[0]); // 重新计算字体的宽度
-            $text_height     = abs($box[5] - $box[1]); // 重新计算字体的高度
-        }
-
-        $words = explode(' ', $this->text); // 将文字内容按空格分割成单词
-        $lines = [];
-        $line  = '';
-        foreach ($words as $word) {
-            $box        = imagettfbbox($this->font_size, $this->font_angle, $this->font_file, $line . ' ' . $word); // 获取当前行加上下一个单词后的边界框
-            $line_width = abs($box[4] - $box[0]); // 计算当前行加上下一个单词后的宽度
-            if ($line_width > $max_text_width) { // 如果当前行加上下一个单词后的宽度超过最大宽度
-                $lines[] = $line; // 将当前行加入行数组
-                $line    = $word; // 开始新的一行
-            } else {
-                $line .= ' ' . $word; // 继续在当前行添加单词
-            }
-        }
-        $lines[] = $line; // 将最后一行加入行数组
-
-        foreach ($lines as $i => $line) {
-            $box        = imagettfbbox($this->font_size, $this->font_angle, $this->font_file, $line); // 获取当前行的边界框
-            $text_width = abs($box[4] - $box[0]); // 计算当前行的宽度
-            $x          = ($this->getWidth() - $text_width) / 2; // 计算当前行的横向位置
-            $y          = ($this->getHeight() - $text_height) / 2 + $text_height + $i * $text_height * 1.2; // 计算当前行的纵向位置
-            imagettftext($this->image, $this->font_size, $this->font_angle, (int)$x, (int)$y, $font_color, $this->font_file, $line); // 在图片上绘制文字
-        }
-        return $this;
-    }
-
-    public function getWidth()
-    {
-        return imagesx($this->image); // 获取图片宽度
-    }
-
-    public function getHeight()
-    {
-        return imagesy($this->image); // 获取图片高度
-    }
-
-    public function output()
-    {
-        header('Content-Type: image/png'); // 设置输出类型为 PNG 图片
-        imagepng($this->image); // 输出图片
-        imagedestroy($this->image); // 销毁图片资源
-        die;
     }
 }
-
-// 使用这个类，可以按照以下步骤生成文字图片：
-
-$textToImage = new TextToImage(400, 200); // 创建一个 400x400 的图片
-$textToImage->setFontSize(35); // 设置字体大小为 24
-$textToImage->setFontColor([255, 255, 255]); // 设置字体颜色为白色
-$textToImage->setBgColor([0, 0, 0]); // 设置背景颜色为黑色
-// $textToImage->setFontAngle(45); // 设置字体旋转角度为 45 度
-$textToImage->setFontFile('./ali_puhui.ttf'); // 设置文字字体
-$textToImage->setText('Hello, World!'); // 设置内容
-$textToImage->generate(); // 生成图片
-$textToImage->output(); // 输出图片
-// 这个示例代码会生成一个 400x400 的黑色背景的图片，上面写着 "Hello, World!"，字体颜色为白色，字体旋转角度为 45 度。

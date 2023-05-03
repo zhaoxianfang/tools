@@ -2,6 +2,8 @@
 
 namespace zxf\ScreenShot;
 
+use Exception;
+
 /**
  * 网页截图
  * $res = ScreenShot::init('/you-path')->setUrl('http://www.baidu.com')->run(__DIR__.'/img/'.time().'.png');
@@ -78,7 +80,7 @@ class ScreenShot
      * @param string $savePath 图片保存地址
      *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function run(string $savePath = '')
     {
@@ -86,13 +88,13 @@ class ScreenShot
         $savePath = dirname($savePath) . DIRECTORY_SEPARATOR . basename($savePath);
 
         if (!file_exists($this->softPath)) {
-            throw new \Exception('截图软件路径配置有误:softPath');
+            throw new Exception('截图软件路径配置有误:softPath');
         }
         if (!file_exists($this->scriptPath)) {
-            throw new \Exception('截图脚本文件配置有误:scriptPath');
+            throw new Exception('截图脚本文件配置有误:scriptPath');
         }
         if (empty($this->url)) {
-            throw new \Exception('未设置截图地址:url');
+            throw new Exception('未设置截图地址:url');
         }
 
         $command = $this->softPath . " '" . $this->scriptPath . "' '" . $this->url . "' '" . $savePath . "' '" . $this->waitTime . "'";

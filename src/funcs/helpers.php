@@ -198,16 +198,6 @@ if (!function_exists('is_crawler')) {
                 } else {
                     // 没有在上面定义的爬虫名称范围内
                     // 检查访问频率
-                    $last_request_time    = $_SESSION['last_request_time'];
-                    $current_request_time = $_SERVER['REQUEST_TIME'];
-
-                    if ($current_request_time - $last_request_time < 1) {
-                        // 如果两次请求之间的时间差小于 1 秒，则认为是爬虫访问
-                        if ($forbidUnknownSpider) {
-                            throw new \Exception('服务器忙');
-                        }
-                        return $returnName ? 'unknow:' . $_SERVER['SERVER_ADDR'] : true;
-                    }
                 }
             }
         } else {

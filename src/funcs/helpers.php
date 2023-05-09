@@ -4,8 +4,6 @@
  * 常用的一些函数归纳
  */
 
-use JetBrains\PhpStorm\NoReturn;
-
 if (!function_exists('session')) {
     /**
      * 简易 session 助手函数
@@ -1026,7 +1024,6 @@ if (!function_exists('download_url_file')) {
     /**
      * 下载url文件
      */
-    #[NoReturn]
     function download_url_file($url = '')
     {
         $filename = !empty($url) ? $url : (!empty($_GPC['url']) ? $_GPC['url'] : '');
@@ -1187,3 +1184,23 @@ if (!function_exists('json_decode_plus')) {
     }
 }
 
+if (!function_exists('is_mobile')) {
+    /**
+     * 判断当前浏览器是否为移动端
+     */
+    function is_mobile(): bool
+    {
+        if (isset($_SERVER['HTTP_VIA']) && stristr($_SERVER['HTTP_VIA'], "wap")) {
+            return true;
+        } elseif (isset($_SERVER['HTTP_ACCEPT']) && (strpos(strtolower( $_SERVER['HTTP_ACCEPT']), 'vnd.wap.wml') !== false || strpos(strtolower($_SERVER['HTTP_ACCEPT']), 'text/vnd.wap.wml') !== false)) {
+            // 判断 HTTP_ACCEPT 是否包含 vnd.wap.wml 或 text/vnd.wap.wml 关键字
+            return true;
+        } elseif (isset($_SERVER['HTTP_X_WAP_PROFILE']) || isset($_SERVER['HTTP_PROFILE'])) {
+            return true;
+        } elseif (isset($_SERVER['HTTP_USER_AGENT']) && preg_match('/(blackberry|configuration\/cldc|hp |hp-|htc |htc_|htc-|iemobile|kindle|midp|mmp|motorola|mobile|nokia|opera mini|opera |Googlebot-Mobile|YahooSeeker\/M1A1-R2D2|android|iphone|ipod|mobi|palm|palmos|pocket|portalmmm|ppc;|smartphone|sonyericsson|sqh|spv|symbian|treo|up.browser|up.link|vodafone|samsung|windows ce|windows phone|xda |xda_)/i', $_SERVER['HTTP_USER_AGENT'])) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}

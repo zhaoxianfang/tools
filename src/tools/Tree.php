@@ -141,10 +141,12 @@ class Tree
 
     /**
      * 用指定字段作为键
-     * @param $field
+     *
+     * @param string $field
+     *
      * @return array
      */
-    public function keyBy($field = 'id')
+    public function keyBy(string $field = 'id')
     {
         return array_column($this->treeArr, null, $field);
     }

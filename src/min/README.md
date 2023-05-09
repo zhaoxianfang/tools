@@ -13,6 +13,7 @@ $minifiedCode = JsMin::minify($jsOrCssString);
 ## 压缩 CSS、JS
 
 修改自 `https://github.com/matthiasmullie/minify` 仓库
+update_at:2023-05-09
 引入包
 
 ``` php

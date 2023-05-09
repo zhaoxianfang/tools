@@ -8,6 +8,28 @@ if (!function_exists('module_path')) {
     }
 }
 
+if (!function_exists('get_user_info')) {
+    /**
+     * 获取laravel 已经登录的用户信息，没有登录的 返回false
+     *
+     * @param string|null $field
+     *
+     * @return \Illuminate\Contracts\Auth\Authenticatable|null
+     */
+    function get_user_info(?string $field = null): ?\Illuminate\Contracts\Auth\Authenticatable
+    {
+        $user     = null;
+        $authList = config('auth.guards');
+        foreach ($authList as $authName => $val) {
+            if (auth($authName)->check()) {
+                $user = auth($authName)->user();
+                break;
+            }
+        }
+        return !empty($user) ? (empty($field) ? $user : $user[$field]) : null;
+    }
+}
+
 if (!function_exists('get_module_name')) {
     /**
      * 获取当前所在模块

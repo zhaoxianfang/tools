@@ -21,7 +21,7 @@ class QqOauth implements Handle
         $this->config = [
             'client_id'     => $config['appid'],
             'redirect_uri'  => $config['callbackUrl'],
-            'client_secret' => $config['appkey']
+            'client_secret' => $config['appkey'],
         ];
         $this->client = new Curl();
     }
@@ -87,9 +87,9 @@ class QqOauth implements Handle
         if (0 != $userinfo['ret']) {
             throw new \Exception($userinfo['msg']);
         }
-
-        $userinfo['openid'] = $openidInfo['openid'];
-        $userinfo['email']  = $openidInfo['openid'] . '@open.qq.com';
+        $userinfo['unionid'] = !empty($openidInfo['unionid']) ? $openidInfo['unionid'] : null;
+        $userinfo['openid']  = $openidInfo['openid'];
+        $userinfo['email']   = $openidInfo['openid'] . '@open.qq.com';
         return $userinfo;
     }
 
@@ -115,7 +115,8 @@ class QqOauth implements Handle
     private function getOpenid($access_token): array
     {
         $keysArr  = array(
-            "access_token" => $access_token
+            "access_token" => $access_token,
+            "unionid"      => 1 // 获取 UnionID
         );
         $temp_url = $this->combineURL($this->union_url, $keysArr);
         return $this->client->get($temp_url);
@@ -125,8 +126,10 @@ class QqOauth implements Handle
     /**
      * combineURL
      * 拼接url
+     *
      * @param string $baseURL 基于的url
-     * @param array $keysArr 参数列表数组
+     * @param array  $keysArr 参数列表数组
+     *
      * @return string           返回拼接的url
      */
     public function combineURL($baseURL, $keysArr)

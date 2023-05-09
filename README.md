@@ -53,30 +53,148 @@ composer require zxf/tools
 /**
  * 第三方登录回调配置参数
  */
+<?php
+/**
+ * tools 配置参数
+ */
 return [
-    //微博
-    'sina'   => [
-        'wb_akey'         => '',
-        'wb_skey'         => '',
-        'wb_callback_url' => '', //回调
+    //微博Web
+    'sina'      => [
+        'default' => [
+            'wb_akey'         => env('TOOLS_SINA_WEB_AKEY', ''),
+            'wb_skey'         => env('TOOLS_SINA_WEB_SKEY', ''),
+            'wb_callback_url' => env('TOOLS_SINA_WEB_CALLBACK_URL', ''), //回调
+        ],
     ],
     //QQ
-    'qq'     => [
-        'appid'       => '',
-        'appkey'      => '',
-        'callbackUrl' => '',
+    'qq'        => [
+        'web'    => [
+            'appid'       => env('TOOLS_QQ_WEB_APP_ID', ''),
+            'appkey'      => env('TOOLS_QQ_WEB_APP_KEY', ''),
+            'callbackUrl' => env('TOOLS_QQ_WEB_CALLBACK_URL', ''),
+        ],
+        'mobile' => [
+            'appid'  => env('TOOLS_QQ_MOBILE_APP_ID', ''),
+            'appkey' => env('TOOLS_QQ_MOBILE_APP_KEY', ''),
+        ],
     ],
     //微信
-    'wechat' => [
-        'token'                  => '', //填写你设定的key
-        'encodingaeskey'         => '', //填写加密用的EncodingAESKey
-        'appid'                  => '', //填写高级调用功能的app id
-        'appsecret'              => '', //填写高级调用功能的密钥
-        'GetAccessTokenCallback' => '', //回调地址
-        'cache_path'             => '', //插件 缓存目录
+    'wechat'    => [
+        // 公众号
+        'official_account' => [
+            'default' => [
+                'token'          => env('TOOLS_WECHAT_OFFICIAL_TOKEN', ''), //填写你设定的key
+                'appid'          => env('TOOLS_WECHAT_OFFICIAL_APP_ID', ''), //填写高级调用功能的app id
+                'appsecret'      => env('TOOLS_WECHAT_OFFICIAL_APP_SECRET', ''), //填写高级调用功能的密钥
+                'encodingaeskey' => env('TOOLS_WECHAT_OFFICIAL_AES_KEY', ''), //填写加密用的EncodingAESKey
+                // 配置商户支付参数（可选，在使用支付功能时需要）
+                'mch_id'         => "1235704602",
+                'mch_key'        => 'IKI4kpHjU94ji3oqre5zYaQMwLHuZPmj',
+                // 配置商户支付双向证书目录（可选，在使用退款|打款|红包时需要）
+                'ssl_key'        => '',
+                'ssl_cer'        => '',
+                // 缓存目录配置（可选，需拥有读写权限）
+                'cache_path'     => env('TOOLS_WECHAT_OFFICIAL_CACHE_PATH', ''), //插件 缓存目录
+                'token_callback' => env('TOOLS_WECHAT_OFFICIAL_TOKEN_CALLBACK_URL', ''), //回调地址
+            ],
+        ],
+        // 开发平台
+        'open_platform'    => [
+            'default' => [
+                'app_id'  => env('TOOLS_WECHAT_OPEN_PLATFORM_APPID', ''),
+                'secret'  => env('TOOLS_WECHAT_OPEN_PLATFORM_SECRET', ''),
+                'token'   => env('TOOLS_WECHAT_OPEN_PLATFORM_TOKEN', ''),
+                'aes_key' => env('TOOLS_WECHAT_OPEN_PLATFORM_AES_KEY', ''),
+            ],
+        ],
+        // 小程序
+        'mini_program'     => [
+            'default' => [
+                'app_id'  => env('TOOLS_WECHAT_MINI_PROGRAM_APPID', ''),
+                'secret'  => env('TOOLS_WECHAT_MINI_PROGRAM_SECRET', ''),
+                'token'   => env('TOOLS_WECHAT_MINI_PROGRAM_TOKEN', ''),
+                'aes_key' => env('TOOLS_WECHAT_MINI_PROGRAM_AES_KEY', ''),
+            ],
+        ],
+        // 微信支付
+        'payment'          => [
+            'default' => [
+                'sandbox'    => env('TOOLS_WECHAT_PAYMENT_SANDBOX', false),
+                'app_id'     => env('TOOLS_WECHAT_PAYMENT_APPID', ''),
+                'mch_id'     => env('TOOLS_WECHAT_PAYMENT_MCH_ID', 'your-mch-id'),
+                'key'        => env('TOOLS_WECHAT_PAYMENT_KEY', 'key-for-signature'),
+                'cert_path'  => env('TOOLS_WECHAT_PAYMENT_CERT_PATH', 'path/to/cert/apiclient_cert.pem'),    // XXX: 绝对路径！！！！
+                'key_path'   => env('TOOLS_WECHAT_PAYMENT_KEY_PATH', 'path/to/cert/apiclient_key.pem'),      // XXX: 绝对路径！！！！
+                'notify_url' => 'http://example.com/payments/wechat-notify',                           // 默认支付结果通知地址
+            ],
+        ],
+        // 企业微信
+        'work'             => [
+            'default' => [
+                'corp_id'  => env('TOOLS_WECHAT_WORK_CORP_ID'),
+                'agent_id' => env('TOOLS_WECHAT_WORK_AGENT_ID', 100020),
+                'secret'   => env('TOOLS_WECHAT_WORK_AGENT_CONTACTS_SECRET', ''),
+                //...
+            ],
+        ],
     ],
 
+    //  mysql
+    'mysql'     => [
+        'default' => [
+            'host'     => env('TOOLS_MYSQL_HOST', '127.0.0.1'),
+            'username' => env('TOOLS_MYSQL_HOST', 'root'),
+            'password' => env('TOOLS_MYSQL_HOST', ''),
+            'db'       => env('TOOLS_MYSQL_HOST', 'test'),
+            'port'     => env('TOOLS_MYSQL_HOST', 3306),
+            'prefix'   => env('TOOLS_MYSQL_HOST', ''),
+            'charset'  => env('TOOLS_MYSQL_HOST', 'utf8'),
+        ],
+    ],
+
+    // 截图程序
+    'phantomjs' => [
+        'default' => [
+            'path' => env('TOOLS_PHANTOMJS_PATH', ''), // 'phantomjs.exe' 或者 'phantomjs' 存放的绝对路径
+        ],
+    ],
+    'redis'     => [
+        'default' => [
+            'host'    => env('TOOLS_REDIS_HOST', ''),
+            'port'    => env('TOOLS_REDIS_PORT', '6379'),
+            'timeout' => env('TOOLS_REDIS_TIME_OUT', '5'),
+            'auth'    => env('TOOLS_REDIS_AUTH', ''),
+        ],
+    ],
+    // 短信
+    'sms'       => [
+        'aliyun'  => [
+            'access_app_id' => env('TOOLS_SMS_ALI_APP_ID', ''), // accessKeyId
+            'secret'        => env('TOOLS_SMS_ALI_SECRET', ''), // accessKeySecret
+            'sign'          => env('TOOLS_SMS_ALI_SIGN', ''), // 签名
+        ],
+        'tencent' => [
+            'access_app_id' => env('TOOLS_SMS_TENCENT_APP_ID', ''), // accessKeyId
+            'secret'        => env('TOOLS_SMS_TENCENT_SECRET', ''), // accessKeySecret
+            'sign'          => env('TOOLS_SMS_TENCENT_SIGN', ''), // 签名
+        ],
+        // ...
+    ],
+    // 邮件配置
+    'mail'      => [
+        'default' => [
+            'host'        => env('TOOLS_MAIL_HOST', 'smtp.qq.com'), //stmp服务地址
+            'username'    => env('TOOLS_MAIL_USERNAME', ''), // 登录邮箱的账号
+            'password'    => env('TOOLS_MAIL_PASSWORD', ''),//客户端授权密码，注意不是登录密码
+            'smtp_secure' => env('TOOLS_MAIL_SMTP_SECURE', 'ssl'),//使用ssl协议
+            'smtp_auth'   => env('TOOLS_MAIL_SMTP_AUTH', true),//设置是否进行权限校验
+            'port'        => env('TOOLS_MAIL_PORT', '465'),//端口设置
+            'form'        => env('TOOLS_MAIL_FROM', '威四方'),//邮件来源，例如 威四方
+        ],
+    ],
 ];
+
+
 
 ```
 
@@ -435,96 +553,6 @@ $barcode->setNoLengthLimit(true);
 
 ```
 $barcode->setAllowsUnknownIdentifier(true);
-```
-
-### PHPMailer 发送邮件
-
-``` php
-
-/**
- * 发送邮件
- * @Author   ZhaoXianFang
- * @DateTime 2019-11-27
- * @param    string       $to      [接收人]
- * @param    string       $title   [邮件标题]
- * @param    string       $content [邮件内容]
- * @param    string       $sender  [发件人]
- * @param    boolean      $isHtml  [是否为html页面]
- * @return   [type]                [true|false]
- * @example   send_mailer('111@qq.com', '邮件测试标题', $content,'发送人', $isHtml = true);
- * @example   send_mailer(['111@qq.com'=>'小张'],'邮件测试标题', $content,'发送人', $isHtml = true);
- * @example   send_mailer(['111@qq.com','222@qq.com'], '邮件测试标题', $content,'发送人', $isHtml = true);
- * @example   send_mailer([['111@qq.com'=>'小张'], ['222@qq.com'=>'无我']], '邮件测试标题', $content,'发送人', $isHtml = true);
- */
-function send_mailer($to = '', $title = '', $content = '', $sender = '邮件测试', $isHtml = false)
-{
-    if (!$to || !$title || !$content) {
-        return false;
-    }
-    $mail = new \zxf\req\PHPMailer(true);
-    try {
-        //使用STMP服务
-        $mail->isSMTP();
-        //这里使用我们第二步设置的stmp服务地址
-        $mail->Host = "smtp.qq.com";
-        //设置是否进行权限校验
-        $mail->SMTPAuth = true;
-        //第二步中登录网易邮箱的账号
-        $mail->Username = "邮件来源@qq.com";
-        //客户端授权密码，注意不是登录密码
-        $mail->Password = "客户端授权密码";
-        //使用ssl协议
-        $mail->SMTPSecure = 'ssl';
-        //端口设置
-        $mail->Port = 465;
-        //字符集设置，防止中文乱码
-        $mail->CharSet = "utf-8";
-        //设置邮箱的来源，邮箱与$mail->Username一致，名称随意
-        $mail->setFrom("邮件来源@qq.com", $sender);
-
-        //设置回复地址，一般与来源保持一直
-        $mail->addReplyTo("邮件来源@qq.com", "邮件反馈");
-        // $mail->AddAttachment('xx.xls','我的附件.xls'); // 添加附件,并指定名称
-
-        $mail->isHTML(true);
-        //标题
-        $mail->Subject = $title;
-        //正文
-        if ($isHtml) {
-            $mail->msgHTML($content);
-        } else {
-            $mail->Body = $content;
-        }
-        //设置收件的邮箱地址
-        if (is_string($to)) {
-            $mail->addAddress($to);
-        } else {
-            foreach ($to as $key => $userEmail) {
-                if(is_array($userEmail)){
-                    foreach ($userEmail as $user_email => $user_name) {
-                        if (is_string($user_email)) {
-                            $mail->addAddress($user_email, $user_name);
-                        } else {
-                            $mail->addAddress($user_name);
-                        }
-                    }
-                }else{
-                    if (is_string($key)) {
-                        $mail->addAddress($key, $userEmail);
-                    } else {
-                        $mail->addAddress($firstVal);
-                    }
-                }
-
-            }
-        }
-        $mail->send();
-        return true;
-    } catch (\Exception $e) {
-        return $mail->ErrorInfo;
-        // return false;
-    }
-}
 ```
 
 ### Compressor 图片压缩类

@@ -14,13 +14,13 @@ return [
     //QQ
     'qq'        => [
         'web'    => [
-            'app_id'       => env('TOOLS_QQ_WEB_APP_ID', ''),
-            'app_key'      => env('TOOLS_QQ_WEB_APP_KEY', ''),
-            'callback_url' => env('TOOLS_QQ_WEB_CALLBACK_URL', ''),
+            'appid'       => env('TOOLS_QQ_WEB_APP_ID', ''),
+            'appkey'      => env('TOOLS_QQ_WEB_APP_KEY', ''),
+            'callbackUrl' => env('TOOLS_QQ_WEB_CALLBACK_URL', ''),
         ],
         'mobile' => [
-            'app_id'  => env('TOOLS_QQ_MOBILE_APP_ID', ''),
-            'app_key' => env('TOOLS_QQ_MOBILE_APP_KEY', ''),
+            'appid'  => env('TOOLS_QQ_MOBILE_APP_ID', ''),
+            'appkey' => env('TOOLS_QQ_MOBILE_APP_KEY', ''),
         ],
     ],
     //微信

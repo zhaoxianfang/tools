@@ -11,9 +11,11 @@ class ExtendMiddleware
     /**
      * 模块扩展中间件
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request  $request
      * @param \Closure $next
+     *
      * @return mixed
+     * @throws \ReflectionException
      */
     public function handle(Request $request, Closure $next)
     {

@@ -38,9 +38,9 @@ if (!function_exists('get_user_info')) {
      *
      * @param string|null $field
      *
-     * @return \Illuminate\Contracts\Auth\Authenticatable|null
+     * @return \Illuminate\Contracts\Auth\Authenticatable|null|int
      */
-    function get_user_info(?string $field = null): ?\Illuminate\Contracts\Auth\Authenticatable
+    function get_user_info(?string $field = null)
     {
         $user     = null;
         $authList = config('auth.guards');

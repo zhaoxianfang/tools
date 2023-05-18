@@ -10,6 +10,7 @@ use zxf\laravel\Modules\Activators\FileActivator;
 use zxf\laravel\Modules\Providers\ConsoleServiceProvider;
 use zxf\laravel\Modules\Providers\ContractsServiceProvider;
 use zxf\laravel\Modules\Providers\ModulesRouteServiceProvider;
+use zxf\laravel\Modules\Providers\AutoLoadModulesProvider;
 use Illuminate\Pagination\Paginator;
 use zxf\laravel\Modules\Middleware\ExtendMiddleware;
 
@@ -106,12 +107,12 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     {
         // 把config 文件夹类的配置文件 发布到 config 文件夹下
         $this->publishes([
-            __DIR__ . '/../../config/' => config_path('')
+            __DIR__ . '/../../config/' => config_path(''),
         ], 'modules');
 
         // 发布Modules模块文件组
         $this->publishes([
-            __DIR__ . '/../../publishes/' => base_path('')
+            __DIR__ . '/../../publishes/' => base_path(''),
         ], 'modules');
     }
 
@@ -141,6 +142,8 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $this->app->register(ModulesRouteServiceProvider::class);
         // 注册中间件
         $this->app->singleton(ExtendMiddleware::class);
+        // 自动加载 Provider
+        $this->app->register(AutoLoadModulesProvider::class);
         $this->app->alias(ExtendMiddleware::class, 'module');
         // 注册异常报告
     }
@@ -197,7 +200,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
         if (config('modules.publishes_views', true)) {
             $this->publishes([
-                $sourcePath => $viewPath
+                $sourcePath => $viewPath,
             ], ['views', $moduleLower . '-module-views']);
         }
         $this->loadViewsFrom(array_merge($this->getPublishableViewPaths($module, $moduleLower), [$sourcePath]), $moduleLower);
@@ -238,8 +241,17 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     // 使用多模块提示
     protected function tips()
     {
-        if (!is_dir(base_path(config('modules.namespace', 'Modules')))) {
-            echo '> php artisan vendor:publish --provider="zxf\laravel\ServiceProvider"' . PHP_EOL;
+        if (app()->runningInConsole()) {
+            echo PHP_EOL.'==================================================================================' . PHP_EOL;
+            echo '| 插    件 | composer require zxf/tools                                          |' . PHP_EOL;
+            echo '| 格    言 | 人生在勤，不索何获                                                  |' . PHP_EOL;
+        }
+        if (app()->runningInConsole() && !is_dir(base_path(config('modules.namespace', 'Modules')))) {
+            echo '| 模块发布 | php artisan vendor:publish --provider="zxf\laravel\ServiceProvider" |' . PHP_EOL;
+        }
+        if (app()->runningInConsole()) {
+            echo '| 文档地址 | https://weisifang.com/docs/2                                        |' . PHP_EOL;
+            echo '==================================================================================' . PHP_EOL;
         }
     }
 }

@@ -972,50 +972,102 @@ if (!function_exists('obj2Arr')) {
 
 if (!function_exists('uuid')) {
     /**
-     * 根据微秒时间和随机数生成 12位 uuid
+     * 根据微秒时间和随机数生成 10位 uuid
      *
      * @return string
      * @throws Exception
      */
-    function uuid()
+    function uuid(): string
     {
-        $timeStr = date('ymdHis') . substr(explode(' ', microtime())[0], 2, 6) . random_int(3600, 215999);
-        return from10to60($timeStr);
-    }
-}
-
-if (!function_exists('from60to10')) {
-    /**
-     * 60进制转10进制
-     */
-    function from60to10($str): string
-    {
-        // (去掉oO)
-        $dict = '0123456789abcdefghijklmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ';
-        $len  = strlen($str);
-        $dec  = 0;
-        for ($i = 0; $i < $len; $i++) {
-            //找到对应字典的下标
-            $pos = strpos($dict, $str[$i]);
-            $dec += $pos * pow(60, $len - $i - 1);
-        }
-        return number_format($dec, 0, '', '');
-    }
-}
-
-if (!function_exists('from10to60')) {
-    /**
-     * 10进制转60进制
-     */
-    function from10to60($dec): string
-    {
-        // (去掉oO,因为和0很像)
-        $dict   = '0123456789abcdefghijklmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ';
-        $result = '';
+        $timeNum = random_int(10, 61) . str_replace(['0.', '00 '], ['', ''], microtime());
+        $dict    = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $result  = '';
+        $len     = strlen($dict);
         do {
-            $result = $dict[$dec % 60] . $result;
-            $dec    = intval($dec / 60);
-        } while ($dec != 0);
+            $result  = $dict[bcmod($timeNum, $len, 0)] . $result;
+            $timeNum = bcdiv($timeNum, $len, 0);
+        } while ($timeNum != 0);
+
+        return $result;
+    }
+}
+
+if (!function_exists('base_convert_any')) {
+    /**
+     * 将任意进制的数值转换为另一个进制的数值
+     *
+     * @param string $number    待转换数值，可以是整数或浮点数，支持负数，例如："123", "-456.789"
+     * @param int    $from_base 原始进制，必须在 2 到 62 之间
+     * @param int    $to_base   目标进制，必须在 2 到 62 之间
+     *
+     * @return string|false 转换成功返回目标进制下的数值，否则返回 false
+     */
+    function base_convert_any(string $number, int $from_base, int $to_base): string|false
+    {
+        // 定义字符集，用于表示不同进制下的数字
+        $charset = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        // 去掉前后空格，并将字母转换为小写，方便处理
+        $number = strtolower(trim($number));
+        // 是否为负数
+        $is_negative = false;
+        // 是否为小数
+        $has_decimal = false;
+        // 小数部分的位数
+        $decimal_places = 0;
+        //整数部分
+        $integer_part = 0;
+
+        // 验证进制范围是否合法
+        if ($from_base < 2 || $to_base < 2 || $from_base > strlen($charset) || $to_base > strlen($charset)) {
+            return false;
+        }
+
+        // 处理负数情况
+        if (strpos($number, '-') === 0) {
+            $is_negative = true;
+            $number      = substr($number, 1);
+        }
+
+        // 处理小数情况
+        if (strpos($number, '.') !== false) {
+            $has_decimal = true;
+            [$integer_part, $fractional_part] = explode('.', $number);
+            $decimal_places = strlen($fractional_part);
+            $number         = $integer_part . $fractional_part;
+        }
+
+        // 将原始进制下的数值转换为十进制形式
+        $length = strlen($number);
+        $dec    = 0;
+
+        for ($i = 0; $i < $length; ++$i) {
+            $value = strpos($charset, $number[$i]);
+            if ($value >= $from_base) {
+                return false;
+            }
+            $dec = bcadd($dec, bcmul($value, bcpow($from_base, $length - $i - 1)));
+        }
+
+        // 处理小数部分
+        if ($has_decimal) {
+            $fraction = bcdiv($dec, bcpow($from_base, $decimal_places));
+            $result   = number_format($fraction, $decimal_places, '.', '');
+            $dec      = intval($integer_part);
+        } else {
+            $result = '';
+        }
+
+        // 将十进制形式的数值转换为目标进制下的数值
+        while ($dec > 0) {
+            $remainder = bcmod($dec, $to_base);
+            $result    = $charset[$remainder] . $result;
+            $dec       = bcdiv(bcsub($dec, $remainder), $to_base);
+        }
+
+        // 处理负数情况
+        if ($is_negative) {
+            $result = '-' . $result;
+        }
         return $result;
     }
 }
@@ -1192,7 +1244,7 @@ if (!function_exists('is_mobile')) {
     {
         if (isset($_SERVER['HTTP_VIA']) && stristr($_SERVER['HTTP_VIA'], "wap")) {
             return true;
-        } elseif (isset($_SERVER['HTTP_ACCEPT']) && (strpos(strtolower( $_SERVER['HTTP_ACCEPT']), 'vnd.wap.wml') !== false || strpos(strtolower($_SERVER['HTTP_ACCEPT']), 'text/vnd.wap.wml') !== false)) {
+        } elseif (isset($_SERVER['HTTP_ACCEPT']) && (strpos(strtolower($_SERVER['HTTP_ACCEPT']), 'vnd.wap.wml') !== false || strpos(strtolower($_SERVER['HTTP_ACCEPT']), 'text/vnd.wap.wml') !== false)) {
             // 判断 HTTP_ACCEPT 是否包含 vnd.wap.wml 或 text/vnd.wap.wml 关键字
             return true;
         } elseif (isset($_SERVER['HTTP_X_WAP_PROFILE']) || isset($_SERVER['HTTP_PROFILE'])) {

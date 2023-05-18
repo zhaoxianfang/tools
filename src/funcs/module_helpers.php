@@ -8,28 +8,6 @@ if (!function_exists('module_path')) {
     }
 }
 
-if (!function_exists('get_user_info')) {
-    /**
-     * 获取laravel 已经登录的用户信息，没有登录的 返回false
-     *
-     * @param string|null $field
-     *
-     * @return \Illuminate\Contracts\Auth\Authenticatable|null
-     */
-    function get_user_info(?string $field = null): ?\Illuminate\Contracts\Auth\Authenticatable
-    {
-        $user     = null;
-        $authList = config('auth.guards');
-        foreach ($authList as $authName => $val) {
-            if (auth($authName)->check()) {
-                $user = auth($authName)->user();
-                break;
-            }
-        }
-        return !empty($user) ? (empty($field) ? $user : $user[$field]) : null;
-    }
-}
-
 if (!function_exists('get_module_name')) {
     /**
      * 获取当前所在模块
@@ -54,6 +32,27 @@ if (!function_exists('get_module_name')) {
     }
 }
 
+if (!function_exists('get_user_info')) {
+    /**
+     * 获取laravel 已经登录的用户信息，没有登录的 返回false
+     *
+     * @param string|null $field
+     *
+     * @return \Illuminate\Contracts\Auth\Authenticatable|null
+     */
+    function get_user_info(?string $field = null): ?\Illuminate\Contracts\Auth\Authenticatable
+    {
+        $user     = null;
+        $authList = config('auth.guards');
+        foreach ($authList as $authName => $val) {
+            if (auth($authName)->check()) {
+                $user = auth($authName)->user();
+                break;
+            }
+        }
+        return !empty($user) ? (empty($field) ? $user : $user[$field]) : null;
+    }
+}
 
 if (!function_exists('get_laravel_route')) {
     /**
@@ -73,8 +72,8 @@ if (!function_exists('listen_sql') && class_exists('\Illuminate\Support\Facades\
     /**
      * 监听sql
      *
-     * @param string|array $traceLogStrOrArr
-     * @param bool         $carryHtml
+     * @param string|array $traceLogStrOrArr 监听到的sql 会 通过引用的方式，传递给$traceLogStrOrArr变量
+     * @param bool         $carryHtml        是否携带html样式
      *
      * @return void
      *

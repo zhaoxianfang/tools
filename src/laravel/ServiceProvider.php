@@ -241,15 +241,11 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     // 使用多模块提示
     protected function tips()
     {
-        if (app()->runningInConsole()) {
+        if (app()->runningInConsole() && !is_dir(base_path(config('modules.namespace', 'Modules')))) {
             echo PHP_EOL.'==================================================================================' . PHP_EOL;
             echo '| 插    件 | composer require zxf/tools                                          |' . PHP_EOL;
             echo '| 格    言 | 人生在勤，不索何获                                                  |' . PHP_EOL;
-        }
-        if (app()->runningInConsole() && !is_dir(base_path(config('modules.namespace', 'Modules')))) {
             echo '| 模块发布 | php artisan vendor:publish --provider="zxf\laravel\ServiceProvider" |' . PHP_EOL;
-        }
-        if (app()->runningInConsole()) {
             echo '| 文档地址 | https://weisifang.com/docs/2                                        |' . PHP_EOL;
             echo '==================================================================================' . PHP_EOL;
         }

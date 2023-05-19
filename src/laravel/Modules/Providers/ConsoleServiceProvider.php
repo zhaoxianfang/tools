@@ -9,6 +9,7 @@ class ConsoleServiceProvider extends ServiceProvider
 {
     /**
      * The available commands
+     *
      * @var array
      */
     protected $commands = [
@@ -90,8 +91,7 @@ class ConsoleServiceProvider extends ServiceProvider
         $modules = array_slice(scandir(base_path($modulesName)), 2);
         foreach ($modules as $module) {
             $moduleConsolePath = "{$modulesName}/{$module}/Console";
-            if (is_dir($moduleConsolePath)) {
-                $paths     = base_path($moduleConsolePath);
+            if (is_dir($paths = base_path($moduleConsolePath))) {
                 $namespace = '';
                 foreach ((new \Symfony\Component\Finder\Finder)->in($paths)->files() as $command) {
                     $command = $namespace . str_replace(['/', '.php'], ['\\', ''], \Illuminate\Support\Str::after($command->getRealPath(), realpath(base_path()) . DIRECTORY_SEPARATOR));

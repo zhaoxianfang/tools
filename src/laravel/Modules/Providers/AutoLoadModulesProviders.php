@@ -2,32 +2,21 @@
 
 namespace zxf\laravel\Modules\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Contracts\Foundation\Application;
+use ReflectionException;
 
-class AutoLoadModulesProvider extends ServiceProvider
+class AutoLoadModulesProviders
 {
 
     /**
-     * Register any application services.
+     * 开始自动加载 Modules 模块里面的 Providers 文件夹，并注册为 服务提供者
      *
-     * @return void
-     */
-    public function register()
-    {
-        $this->customAddProviders();
-    }
-
-    /**
-     * Bootstrap any application services.
+     * @param Application $app
      *
-     * @return void
+     * @return false|void
+     * @throws ReflectionException
      */
-    public function boot()
-    {
-        //
-    }
-
-    public function customAddProviders()
+    public static function start(Application $app)
     {
         $modulesName = config('modules.namespace', 'Modules');
 
@@ -37,13 +26,12 @@ class AutoLoadModulesProvider extends ServiceProvider
         $modules = array_slice(scandir(base_path($modulesName)), 2);
         foreach ($modules as $module) {
             $moduleProvidersPath = "{$modulesName}/{$module}/Providers";
-            if (is_dir($moduleProvidersPath)) {
-                $paths     = base_path($moduleProvidersPath);
+            if (is_dir($paths = base_path($moduleProvidersPath))) {
                 $namespace = '';
                 foreach ((new \Symfony\Component\Finder\Finder)->in($paths)->files() as $provider) {
                     $provider = $namespace . str_replace(['/', '.php'], ['\\', ''], \Illuminate\Support\Str::after($provider->getRealPath(), realpath(base_path()) . DIRECTORY_SEPARATOR));
                     if (is_subclass_of($provider, \Illuminate\Support\ServiceProvider::class) && !(new \ReflectionClass($provider))->isAbstract()) {
-                        $this->app->register($provider);
+                        $app->register($provider);
                     }
                 }
             }

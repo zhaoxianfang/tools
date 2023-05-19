@@ -10,7 +10,7 @@ use zxf\laravel\Modules\Activators\FileActivator;
 use zxf\laravel\Modules\Providers\ConsoleServiceProvider;
 use zxf\laravel\Modules\Providers\ContractsServiceProvider;
 use zxf\laravel\Modules\Providers\ModulesRouteServiceProvider;
-use zxf\laravel\Modules\Providers\AutoLoadModulesProvider;
+use zxf\laravel\Modules\Providers\AutoLoadModulesProviders;
 use Illuminate\Pagination\Paginator;
 use zxf\laravel\Modules\Middleware\ExtendMiddleware;
 
@@ -140,10 +140,10 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $this->app->register(ContractsServiceProvider::class);
         // 注册路由
         $this->app->register(ModulesRouteServiceProvider::class);
+        // 自动加载 Providers 服务提供者
+        AutoLoadModulesProviders::start($this->app);
         // 注册中间件
         $this->app->singleton(ExtendMiddleware::class);
-        // 自动加载 Provider
-        $this->app->register(AutoLoadModulesProvider::class);
         $this->app->alias(ExtendMiddleware::class, 'module');
         // 注册异常报告
     }
@@ -242,7 +242,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     protected function tips()
     {
         if (app()->runningInConsole() && !is_dir(base_path(config('modules.namespace', 'Modules')))) {
-            echo PHP_EOL.'==================================================================================' . PHP_EOL;
+            echo PHP_EOL . '==================================================================================' . PHP_EOL;
             echo '| 插    件 | composer require zxf/tools                                          |' . PHP_EOL;
             echo '| 格    言 | 人生在勤，不索何获                                                  |' . PHP_EOL;
             echo '| 模块发布 | php artisan vendor:publish --provider="zxf\laravel\ServiceProvider" |' . PHP_EOL;

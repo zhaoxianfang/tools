@@ -2,7 +2,7 @@
 
 namespace zxf\req;
 
-use Redis as PhpRedis;
+use \Redis as PhpRedis;
 
 /**
  * redis操作类

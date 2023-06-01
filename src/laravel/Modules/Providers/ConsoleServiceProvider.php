@@ -83,7 +83,7 @@ class ConsoleServiceProvider extends ServiceProvider
      */
     protected function customAddCommands()
     {
-        $modulesName = config('modules.namespace', 'Modules');
+        $modulesName = modules_name();
 
         if (!is_dir(base_path($modulesName))) {
             return false;

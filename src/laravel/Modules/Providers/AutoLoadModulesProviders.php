@@ -18,7 +18,7 @@ class AutoLoadModulesProviders
      */
     public static function start(Application $app)
     {
-        $modulesName = config('modules.namespace', 'Modules');
+        $modulesName = modules_name();
 
         if (!is_dir(base_path($modulesName))) {
             return false;

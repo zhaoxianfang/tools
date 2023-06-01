@@ -264,7 +264,7 @@ class Curl
     }
 
     //  闭包方式 注入 Curl
-    //  ...->setCustomParams(function($http){
+    //  ...->inject(function($http){
     //      curl_setopt($http->ch, CURLOPT_SSLCERTTYPE, 'PEM');
     //  });
     public function inject(\Closure $func)

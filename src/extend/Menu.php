@@ -89,7 +89,7 @@ class Menu
      *
      * @param array $options 参数
      *
-     * @return Menu
+     * @return self
      */
     public static function instance($options = [])
     {
@@ -141,7 +141,7 @@ class Menu
      *
      * @param string $flag [description]
      */
-    public function setDomain($domain = ''): Menu
+    public function setDomain($domain = ''): self
     {
         $this->domain = $domain; // 域名
         return $this;
@@ -155,7 +155,7 @@ class Menu
      *
      * @param string $flag [description]
      */
-    public function setReturn($flag = false): Menu
+    public function setReturn($flag = false): self
     {
         $this->returnClass = $flag ? true : false;
         return $this;
@@ -169,7 +169,7 @@ class Menu
      *
      * @param boolean $flag [description]
      */
-    public function setAdminMenuIcon($flag = false): Menu
+    public function setAdminMenuIcon($flag = false): self
     {
         $this->showchildicon = $flag ? true : false;
         return $this;
@@ -183,7 +183,7 @@ class Menu
      *
      * @param boolean $str [description]
      */
-    public function setWeigh($str = ''): Menu
+    public function setWeigh($str = ''): self
     {
         $this->weigh = $str;
         return $this;
@@ -449,7 +449,7 @@ class Menu
         foreach ($arr as $key => $item) {
             $hasArrow = (isset($item[$this->childlist]) && !empty($item[$this->childlist])) ? true : false;
 
-            $currentHref = $hasArrow ? 'javascript:;' : url($item['name']); // 当前url
+            $currentHref = $hasArrow ? 'javascript:;' : url($this->urlPrefix . $item['name']); // 当前url
             $currentIcon = $item['icon'];                                   // 当前url
 
             $isActive = $this->checkactiveMenu($item['name'], $hasArrow);   // 'active'; // 是否激活当前菜单
@@ -493,7 +493,7 @@ class Menu
         foreach ($arr as $key => $item) {
             $hasArrow = (isset($item[$this->childlist]) && !empty($item[$this->childlist])) ? true : false;
 
-            $currentHref = $hasArrow ? 'javascript:;' : url($item['name']); // 当前url
+            $currentHref = $hasArrow ? 'javascript:;' : url($this->urlPrefix . $item['name']); // 当前url
             $currentIcon = $item['icon'];                                   // 当前url
 
             $isActive = $this->checkactiveMenu($item['name'], $hasArrow);         // 'mm-active'; // 是否激活当前菜单

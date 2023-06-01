@@ -1,10 +1,42 @@
 <?php
 
+if (!function_exists('is_laravel')) {
+    /**
+     * 检查运行环境是否 在 laravel 之下
+     *
+     * @return bool
+     */
+    function is_laravel(): bool
+    {
+        if (class_exists(\App\Http\Kernel::class) && class_exists('\Illuminate\Support\Facades\DB')) {
+            return true;
+        }
+        return false;
+    }
+}
+
+if (!is_laravel()) {
+    // 如果不是 laravel 框架 环境就停止向后执行
+    return false;
+}
+
 if (!function_exists('module_path')) {
     function module_path($name, $path = ''): string
     {
         $modulePath = base_path(config('modules.namespace') . DIRECTORY_SEPARATOR . $name);
         return $modulePath . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+    }
+}
+
+if (!function_exists('modules_name')) {
+    /**
+     * 获取 多模块(默认：Modules) 的文件夹名称
+     *
+     * @return string
+     */
+    function modules_name(): string
+    {
+        return config('modules.namespace', 'Modules');
     }
 }
 
@@ -15,19 +47,21 @@ if (!function_exists('get_module_name')) {
      * 在 Modules 模块里面 获取当前所在模块名称
      * 注意，需要在 Modules 里面调用，否则返回 App
      *
+     * @param bool $toUnderlineConvert 是否转换为 驼峰+小写 模式
+     *
      * @return mixed|string
      */
-    function get_module_name()
+    function get_module_name(?bool $toUnderlineConvert = false)
     {
         try {
             $routeNamespace      = request()->route()->action['namespace'];
             $modulesNamespaceArr = array_filter(explode('\\', explode('Http\Controllers', $routeNamespace)[0]));
-            if (empty($modulesNamespaceArr) || $modulesNamespaceArr[0] != config('modules.namespace', 'Modules')) {
-                return 'App';
+            if (empty($modulesNamespaceArr) || $modulesNamespaceArr[0] != modules_name()) {
+                return $toUnderlineConvert ? 'app' : 'App';
             }
-            return $modulesNamespaceArr[1];
+            return $toUnderlineConvert ? underline_convert($modulesNamespaceArr[1]) : $modulesNamespaceArr[1];
         } catch (\Exception $err) {
-            return 'App';
+            return $toUnderlineConvert ? 'app' : 'App';
         }
     }
 }
@@ -68,7 +102,7 @@ if (!function_exists('get_laravel_route')) {
     }
 }
 
-if (!function_exists('listen_sql') && class_exists('\Illuminate\Support\Facades\DB')) {
+if (!function_exists('listen_sql')) {
     /**
      * 监听sql
      *
@@ -124,7 +158,7 @@ if (!function_exists('listen_sql') && class_exists('\Illuminate\Support\Facades\
     }
 }
 
-if (!function_exists('copy_model') && class_exists('\Illuminate\Support\Facades\DB')) {
+if (!function_exists('copy_model')) {
     /**
      * 复制一份不带 关联关系的模型
      * 复制模型，主要是解决 laravel -> replicate 复制方法会缺失部分字段问题

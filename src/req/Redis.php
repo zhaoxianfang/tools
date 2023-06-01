@@ -64,8 +64,10 @@ class Redis
      * 得到实例化的对象.
      * 为每个数据库建立一个连接
      * 如果连接超时，将会重新建立一个连接
+     *
      * @param array $config
-     * @param int $dbId
+     * @param array $attr
+     *
      * @return \iphp\db\PhpRedis
      */
     public static function getInstance($config, $attr = array())

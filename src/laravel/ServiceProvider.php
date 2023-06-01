@@ -22,6 +22,11 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {
     protected $defer = true;
 
+    public function __construct($app)
+    {
+        is_laravel() && parent::__construct($app);
+    }
+
     public function register()
     {
         // 注册modules 模块服务
@@ -134,29 +139,34 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     protected function registerProviders()
     {
-        if (is_dir(base_path(config('modules.namespace', 'Modules')))) {
+        if (is_dir(base_path(modules_name()))) {
             $this->app->register(ConsoleServiceProvider::class);
         }
+
+        // 注册自定义 中间件 extend_module
+        $this->app->singleton(ExtendMiddleware::class);
+        $this->app->alias(ExtendMiddleware::class, 'extend_module');
+
         $this->app->register(ContractsServiceProvider::class);
+
         // 注册路由
         $this->app->register(ModulesRouteServiceProvider::class);
         // 自动加载 Providers 服务提供者
         AutoLoadModulesProviders::start($this->app);
-        // 注册中间件
-        $this->app->singleton(ExtendMiddleware::class);
-        $this->app->alias(ExtendMiddleware::class, 'module');
-        // 注册异常报告
+
+        // 注册异常报告 [注册异常后，会替代laravel 自身的 错误机制] 不推荐
+        // set_error_handler('exception_handler');
     }
 
     protected function mapModuleBoot()
     {
-        if (!is_dir(base_path(config('modules.namespace', 'Modules')))) {
+        if (!is_dir(base_path(modules_name()))) {
             return false;
         }
-        $modules = array_slice(scandir(base_path(config('modules.namespace', 'Modules'))), 2);
+        $modules = array_slice(scandir(base_path(modules_name())), 2);
         foreach ($modules as $module) {
             $moduleLower = strtolower($module);
-            if (is_dir(base_path(config('modules.namespace', 'Modules') . '/' . $module))) {
+            if (is_dir(base_path(modules_name() . '/' . $module))) {
                 $this->registerTranslations($module, $moduleLower);
                 $this->registerConfig($module, $moduleLower);
                 $this->registerViews($module, $moduleLower);
@@ -241,7 +251,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     // 使用多模块提示
     protected function tips()
     {
-        if (app()->runningInConsole() && !is_dir(base_path(config('modules.namespace', 'Modules')))) {
+        if (app()->runningInConsole() && !is_dir(base_path(modules_name()))) {
             echo PHP_EOL . '==================================================================================' . PHP_EOL;
             echo '| 插    件 | composer require zxf/tools                                          |' . PHP_EOL;
             echo '| 格    言 | 人生在勤，不索何获                                                  |' . PHP_EOL;

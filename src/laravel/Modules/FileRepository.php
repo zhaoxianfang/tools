@@ -127,10 +127,10 @@ abstract class FileRepository implements RepositoryInterface, Countable
     public function scan()
     {
         $modules = [];
-        $modulesArr = array_slice(scandir(base_path(config('modules.namespace','Modules'))), 2);
+        $modulesArr = array_slice(scandir(base_path(modules_name())), 2);
 
         foreach ($modulesArr as $module) {
-            if (is_dir(base_path(config('modules.namespace','Modules').'/' . $module))) {
+            if (is_dir(base_path(modules_name().'/' . $module))) {
                 $modules[$module] = $this->createModule($this->app, $module, module_path($module));
             }
         }
@@ -289,7 +289,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
      */
     public function getPath() : string
     {
-        return $this->path ?: $this->config('paths.modules', base_path(config('modules.namespace','Modules')));
+        return $this->path ?: $this->config('paths.modules', base_path(modules_name()));
     }
 
     /**

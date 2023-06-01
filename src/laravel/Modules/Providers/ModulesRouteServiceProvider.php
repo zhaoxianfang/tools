@@ -23,7 +23,7 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
 
     protected function getModulesName()
     {
-        return config('modules.namespace', 'Modules');
+        return modules_name();
     }
 
     protected function mapModuleRoutes()
@@ -42,24 +42,41 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
      *    例如：Routes 文件夹下有一个 api.php 文件，则该路由文件对应的控制器路径为 \Http\Controllers\Api\ ,使用的中间件为 api
      *
      * @param $module
+     *
      * @return void
      */
     protected function mapModuleRoute($module)
     {
+        $userMiddlewareGroups = []; // 用户定义的中间件组 名称(别名)
+        // 判断是否有 获取中间件组的方法
+        if (class_exists($kernelClass = \App\Http\Kernel::class) && method_exists(($kernelApp = app($kernelClass)), 'getMiddlewareGroups')) {
+            $userMiddlewareGroups = array_keys($kernelApp->getMiddlewareGroups());
+        }
+        // 是否自动使用路由文件同名中间件组
+        $autoUseMiddleware = config('modules.auto_use_middleware_groups', true);
+        // 需要自动添加上同名 `xxx`前缀和 `xxx.` 路由命名 的路由文件
+        $routeNeedAddPrefixAndName = config('modules.route_need_add_prefix_and_name', ['api']);
+
         $pathDir    = base_path($this->getModulesName() . "/{$module}/Routes/");
         $routeFiles = $this->findRouteFile($pathDir);
         foreach ($routeFiles as $routeName) {
             $path         = $pathDir . $routeName . '.php';
-            $lowRouteName = strtolower($routeName);
-            // 默认使用web中间件
-            $useMiddlewareName = in_array($lowRouteName, ['api', 'web']) ? $lowRouteName : 'web';
+            $lowRouteName = underline_convert($routeName);
+
+            // 判断中间件是否存在 中间件组中`$middlewareGroups`
+            $useMiddlewareName = in_array($lowRouteName, $userMiddlewareGroups) ? $lowRouteName : '';
+
+            // 默认 使用  extend_module 和  $useMiddlewareName 中间件
+            $middlewareGroup = (!$autoUseMiddleware || empty($useMiddlewareName)) ? ['extend_module'] : ['extend_module', $useMiddlewareName];
+            // 需要自动加上路由前缀的文件，例如 api.php
+            $addPrefix = (!empty($routeNeedAddPrefixAndName) && in_array($lowRouteName, $routeNeedAddPrefixAndName)) ? $lowRouteName : '';
+            // 需要自动加上路由名称的文件，例如 api.php
+            $addName = !empty($addPrefix) ? ($lowRouteName . '.') : '';
+
             Route::namespace($this->getModulesName() . "\\{$module}\Http\Controllers\\" . ucfirst($lowRouteName))
-                // ->prefix(underline_convert($module)) // ->prefix('admin') // 是否设置统一的路由前缀
-                ->prefix($lowRouteName == 'api' ? 'api' : '') // 只有api 版块默认使用api前缀
-                ->middleware([
-                    'module',
-                    $useMiddlewareName
-                ])
+                ->prefix($addPrefix) // ->prefix('admin') // 是否设置统一的路由前缀
+                ->name($addName) //
+                ->middleware($middlewareGroup)
                 ->group($path);
         }
     }

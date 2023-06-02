@@ -16,13 +16,17 @@ class QqOauth implements Handle
     protected $userinfo_url      = 'https://graph.qq.com/user/get_user_info';
     protected $union_url         = 'https://graph.qq.com/oauth2.0/me';
 
-    public function __construct($config)
+    public function __construct(array $config = [])
     {
-        $this->config = [
-            'client_id'     => $config['appid'],
-            'redirect_uri'  => $config['callbackUrl'],
-            'client_secret' => $config['appkey'],
-        ];
+        if (function_exists('config') && empty($config)) {
+            $this->config = config('ext_auth.qq.default') ?? [];
+        } else {
+            $this->config = [
+                'client_id'     => $config['client_id'],
+                'client_secret' => $config['client_secret'],
+                'redirect_uri'  => $config['redirect_uri'],
+            ];
+        }
         $this->client = new Curl();
     }
 

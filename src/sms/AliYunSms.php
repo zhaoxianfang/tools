@@ -1,9 +1,11 @@
 <?php
 
-namespace zxf\sms; 
+namespace zxf\sms;
 
 class AliYunSms extends Base
 {
+    protected $driver = 'aliyun';
+
     /**
      * 主机地址
      *
@@ -11,52 +13,52 @@ class AliYunSms extends Base
      */
     protected $host = 'dysmsapi.aliyuncs.com';
 
-	/**
-	 * 产品
-	 *
-	 * @var string
-	 */
-	private $product = 'Dysmsapi';
+    /**
+     * 产品
+     *
+     * @var string
+     */
+    private $product = 'Dysmsapi';
 
-	/**
-	 * 区域
-	 *
-	 * @var string
-	 */
-	private $region = 'cn-hangzhou';
+    /**
+     * 区域
+     *
+     * @var string
+     */
+    private $region = 'cn-hangzhou';
 
-	/**
-	 * 版本
-	 *
-	 * @var string
-	 */
-	private $version = '2017-05-25';
+    /**
+     * 版本
+     *
+     * @var string
+     */
+    private $version = '2017-05-25';
 
-	/**
-	 * 方法
-	 *
-	 * @var string
-	 */
-	private $method = 'POST';
+    /**
+     * 方法
+     *
+     * @var string
+     */
+    private $method = 'POST';
 
-	/**
-	 * 格式
-	 *
+    /**
+     * 格式
+     *
      * @var string
      */
     public $format = 'JSON';
 
     /**
-	 * 签名方法
-	 *
-	 * @var string
+     * 签名方法
+     *
+     * @var string
      */
     private $signMethod = 'HMAC-SHA1';
 
     /**
-	 * 签名版本
-	 *
-	 * @var string
+     * 签名版本
+     *
+     * @var string
      */
     private $signVersion = '1.0';
 
@@ -68,40 +70,41 @@ class AliYunSms extends Base
     private $dateTimeFormat = 'Y-m-d\TH:i:s\Z';
 
     /**
-	 * 获得数据
-	 *
-	 * @return array
+     * 获得数据
+     *
+     * @return array
      */
     public function getData()
     {
-    	$data = [
-    		'RegionId' => $this->region,
-    		'TemplateCode' => $this->template,
-    		'Format' => $this->format,
-    		'SignatureMethod' => $this->signMethod,
-    		'SignatureVersion' => $this->signVersion,
-    		'SignatureNonce' => $this->uuid($this->product . $this->region),
-    		'Timestamp' => gmdate($this->dateTimeFormat),
-    		'Action' => 'SendSms',
-    		'AccessKeyId' => $this->key,
-    		'Version' => $this->version
-    	];
-    	$data['PhoneNumbers'] = implode(',', $this->mobiles);
-    	$data['SignName'] = $this->sign;
-    	$data['TemplateParam'] = json_encode($this->params);
-    	return $data;
+        $data                  = [
+            'RegionId'         => $this->region,
+            'TemplateCode'     => $this->template,
+            'Format'           => $this->format,
+            'SignatureMethod'  => $this->signMethod,
+            'SignatureVersion' => $this->signVersion,
+            'SignatureNonce'   => $this->uuid($this->product . $this->region),
+            'Timestamp'        => gmdate($this->dateTimeFormat),
+            'Action'           => 'SendSms',
+            'AccessKeyId'      => $this->key,
+            'Version'          => $this->version,
+        ];
+        $data['PhoneNumbers']  = implode(',', $this->mobiles);
+        $data['SignName']      = !empty($this->sign) ? $this->sign : config('ext_notice.sms.aliyun.sign');
+        $data['TemplateParam'] = json_encode($this->params);
+        return $data;
     }
 
     /**
-	 * 生成签名
-	 *
-     * @param  array  $data
+     * 生成签名
+     *
+     * @param array $data
+     *
      * @return string
      */
     public function sign($data)
     {
-    	ksort($data);
-    	$string = '';
+        ksort($data);
+        $string = '';
         foreach ($data as $key => $value) {
             $string .= '&' . $this->encode($key) . '=' . $this->encode($value);
         }
@@ -112,7 +115,8 @@ class AliYunSms extends Base
     /**
      * 处理响应
      *
-     * @param  array  $response
+     * @param array $response
+     *
      * @return array
      */
     protected function handleResponse($response)
@@ -131,9 +135,10 @@ class AliYunSms extends Base
     }
 
     /**
-	 * 生成uuid
-	 *
-     * @param  string  $salt
+     * 生成uuid
+     *
+     * @param string $salt
+     *
      * @return string
      */
     private function uuid($salt)
@@ -144,7 +149,8 @@ class AliYunSms extends Base
     /**
      * 转码
      *
-     * @param  string  $string
+     * @param string $string
+     *
      * @return string
      */
     private function encode($string)

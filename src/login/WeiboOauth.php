@@ -13,13 +13,17 @@ class WeiboOauth implements Handle
     protected $client;
     protected $config;
 
-    public function __construct($config)
+    public function __construct(array $config = [])
     {
-        $this->config = [
-            'client_id'     => $config['wb_akey'],
-            'client_secret' => $config['wb_skey'],
-            'redirect_uri'  => $config['wb_callback_url']
-        ];
+        if (function_exists('config') && empty($config)) {
+            $this->config = config('ext_auth.sina.default') ?? [];
+        } else {
+            $this->config = [
+                'wb_akey'         => $config['wb_akey'],
+                'wb_skey'         => $config['wb_skey'],
+                'wb_callback_url' => $config['wb_callback_url'],
+            ];
+        }
         $this->client = new Curl();
     }
 
@@ -31,8 +35,8 @@ class WeiboOauth implements Handle
         $url = 'https://api.weibo.com/oauth2/authorize';
 
         $query = array_filter([
-            'client_id'     => $this->config['client_id'],
-            'redirect_uri'  => $this->config['redirect_uri'],
+            'client_id'     => $this->config['wb_akey'],
+            'redirect_uri'  => $this->config['wb_callback_url'],
             'response_type' => 'code',
             'state'         => $state,
         ]);
@@ -49,10 +53,10 @@ class WeiboOauth implements Handle
         $url = 'https://api.weibo.com/oauth2/access_token';
 
         $query = array_filter([
-            'client_id'     => $this->config['client_id'],
+            'client_id'     => $this->config['wb_akey'],
             'code'          => $_GET['code'],
-            'client_secret' => $this->config['client_secret'],
-            'redirect_uri'  => $this->config['redirect_uri'],
+            'client_secret' => $this->config['wb_skey'],
+            'redirect_uri'  => $this->config['wb_callback_url'],
             'grant_type'    => 'authorization_code',
         ]);
 

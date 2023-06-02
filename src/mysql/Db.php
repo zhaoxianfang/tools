@@ -56,6 +56,15 @@ class Db
         } else {
             throw new Exception('未配置mysqli扩展');
         }
+        if (empty($hostname) && function_exists('config')) {
+            $hostname = config('ext_database.mysql.default.host');
+            $username = config('ext_database.mysql.default.username');
+            $password = config('ext_database.mysql.default.password');
+            $database = config('ext_database.mysql.default.db');
+            $port     = config('ext_database.mysql.default.port');
+            $charset  = config('ext_database.mysql.default.charset');
+            $socket   = config('ext_database.mysql.default.socket');
+        }
 
         // 如果参数作为数组传递
         if (is_array($hostname) && !empty($hostname)) {

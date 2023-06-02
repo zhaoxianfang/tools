@@ -4,12 +4,14 @@ namespace zxf\sms;
 
 class TencentSms extends Base
 {
-	/**
-	 * 主机地址
-	 *
-	 * @var string
-	 */
-	private $host = 'sms.tencentcloudapi.com';
+    protected $driver = 'tencent';
+
+    /**
+     * 主机地址
+     *
+     * @var string
+     */
+    private $host = 'sms.tencentcloudapi.com';
 
     /**
      * 方法
@@ -58,14 +60,14 @@ class TencentSms extends Base
     protected function getData()
     {
         $data = [
-            'SecretId' => $this->key,
-            'Action' => 'SendSms',
-            'Version' => $this->version,
-            'Sign' => $this->sign,
-            'Nonce' => rand(10000, 99999),
-            'TemplateID' => $this->template,
+            'SecretId'    => $this->key,
+            'Action'      => 'SendSms',
+            'Version'     => $this->version,
+            'Sign'        => !empty($this->sign) ? $this->sign : config('ext_notice.sms.tencent.sign'),
+            'Nonce'       => rand(10000, 99999),
+            'TemplateID'  => $this->template,
             'SmsSdkAppid' => $this->appid,
-            'Timestamp' => time()
+            'Timestamp'   => time(),
         ];
         foreach ($this->mobiles as $index => $mobile) {
             $data['PhoneNumberSet.' . $index] = $mobile;
@@ -80,7 +82,8 @@ class TencentSms extends Base
     /**
      * 生成签名
      *
-     * @param  array   $data
+     * @param array $data
+     *
      * @return string
      */
     protected function sign($data)
@@ -97,7 +100,8 @@ class TencentSms extends Base
     /**
      * 处理响应
      *
-     * @param  array  $response
+     * @param array $response
+     *
      * @return array
      */
     protected function handleResponse($response)
@@ -105,15 +109,15 @@ class TencentSms extends Base
         $result = ['status' => false];
         if (isset($response['Response']['SendStatusSet'])) {
             foreach ($response['Response']['SendStatusSet'] as $item) {
-                $result['status'] = $item['Code'] == 'Ok';
-                $result['code'] = $item['Code'];
+                $result['status']  = $item['Code'] == 'Ok';
+                $result['code']    = $item['Code'];
                 $result['message'] = $item['Message'];
                 if (!$result['status']) {
                     break;
                 }
             }
         } else {
-            $result['code'] = $response['Response']['Error']['Code'];
+            $result['code']    = $response['Response']['Error']['Code'];
             $result['message'] = $response['Response']['Error']['Message'];
         }
         return $result;

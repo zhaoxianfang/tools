@@ -16,14 +16,13 @@ class WeiboOauth implements Handle
     public function __construct(array $config = [])
     {
         if (function_exists('config') && empty($config)) {
-            $this->config = config('ext_auth.sina.default') ?? [];
-        } else {
-            $this->config = [
-                'wb_akey'         => $config['wb_akey'],
-                'wb_skey'         => $config['wb_skey'],
-                'wb_callback_url' => $config['wb_callback_url'],
-            ];
+            $config = config('ext_auth.sina.default') ?? [];
         }
+        $this->config = [
+            'client_id'     => $config['wb_akey'],
+            'client_secret' => $config['wb_skey'],
+            'redirect_uri'  => $config['wb_callback_url'],
+        ];
         $this->client = new Curl();
     }
 
@@ -35,8 +34,8 @@ class WeiboOauth implements Handle
         $url = 'https://api.weibo.com/oauth2/authorize';
 
         $query = array_filter([
-            'client_id'     => $this->config['wb_akey'],
-            'redirect_uri'  => $this->config['wb_callback_url'],
+            'client_id'     => $this->config['client_id'],
+            'redirect_uri'  => $this->config['redirect_uri'],
             'response_type' => 'code',
             'state'         => $state,
         ]);
@@ -53,36 +52,43 @@ class WeiboOauth implements Handle
         $url = 'https://api.weibo.com/oauth2/access_token';
 
         $query = array_filter([
-            'client_id'     => $this->config['wb_akey'],
+            'client_id'     => $this->config['client_id'],
+            'client_secret' => $this->config['client_secret'],
+            'redirect_uri'  => $this->config['redirect_uri'],
             'code'          => $_GET['code'],
-            'client_secret' => $this->config['wb_skey'],
-            'redirect_uri'  => $this->config['wb_callback_url'],
             'grant_type'    => 'authorization_code',
         ]);
 
-        $res = $this->client->setParams($query)->post($url);
+        $res = $this->client->setParams($query, 'string')->post($url);
+
         if (isset($res['error_description'])) {
             throw new \Exception('登录失败，请重试');
         }
-        return $res['access_token'];
+        return $res;
 
     }
 
     public function getUserInfo($access_token = '')
     {
+        $uid = null;
         if (empty($access_token)) {
-            $access_token = $this->getAccessToken();
+            $access_token_info = $this->getAccessToken();
+            $access_token      = $access_token_info['access_token'];
+            $uid               = !empty($access_token_info['uid']) ? $access_token_info['uid'] : null;
         }
         $url = 'https://api.weibo.com/2/users/show.json';
 
-        $uid   = $this->getUid($access_token);
+        $uid = empty($uid) ? $this->getUid($access_token) : $uid;
+
         $query = array_filter([
             'uid'          => $uid,
             'access_token' => $access_token,
         ]);
 
         $userInfo           = $this->client->setParams($query)->get($url);
+
         $userInfo['openid'] = $uid;
+        !empty($access_token_info) && ($userInfo['isRealName'] = $access_token_info['isRealName']);
         return $userInfo;
     }
 

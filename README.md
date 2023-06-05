@@ -5,7 +5,7 @@
 > 基于 php 的项目模块开发
 > 调用命名空间 使用 use zxf\…… 例如 use zxf\login\QqOauth; use zxf\min\JsMin;
 
-创建时间：2018/06/01
+<a href="https://weisifang.com/docs/2" target="_blank" >在线文档</a>
 
 ## 引用
 

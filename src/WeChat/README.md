@@ -1,29 +1,116 @@
 # 微信模块开发
 
-// https://github.com/zoujingli/WeChatDeveloper
+> 来源库: https://github.com/zoujingli/WeChatDeveloper
+> 文档: https://www.kancloud.cn/zoujingli/wechat-developer
 
-| 模块 | 路径 |
-|--|------------------------|
-| 视频号 | zxf\WeChat\Channels |
-| 小游戏 | zxf\WeChat\Game |
-| 小程序 | zxf\WeChat\Mini |
-| 公众号 | zxf\WeChat\Offiaccount |
-| 开发平台 | zxf\WeChat\Oplatform |
-| 微信支付 | zxf\WeChat\Pay |
-| 智能对话 | zxf\WeChat\Robot |
-| 小商店 | zxf\WeChat\Store |
-| 企业微信 | zxf\WeChat\Work |
-| 腾讯小微 | zxf\WeChat\XiaoWei |
+## 申明
+
+本模块是由`https://github.com/zoujingli/WeChatDeveloper`仓库改造而来
+
+## 引入和修改记录
+
+1、下载 WeChatDeveloper 库
+2、复制文件进来(除AliPay文件夹)
+3、修改命名空间 `namespace `批量替换为`namespace zxf\WeChat\`
+4、修改引用命名空间 `use WeChat\`批量替换为`use zxf\WeChat\WeChat\` (勾选文件掩码 .php)
+5、修改引用命名空间 `use WePay\`批量替换为`use zxf\WeChat\WePay\` (勾选文件掩码 .php)
+6、修改引用命名空间 `use WePayV3\`批量替换为`use zxf\WeChat\WePayV3\` (勾选文件掩码 .php)
+7、替换文件头注释
+
+```
+// +----------------------------------------------------------------------
+// | WeChatDeveloper
+// +----------------------------------------------------------------------
+// | 版权所有 2014~2023 ThinkAdmin [ thinkadmin.top ]
+// +----------------------------------------------------------------------
+// | 官方网站: https://thinkadmin.top
+// +----------------------------------------------------------------------
+// | 开源协议 ( https://mit-license.org )
+// | 免责声明 ( https://thinkadmin.top/disclaimer )
+// +----------------------------------------------------------------------
+// | gitee 代码仓库：https://gitee.com/zoujingli/WeChatDeveloper
+// | github 代码仓库：https://github.com/zoujingli/WeChatDeveloper
+// +----------------------------------------------------------------------
+```
+
+替换为
+
+```
+// +----------------------------------------------------------------------
+// | WeChatDeveloper
+// +----------------------------------------------------------------------
+```
+
+## 模块
+
+| 模块                                 | 路径                           |
+|------------------------------------|------------------------------|
+| 视频号                                | zxf\WeChat\Channels          |
+| 小游戏                                | zxf\WeChat\Game              |
+| 开发平台                               | zxf\WeChat\Oplatform         |
+| 微信支付                               | zxf\WeChat\Pay               |
+| 智能对话                               | zxf\WeChat\Robot             |
+| 小商店                                | zxf\WeChat\Store             |
+| 企业微信                               | zxf\WeChat\Work              |
+| 腾讯小微                               | zxf\WeChat\XiaoWei           |
+| SDK功能测试DEMO代码                      | zxf\WeChat\_test             |
+| 默认缓存目录，需要拥有读写权限，可配置                | zxf\WeChat\Cache             |
+| 认证服务号支持                            | zxf\WeChat\WeChat            |
+| 微信小程序支持                            | zxf\WeChat\WeMini            |
+| 微信支付支持                             | zxf\WeChat\WePay             |
+| 微信V3支付支持                           | zxf\WeChat\WePayV3           |
+| WeChat 基础支持类，通用外界不需要使用             | zxf\WeChat\WeChat/Contracts  |
+| WeChat 自定义异常类，在调用接口时可以使用 try 来处理异常 | zxf\WeChat\WeChat/Exceptions |
+
+## 文件
+
+| 文件名               | 类名                  | 描述           | 类型    | 加载 ①                                 |
+|-------------------|---------------------|--------------|-------|--------------------------------------|
+| App.php           | AliPay\App          | 支付宝App支付     | 支付宝   | \zxf\WeChat\We::AliPayApp()          |
+| Bill.php          | AliPay\Bill         | 支付宝账单下载      | 支付宝   | \zxf\WeChat\We::AliPayBill()         |
+| Pos.php           | AliPay\Pos          | 支付宝刷卡支付      | 支付宝   | \zxf\WeChat\We::AliPayPos()          |
+| Scan.php          | AliPay\Scan         | 支付宝扫码支付      | 支付宝   | \zxf\WeChat\We::AliPayScan()         |
+| Transfer.php      | AliPay\Transfer     | 支付宝转账        | 支付宝   | \zxf\WeChat\We::AliPayTransfer()     |
+| Wap.php           | AliPay\Wap          | 支付宝Wap支付     | 支付宝   | \zxf\WeChat\We::AliPayWap()          |
+| Web.php           | AliPay\Web          | 支付宝Web支付     | 支付宝   | \zxf\WeChat\We::AliPayWeb()          |
+| Card.php          | WeChat\Card         | 微信卡券接口支持     | 认证服务号 | \zxf\WeChat\We::WeChatCard()         |
+| Custom.php        | WeChat\Custom       | 微信客服消息接口支持   | 认证服务号 | \zxf\WeChat\We::WeChatCustom()       |
+| Media.php         | WeChat\Media        | 微信媒体素材接口支持   | 认证服务号 | \zxf\WeChat\We::WeChatMedia()        |
+| Oauth.php         | WeChat\Oauth        | 微信网页授权消息类接口  | 认证服务号 | \zxf\WeChat\We::WeChatOauth()        |
+| Pay.php           | WeChat\Pay          | 微信支付类接口      | 认证服务号 | \zxf\WeChat\We::WeChatPay()          |
+| Product.php       | WeChat\Product      | 微信商店类接口      | 认证服务号 | \zxf\WeChat\We::WeChatProduct()      |
+| Qrcode.php        | WeChat\Qrcode       | 微信二维码接口支持    | 认证服务号 | \zxf\WeChat\We::WeChatQrcode()       |
+| Receive.php       | WeChat\Receive      | 微信推送事件消息处理支持 | 认证服务号 | \zxf\WeChat\We::WeChatReceive()      |
+| Scan.php          | WeChat\Scan         | 微信扫一扫接口支持    | 认证服务号 | \zxf\WeChat\We::WeChatScan()         |
+| Script.php        | WeChat\Script       | 微信前端JSSDK支持  | 认证服务号 | \zxf\WeChat\We::WeChatScript()       |
+| Shake.php         | WeChat\Shake        | 微信蓝牙设备揺一揺接口  | 认证服务号 | \zxf\WeChat\We::WeChatShake()        |
+| Tags.php          | WeChat\Tags         | 微信粉丝标签接口支持   | 认证服务号 | \zxf\WeChat\We::WeChatTags()         |
+| Template.php      | WeChat\Template     | 微信模板消息接口支持   | 认证服务号 | \zxf\WeChat\We::WeChatTemplate()     |
+| User.php          | WeChat\User         | 微信粉丝管理接口支持   | 认证服务号 | \zxf\WeChat\We::WeChatCard()         |
+| Wifi.php          | WeChat\Wifi         | 微信门店WIFI管理支持 | 认证服务号 | \zxf\WeChat\We::WeChatWifi()         |
+| Bill.php          | WePay\Bill          | 微信商户账单及评论    | 微信支付  | \zxf\WeChat\We::WePayBill()          |
+| Coupon.php        | WePay\Coupon        | 微信商户代金券      | 微信支付  | \zxf\WeChat\We::WePayCoupon()        |
+| Order.php         | WePay\Order         | 微信商户订单       | 微信支付  | \zxf\WeChat\We::WePayOrder()         |
+| Redpack.php       | WePay\Redpack       | 微信红包支持       | 微信支付  | \zxf\WeChat\We::WePayRedpack()       |
+| Refund.php        | WePay\Refund        | 微信商户退款       | 微信支付  | \zxf\WeChat\We::WePayRefund()        |
+| Transfers.php     | WePay\Transfers     | 微信商户打款到零钱    | 微信支付  | \zxf\WeChat\We::WePayTransfers()     |
+| TransfersBank.php | WePay\TransfersBank | 微信商户打款到银行卡   | 微信支付  | \zxf\WeChat\We::WePayTransfersBank() |
+| Crypt.php         | WeMini\Crypt        | 微信小程序数据加密处理  | 微信小程序 | \zxf\WeChat\We::WeMiniCrypt()        |
+| Plugs.php         | WeMini\Plugs        | 微信小程序插件管理    | 微信小程序 | \zxf\WeChat\We::WeMiniPlugs()        |
+| Poi.php           | WeMini\Poi          | 微信小程序地址管理    | 微信小程序 | \zxf\WeChat\We::WeMiniPoi()          |
+| Qrcode.php        | WeMini\Qrcode       | 微信小程序二维码管理   | 微信小程序 | \zxf\WeChat\We::WeMiniCrypt()        |
+| Template.php      | WeMini\Template     | 微信小程序模板消息支持  | 微信小程序 | \zxf\WeChat\We::WeMiniTemplate()     |
+| Total.php         | WeMini\Total        | 微信小程序数据接口    | 微信小程序 | \zxf\WeChat\We::WeMiniTotal()        |
 
 ## 配置文件
 
 ```
 // 配置
 public $config = [
-    "token"          => env("TOOLS_WECHAT_OFFICIAL_TOKEN", ""), //填写你设定的key
-    "appid"          => env("TOOLS_WECHAT_OFFICIAL_APP_ID", ""), //填写高级调用功能的app id
-    "appsecret"      => env("TOOLS_WECHAT_OFFICIAL_APP_SECRET", ""), //填写高级调用功能的密钥
-    "encodingaeskey" => env("TOOLS_WECHAT_OFFICIAL_AES_KEY", ""), //填写加密用的EncodingAESKey
+    "token"          => env("EXT_WECHAT_OFFICIAL_TOKEN", ""), //填写你设定的key
+    "appid"          => env("EXT_WECHAT_OFFICIAL_APP_ID", ""), //填写高级调用功能的app id
+    "appsecret"      => env("EXT_WECHAT_OFFICIAL_APP_SECRET", ""), //填写高级调用功能的密钥
+    "encodingaeskey" => env("EXT_WECHAT_OFFICIAL_AES_KEY", ""), //填写加密用的EncodingAESKey
     // 配置商户支付参数（可选，在使用支付功能时需要）
     "mch_id"         => "1235704602",
     "mch_key"        => "IKI4kpHjU94ji3oqre5zYaQMwLHuZPmj",
@@ -31,8 +118,8 @@ public $config = [
     "ssl_key"        => "",
     "ssl_cer"        => "",
     // 缓存目录配置（可选，需拥有读写权限）
-    "cache_path"     => env("TOOLS_WECHAT_OFFICIAL_CACHE_PATH", ""), //插件 缓存目录
-    "token_callback" => env("TOOLS_WECHAT_OFFICIAL_TOKEN_CALLBACK_URL", ""), //回调地址
+    "cache_path"     => env("EXT_WECHAT_OFFICIAL_CACHE_PATH", ""), //插件 缓存目录
+    "token_callback" => env("EXT_WECHAT_OFFICIAL_TOKEN_CALLBACK_URL", ""), //回调地址
 ];
 ```
 
@@ -49,7 +136,7 @@ $this->sdk = WeChatBase::instance($this->config);
 
 ```
 // $refreshToken 是否重新生成token
-$this->sdk-getAccessToken(bool $refreshToken = false)
+$this->sdk->getAccessToken(bool $refreshToken = false)
 ```
 
 ### post 请求
@@ -96,7 +183,7 @@ $this->sdk->get("xxx", $params=[],$urlParams=[]);
  * @return array|bool|mixed|string
  * @throws Exception
  */
-$this->sdk->upload(10|29|21,$url,$filePath, $type,$videoTitle = "",  $videoDescription="");
+$this->sdk->upload(10|20|21,$url,$filePath, $type,$videoTitle = "",  $videoDescription="");
 ```
 
 ## 服务端token验证
@@ -105,376 +192,5 @@ $this->sdk->upload(10|29|21,$url,$filePath, $type,$videoTitle = "",  $videoDescr
 
 ## 直播
 
-> 直播中用到的用户信息一般都是`用户微信号` 和 `mediaID`
+> 直播中用到的用户信息一般都是指`用户微信号` 和 `mediaID`
 
-### 直播间商品
-
-#### 实例化
-
-```
-use zxf\WeChat\Mini\Live\LiveGoods;
-$this->sdk = LiveGoods::instance($this->config);
-```
-
-#### 导入商品到微信并提交审核
-
-```
-
-$path      = "pages/goods/show?id=" . $goods_id; // 小程序路径
-$goodsInfo = [
-    "name"        => "",商品名称
-    "coverImgUrl" => "", // 商品图片封面 mediaID
-    "price"       => "",
-    "price2"      => "",
-    "priceType"   => 1,
-    "goodsKey"   => ["id"],
-];
-return $this->sdk->importAndWaitAudit($goodsInfo, $path);
-
-```
-
-#### 撤回商品审核
-
-```
-$this->sdk->cancelAudit($wechat_goods_id, $wechat_audit_id)
-```
-
-#### 删除商品
-
-```
-$this->sdk->delete($wechat_goods_id)
-```
-
-#### 更新商品
-
-```
-$path      = "pages/goods/show?id=" . $goods_id;
-$goodsInfo = [
-    "name"        => $title,
-    "coverImgUrl" => "", // 商品图片封面 mediaID
-    "price"       => $price,
-    "price2"      => "",
-    "priceType"   => 1,
-];
-return $this->sdk->update($liveGoods->mini_wechat_goods_id, $goodsInfo, $path);
-```
-
-#### 获取商品状态
-
-```
-$this->sdk->getGoodsWarehouse($goodsIds)
-```
-
-#### 获取商品列表
-
-```
-$this->sdk->getApproved($status, $page, $limit)
-```
-
-### 直播间用户(角色)
-
-#### 实例化
-
-```
-use zxf\WeChat\Mini\Live\LiveRole;
-$this->sdk = LiveRole::instance($this->config);
-```
-
-#### 设置成员角色
-
-```
-$this->sdk->add($wechatName, $role)
-```
-
-#### 解除成员角色
-
-```
-$this->sdk->delete($wechatName, $role)
-```
-
-#### 查询成员列表
-
-```
-$this->sdk->list($role, $page, $limit, $keyword)
-```
-
-### 直播间
-
-#### 实例化
-
-```
-use zxf\WeChat\Mini\Live\LiveRoom;
-$this->sdk = LiveRoom::instance($this->config);
-```
-
-#### 创建直播间
-
-```
-$this->sdk->create($data)
-```
-
-#### 编辑直播间
-
-```
-$this->sdk->update($roomId, $data);
-```
-
-#### 删除直播间
-
-```
-$this->sdk->delete($roomId);
-```
-
-#### 获取直播间列表
-
-```
-$this->sdk->list($page, $limit)
-```
-
-#### 获取直播间回放
-
-```
-$this->sdk->getReplay($roomId, $page, $limit)
-```
-
-#### 获取直播间 推流地址
-
-```
-$this->sdk->getReplay($roomId)
-```
-
-#### 获取直播间 分享二维码
-
-```
-$this->sdk->getSharedCode($roomId, $custom_params)
-```
-
-#### 开启/关闭直播间官方收录
-
-```
-$this->sdk->getSharedCode($roomId, $isFeedsPublic)
-```
-
-#### 开启/关闭回放功能
-
-```
-$this->sdk->updateReplay($roomId, $closeReplay)
-```
-
-#### 开启/关闭客服功能
-
-```
-$this->sdk->updateKf($roomId, $closeKf)
-```
-
-#### 开启/关闭直播间全局禁言
-
-```
-$this->sdk->updateComment($roomId, $banComment)
-```
-
-### 直播间小助手
-
-#### 实例化
-
-```
-use zxf\WeChat\Mini\Live\LiveRoomAssistant;
-$this->sdk = LiveRoomAssistant::instance($this->config);
-```
-
-#### 添加管理直播间小助手
-
-```
-$this->sdk->add($roomId, $openId, $nickname)
-```
-
-#### 修改管理直播间小助手
-
-```
-$this->sdk->modify($roomId, $openId, $nickname)
-```
-
-#### 删除管理直播间小助手
-
-```
-$this->sdk->remove($roomId, $openId)
-```
-
-#### 查询管理直播间小助手
-
-```
-$this->sdk->info($roomId)
-```
-
-### 直播间里面的商品
-
-#### 实例化
-
-```
-use zxf\WeChat\Mini\Live\LiveRoomGoods;
-$this->sdk = LiveRoomGoods::instance($this->config);
-```
-
-#### 直播间导入商品
-
-```
-$this->sdk->import($roomId, $goodsIdsArr)
-```
-
-#### 上下架商品
-
-```
-$this->sdk->onSale($roomId, $goodsId, $onSale)
-```
-
-#### 删除商品
-
-```
-$this->sdk->delete($roomId, $goodsId)
-```
-
-#### 推送商品
-
-```
-$this->sdk->push($roomId, $goodsId)
-```
-
-#### 商品排序
-
-```
-$goods = ["123", "234"];
-return $this->sdk->sort($roomId, $goods);
-```
-
-#### 下载商品讲解视频
-
-```
-$this->sdk->getVideo($roomId, $goodsId)
-```
-
-### 直播间 主播副号
-
-#### 实例化
-
-```
-use zxf\WeChat\Mini\Live\LiveRoomSubAnchor;
-$this->sdk = LiveRoomSubAnchor::instance($this->config);
-```
-
-#### 获取主播副号
-
-```
-$this->sdk->info($roomId)
-```
-
-#### 添加主播副号
-
-```
-$this->sdk->add($roomId, $openId)
-```
-
-#### 修改主播副号
-
-```
-$this->sdk->modify($roomId, $openId)
-```
-
-#### 删除主播副号
-
-```
-$this->sdk->delete($roomId)
-```
-
-### 直播间 长期订阅
-
-#### 实例化
-
-```
-use zxf\WeChat\Mini\Live\LiveSubscribe;
-$this->sdk = LiveSubscribe::instance($this->config);
-```
-
-#### 获取长期订阅用户
-
-```
-$this->sdk->list($page, $limit)
-```
-
-#### 长期订阅群发接口
-
-```
-$this->sdk->pushMessage($roomId, $openIds)
-```
-
-## 素材管理
-
-### 公众号素材
-
-> 分为永久素材和临时素材
-
-#### 实例化 永久素材
-
-```
-use zxf\WeChat\OfficialAccount\Material\PermanentFiles;
-$this->sdk = PermanentFiles::instance($this->config);
-```
-
-#### 实例化 临时素材
-
-```
-use zxf\WeChat\OfficialAccount\Material\TempFiles;
-$this->sdk = TempFiles::instance($this->config);
-```
-
-#### 上传图片
-
-```
-$this->sdk->uploadImage($realPath)
-```
-
-#### 上传视频
-
-```
-$this->sdk->uploadVideo($videoPath, $videoTitle, $videoDescription)
-```
-
-#### 上传语音
-
-```
-$this->sdk->uploadVoice($realPath)
-```
-
-#### 上传缩略图
-
-```
-$this->sdk->uploadThumb($realPath)
-```
-
-#### 获取素材列表
-
-```
-$this->sdk->getList($type, $page, $limit)
-```
-
-#### 删除素材
-
-```
-$this->sdk->deleteFile($mediaId)
-```
-
-### 小程序素材
-
-> 目前微信只有临时图片素材
-
-#### 实例化
-
-```
-use zxf\WeChat\Mini\Material\TempFiles; 
- $this->sdk = TempFiles::instance($this->config);
-```
-
-#### 上传图片
-
-```
-$this->sdk->uploadImage($realPath)
-```

@@ -972,23 +972,55 @@ if (!function_exists('obj2Arr')) {
 
 if (!function_exists('uuid')) {
     /**
-     * 根据微秒时间和随机数生成 10位 uuid
+     * 根据微秒时间和随机数生成 10位 或者12 位的 uuid
+     *
+     * @param bool $useUpper 是否生成大写标识字符
+     *                       true  : [0~9 + A~Z(不包含O)] 生成12位长度的uuid;
+     *                       false : [0~9 + a~Z]         生成10位长度的uuid;
      *
      * @return string
      * @throws Exception
      */
-    function uuid(): string
+    function uuid($useUpper = false): string
     {
-        $timeNum = random_int(10, 61) . str_replace(['0.', '00 '], ['', ''], microtime());
-        $dict    = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $result  = '';
-        $len     = strlen($dict);
+        $timeArr = explode(' ', microtime());
+        $timeNum = trim($timeArr[1] . str_replace('0.', '', $timeArr[0]), '00') . ($useUpper ? sprintf("%03d", random_int(0, 999)) : sprintf("%02d", random_int(0, 99)));
+
+        $dict = $useUpper ? '0123456789ABCDEFGHIJKLMNPQRSTUVWXYZ' : '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+        $result = '';
+        $len    = strlen($dict);
         do {
-            $result  = $dict[bcmod($timeNum, $len, 0)] . $result;
+            $result  = $dict[bcmod($timeNum, $len)] . $result;
             $timeNum = bcdiv($timeNum, $len, 0);
         } while ($timeNum != 0);
 
+        if ((!$useUpper && strlen($result) != 10) || ($useUpper && strlen($result) != 12)) {
+            return uuid($useUpper);
+        }
         return $result;
+    }
+}
+if (!function_exists('dict_convert_ten')) {
+    /**
+     * 把其他进制的字符串转换为10进制（注：针对使用自定义字典的字符串转换，普通的进制转换可以使用 base_convert_any 函数）
+     *
+     * @param string $string 根据自定义字典 $dict 生成的字符串
+     * @param string $dict   可以传入自定义的字典字符串
+     *
+     * @return string
+     */
+    function dict_convert_ten($string = '', $dict = '')
+    {
+        $dict   = empty($dict) ? '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' : $dict;
+        $strLen = strlen($string);
+        $dec    = 0;
+        for ($i = 0; $i < $strLen; $i++) {
+            //找到对应字典的下标
+            $pos = strpos($dict, $string[$i]);
+            $dec += $pos * pow($strLen, $strLen - $i - 1);
+        }
+        return number_format($dec, 0, '', '');
     }
 }
 

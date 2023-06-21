@@ -38,7 +38,7 @@ class Menu
     //触发的菜单
     protected $activeMenu = '';
     //url地址前缀
-    protected $urlPrefix = '/classify';
+    protected $urlPrefix = ''; //  /classify
 
     protected $domain = ''; // 域名
 
@@ -452,7 +452,7 @@ class Menu
             $currentHref = $hasArrow ? 'javascript:;' : url($this->urlPrefix . $item['name']); // 当前url
             $currentIcon = $item['icon'];                                   // 当前url
 
-            $isActive = $this->checkactiveMenu($item['name'], $hasArrow);   // 'active'; // 是否激活当前菜单
+            $isActive = $this->checkactiveMenu($this->urlPrefix . $item['name'], $hasArrow);   // 'active'; // 是否激活当前菜单
             $isShowUl = ($hasArrow && ($isActive == 'active')) ? 'in' : ''; // in 是否展开当前子菜单ul
 
             $str .= '<li class="' . $isActive . '">';
@@ -496,7 +496,7 @@ class Menu
             $currentHref = $hasArrow ? 'javascript:;' : url($this->urlPrefix . $item['name']); // 当前url
             $currentIcon = $item['icon'];                                   // 当前url
 
-            $isActive = $this->checkactiveMenu($item['name'], $hasArrow);         // 'mm-active'; // 是否激活当前菜单
+            $isActive = $this->checkactiveMenu($this->urlPrefix . $item['name'], $hasArrow);         // 'mm-active'; // 是否激活当前菜单
             $isShowUl = ($hasArrow && $isActive == 'mm-active') ? 'mm-show' : ''; // mm-show 是否展开当前子菜单ul
 
             $str .= '<li class="' . $isActive . '">';
@@ -549,7 +549,7 @@ class Menu
             }
             $icon       = $menu['icon'];
             $layHref    = (isset($menu[$this->childlist]) && !empty($menu[$this->childlist])) ? '' : 'lay-href="' . url($menu['name']) . '"';
-            $activeMenu = $layHref ? $this->checkactiveMenu($menu['name']) : '';
+            $activeMenu = $layHref ? $this->checkactiveMenu($this->urlPrefix . $menu['name']) : '';
             $str        .= '<li data-name="' . $menu['name'] . '" class="layui-nav-item ' . $activeMenu . '"><a href="javascript:;" lay-tips="' . $menu['title'] . '" ' . $layHref . ' lay-direction="2"><i class="' . $icon . '"></i><cite>' . $menu['title'] . '</cite></a>' . $this->layuiChildList($menu) . '</li>';
         }
         return $str;

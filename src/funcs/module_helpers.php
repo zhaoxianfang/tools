@@ -8,10 +8,7 @@ if (!function_exists('is_laravel')) {
      */
     function is_laravel(): bool
     {
-        if (class_exists(\App\Http\Kernel::class) && class_exists('\Illuminate\Support\Facades\DB')) {
-            return true;
-        }
-        return false;
+        return class_exists(\App\Http\Kernel::class) && class_exists('\Illuminate\Support\Facades\DB');
     }
 }
 
@@ -107,7 +104,7 @@ if (!function_exists('listen_sql')) {
      * 监听sql
      *
      * @param string|array $traceLogStrOrArr 监听到的sql 会 通过引用的方式，传递给$traceLogStrOrArr变量
-     * @param bool         $carryHtml        是否携带html样式
+     * @param bool         $addHtml          是否携带html样式
      *
      * @return void
      *
@@ -119,11 +116,11 @@ if (!function_exists('listen_sql')) {
      *      // 打印sql追踪
      *      echo $logStr;
      */
-    function listen_sql(string|array &$traceLogStrOrArr = '', bool $carryHtml = true)
+    function listen_sql(&$traceLogStrOrArr = '', bool $addHtml = true)
     {
         // 监听sql执行
         $style = $contentStyle = '';
-        if ($carryHtml) {
+        if ($addHtml) {
             $style        = "position: fixed;bottom:0;right:0;font-size:14px;width:100%;z-index: 999999;color: #000;text-align:left;font-family:'微软雅黑';background:#ffffff;";
             $contentStyle = 'overflow:auto;height:auto;padding:0;line-height: 24px;max-height: 200px;';
         }
@@ -131,7 +128,7 @@ if (!function_exists('listen_sql')) {
         $debugInfo = [];
         $logStr    = '';
 
-        \Illuminate\Support\Facades\DB::listen(function ($query) use ($style, &$debugInfo, $contentStyle, &$logStr, &$traceLogStrOrArr, $carryHtml) {
+        \Illuminate\Support\Facades\DB::listen(function ($query) use ($style, &$debugInfo, $contentStyle, &$logStr, &$traceLogStrOrArr, $addHtml) {
             $bindings = $query->bindings;
             $sql      = $query->sql;
             foreach ($bindings as $replace) {
@@ -143,9 +140,8 @@ if (!function_exists('listen_sql')) {
                 'sql'  => $sql,
                 'time' => round($query->time / 1000, 3),
             ];
-            if ($carryHtml) {
+            if ($addHtml) {
                 foreach ($debugInfo as $info) {
-
                     $logStr .= '<li style="border-bottom:1px solid #EEE;font-size:14px;padding:0 12px">' . 'execution time:' . $info['time'] . '(s);=>sql:' . $info['sql'] . '</li>';
                 }
                 // 打印sql执行日志

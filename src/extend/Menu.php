@@ -486,10 +486,10 @@ class Menu
             $currentHref = $hasArrow ? 'javascript:;' : url($this->urlPrefix . $item[$this->href]); // 当前url
             $currentIcon = !empty($item[$this->icon]) ? $item[$this->icon] : '';                                   // 当前url
 
-            $isActive = in_array($item[$this->pk], $this->activeMenuIds) ? 'active' : ''; // 是否激活当前菜单
-            $isShowUl = ($hasArrow && ($isActive == 'active')) ? 'in' : ''; // in 是否展开当前子菜单ul
+            $activeClass = $this->checkActiveMenu($item); // 激活的菜单样式
+            $isShowUl    = ($hasArrow && $activeClass) ? 'in' : ''; // in 是否展开当前子菜单ul
 
-            $str .= '<li class="' . $isActive . '">';
+            $str .= '<li class="' . $activeClass . '">';
             $str .= '<a href="' . $currentHref . '">';
             $str .= '<i class="fa ' . $currentIcon . '"></i>';
 
@@ -529,11 +529,11 @@ class Menu
             $currentHref = $hasArrow ? 'javascript:;' : url($this->urlPrefix . $item[$this->href]); // 当前url
             $currentIcon = !empty($item[$this->icon]) ? $item[$this->icon] : '';                              // 当前url
 
-            $isActive = in_array($item[$this->pk], $this->activeMenuIds) ? 'mm-active' : ''; // 是否激活当前菜单
-            $isShowUl = ($hasArrow && $isActive == 'mm-active') ? 'mm-show' : ''; // mm-show 是否展开当前子菜单ul
+            $activeClass = $this->checkActiveMenu($item); // 激活的菜单样式
+            $isShowUl    = ($hasArrow && $activeClass) ? 'mm-show' : ''; // mm-show 是否展开当前子菜单ul
 
-            $str .= '<li class="' . $isActive . '">';
-            $str .= '<a href="' . $currentHref . '" class="' . ($hasArrow ? 'has-arrow ' : ' ') . $isActive . ' waves-effect">';
+            $str .= '<li class="' . $activeClass . '">';
+            $str .= '<a href="' . $currentHref . '" class="' . ($hasArrow ? 'has-arrow ' : ' ') . $activeClass . ' waves-effect">';
             $str .= '<i class="fa ' . $currentIcon . '"></i>';
             // && // 右侧图标
             $item['badge_text'] && (
@@ -580,9 +580,9 @@ class Menu
             $icon    = !empty($menu[$this->icon]) ? $menu[$this->icon] : '';
             $layHref = (isset($menu[$this->childlist]) && !empty($menu[$this->childlist])) ? '' : 'lay-href="' . url($menu[$this->href]) . '"';
 
-            $activeMenu = $layHref ? (in_array($menu[$this->pk], $this->activeMenuIds) ? 'layui-this' : '') : ''; // 是否激活当前菜单
+            $activeClass = $layHref ? $this->checkActiveMenu($menu) : ''; // 激活的菜单样式
 
-            $str .= '<li data-name="' . $menu[$this->href] . '" class="layui-nav-item ' . $activeMenu . '"><a href="javascript:;" lay-tips="' . $menu['title'] . '" ' . $layHref . ' lay-direction="2"><i class="' . $icon . '"></i><cite>' . $menu['title'] . '</cite></a>' . $this->layuiChildList($menu) . '</li>';
+            $str .= '<li data-name="' . $menu[$this->href] . '" class="layui-nav-item ' . $activeClass . '"><a href="javascript:;" lay-tips="' . $menu['title'] . '" ' . $layHref . ' lay-direction="2"><i class="' . $icon . '"></i><cite>' . $menu['title'] . '</cite></a>' . $this->layuiChildList($menu) . '</li>';
         }
         return $str;
     }
@@ -606,10 +606,9 @@ class Menu
         foreach ($parentData[$this->childlist] as $key => $page) {
             $layHref = (isset($page[$this->childlist]) && !empty($page[$this->childlist])) ? '' : 'lay-href="' . url($page[$this->href]) . '"';
 
-            $activeMenu = $layHref ? (in_array($page[$this->pk], $this->activeMenuIds) ? 'layui-this' : '') : ''; // 是否激活当前菜单
-            // $activeMenu = $layHref ? $this->checkactiveMenu($page[$this->href]) : '';
+            $activeClass = $layHref ? $this->checkActiveMenu($page) : ''; // 激活的菜单样式
 
-            $str .= '<dl class="layui-nav-child"><dd data-name="' . $page[$this->href] . '" class=" ' . $activeMenu . '"><a href="javascript:;" ' . $layHref . ' >' . $page['title'] . '</a>' . $this->layuiChildList($page) . '</dd></dl>';
+            $str .= '<dl class="layui-nav-child"><dd data-name="' . $page[$this->href] . '" class=" ' . $activeClass . '"><a href="javascript:;" ' . $layHref . ' >' . $page['title'] . '</a>' . $this->layuiChildList($page) . '</dd></dl>';
         }
         return $str;
     }
@@ -673,9 +672,9 @@ class Menu
             }
             $iconStr = '<i class="nav-icon ' . $icon . '"></i>';
 
-            $activeMenu = in_array($value[$this->pk], $this->activeMenuIds) ? ($hasChild ? 'menu-open active' : 'active') : ''; // 是否激活当前菜单
+            $activeClass = $this->checkActiveMenu($value) ? ($hasChild ? 'menu-open active' : 'active') : ''; // 激活的菜单样式
 
-            $str .= '<li class="nav-item ' . $hasSub . ' ' . $activeMenu . '"><a menu class="nav-link ' . $activeMenu . '" href="' . $href . '">' . $nbsp . $iconStr . '<p>' . $value[$this->title];
+            $str .= '<li class="nav-item ' . $hasSub . ' ' . $activeClass . '"><a menu class="nav-link ' . $activeClass . '" href="' . $href . '">' . $nbsp . $iconStr . '<p>' . $value[$this->title];
             if ($hasChild) {
                 $str .= '<i class="fas fa-angle-left right"></i>';
                 // 右侧徽章
@@ -849,6 +848,23 @@ class Menu
             }
         }
         return [$ids, $activeItemsList];
+    }
+
+    private function checkActiveMenu($item)
+    {
+        if (!in_array($item[$this->pk], $this->activeMenuIds)) { // 是否激活当前菜单
+            return '';
+        }
+
+        if ($this->menuType == 'layuiadmin') {
+            return 'layui-this';
+        }
+        if ($this->menuType == 'nazox') {
+            return 'mm-active';
+        }
+        if ($this->menuType == 'inspinia') {
+            return 'active';
+        }
     }
 
     /**

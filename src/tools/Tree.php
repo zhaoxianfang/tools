@@ -55,7 +55,7 @@ class Tree
         $this->pid          = $pid ?? 'pid';
         $this->childName    = $childName ?? 'childlist';
 
-        $this->refreshTree();
+        $this->generateTree();
 
         return $this;
     }
@@ -63,7 +63,7 @@ class Tree
     /**
      * 将数据格式化成树形结构
      */
-    private function refreshTree()
+    private function generateTree()
     {
         $items = empty($this->treeArr) ? $this->originalData : $this->treeArr;
         $tree  = array(); //格式化好的树
@@ -86,15 +86,14 @@ class Tree
     public function getTree()
     {
         if (empty($this->tree)) {
-            $this->refreshTree();
+            $this->generateTree();
         }
         return $this->tree;
     }
 
     /**
      * 自定义 数组排序
-     * @Author   ZhaoXianFang
-     * @DateTime 2017-09-11
+     *
      * @param    [type]       $arrays     [被排序数组]
      * @param    [type]       $sort_key   [被排序字段]
      * @param    [type]       $sort_order [排序方式]
@@ -242,7 +241,7 @@ class Tree
         foreach ($data as &$item) {
             $callback && $callback($item);
         }
-        $this->refreshTree();
+        $this->generateTree();
         return $this;
     }
 

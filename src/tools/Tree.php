@@ -2,340 +2,529 @@
 
 namespace zxf\tools;
 
+/**
+ * 树形结构工具类
+ * 用于将一维数组转换为树形结构
+ *  结构：
+ *      $data = [
+ *          ['id' => 1, 'pid' => 0, 'name' => 'Node 1',...],
+ *          ['id' => 2, 'pid' => 1, 'name' => 'Node 2', 'weight' => 10,...],
+ *      ];
+ *  用法：
+ *      // 使用默认配置 初始化数据
+ *      $tree = Tree::instance($data);
+ *      OR
+ *      $tree = Tree::instance()->setData($data);
+ *      // 自定义id、pid、children配置
+ *      Tree::instance($data)->setId('id')->setPid('pid')->setChildlist('children')->getTree();
+ *      // 自定义权重字段和排序方式
+ *      Tree::instance($data)->setWeight('weight')->setSortType('desc')->getTree();
+ *      // 自定义根节点id，默认为0
+ *      Tree::instance($data)->setRootId(1)->getTree();
+ *  接口:
+ *      // 获取结构树
+ *      $descendants = $tree->getTree();
+ *      // 获取所有子节点的主键（包含自己）
+ *      $descendants = $tree->getChildrenAndMeIds(1);
+ *      // 获取所有子节点列表（包含自己）
+ *      $descendants = $tree->getChildrenAndMeNodes(1);
+ *      // 获取所有子节点的主键（不包含自己）
+ *      $descendants = $tree->getChildrenIds(1);
+ *      // 获取所有子节点列表（不包含自己）
+ *      $descendants = $tree->getChildrenNodes(1);
+ *      // 获取所有父节点主键(包含自己)
+ *      $ancestors = $tree->getParentAndMeIds(5);
+ *      // 获取所有父节点列表(包含自己)
+ *      $ancestors = $tree->getParentAndMeNodes(5);
+ *      // 获取所有父节点主键(不包含自己)
+ *      $ancestors = $tree->getParentIds(5);
+ *      // 获取所有父节点列表(不包含自己)
+ *      $ancestors = $tree->getParentNodes(5);
+ *      // 获取所有根节点主键
+ *      $roots = $tree->getRootsIds();
+ *      // 重新初始化数据
+ *      $tree->reset();
+ *      // 添加新节点
+ *      $tree->addNode(['id' => 7, 'pid' => 0, 'name' => 'New Node']);
+ *      // 删除节点
+ *      $tree->removeNode(7);
+ *      // 更新节点
+ *      $tree->updateNode(2, ['name' => 'Updated Node']);
+ */
 class Tree
 {
-    protected $originalData = []; // 传递进来的原始数组数据
-    protected $tree         = []; // 处理后的数组数据
-    protected $treeArr      = []; // 挂载在树上的数组【二维数组】
-    protected $tempArr      = []; // 处理tree时候会用来做临时数据存储
-    protected $pk           = 'id';
-    protected $pid          = 'pid';
-    protected $childName    = 'childlist';
+    private static $instance = null;
 
-    protected static $instance;
+    private array  $data      = []; // 原始数据数组
+    private string $id        = 'id'; // 节点ID字段名，默认为'id'
+    private string $pid       = 'pid'; // 父节点ID字段名，默认为'pid'
+    private string $weight    = 'weight'; // 根据权重排序字段，如果结构中存在此字段则降序排序，不不存在则跳过，默认为'weight'
+    private string $sortType  = 'desc'; // 如果存在 $weight 的前提下 根据权重排序的方式，desc 降序 asc 升序，默认为'desc'
+    private string $childlist = 'children'; // 子节点列表字段名，默认为'children'
+    private int    $rootId    = 0; // 根节点ID，默认为0
 
-    public function __construct()
+    /**
+     * 构造函数，接受原始数据数组
+     *
+     * @param array $data
+     */
+    public function __construct(array $data = [])
     {
-
+        $this->data = $data;
     }
 
     /**
-     * 初始化
-     * @return Tree
+     * 初始化实例
      */
-    public static function instance()
+    public static function instance(array $data = [])
     {
         if (is_null(self::$instance)) {
-            self::$instance = new static();
+            self::$instance = new static($data);
         }
         return self::$instance;
     }
 
     /**
-     * 初始化方法
-     * @param array 2维数组，例如：
-     * array(
-     *      1 => array('id'=>'1','pid'=>0,'name'=>'一级栏目一'),
-     *      2 => array('id'=>'2','pid'=>0,'name'=>'一级栏目二'),
-     *      3 => array('id'=>'3','pid'=>1,'name'=>'二级栏目一'),
-     *      4 => array('id'=>'4','pid'=>1,'name'=>'二级栏目二'),
-     *      5 => array('id'=>'5','pid'=>2,'name'=>'二级栏目三'),
-     *      6 => array('id'=>'6','pid'=>3,'name'=>'三级栏目一'),
-     *      7 => array('id'=>'7','pid'=>3,'name'=>'三级栏目二')
-     * )
-     */
-    public function init($arr = [], $pk = 'id', $pid = 'pid', $childName = 'childlist')
-    {
-        $this->clear();
-
-        $this->originalData = $arr;
-        $this->treeArr      = [];
-        $this->tree         = [];
-        $this->pk           = $pk ?? 'id';
-        $this->pid          = $pid ?? 'pid';
-        $this->childName    = $childName ?? 'childlist';
-
-        $this->generateTree();
-
-        return $this;
-    }
-
-    /**
-     * 将数据格式化成树形结构
-     */
-    private function generateTree()
-    {
-        $items = empty($this->treeArr) ? $this->originalData : $this->treeArr;
-        $tree  = array(); //格式化好的树
-        foreach ($items as $item) {
-            if (isset($items[$item[$this->pid]])) {
-                $items[$item[$this->pid]][$this->childName][] = &$items[$item[$this->pk]];
-            } else {
-                $tree[] = &$items[$item[$this->pk]];
-            }
-        }
-        $this->tree = $tree;
-        $this->treeToArr();
-        return $this;
-    }
-
-    /**
-     * 获取生成的树
-     * @return array
-     */
-    public function getTree()
-    {
-        if (empty($this->tree)) {
-            $this->generateTree();
-        }
-        return $this->tree;
-    }
-
-    /**
-     * 自定义 数组排序
+     * 设置数据
      *
-     * @param    [type]       $arrays     [被排序数组]
-     * @param    [type]       $sort_key   [被排序字段]
-     * @param    [type]       $sort_order [排序方式]
-     * @param    [type]       $sort_type  [排序类型]
-     * @return   [type]                   [description]
-     */
-    private function sort($arrays, $sort_key, $sort_order = SORT_ASC, $sort_type = SORT_NUMERIC)
-    {
-        if (!is_array($arrays)) {
-            return false;
-        }
-        foreach ($arrays as $array) {
-            if (is_array($array)) {
-                $key_arrays[] = $array[$sort_key];
-            } else {
-                return false;
-            }
-        }
-        if (empty($key_arrays)) {
-            return $arrays;
-        }
-        array_multisort($key_arrays, $sort_order, $sort_type, $arrays);
-        return $arrays;
-    }
-
-    /**
-     * 清除数据
-     * @Author   ZhaoXianFang
-     * @DateTime 2018-05-17
-     * @return   [type]       [description]
-     */
-    public function clear()
-    {
-        $this->originalData = []; // 传递进来的原始数组数据
-        $this->tree         = []; // 处理后的数组数据
-        $this->treeArr      = []; // 处理后的数组数据
-        $this->tempArr      = [];
-        $this->pk           = 'id';
-        $this->pid          = 'pid';
-        $this->childName    = 'childlist';
-
-        return $this;
-    }
-
-    /**
-     * 用指定字段作为键
+     * @param array $data
      *
-     * @param string $field
-     *
-     * @return array
-     */
-    public function keyBy(string $field = 'id')
-    {
-        return array_column($this->treeArr, null, $field);
-    }
-
-    /**
-     * 仅返回树中的指定字段
-     * @param $field
-     * @return array
-     */
-    public function pluck($field = 'id')
-    {
-        return array_column($this->treeArr, $field);
-    }
-
-    /**
-     *  把$node 挂载到 pk 为 $pid的 节点上
-     * @param $pid
-     * @param $node
-     */
-    public function addNode($pid, $node)
-    {
-        if (!isset($node[$this->pk])) {
-            throw new \Exception('缺少' . $this->pk . '字段');
-        }
-        $res = $this->keyBy($this->pk);
-        if ($pid != 0 && !isset($res[$pid])) {
-            throw new \Exception('需要挂载的位置不存在');
-        }
-        if (isset($res[$item[$this->pk]])) {
-            throw new \Exception('添加的节点id已经存在');
-        }
-        $node[$this->pid] = $pid;
-        $this->treeArr[]  = $node;
-        $this->tree       = [];
-        return $this;
-    }
-
-    /**
-     * 删除指定id的节点
-     * @param $id
-     * @return $this|false
-     */
-    public function delNode($id)
-    {
-        $res = $this->keyBy($this->pk);
-        if (!isset($res[$id])) {
-            return false;
-        }
-        unset($res[$id]);
-        foreach ($res as $item) {
-            $this->treeArr[] = $item;
-        }
-        $this->tree = [];
-        return $this;
-    }
-
-    /**
-     * 修改指定节点
-     * @param $id
-     * @param $node
-     * @return $this
-     * @throws \Exception
-     */
-    public function changeNode($id, $node)
-    {
-        if (!isset($node[$this->pk])) {
-            throw new \Exception('缺少' . $this->pk . '字段');
-        }
-        $res = $this->keyBy($this->pk);
-        if (!isset($res[$node[$this->pk]])) {
-            throw new \Exception('修改的节点不存在');
-        }
-        foreach ($res as $key => $item) {
-            if ($key == $id) {
-                $node[$this->pk]  = $id;
-                $node[$this->pid] = $item[$this->pid];
-                $this->treeArr[]  = $node;
-            } else {
-                $this->treeArr[] = $item;
-            }
-        }
-        $this->tree = [];
-        return $this;
-    }
-
-    /**
-     * 遍历修改tree
      * @return $this
      */
-    private function traverseTree($callback)
+    public function setData(array $data = [])
     {
-        $data = $this->treeArr;
-        foreach ($data as &$item) {
-            $callback && $callback($item);
-        }
-        $this->generateTree();
+        $this->data = $data;
         return $this;
     }
 
     /**
-     * 把树转化为 二维数组 [不在树在的原始数据节点都消失]
-     * 作用，方便查询和修改树节点
-     * @param $arr
-     * @return array|mixed
+     * 设置节点ID字段名
+     *
+     * @param string $id
+     *
+     * @return Tree
      */
-    private function treeToArr($arr = [])
+    public function setId(string $id = 'id')
     {
-        $tree = empty($arr) ? $this->tree : $arr;
-        $list = [];
-        foreach ($tree as $item) {
-            $child = $item[$this->childName] ?? [];
-            unset($item[$this->childName]);
-            $list[] = $item;
-            if (!empty($child)) {
-                $childList = $this->treeToArr($child);
-                if (!empty($childList)) {
-                    $list = array_merge($list, $childList);
+        $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * 设置父节点ID字段名
+     *
+     * @param string $pid
+     *
+     * @return Tree
+     */
+    public function setPid(string $pid = 'pid')
+    {
+        $this->pid = $pid;
+        return $this;
+    }
+
+    /**
+     * 设置子节点列表字段名
+     *
+     * @param string $childlist
+     *
+     * @return Tree
+     */
+    public function setChildlist(string $childlist = 'childlist')
+    {
+        $this->childlist = $childlist;
+        return $this;
+    }
+
+    /**
+     * 设置排序字段
+     *
+     * @param string $weight
+     *
+     * @return $this
+     */
+    public function setWeight(string $weight = 'weight')
+    {
+        $this->weight = $weight;
+        return $this;
+    }
+
+    /**
+     * 存在 $weight 的前提下 根据权重排序的方式, desc 降序 asc 升序
+     *
+     * @param string $sortType
+     *
+     * @return $this
+     */
+    public function setSortType(string $sortType = 'desc')
+    {
+        $this->sortType = in_array($sortType, ['desc', 'asc']) ? strtolower($sortType) : 'desc';
+        return $this;
+    }
+
+    public function setRootId(int $rootId = 0)
+    {
+        $this->rootId = (int)$rootId;
+        return $this;
+    }
+
+    /**
+     * 将原始数据转换为树形结构
+     *
+     * @return array
+     */
+    public function toTree(): array
+    {
+        $treeMap = []; // 使用映射表存储节点信息
+
+        foreach ($this->data as &$item) {
+            $itemId   = $item[$this->id];
+            $parentId = $item[$this->pid];
+
+            if (!isset($treeMap[$itemId])) {
+                $treeMap[$itemId] = $item; // 添加新节点到映射表中
+            } else {
+                $treeMap[$itemId] += $item; // 更新已存在节点的其他字段
+            }
+
+            if ($parentId !== null && isset($treeMap[$parentId])) {
+                $treeMap[$parentId][$this->childlist][] =& $treeMap[$itemId]; // 将当前节点添加为父节点的子节点
+            }
+        }
+
+        // $rootNodes = array_filter($treeMap, fn($item) => !$item[$this->pid]); // 找出根节点（父节点为空）
+        $rootNodes = array_filter($treeMap, fn($item) => $item[$this->pid] == $this->rootId); // 找出根节点（指定根节点id）
+
+        // 使用传统方法对根节点进行排序
+        $rootNodes && $this->sortNodesByWeight($rootNodes);
+
+        return array_values($rootNodes);
+    }
+
+    /**
+     * 根据权重字段对节点数组进行排序
+     *
+     * @param array &$nodes 节点数组
+     */
+    private function sortNodesByWeight(array &$nodes): array
+    {
+        $sortType = $this->sortType;
+        // 根据权重字段对节点进行降序排序
+        usort($nodes, function ($a, $b) use ($sortType) {
+            if ($sortType === 'desc') {
+                // 降序排序
+                return (!empty($b[$this->weight]) ? $b[$this->weight] : 0) <=> (!empty($a[$this->weight]) ? $a[$this->weight] : 0);
+            }
+            // 升序排序
+            return (!empty($a[$this->weight]) ? $a[$this->weight] : 0) <=> (!empty($b[$this->weight]) ? $b[$this->weight] : 0);
+        });
+
+        $nodes && $this->sortChildrenByWeight($nodes); // 递归调用对子节点的子节点进行排序
+        return $nodes;
+    }
+
+    /**
+     * 递归地对节点的子节点进行排序
+     *
+     * @param array &$nodes 节点数组
+     */
+    private function sortChildrenByWeight(array &$nodes): void
+    {
+        foreach ($nodes as &$node) {
+            if (isset($node[$this->childlist])) {
+                $children =& $node[$this->childlist];
+
+                // 使用传统方法对子节点进行排序
+                $children && $this->sortNodesByWeight($children);
+            }
+        }
+    }
+
+    /**
+     * 获取指定节点的所有子孙节点ID(包含自己)
+     *
+     * @param int $id
+     *
+     * @return array
+     */
+    public function getChildrenAndMeIds(int $id): array
+    {
+        $descendants = [];
+
+        foreach ($this->data as $item) {
+            if ($this->isDescendant($item[$this->id], $id)) {
+                $descendants[] = $item[$this->id];
+            }
+        }
+        return $descendants;
+    }
+
+    /**
+     * 获取指定节点的所有子孙节点列表(包含自己)
+     *
+     * @param int $id
+     *
+     * @return array
+     */
+    public function getChildrenAndMeNodes(int $id): array
+    {
+        $descendants = [];
+
+        foreach ($this->data as $item) {
+            if ($this->isDescendant($item[$this->id], $id)) {
+                $descendants[] = $item;
+            }
+        }
+        return $descendants;
+    }
+
+    /**
+     * 获取指定节点的所有子孙节点ID(不包含自己)
+     *
+     * @param int $id
+     *
+     * @return array
+     */
+    public function getChildrenIds(int $id): array
+    {
+        $descendants = [];
+
+        foreach ($this->data as $item) {
+            if ($this->isDescendant($item[$this->id], $id, false)) {
+                $descendants[] = $item[$this->id];
+            }
+        }
+        return $descendants;
+    }
+
+    /**
+     * 获取指定节点的所有子孙节点列表(不包含自己)
+     *
+     * @param int $id
+     *
+     * @return array
+     */
+    public function getChildrenNodes(int $id): array
+    {
+        $descendants = [];
+
+        foreach ($this->data as $item) {
+            if ($this->isDescendant($item[$this->id], $id, false)) {
+                $descendants[] = $item;
+            }
+        }
+        return $descendants;
+    }
+
+    /**
+     * 判断指定节点是否是指定父节点的子孙节点
+     *
+     * @param int  $itemId      要查询的节点id
+     * @param int  $parentId    要查询的父节点id
+     * @param bool $includeSelf 是否包含自己
+     *
+     * @return bool
+     */
+    private function isDescendant(int $itemId, int $parentId, bool $includeSelf = true): bool
+    {
+        foreach ($this->data as $item) {
+            if ($item[$this->id] === $itemId) {// 先找到要查询的那个节点
+
+                if ($includeSelf ? $item[$this->id] === $parentId : $item[$this->pid] === $parentId) {
+                    return true;
+                }
+
+                // 一直向上找父节点，判断父节点是否存在要查询的指定 id父节点
+                if ($this->isDescendant($item[$this->pid], $parentId, $includeSelf)) {
+                    return true;
                 }
             }
         }
-        $this->treeArr = $list;
+        return false;
+    }
+
+    /**
+     * 获取指定节点的所有父节点ids(包含自己)
+     *
+     * @param int $id
+     *
+     * @return array
+     */
+    public function getParentAndMeIds(int $id): array
+    {
+        $parents   = [];
+        $currentId = $id;
+
+        while ($currentId !== 0) {
+            foreach ($this->data as $item) {
+                // 找到当前节点
+                if ($item[$this->id] === $currentId) {
+                    $parents[] = $currentId;
+                    $currentId = $item[$this->pid];
+                    break;
+                }
+            }
+        }
+        return array_reverse($parents);
+    }
+
+    /**
+     * 获取指定节点的所有父节点列表(包含自己)
+     *
+     * @param int $id
+     *
+     * @return array
+     */
+    public function getParentAndMeNodes(int $id): array
+    {
+        $parents   = [];
+        $currentId = $id;
+
+        while ($currentId !== 0) {
+            foreach ($this->data as $item) {
+                // 找到当前节点
+                if ($item[$this->id] === $currentId) {
+                    $parents[] = $item;
+                    $currentId = $item[$this->pid];
+                    break;
+                }
+            }
+        }
+        return $parents;
+    }
+
+    /**
+     * 获取指定节点的所有父节点ids(不包含自己)
+     *
+     * @param int $id
+     *
+     * @return array
+     */
+    public function getParentIds(int $id): array
+    {
+        $parents   = [];
+        $currentId = $id;
+
+        while ($currentId !== 0) {
+            foreach ($this->data as $item) {
+                // 找到当前节点
+                if ($item[$this->id] === $currentId) {
+                    if ($currentId !== $id) {
+                        $parents[] = $currentId;
+                    }
+                    $currentId = $item[$this->pid];
+                    break;
+                }
+            }
+        }
+        return array_reverse($parents);
+    }
+
+    /**
+     * 获取指定节点的所有父节点列表(不包含自己)
+     *
+     * @param int $id
+     *
+     * @return array
+     */
+    public function getParentNodes(int $id): array
+    {
+        $parents   = [];
+        $currentId = $id;
+
+        while ($currentId !== 0) {
+            foreach ($this->data as $item) {
+                // 找到当前节点
+                if ($item[$this->id] === $currentId) {
+                    if ($currentId !== $id) {
+                        $parents[] = $item;
+                    }
+                    $currentId = $item[$this->pid];
+                    break;
+                }
+            }
+        }
+        return $parents;
+    }
+
+    /**
+     * 获取所有的根节点ids
+     *
+     * @return array
+     */
+    public function getRootsIds(): array
+    {
+        $roots = [];
+
+        foreach ($this->data as $item) {
+            if ($item[$this->pid] === $this->rootId) {
+                $roots[] = $item[$this->id];
+            }
+        }
+
+        return $roots;
+    }
+
+    /**
+     * 重置所有属性并清空数据
+     *
+     * @return $this
+     */
+    public function reset()
+    {
+        $this->id        = 'id';
+        $this->pid       = 'pid';
+        $this->weight    = 'weight';
+        $this->sortType  = 'desc';
+        $this->rootId    = 0;
+        $this->childlist = 'children';
+        // $this->data      = [];
+
         return $this;
     }
 
     /**
-     * 查找指定id的节点树
-     * @param $id
-     * @return array|mixed
+     * 添加新节点
+     *
+     * @param array $node
+     *
+     * @return $this
      */
-    public function find($id)
+    public function addNode(array $node)
     {
-        if ($id < 1) {
-            return $this->getTree();
-        }
-        $res = $this->keyBy($this->pk);
-        if (!isset($res[$id])) {
-            return [];
-        }
-
-        $tree = empty($this->tempArr) ? $this->getTree() : $this->tempArr;
-        foreach ($tree as $item) {
-            if ($item[$this->pk] == $id) {
-                return $item;
-            }
-            $this->tempArr = $item[$this->childName] ?? [];
-            if (!empty($this->tempArr)) {
-                return $this->find($id);
-            }
-        }
-        return [];
+        $this->data[] = $node;
+        return $this;
     }
 
     /**
-     * 查找指定id的子节点树
-     * @param $id
-     * @return array|mixed
+     * 通过主键id删除节点
+     *
+     * @param int $id
+     *
+     * @return $this
      */
-    public function childTree($id)
+    public function removeNode(int $id)
     {
-        $res = $this->keyBy($this->pk);
-        if (!isset($res[$id])) {
-            return [];
-        }
-        $tree = empty($this->tempArr) ? $this->getTree() : $this->tempArr;
-        foreach ($tree as $item) {
-            if ($item[$this->pk] == $id) {
-                return $item[$this->childName] ?? [];
-            }
-            $this->tempArr = $item[$this->childName] ?? [];
-            if (!empty($this->tempArr)) {
-                return $this->childTree($id);
-            }
-        }
-        return [];
+        $this->data = array_filter($this->data, fn($item) => $item[$this->id] !== $id);
+        return $this;
     }
 
     /**
-     * 查找指定id的父节点树
-     * @param $id
-     * @return array|mixed
+     * 通过主键id更新节点
+     *
+     * @param int   $id
+     * @param array $newData
+     *
+     * @return $this
      */
-    public function parentTree($id)
+    public function updateNode(int $id, array $newData)
     {
-        if ($id == 0) {
-            return $this->getTree();
+        foreach ($this->data as &$item) {
+            if ($item[$this->id] === $id) {
+                $item = array_merge($item, $newData);
+                break;
+            }
         }
-        $res = $this->keyBy($this->pid);
-        if (!isset($res[$id])) {
-            return []; // 无此节点
-        }
-        return $this->find($res[$id][$this->pid]);
+        return $this;
     }
 }

@@ -708,32 +708,57 @@ if (!$result) {
 ### Tree 树形结构化,
 
 ```
+// 结构：
 $arr = array(
      array('id'=>'1','pid'=>0,'name'=>'一级栏目一'),
-     array('id'=>'2','pid'=>0,'name'=>'一级栏目二'),
-     array('id'=>'3','pid'=>1,'name'=>'二级栏目一'),
-     array('id'=>'4','pid'=>1,'name'=>'二级栏目二'),
+     array('id'=>'2','pid'=>0,'name'=>'一级栏目二', 'weight' => 101),
+     array('id'=>'3','pid'=>1,'name'=>'二级栏目一', 'weight' => 1),
+     array('id'=>'4','pid'=>1,'name'=>'二级栏目二', 'weight' => 2),
      array('id'=>'5','pid'=>2,'name'=>'二级栏目三'),
      array('id'=>'6','pid'=>3,'name'=>'三级栏目一'),
      array('id'=>'7','pid'=>3,'name'=>'三级栏目二')
 )
-$tree = zxf\tools\Tree::instance()->init($arr, 'id', 'pid', 'childlist');
 
-// 添加节点 会自动补上 pid
-$tree->addNode(3,array('id'=>'8','name'=>'二级栏目一的子节点'));
-// 删除节点
-$tree->delNode(6);
-// 修改节点 ,会自动补上 id 和 pid
-$tree->changeNode(5,array('name'=>'二级栏目三的修改项'));
-// 通过id查找节点
-$tree->find(5);
-// 通过id查找子节点
-$tree->childTree(5);
-// 通过id查找父节点
-$tree->parentTree(5);
-
-// 获取tree
-$tree->getTree();
+// 用法：
+    // 使用默认配置 初始化数据
+    $tree = zxf\tools\Tree::instance($data);
+    // OR
+    $tree = zxf\tools\Tree::instance()->setData($data);
+    // 自定义id、pid、children配置
+    zxf\tools\Tree::instance($data)->setId('id')->setPid('pid')->setChildlist('children')->getTree();
+    // 自定义权重字段和排序方式
+    zxf\tools\Tree::instance($data)->setWeight('weight')->setSortType('desc')->getTree();
+    // 自定义根节点id，默认为0
+    zxf\tools\Tree::instance($data)->setRootId(1)->getTree();
+// 接口:
+    // 获取结构树
+    $descendants = $tree->getTree();
+    // 获取所有子节点的主键（包含自己）
+    $descendants = $tree->getChildrenAndMeIds(1);
+    // 获取所有子节点列表（包含自己）
+    $descendants = $tree->getChildrenAndMeNodes(1);
+    // 获取所有子节点的主键（不包含自己）
+    $descendants = $tree->getChildrenIds(1);
+    // 获取所有子节点列表（不包含自己）
+    $descendants = $tree->getChildrenNodes(1);
+    // 获取所有父节点主键(包含自己)
+    $ancestors = $tree->getParentAndMeIds(5);
+    // 获取所有父节点列表(包含自己)
+    $ancestors = $tree->getParentAndMeNodes(5);
+    // 获取所有父节点主键(不包含自己)
+    $ancestors = $tree->getParentIds(5);
+    // 获取所有父节点列表(不包含自己)
+    $ancestors = $tree->getParentNodes(5);
+    // 获取所有根节点主键
+    $roots = $tree->getRootsIds();
+    // 重新初始化数据
+    $tree->reset();
+    // 添加新节点
+    $tree->addNode(['id' => 7, 'pid' => 0, 'name' => 'New Node']);
+    // 删除节点
+    $tree->removeNode(7);
+    // 更新节点
+    $tree->updateNode(2, ['name' => 'Updated Node']);
 ```
 
 ### 网页截图

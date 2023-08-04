@@ -23,23 +23,23 @@ namespace zxf\tools;
  *      Tree::instance($data)->setRootId(1)->getTree();
  *  接口:
  *      // 获取结构树
- *      $descendants = $tree->getTree();
+ *      $nodes = $tree->getTree();
  *      // 获取所有子节点的主键（包含自己）
- *      $descendants = $tree->getChildrenAndMeIds(1);
+ *      $nodes = $tree->getChildrenAndMeIds(1);
  *      // 获取所有子节点列表（包含自己）
- *      $descendants = $tree->getChildrenAndMeNodes(1);
+ *      $nodes = $tree->getChildrenAndMeNodes(1);
  *      // 获取所有子节点的主键（不包含自己）
- *      $descendants = $tree->getChildrenIds(1);
+ *      $nodes = $tree->getChildrenIds(1);
  *      // 获取所有子节点列表（不包含自己）
- *      $descendants = $tree->getChildrenNodes(1);
+ *      $nodes = $tree->getChildrenNodes(1);
  *      // 获取所有父节点主键(包含自己)
- *      $ancestors = $tree->getParentAndMeIds(5);
+ *      $nodes = $tree->getParentAndMeIds(5);
  *      // 获取所有父节点列表(包含自己)
- *      $ancestors = $tree->getParentAndMeNodes(5);
+ *      $nodes = $tree->getParentAndMeNodes(5);
  *      // 获取所有父节点主键(不包含自己)
- *      $ancestors = $tree->getParentIds(5);
+ *      $nodes = $tree->getParentIds(5);
  *      // 获取所有父节点列表(不包含自己)
- *      $ancestors = $tree->getParentNodes(5);
+ *      $nodes = $tree->getParentNodes(5);
  *      // 获取所有根节点主键
  *      $roots = $tree->getRootsIds();
  *      // 重新初始化数据

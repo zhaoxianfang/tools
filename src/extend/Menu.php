@@ -36,7 +36,7 @@ namespace zxf\extend;
 // Menu::instance()->init($ruleList)->setActiveMenu($urlLink)->createMenu(0);
 // Menu::instance()->init($munuList)->setActiveMenu($urlLink)->setMenuType('inspinia')->createMenu(0);
 // 顶部导航
-// Menu::instance()->init($classifyList)->setTitle('name')->setUrlPrefix('/classify')->setActiveMenu($urlLink)->createMenu(0, 'home');
+// Menu::instance()->init($classifyList)->setTitle('name')->setUrlPrefix('/classify')->setActiveMenu($urlLink)->createMenu(0, 'top_nav');
 // 面包屑导航
 // Menu::instance()->init($menuList, 'id', 'pid', 0, false)->getBreadCrumb('/admin/index/index', $raturnhtml = true, false);
 // 菜单转换为视图
@@ -64,7 +64,7 @@ class Menu
     protected $badgeStyle    = 'badge_text_style'; //badge 图标 样式
     protected $showchildicon = false;              //子级菜单显示icon小图标
     protected $showNavIcon   = false;              //前台nav 一级导航是否显示icon小图标
-    protected $menuType      = 'inspinia';            //目录类型 adminlte|layuiadmin|nazox|inspinia
+    protected $menuType      = 'inspinia';            //目录类型 adminlte|layuiadmin|nazox|inspinia  (admin导航 默认为 inspinia,前台top_nav导航 默认为 adminlte)
 
     protected static $instance;
     //默认配置
@@ -95,31 +95,30 @@ class Menu
     }
 
     // 初始化参数，防止 调用 Menu 的过程中 有的 参数被篡改 导致 之后的调用参数发生错乱
-    private function initConfigParam()
+    private function clear()
     {
-        $this->arr           = [];
-        $this->pk            = 'id';
-        $this->pid           = 'pid';
-        $this->childlist     = 'childlist';
-        $this->weigh         = 'weigh';            //权重
-        $this->title         = 'title';            //Tree 展示的作用字段
-        $this->badge         = 'badge_text';       //badge 图标
-        $this->badgeStyle    = 'badge_text_style'; //badge 图标 样式
-        $this->showchildicon = false;              //子级菜单显示icon小图标
-        $this->showNavIcon   = false;              //前台nav 一级导航是否显示icon小图标
-        $this->menuType      = 'nazox';            //目录类型 adminlte|layuiadmin|nazox|inspinia
+        $this->arr             = [];
+        $this->pk              = 'id';
+        $this->pid             = 'pid';
+        $this->childlist       = 'childlist';
+        $this->weigh           = 'weigh';               //权重
+        $this->title           = 'title';               //Tree 展示的作用字段
+        $this->badge           = 'badge_text';          //badge 图标
+        $this->badgeStyle      = 'badge_text_style';    //badge 图标 样式
+        $this->showchildicon   = false;                 //子级菜单显示icon小图标
+        $this->showNavIcon     = false;                 //前台nav 一级导航是否显示icon小图标
+        $this->menuType        = 'inspinia';            //目录类型 adminlte|layuiadmin|nazox|inspinia
+        $this->config          = [];                    //默认配置
+        $this->options         = [];                    // 传入的参数
+        $this->returnClass     = false;                 //是否返回 $this
+        $this->activeMenu      = '';                    // 激活/触发 的菜单
+        $this->urlPrefix       = '';                    //url地址前缀
+        $this->domain          = '';                    // 域名
+        $this->href            = 'name';                // url字段
+        $this->icon            = '';                    // 左侧字体小图标
+        $this->activeMenuItems = '';                    // 查询出该被激活的菜单的所有父级菜单列表
 
-        //默认配置
-        $this->config  = [];
-        $this->options = [];
-        //是否返回 $this
-        $this->returnClass = false;
-        //触发的菜单
-        $this->activeMenu = '';
-        //url地址前缀
-        $this->urlPrefix = '';
-
-        $this->domain = ''; // 域名
+        return $this;
     }
 
     /**
@@ -155,7 +154,7 @@ class Menu
      */
     public function init($arr = [], $pk = 'id', $pid = 'pid', $rootId = 0, $initTree = true, $childlist = 'childlist')
     {
-        $this->initConfigParam();
+        $this->clear();
 
         $this->arr = $arr;
         $pk && $this->pk = $pk;
@@ -386,16 +385,17 @@ class Menu
      */
     private function my_sort($arrays, $sort_key, $sort_order = SORT_ASC, $sort_type = SORT_NUMERIC)
     {
+        $key_arrays = [];
         if (is_array($arrays)) {
             foreach ($arrays as $array) {
-                if (is_array($array)) {
+                if (is_array($array) && isset($array[$sort_key])) {
                     $key_arrays[] = $array[$sort_key];
                 } else {
-                    return false;
+                    return $arrays;
                 }
             }
         } else {
-            return false;
+            return $arrays;
         }
         if (empty($key_arrays)) {
             return $arrays;
@@ -422,7 +422,7 @@ class Menu
      * @param string $menuType          [默认adminlte目录]
      *                                  仅支持 adminlte|layuiadmin|nazox|inspinia
      */
-    public function setMenuType($menuType = 'nazox')
+    public function setMenuType($menuType = 'inspinia')
     {
         $this->menuType = $menuType;
         return $this;
@@ -432,7 +432,7 @@ class Menu
      * [createMenu 创建目录] [默认adminlte风格目录--目前仅支持 adminlte|layuiadmin|nazox ]
      *
      * @param int    $pk    [顶级pid 一般为0]
-     * @param string $scope [作用域，admin(后台)、home(前台)]
+     * @param string $scope [作用域，admin(后台)、top_nav(前台顶部导航)]
      *
      * @return   string              [description]
      */
@@ -442,6 +442,9 @@ class Menu
         list($this->activeMenuIds, $this->activeMenuItems) = $this->getActiveMenuIds();
 
         if ($scope == 'admin') {
+            if (!in_array($this->menuType, ['adminlte', 'layuiadmin', 'nazox', 'inspinia'])) {
+                $this->menuType = 'inspinia';
+            }
             //后台菜单
             if ($this->menuType == 'adminlte') {
                 return $this->adminMenu($pk);
@@ -455,19 +458,21 @@ class Menu
             if ($this->menuType == 'inspinia') {
                 return $this->inspiniaMenu($pk);
             }
-            return '';
         } else {
+            if (!in_array($this->menuType, ['adminlte', 'layuiadmin'])) {
+                $this->menuType = 'adminlte';
+            }
             // 前端顶部导航
             if ($this->menuType == 'adminlte') {
                 // adminlte 前台顶部nav导航
-                return $this->adminLtehomeNavMenu($pk);
+                return $this->adminLteTopNavMenu($pk);
             }
             if ($this->menuType == 'nazox') {
                 // nazox 顶部nav导航
-                return $this->nazoxhomeNavMenu($pk);
+                return $this->nazoxTopNavMenu($pk);
             }
-            return '';
         }
+        return '';
     }
 
     public function inspiniaMenu($pk = 0, $lv = 0, $menu = array())
@@ -700,7 +705,7 @@ class Menu
     /**
      * NAZOX 前台 顶部 nav 导航目录
      */
-    public function nazoxhomeNavMenu($pk)
+    public function nazoxTopNavMenu($pk)
     {
         $str = '';
         $arr = $this->arr;
@@ -727,14 +732,14 @@ class Menu
             $str .= '</a>';
 
             if ($hasChild) {
-                $str .= $this->nazoxhomeNavMenuChildNav($item);
+                $str .= $this->nazoxTopNavMenuChildNav($item);
             }
             $str .= '</li>';
         }
         return $str;
     }
 
-    private function nazoxhomeNavMenuChildNav($item)
+    private function nazoxTopNavMenuChildNav($item)
     {
         $str = '';
         $str .= '<div class="dropdown-menu" aria-labelledby="topnav-' . $item[$this->pk] . '">';
@@ -755,7 +760,7 @@ class Menu
             $str .= '</a>';
 
             if ($oneHasChild) {
-                $str .= $this->nazoxhomeNavMenuChildNav($childlistItem);
+                $str .= $this->nazoxTopNavMenuChildNav($childlistItem);
             }
             $str .= $oneHasChild ? '</div>' : '';
         }
@@ -772,7 +777,7 @@ class Menu
      *
      * @return string [type]              [description]
      */
-    public function adminLtehomeNavMenu($pk, $tArr = array(), $level = 0)
+    public function adminLteTopNavMenu($pk, $tArr = array(), $level = 0)
     {
         $str = '';
         if (!$tArr && $pk < 1) {
@@ -800,7 +805,8 @@ class Menu
 
             //有无子菜单
             $hasChild = (isset($value[$this->childlist]) && count($value[$this->childlist]) > 0) ? 1 : 0;
-            $href     = $hasChild ? 'javascript:;' : url($this->urlPrefix . '/' . $value[$this->pk])->suffix('html')->domain(true);
+            // $href     = $hasChild ? 'javascript:;' : url($this->urlPrefix . '/' . $value[$this->pk])->suffix('html')->domain(true);
+            $href = $hasChild ? 'javascript:;' : url($this->urlPrefix . '/' . $value[$this->pk]);
 
             if ($hasChild) {
                 $str .= ($level == 1)
@@ -809,7 +815,7 @@ class Menu
 
                 $str .= '<ul aria-labelledby="dropdownSubMenu_' . $key . '_' . $level . '" class="dropdown-menu border-0 shadow">';
 
-                $str .= $this->adminLtehomeNavMenu($value[$this->pk], $nextArr, $level);
+                $str .= $this->adminLteTopNavMenu($value[$this->pk], $nextArr, $level);
 
                 $str .= '</ul></li>';
             } else {
@@ -823,12 +829,14 @@ class Menu
 
     private function getActiveMenuIds($menuArr = []): array
     {
+
         $arr = !empty($menuArr) ? $menuArr : $this->arr;
-        if (!$this->activeMenu || !$arr) {
-            return [];
-        }
+
         $ids             = [];
         $activeItemsList = [];
+        if (!$this->activeMenu || !$arr) {
+            return [$ids, $activeItemsList];
+        }
 
         foreach ($arr as $value) {
             if (trim($value[$this->href], '/') == trim($this->activeMenu, '/')) {
@@ -891,37 +899,6 @@ class Menu
             }
         }
         return $findArr;
-    }
-
-    /**
-     * 清除数据
-     *
-     * @return Menu [type] [description]
-     */
-    public function clear()
-    {
-        $this->config          = [];
-        $this->options         = [];
-        $this->returnClass     = false;
-        $this->arr             = [];
-        $this->pk              = 'id';
-        $this->pid             = 'pid';
-        $this->childlist       = 'childlist';
-        $this->weigh           = 'weigh';
-        $this->title           = 'title';
-        $this->href            = 'name';
-        $this->icon            = '';
-        $this->badge           = 'badge_text';
-        $this->badgeStyle      = 'badge_text_style';
-        $this->showchildicon   = false;
-        $this->showNavIcon     = false;
-        $this->menuType        = 'inspinia';
-        $this->activeMenu      = '';
-        $this->urlPrefix       = '';
-        $this->domain          = '';
-        $this->activeMenuItems = '';
-
-        return $this;
     }
 
     /**

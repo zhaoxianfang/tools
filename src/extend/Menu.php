@@ -59,7 +59,7 @@ class Menu
     protected $weigh         = 'weigh';            // 权重
     protected $title         = 'title';            // Tree 展示的作用字段
     protected $href          = 'name';             // Tree 中路由跳转的地址名称字段，一般为路由名称，也可以是url地址
-    protected $icon          = '';                 // 左侧字体小图标
+    protected $icon          = 'icon';             // 左侧字体小图标 字段名称
     protected $badge         = 'badge_text';       //badge 图标
     protected $badgeStyle    = 'badge_text_style'; //badge 图标 样式
     protected $showchildicon = false;              //子级菜单显示icon小图标
@@ -115,7 +115,7 @@ class Menu
         $this->urlPrefix       = '';                    //url地址前缀
         $this->domain          = '';                    // 域名
         $this->href            = 'name';                // url字段
-        $this->icon            = '';                    // 左侧字体小图标
+        $this->icon            = 'icon';                    // 左侧字体小图标
         $this->activeMenuItems = '';                    // 查询出该被激活的菜单的所有父级菜单列表
 
         return $this;
@@ -237,6 +237,13 @@ class Menu
     public function setHref($str = 'name')
     {
         $this->href = $str;
+        return $this;
+    }
+
+    // 设置 导航左侧icon 字体小图标
+    public function setIcon($str = 'icon')
+    {
+        $this->icon = $str;
         return $this;
     }
 
@@ -489,7 +496,7 @@ class Menu
             $hasArrow = (isset($item[$this->childlist]) && !empty($item[$this->childlist])) ? true : false;
 
             $currentHref = $hasArrow ? 'javascript:;' : url($this->urlPrefix . $item[$this->href]); // 当前url
-            $currentIcon = !empty($item[$this->icon]) ? $item[$this->icon] : '';                                   // 当前url
+            $currentIcon = !empty($item[$this->icon]) ? $item[$this->icon] : ''; // 导航左侧icon 字体图标
 
             $activeClass = $this->checkActiveMenu($item); // 激活的菜单样式
             $isShowUl    = ($hasArrow && $activeClass) ? 'in' : ''; // in 是否展开当前子菜单ul
@@ -497,8 +504,8 @@ class Menu
             $str .= '<li class="' . $activeClass . '">';
             $str .= '<a href="' . $currentHref . '">';
             $str .= '<i class="fa ' . $currentIcon . '"></i>';
-
-            $str .= '<span class="nav-label">' . $item[$this->title] . '</span>';
+            // lv 1级菜单 使用span包裹，2级菜单不使用span包裹
+            $str .= $lv < 2 ? '<span class="nav-label">' . $item[$this->title] . '</span>' : $item[$this->title];
             // 子菜单
             $str .= $hasArrow ? '<span class="fa arrow"></span>' : '';
 

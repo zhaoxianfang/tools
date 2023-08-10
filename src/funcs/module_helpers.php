@@ -63,6 +63,22 @@ if (!function_exists('get_module_name')) {
     }
 }
 
+if (!function_exists('get_url_module_name')) {
+    /**
+     * 获取 url 中的模块名称(url前缀模块名称), 例如：http://www.xxx.com/docs/xxx/xxx/xxx 中的 docs
+     */
+    function get_url_module_name(): string
+    {
+        try {
+            $path    = request()->path();
+            $pathArr = explode('/', $path);
+            return underline_convert($pathArr[0] ?? 'app');
+        } catch (\Exception $err) {
+            return 'app';
+        }
+    }
+}
+
 if (!function_exists('get_user_info')) {
     /**
      * 获取laravel 已经登录的用户信息，没有登录的 返回false

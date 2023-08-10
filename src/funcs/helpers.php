@@ -139,62 +139,35 @@ if (!function_exists('is_crawler')) {
      */
     function is_crawler(bool $returnName = false, bool $forbidUnknownSpider = false)
     {
-        $agent = strtolower(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '');
-        if (!empty($agent)) {
+        $userAgent = strtolower(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '');
+        if (!empty($userAgent)) {
             $spiderSite = [
-                "TencentTraveler",
-                "Baiduspider+",
-                "Baiduspider",
-                "BaiduGame",
-                "Googlebot",
-                "msnbot",
-                "Sosospider+",
-                "Sosoimagespider+",
-                "Sogou web spider",
-                "ia_archiver",
-                "Yahoo! Slurp",
-                "YoudaoBot",
-                "Yahoo Slurp",
-                "Yahoo! Slurp China",
-                "MSNBot",
-                "Java (Often spam bot)",
-                "BaiDuSpider",
-                "Voila",
-                "Yandex bot",
-                "BSpider",
-                "twiceler",
-                "Sogou Spider",
-                "Speedy Spider",
-                "Google AdSense",
-                "Heritrix",
-                "Python-urllib",
-                "Alexa (IA Archiver)",
-                "Ask",
-                "Exabot",
-                "Custo",
-                "OutfoxBot/YodaoBot",
-                "yacy",
-                "SurveyBot",
-                "legs",
-                "lwp-trivial",
-                "Nutch",
-                "StackRambler",
-                "The web archive (IA Archiver)",
-                "Perl tool",
-                "MJ12bot",
-                "Netcraft",
-                "MSIECrawler",
-                "WGet tools",
-                "larbin",
-                "Fish search",
-                "360Spider",
+                "TencentTraveler", "Baiduspider+", "Baiduspider", "BaiduGame",
+                "Googlebot", "msnbot", "Sosospider+", "Sosoimagespider+",
+                "Sogou web spider", "ia_archiver", "Yahoo! Slurp", "YoudaoBot",
+                "Yahoo Slurp", "Yahoo! Slurp China", "MSNBot", "Java (Often spam bot)",
+                "BaiDuSpider", "Voila", "Yandex bot", "BSpider", "twiceler",
+                "Sogou Spider", "Speedy Spider", "Google AdSense", "Heritrix",
+                "Python-urllib", "Alexa (IA Archiver)", "Ask", "Exabot", "Custo",
+                "OutfoxBot/YodaoBot", "OutfoxBot", "YodaoBot", "yacy", "SurveyBot", "legs",
+                "lwp-trivial", "Nutch", "StackRambler", "The web archive (IA Archiver)",
+                "Perl tool", "MJ12bot", "Netcraft", "MSIECrawler", "WGet tools", "larbin",
+                "Fish search", "360Spider", 'Bingbot', 'Baiduspider', 'YandexBot',
+                'Yahoo! Slurp', 'DuckDuckGo-Favicons-Bot', 'Twitterbot', 'Facebook External Hit',
+                'LinkedInBot', 'Pinterest', 'Instagram', 'Applebot', 'Sogou Spider',
+                'Exabot', 'MJ12bot', 'AhrefsBot', 'DotBot', 'SemrushBot', 'Yeti',
+                'BingPreview', 'Qwantify', 'Archive.org Bot', 'Embedly', 'Discordbot',
             ];
             foreach ($spiderSite as $val) {
                 $str = strtolower($val);
-                if (strpos($agent, $str) !== false) {
+                if (strpos($userAgent, $str) !== false) {
                     return $returnName ? $val : true;
                 } else {
-                    // 没有在上面定义的爬虫名称范围内
+                    // 没有在上面定义的爬虫名称范围内，则判断为未知爬虫
+                    if (strpos($userAgent, 'bot') !== false || strpos($userAgent, 'spider') !== false) {
+                        // 请求者是爬虫
+                        return $returnName ? 'Unnamed Spider' : true;
+                    }
                     // 检查访问频率
                 }
             }

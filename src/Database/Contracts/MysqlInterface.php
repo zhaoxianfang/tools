@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\mysql\Contracts;
+namespace zxf\Database\Contracts;
 
 use Closure;
 

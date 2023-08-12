@@ -1,9 +1,9 @@
 <?php
 
 
-namespace zxf\mysql;
+namespace zxf\Database;
 
-use zxf\mysql\Db;
+use zxf\Database\Db;
 
 class Model
 {

@@ -1,12 +1,12 @@
 <?php
 
 
-namespace zxf\mysql;
+namespace zxf\Database;
 
 
 use Exception;
-use zxf\mysql\Contracts\MysqlInterface;
-use zxf\mysql\Driver\MysqliDriver;
+use zxf\Database\Contracts\MysqlInterface;
+use zxf\Database\Driver\MysqliDriver;
 
 class Db
 {

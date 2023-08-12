@@ -10,7 +10,7 @@ namespace zxf\Facade;
  *
  * @method int table($tableName)
  * @method int count ()
- * @method \zxf\mysql\Model ArrayBuilder()
+ * @method \zxf\Database\Model ArrayBuilder()
  * @method Model JsonBuilder()
  * @method Model ObjectBuilder()
  * @method mixed byId(string $id, mixed $fields)
@@ -41,6 +41,6 @@ class Model extends FacadeBase implements FacadeInterface
 {
     public static function getFacadeAccessor()
     {
-        return \zxf\mysql\Model::class;
+        return \zxf\Database\Model::class;
     }
 }

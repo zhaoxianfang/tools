@@ -19,6 +19,6 @@ class Db extends FacadeBase implements FacadeInterface
 {
     public static function getFacadeAccessor()
     {
-        return \zxf\mysql\Db::class;
+        return \zxf\Database\Db::class;
     }
 }

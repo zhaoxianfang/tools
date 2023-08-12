@@ -1,11 +1,11 @@
 <?php
 
-namespace zxf\mysql\Driver;
+namespace zxf\Database\Driver;
 
 use Closure;
 use Exception;
 use ReflectionClass;
-use zxf\mysql\Contracts\MysqlInterface;
+use zxf\Database\Contracts\MysqlInterface;
 
 /**
  * mysqli 基础操作类

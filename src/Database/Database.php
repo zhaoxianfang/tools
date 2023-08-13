@@ -121,7 +121,6 @@ class Database
         $this->query .= $this->orderByStr ? "ORDER BY {$this->orderByStr} " : '';
         $this->query .= $this->limitStr ? "LIMIT {$this->limitStr} " : '';
 
-
         return $this->query;
     }
 
@@ -172,8 +171,22 @@ class Database
                     $subParameters = $subClass->getOption('parameters');
                     !empty($subParameters) && !empty($this->parameters) && $this->parameters = array_merge($this->parameters, $subParameters);
                 } else {
-                    $whereArr[] = $conditions[0] . ' ' . $conditions[1] . (is_null($conditions[2]) ? '' : ' ?');
-                    !is_null($conditions[2]) && $this->parameters[] = $conditions[2];
+                    if (!is_null($conditions[2])) {
+                        if (is_array($conditions[2])) {
+                            $inStr = ' ( ';
+                            foreach ($conditions[2] as $val) {
+                                $inStr              .= ' ? ,';
+                                $this->parameters[] = $val;
+                            };
+                            $inStr      = rtrim($inStr, ',') . ' ) ';
+                            $whereArr[] = $conditions[0] . ' ' . $conditions[1] . $inStr;
+                        } else {
+                            $this->parameters[] = $conditions[2];
+                            $whereArr[]         = $conditions[0] . ' ' . $conditions[1] . ' ?';
+                        }
+                    } else {
+                        $whereArr[] = $conditions[0] . ' ' . $conditions[1];
+                    }
                 }
             }
         }
@@ -312,7 +325,7 @@ class Database
      *
      * @param ...$args
      */
-    protected function on(...$args)
+    public function on(...$args)
     {
         $count = count($args);
         if ($count == 1) {
@@ -324,6 +337,7 @@ class Database
         if ($count == 3) {
             $joinOnStr = $args[0] . ' ' . $args[1] . ' ' . $args[2];
         }
+
         if ($this->joinOnStr) {
             $this->joinOnStr .= ' AND ' . $joinOnStr;
         } else {
@@ -337,7 +351,7 @@ class Database
     {
         if ($conditions[1] instanceof Closure) {
             // TODO 闭包函数
-            $fun      = $conditions[0];
+            $fun      = $conditions[1];
             $subClass = $this->newQuery();
             $fun($subClass);
             $joinOnStr    = $subClass->getOption('joinOnStr');
@@ -345,10 +359,11 @@ class Database
 
             $joinStr = "{$operator} JOIN {$conditions[0]}";
             if ($joinOnStr) {
-                $joinStr .= " ON ( {$subClass->getOption('joinStr')}  )";
+                $joinStr .= " ON {$subClass->getOption('joinOnStr')} ";
             }
             if ($joinWhereStr) {
-                $joinStr .= " WHERE {$joinWhereStr}";
+                $this->parseWhere('AND', $joinWhereStr);
+                // $joinStr .= " WHERE {$joinWhereStr} ";
             }
 
             $subParameters = $subClass->getOption('parameters');
@@ -432,16 +447,22 @@ class Database
     // 排序功能
     public function orderBy(...$columns)
     {
-        foreach ($columns as $column) {
-            if (is_array($column)) {
-                foreach ($column as $field => $direction) {
-                    $orderByStr = $field . ' ' . $direction;
+        $orderByArr = [];
+        if (is_string($columns[0])) {
+            $orderByArr[] = $columns[0] . ' ' . (!empty($columns[1]) ? $columns[1] : ' ASC');
+        } else {
+            foreach ($columns as $column) {
+                if (is_array($column)) {
+                    foreach ($column as $field => $direction) {
+                        $orderByArr[] = $field . ' ' . $direction;
+                    }
+                } else {
+                    $orderByArr[] = $column . ' ASC';
                 }
-            } else {
-                $orderByStr = $column . ' ASC';
             }
-            $this->orderByStr = empty($this->orderByStr) ? $orderByStr : $this->orderByStr . ', ' . $orderByStr;
         }
+        $orderByStr       = implode(', ', $orderByArr);
+        $this->orderByStr = !empty($orderByArr) && !empty($this->orderByStr) ? $this->orderByStr . ', ' . $orderByStr : $this->orderByStr . $orderByStr;
         return $this;
     }
 
@@ -451,7 +472,56 @@ class Database
         return $this;
     }
 
+    /**
+     * 执行查询
+     */
+    public function execute()
+    {
+        try {
+            $stmt = $this->pdo->prepare($this->query);
+            $stmt->execute($this->parameters);
+            $this->clear();
+            return $stmt;
+        } catch (PDOException $e) {
+            throw new Exception("数据库错误：" . $e->getMessage());
+        }
+    }
+
+    /**
+     * 获取所有结果
+     */
+    public function get()
+    {
+        $this->toSql();
+        return $this->execute()->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * 获取第一条结果
+     */
+    public function first()
+    {
+        $this->toSql();
+        return $this->execute()->fetch(PDO::FETCH_ASSOC);
+    }
+
     // ==============================================
+
+    // 添加防止 SQL 注入功能
+    private function sanitize($value)
+    {
+        return $this->pdo->quote($value);
+    }
+
+    /**
+     * 执行自定义查询
+     */
+    public function executeRawQuery($query, $parameters = [])
+    {
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute($parameters);
+        return $stmt;
+    }
 
     /**
      * 插入数据
@@ -526,21 +596,6 @@ class Database
         } catch (Exception $e) {
             $this->pdo->rollBack();
             throw new Exception("事务回滚：" . $e->getMessage());
-        }
-    }
-
-    /**
-     * 执行查询
-     */
-    public function execute()
-    {
-        try {
-            $stmt = $this->pdo->prepare($this->query);
-            $stmt->execute($this->parameters);
-            $this->clear();
-            return $stmt;
-        } catch (PDOException $e) {
-            throw new Exception("数据库错误：" . $e->getMessage());
         }
     }
 
@@ -630,11 +685,7 @@ class Database
         }
     }
 
-    // 添加防止 SQL 注入功能
-    private function sanitize($value)
-    {
-        return $this->pdo->quote($value);
-    }
+
 
     // 添加构造器入口方法
     public function query()
@@ -655,21 +706,7 @@ class Database
         return $this->increment($column, -$amount);
     }
 
-    /**
-     * 获取所有结果
-     */
-    public function get()
-    {
-        return $this->execute()->fetchAll(PDO::FETCH_ASSOC);
-    }
 
-    /**
-     * 获取第一条结果
-     */
-    public function first()
-    {
-        return $this->execute()->fetch(PDO::FETCH_ASSOC);
-    }
 
     /**
      * 分页查询
@@ -818,15 +855,6 @@ class Database
         return $this;
     }
 
-    /**
-     * 执行自定义查询
-     */
-    public function executeRawQuery($query, $parameters = [])
-    {
-        $stmt = $this->pdo->prepare($query);
-        $stmt->execute($parameters);
-        return $stmt;
-    }
 
     // 添加获取当前日期的方法
     public function currentDate()
@@ -863,7 +891,7 @@ class Database
 
 // 使用继续来获取下一个片段
 
-$db = new Database('127.0.0.1', 'fastadmin', 'root', '');
+$db = new Database('127.0.0.1', 'test', 'root', '');
 $db->table('fa_test', 'test');
 $db->select('id, name')->select('age', 'num')->select(['age', 'num']);
 $db->where('id', 1)->where(function ($query) {
@@ -875,8 +903,18 @@ $db->where('id', 1)->where(function ($query) {
         $query->table('sub_table')->select('id')->where('sub_id', '<>', 9);
     })->whereColumn('time', '>', 'time1')
     ->whereNull('id_card')
-    ->join('table_name AS t', 'table1.id = t.table1_id');
+    ->join('table_name AS t', 'test.id = t.table1_id')
+    ->join('table_name1 AS t1', function ($join) {
+        $join->on('join_1', 'join_2');
+        $join->whereColumn('join_on_where_1', '=', 'join_on_where_2');
+    })
+    ->groupBy('id', 'name')
+    ->having('id', '>', 1)
+    ->orderBy('id', 'desc')
+    ->orderBy(['name' => 'desc', 'age' => 'asc'])
+    ->limit(10);
 
-$sql = $db->toSql();
+print_r($db->toSql());
+$sql = $db->get();
 print_r($sql);
 print_r($db->getOption('parameters'));

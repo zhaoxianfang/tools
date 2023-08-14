@@ -4,7 +4,7 @@ namespace zxf\Facade;
 
 /**
  * 数据库操作类
- * @method static mixed query ()
+ * @method static mixed newQuery ()
  * @method mixed connect()
  * @method mixed table()
  * @method mixed select()
@@ -38,6 +38,7 @@ namespace zxf\Facade;
  * @method mixed commit()
  * @method mixed rollBack()
  * @method mixed transaction()
+ * @method mixed inTransaction()
  * @method mixed count()
  * @method mixed max()
  * @method mixed min()
@@ -55,6 +56,9 @@ namespace zxf\Facade;
  * @method mixed getIndexes()
  * @method mixed getError()
  * @method mixed when()
+ * @method mixed exec()
+ * @method mixed queryDb()
+ * @method mixed quote()
  */
 class Db extends FacadeBase implements FacadeInterface
 {

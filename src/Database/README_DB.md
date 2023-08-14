@@ -24,7 +24,7 @@ $db = new Db([
 或者
 
 ```
-Db::query()->connect('default', [
+Db::newQuery()->connect('default', [
     'host'     => '127.0.0.1',
     'dbname'   => 'db_name',
     'username' => 'root',
@@ -62,7 +62,7 @@ return [
 ```
 $db = new Db();
 或者
-$db = Db::query();
+$db = Db::newQuery();
 ```
 
 ### 使用门面模式 引入
@@ -74,7 +74,7 @@ use zxf/tools/Facade/Db;
 ### 切换数据库连接
 
 ```
-$db = Db::query()->connect('default');
+$db = Db::newQuery()->connect('default');
 ```
 
 ## 查询
@@ -361,6 +361,12 @@ $db->transaction(function ($query) use ($data, &$ids) {
         $ids[] = $query->insertGetId($row);
     }
 });
+```
+
+### 检查一个操作是否在事务中
+
+```
+$db->inTransaction()
 ```
 
 ## 聚合查询

@@ -4,6 +4,7 @@
 namespace zxf\Database;
 
 use zxf\Database\Db;
+use zxf\tools\DataArray;
 
 class Model
 {
@@ -28,19 +29,30 @@ class Model
      */
     protected $dbTable;
 
+    /**
+     * 查询到的数据集合
+     */
+    protected $items;
+
     public $connectionName = 'default';
 
     public function __construct($data = null)
     {
-        $this->db = Db::query();
+        $this->db = Db::newQuery();
         $this->db->connect($this->connectionName);
-        if (empty ($this->dbTable)) {
-            $this->dbTable = $this->underlineConvert(get_class($this));
-            $this->db->table($this->dbTable);
-        }
+        $this->db->table($this->getTableName());
         if ($data) {
             $this->data = $data;
         }
+    }
+
+    // 获取表名
+    public function getTableName(): string
+    {
+        if (empty ($this->dbTable)) {
+            $this->dbTable = $this->underlineConvert(get_class($this));
+        }
+        return $this->dbTable;
     }
 
     // 获取模型类名(驼峰转下划线)
@@ -55,6 +67,195 @@ class Model
     }
 
     /**
+     * 填充数据
+     */
+    public function fill()
+    {
+        // TODO
+
+    }
+
+    /**
+     * 更新或者插入数据
+     */
+    public function save()
+    {
+        // TODO
+    }
+
+    /**
+     * 插入数据
+     */
+    public function create()
+    {
+        // TODO
+    }
+
+    /**
+     * 插入数据 ,失败则抛出异常
+     */
+    public function createOrFail($id)
+    {
+        // TODO
+    }
+
+    /**
+     * 更新数据
+     */
+    public function update()
+    {
+        // TODO
+    }
+
+    /**
+     * 插入或修改数据
+     */
+    public function createOrUpdate()
+    {
+        // TODO
+    }
+
+    /**
+     * 查询一条数据
+     */
+    public function find($id)
+    {
+        // TODO
+        $res = $this->db->where($this->primaryKey, $id)->first();
+        if ($res) {
+            $this->setData($res);
+        }
+        return $this;
+    }
+
+    /**
+     * 查询一条数据 ,不存在则抛出异常
+     */
+    public function findOrFail($id)
+    {
+        // TODO
+    }
+
+    /**
+     * 一对多关联
+     *          例如：一个用户有多个文章
+     *          Model::hasMany('被关联的表名', '被关联表的外键', 'Model主键',  '查询字段')->...其他Db支持的查询条件;
+     *          User::hasMany('articles', 'user_id', 'id',  'id,title,content')->get();
+     *          User::hasMany(Article::class, 'user_id', 'id',  'id,title,content')->where(...)->get();
+     *
+     * @param        $table
+     * @param string $foreignKey 被关联表的外键
+     * @param string $localKey   当前表的主键
+     * @param string $field
+     *
+     * @return Db
+     */
+    public function hasMany($table, $foreignKey, $localKey, $field): Db
+    {
+        $localTable = $this->getTableName();
+        $localKey   = !empty($localKey) ? $localKey : (Db::newQuery())->connect($this->connectionName)->table($localTable)->getPrimaryKey()[0];
+        $field      = empty($field) ? '*' : $field;
+
+        $tableName = is_string($table) ? $table : ($table instanceof Model ? $table->getTableName() : '');
+
+        return $this->db->table($tableName)->select($field)->where("`{$tableName}`.`{$foreignKey}` =  `{$localTable}`.`{$localKey}`");
+    }
+
+    /**
+     * 一个模型从属于另一个模型，例如一个用户从属于一个国家
+     *          Model::hasMany('被关联的表名', '被关联表的外键', 'Model主键',  '查询字段');
+     *          User::hasMany('country', 'country_id', 'id',  'id,name');
+     *          User::hasMany(Country::class, 'country_id', 'id',  'id,name');
+     *
+     * @param        $table
+     * @param        $foreignKey
+     * @param string $ownerKey
+     * @param string $field
+     *
+     * @return Db
+     */
+    public function belongsTo($table, $foreignKey, $ownerKey, $field)
+    {
+        $localTable = $this->getTableName();
+        $ownerKey   = !empty($ownerKey) ? $ownerKey : (Db::newQuery())->connect($this->connectionName)->table($localTable)->getPrimaryKey()[0];
+        $field      = empty($field) ? '*' : $field;
+
+        $tableName = is_string($table) ? $table : ($table instanceof Model ? $table->getTableName() : '');
+
+        return $this->db->table($tableName)->select($field)->where("`{$localTable}`.`{$foreignKey}` =  `{$tableName}`.`{$ownerKey}`")->first();
+    }
+
+    /**
+     * 一对一关联，例如一个用户有一个身份证
+     *       Model::hasOne('被关联的表名', '被关联表的外键', '查询字段');
+     *       User::hasOne('id_card', 'user_id', 'id,name');
+     *       User::hasOne(IdCard::class, 'user_id', 'id',  'id,name');
+     *
+     * @param        $table
+     * @param        $foreignKey
+     * @param string $field
+     *
+     * @return mixed
+     */
+    public function hasOne($table, $foreignKey, $field = '*')
+    {
+        $tableName = is_string($table) ? $table : ($table instanceof Model ? $table->getTableName() : '');
+        return $this->db->table($tableName)->select($field)->where("{$tableName}.{$foreignKey}", $this->id)->first();
+    }
+
+    /**
+     * 远程一对多关联,例如一个用户有多个文章，文章有多个评论，用户可以通过文章获取评论
+     *
+     * @param mixed  $table             例如 评论表（目标表）
+     * @param mixed  $throughTable      例如 文章表（中间表）
+     * @param string $ownerForeignKey   例如 用户表在文章表的外键 user_id
+     * @param string $throughForeignKey 例如 文章表在评论表的外键 article_id
+     * @param string $ownerKey          例如 用户表的主键 id
+     * @param string $throughKey        例如 文章表的主键 id
+     * @param string $field             例如 要查询的评论表的字段
+     *
+     * @return mixed
+     */
+    public function hasManyThrough($table, $throughTable, $ownerForeignKey, $throughForeignKey, $ownerKey = "id", $throughKey = "id", $field = '*')
+    {
+        $ownerTableName  = $this->getTableName();
+        $aimTableName    = is_string($table) ? $table : ($table instanceof Model ? $table->getTableName() : ''); // 查询的目标表名
+        $middleTableName = is_string($throughTable) ? $throughTable : ($throughTable instanceof Model ? $throughTable->getTableName() : ''); // 关联的中间表名
+
+        return $this->db->table($aimTableName)
+            ->select("{$aimTableName}.*")
+            ->join($middleTableName, "{$aimTableName}.{$throughForeignKey} = {$middleTableName}.{$throughKey}")
+            ->join($ownerTableName, "{$ownerTableName}.{$ownerKey} = {$middleTableName}.{$ownerForeignKey}")
+            ->where("{$middleTableName}.{$ownerForeignKey}", $this->id)
+            ->get();
+    }
+
+    protected function setData($items = [], $multi = false)
+    {
+        if ($multi) {
+            foreach ($items as $key => $item) {
+                $this->items[$key] = new DataArray($item);
+            }
+        } else {
+            $this->items = new DataArray($items);
+        }
+        return $this;
+    }
+
+    public function __get($name)
+    {
+        if (property_exists($this, 'hidden') && in_array($name, $this->hidden)) {
+            return null;
+        }
+
+        if (isset($this->items[$name])) {
+            return $this->items[$name];
+        }
+
+        return null;
+    }
+
+    /**
      * Magic setter function
      *
      * @return mixed
@@ -65,140 +266,9 @@ class Model
             return $this;
         }
 
-        $this->data[$name] = $value;
+        $this->items[$name] = $value;
         return $this;
     }
-
-
-    public function hasMany($table, $foreignKey = null, $localKey = 'id', $where = '', $field = '*')
-    {
-        $query = "SELECT $field FROM $table WHERE $foreignKey = ?";
-        if (!empty($where)) {
-            $query .= " AND $where";
-        }
-        $stmt = $this->db->prepare($query);
-        if (!$stmt) {
-            throw new \Exception('预处理失败:' . $this->db->error);
-        }
-        $stmt->bind_param("i", $this->id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if (!$result) {
-            throw new \Exception('查询失败:' . $this->db->error);
-        }
-        return $result->fetch_all(MYSQLI_ASSOC);
-    }
-
-    // 需要放到model中
-    public function belongsTo($table, $foreignKey, $ownerKey = 'id', $where = "", $field = '*')
-    {
-        $query = "SELECT $field FROM $table WHERE $ownerKey = (SELECT $foreignKey FROM " . get_class($this) . " WHERE id = ?)";
-
-        if (!empty($where)) {
-            $query .= " AND $where";
-        }
-
-        $stmt = $this->db->prepare($query);
-
-        if (!$stmt) {
-            throw new \Exception('预处理失败:' . $this->db->error);
-        }
-
-        $stmt->bind_param("i", $this->id);
-        $stmt->execute();
-
-        $result = $stmt->get_result();
-
-        if (!$result) {
-            throw new \Exception('查询失败:' . $this->db->error);
-        }
-
-        return $result->fetch_assoc();
-    }
-
-    public function hasOne($table, $foreignKey, $where = "", $field = '*')
-    {
-        $query = "SELECT $field FROM $table WHERE $foreignKey = ?";
-
-        if ($where != "") {
-            $query .= " AND $where";
-        }
-        $stmt = $this->db->prepare($query);
-
-        if (!$stmt) {
-            throw new \Exception('预处理失败:' . $this->db->error);
-        }
-        $stmt->bind_param("i", $this->id);
-        $stmt->execute();
-
-        $result = $stmt->get_result();
-
-        if (!$result) {
-            throw new \Exception('查询失败:' . $this->db->error);
-        }
-
-        return $result->fetch_assoc();
-    }
-
-    public function hasManyThrough($table, $through_table, $foreign_key, $through_foreign_key, $where = "")
-    {
-        $query = "SELECT $table.* FROM $table JOIN $through_table ON $table.id = $through_table.$foreign_key WHERE $through_table.$through_foreign_key = ?";
-
-        if ($where != "") {
-            $query .= " AND $where";
-        }
-
-        $stmt = $this->db->prepare($query);
-
-        if (!$stmt) {
-            throw new \Exception('预处理失败:' . $this->db->error);
-        }
-
-        $stmt->bind_param("i", $this->id);
-        $stmt->execute();
-
-        $result = $stmt->get_result();
-
-        if (!$result) {
-            throw new \Exception('查询失败:' . $this->db->error);
-        }
-
-        return $result->fetch_all(MYSQLI_ASSOC);
-    }
-
-    // 预加载
-    public function preload($table, $foreign_key, $where = "")
-    {
-        $query = "SELECT * FROM $table WHERE $foreign_key IN (?)";
-
-        if ($where != "") {
-            $query .= " AND $where";
-        }
-
-        $ids = array_column($this->hasMany($table, $foreign_key), 'id');
-
-        if (count($ids) == 0) {
-            return [];
-        }
-
-        $stmt = $this->db->prepare(str_replace("?", implode(",", array_fill(0, count($ids), "?")), $query));
-
-        if (!$stmt) {
-            throw new \Exception('预处理失败:' . $this->db->error);
-        }
-
-        $stmt->bind_param(str_repeat("i", count($ids)), ...$ids);
-        $stmt->execute();
-
-        $result = $stmt->get_result();
-
-        if (!$result) {
-            throw new \Exception('查询失败:' . $this->db->error);
-        }
-
-        return $result->fetch_all(MYSQLI_ASSOC);
-    }
-
 
     /**
      * Catches calls to undefined methods.

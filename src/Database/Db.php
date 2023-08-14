@@ -46,7 +46,7 @@ class Db
      *
      * @return $this
      */
-    public static function query()
+    public static function newQuery()
     {
         return new static();
     }
@@ -63,7 +63,7 @@ class Db
             || empty($config['username'])
             || !isset($config['password'])
         ) {
-            if (function_exists('config') && !empty($config = config('tools_database.mysql.' . $connectionName))) {
+            if (!function_exists('config') || empty($config = config('tools_database.mysql.' . $connectionName))) {
                 $this->pdo = null;
                 return false;
             }
@@ -189,7 +189,7 @@ class Db
                 // 如果第伞个参数是闭包
                 if ($conditions[2] instanceof Closure && is_string($conditions[1]) && is_callable($func = $conditions[2])) {
                     // 闭包函数
-                    $subClass = self::query();
+                    $subClass = self::newQuery();
                     $func($subClass);
 
                     $whereArr[]    = $conditions[0] . ' ' . $conditions[1] . ' ' . '( ' . $subClass->getOption('toSql') . ' )';
@@ -256,7 +256,7 @@ class Db
         if ($conditions[0] instanceof Closure) {
             // 闭包函数
             $fun      = $conditions[0];
-            $subClass = self::query();
+            $subClass = self::newQuery();
             $fun($subClass);
             $whereArr[]    = '( ' . $subClass->getOption('whereStr') . ' )';
             $subParameters = $subClass->getOption('parameters');
@@ -393,7 +393,7 @@ class Db
         if ($conditions[1] instanceof Closure) {
             // TODO 闭包函数
             $fun      = $conditions[1];
-            $subClass = self::query();
+            $subClass = self::newQuery();
             $fun($subClass);
             $joinOnStr    = $subClass->getOption('joinOnStr');
             $joinWhereStr = $subClass->getOption('whereStr');
@@ -768,8 +768,26 @@ class Db
     // 添加设置事务隔离级别的方法
     public function setTransactionIsolation($isolationLevel)
     {
-        $this->pdo->exec("SET TRANSACTION ISOLATION LEVEL $isolationLevel");
+        $this->exec("SET TRANSACTION ISOLATION LEVEL $isolationLevel");
         return $this;
+    }
+
+    // 执行 SQL 语句，返回PDOStatement对象,可以理解为结果集
+    public function queryDb($sql = '')
+    {
+        return $this->pdo->query($sql);
+    }
+
+    // 执行一条 SQL 语句，并返回受影响的行数
+    public function exec($sql = '')
+    {
+        return $this->pdo->exec($sql);
+    }
+
+    // 添加防止 SQL 注入功能(为SQL语句中的字符串添加引号)
+    public function quote($string)
+    {
+        return $this->pdo->quote($string);
     }
 
     // 开启事务的方法
@@ -810,6 +828,12 @@ class Db
             $this->pdo->rollBack();
             throw new Exception("事务回滚：" . $e->getMessage());
         }
+    }
+
+    // 检测是否在一个事务内
+    public function inTransaction()
+    {
+        return $this->pdo->inTransaction();
     }
 
     /**
@@ -901,12 +925,6 @@ class Db
         return $primaryKeyColumnNames;
     }
 
-    // 添加防止 SQL 注入功能(查询里的字符串添加引号)
-    private function sanitize($string)
-    {
-        return $this->pdo->quote($string);
-    }
-
     /**
      * 获取数据表索引列信息
      */
@@ -966,5 +984,11 @@ class Db
     public function sum($column)
     {
         return $this->aggregate('SUM', $column);
+    }
+
+    public function getParams()
+    {
+        //获取sql预处理命令
+        return $this->stmt->debugDumpParams();
     }
 }

@@ -32,7 +32,7 @@ class Model
 
     public function __construct($data = null)
     {
-        $this->db = Db::instance();
+        $this->db = Db::query();
         $this->db->connect($this->connectionName);
         if (empty ($this->dbTable)) {
             $this->dbTable = $this->underlineConvert(get_class($this));
@@ -61,7 +61,7 @@ class Model
      */
     public function __set($name, $value)
     {
-        if (property_exists($this, 'hidden') && array_search($name, $this->hidden) !== false) {
+        if (property_exists($this, 'hidden') && in_array($name, $this->hidden)) {
             return $this;
         }
 

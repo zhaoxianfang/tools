@@ -29,6 +29,7 @@
   ],
   "require": {
     "php": ">=8.0",
+    "ext-pdo": "*",
     "ext-gd": "*",
     "ext-dom": "*",
     "ext-iconv": "*"

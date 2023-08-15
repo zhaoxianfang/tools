@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\req;
+namespace zxf\Database;
 
 use \Redis as PhpRedis;
 

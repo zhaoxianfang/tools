@@ -10,20 +10,21 @@ class Model
 {
 
     /**
-     * Working instance of Db created earlier
+     * Db 对象
      *
      * @var Db
      */
-    private $db;
+    private Db $db;
 
     /**
-     * Primary key for an object. 'id' is a default value.
+     * 表的主键id
      *
      * @var string
      */
     protected $primaryKey = 'id';
+
     /**
-     * Table name for an object. Class name will be used by default
+     * 表名称，如果不设置则默认为类名的下划线形式
      *
      * @var string
      */
@@ -32,16 +33,23 @@ class Model
     /**
      * 查询到的数据集合
      */
-    protected $item;
-    protected $data;
+    protected DataArray $item;
 
+    /**
+     * 用户更新或者插入的数据
+     */
+    protected array $data = [];
+
+    /**
+     * 数据库连接名称，如果不设置则默认为default
+     *
+     * @var string
+     */
     public $connectionName = 'default';
 
     public function __construct($data = null)
     {
-        $this->db = Db::newQuery();
-        $this->db->connect($this->connectionName);
-        $this->db->table($this->getTableName());
+        $this->db = Db::newQuery()->connect($this->connectionName)->table($this->getTableName());
         if ($data) {
             $this->data = $data;
         }
@@ -62,7 +70,7 @@ class Model
         return strtolower(preg_replace('/(?<=[a-z])([A-Z])/', '_$1', $str));
     }
 
-    public static function query()
+    public static function query(): static
     {
         return new static();
     }
@@ -70,23 +78,23 @@ class Model
     /**
      * 填充数据
      */
-    public function fill(array $data)
+    public function fill(array $data): static
     {
         $this->data = $data;
         return $this;
     }
 
     // 刷新数据
-    public function refresh()
+    public function refresh(): static
     {
-        $this->data = $this->find($this->data[$this->primaryKey]);
+        !empty($id = $this->getPrimaryKeyValue()) && $this->find($id);
         return $this;
     }
 
     /**
      * 更新或者插入 单行数据
      */
-    public function save(array $data = [])
+    public function save(array $data = []): static
     {
         $data && $this->fill($data);
         if ($id = $this->getPrimaryKeyValue()) {
@@ -95,6 +103,7 @@ class Model
             $id = $this->db->insertGetId($this->data);
         }
         $this->find($id);
+        $this->data = [];
         return $this;
     }
 
@@ -103,17 +112,18 @@ class Model
      */
     private function getPrimaryKeyValue()
     {
-        return !empty($this->data) ? $this->data[$this->primaryKey] : null;
+        return !empty($this->item->toArray()) ? $this->item[$this->primaryKey] : null;
     }
 
     /**
      * 插入数据
      */
-    public function create(array $data = [])
+    public function create(array $data = []): static
     {
         $data && $this->fill($data);
         $id = $this->db->insertGetId($this->data);
         $this->find($id);
+        $this->data = [];
         return $this;
     }
 
@@ -129,6 +139,7 @@ class Model
         } else {
             throw new Exception('操作失败');
         }
+        $this->data = [];
         return $this;
     }
 
@@ -142,6 +153,7 @@ class Model
         if ($id = $this->getPrimaryKeyValue()) {
             $this->find($id);
         }
+        $this->data = [];
         return $this;
     }
 
@@ -154,6 +166,7 @@ class Model
         if ($res) {
             $this->setData($res, false);
         }
+        $this->data = [];
         return $this;
     }
 
@@ -163,6 +176,7 @@ class Model
         if ($res) {
             $this->setData($res, false);
         }
+        $this->data = [];
         return $this;
     }
 
@@ -177,12 +191,14 @@ class Model
         } else {
             throw new Exception('数据不存在:' . $id);
         }
+        $this->data = [];
         return $this;
     }
 
     public function get()
     {
-        $res = $this->db->get();
+        $res        = $this->db->get();
+        $this->data = [];
         if ($res) {
             return $this->setData($res, true);
         }
@@ -255,7 +271,7 @@ class Model
     public function hasOne($table, $foreignKey, $field = '*')
     {
         $tableName = is_string($table) ? $table : ($table instanceof Model ? $table->getTableName() : '');
-        return $this->db->table($tableName)->select($field)->where("{$tableName}.{$foreignKey}", $this->id)->first();
+        return $this->db->table($tableName)->select($field)->where("{$tableName}.{$foreignKey}", $this->getPrimaryKeyValue())->first();
     }
 
     /**
@@ -272,7 +288,7 @@ class Model
      * @return mixed
      * @throws Exception
      */
-    public function hasManyThrough($table, $throughTable, $ownerForeignKey, $throughForeignKey, $ownerKey = "id", $throughKey = "id", $field = '*')
+    public function belongsToMany($table, $throughTable, $ownerForeignKey, $throughForeignKey, $ownerKey = "id", $throughKey = "id", $field = '*')
     {
         $ownerTableName  = $this->getTableName();
         $aimTableName    = is_string($table) ? $table : ($table instanceof Model ? $table->getTableName() : ''); // 查询的目标表名
@@ -282,8 +298,8 @@ class Model
             ->select("{$aimTableName}.*")
             ->join($middleTableName, "{$aimTableName}.{$throughForeignKey} = {$middleTableName}.{$throughKey}")
             ->join($ownerTableName, "{$ownerTableName}.{$ownerKey} = {$middleTableName}.{$ownerForeignKey}")
-            ->where("{$middleTableName}.{$ownerForeignKey}", $this->id)
-            ->get();
+            ->where("{$middleTableName}.{$ownerForeignKey}", $this->getPrimaryKeyValue())
+            ;
     }
 
     public function setData($data = [], $multi = false)
@@ -302,10 +318,9 @@ class Model
         }
     }
 
-    // 是否有数据
-    public function getData(): bool
+    public function toArray()
     {
-        return $this->item;
+        return $this->item->toArray();
     }
 
     public function __get($name)
@@ -322,9 +337,7 @@ class Model
     }
 
     /**
-     * Magic setter function
-     *
-     * @return mixed
+     * 修改值
      */
     public function __set($name, $value)
     {

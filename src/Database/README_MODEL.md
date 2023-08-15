@@ -1,337 +1,280 @@
-Model - model implementation on top of the Db.
+# 数据操作模型类 Model
 
-Please note that this library is not pretending to be a full stack ORM, but simply an OOP wrapper for `mysqlidb`.
+> Model 是一个通过pdo驱动查询mysql的 模型操作类
+> 只需要继承 Model 类，就可以使用 Model类 和 Db类 的所有方法
 
-<hr>
+## 安装
 
-### Initialization
-
-Include mysqlidb and Model classes. If you want to use model autoloading instead of manually including them in the scripts use `autoload()` method.
-```php
-require_once("libs/Db.php");
-require_once("libs/Model.php");
-
-// db instance
-$db = new Mysqlidb('localhost', 'user', '', 'testdb');
-// enable class autoloading
-Model::autoload("models");
+```
+composer require zxf/tools
 ```
 
-Each database table could be easily mapped into a Model instance.  If you do not want to create model for a simple table its object could be simply created with a `table()` method.
-```php
-$user = Model::table("users");
+## 配置
+
+> 需要在`config`目录下创建`tools_database.php`文件，内容如下
+
+```
+<?php
+// 数据库相关的配置，mysql、redis、elastic 等
+return [
+    //  mysql
+    'mysql' => [
+        'default' => [
+            'host'     => env('EXT_MYSQL_HOST', '127.0.0.1'),
+            'username' => env('EXT_MYSQL_HOST', 'root'),
+            'password' => env('EXT_MYSQL_HOST', ''),
+            'db'       => env('EXT_MYSQL_HOST', 'test'),
+            'port'     => env('EXT_MYSQL_HOST', 3306),
+            // 'prefix'   => env('EXT_MYSQL_HOST', ''),
+            'charset'  => env('EXT_MYSQL_HOST', 'utf8mb4'),
+            'socket'   => env('EXT_MYSQL_SOCKET', null),
+        ],
+    ],
+    //  redis 等其他配置
+];
 ```
 
-Otherwise basic model should be declared as:
-```php
-class user extends Model {}
+并且可以通过 `config('tools_database.mysql.default')` 函数获取到上面的配置信息，如果你实在没有或者没有使用框架，那么可以使用下面的暴力方法读取mysql连接配置信息
+
+***这是一个无奈之举***
+
 ```
-In case autoload is set to 'models' directory, the filename should be models/user.php
-
-Class will be related to 'user' table. To change the table name, define correct name in the `$dbTable` variable:
-
-```php
-    protected $dbTable = "users";
-```
-
-Both objects created throw new class file creation of with `table()` method will have the same set of methods available. Only exception is that relations, validation or custom model methods
-will not be working with an objects created with `table()` method.
-
-
-### Selects
-Retrieving objects from the database is pretty much the same process as a mysqliDb `get()`/`getOne()`/`getValue()` methods without a need to specify table name. All mysqlidb functions like `where()`, `orWhere()`, `orderBy()`, `join()`, etc. are supported.
-
-## Retrieving All Records
-
-```php
-//$users = Model::table('users')->get();
-$users = user::get();
-foreach ($users as $u) {
-  echo $u->login;
+if (!function_exists('config')) {
+   function config($key='tools_database.mysql.default')
+   {
+       return [
+           'host'     => '127.0.0.1',
+           'dbname'   => 'test',
+           'username' => 'root',
+           'password' => '',
+       ];
+   }
 }
 ```
 
-## Using Where Condition And A Limit
-```php
-$users = user::where("login", "demo")->get(Array (10, 20));
-foreach ($users as $u) ...
+## 在 模型类/实体类 中使用
+
+> 假设我们有一个`user`表，表结构如下
+> 主键| 名称 | ... | 所属国家id | 状态 |创建时间 | 更新时间
+> id | name | ... | country_id | status |created_at | updated_at
+
+### 先定义一个 User 类，继承 Model 类
+
 ```
+use zxf\Database\Model;
 
-## Retrieving A Model By Primary Key
-
-```php
-//$user = Model::table('users')->byId(1);
-$user = user::byId(1);
-echo $user->login;
-```
-
-Model will also assume that each table has a primary key column named "id". You may define a primaryKey property to override this assumption.
-
-```php
-  protected $primaryKey = "userId";
-```
-
-
-### Insert Row
-1. OOP Way. Just create new object of a needed class, fill it in and call `save()` method. Save will return
-   record id in case of success and false in case if insert will fail.
-```php
-//$user = Model::table('users');
-$user = new user;
-$user->login = 'demo';
-$user->password = 'demo';
-$id = $user->save();
-if ($id)
-  echo "user created with id = " . $id;
-```
-
-2. Using arrays
-```php
-$data = Array('login' => 'demo',
-        'password' => 'demo');
-$user = new user ($data);
-$id = $user->save();
-if ($id == null) {
-    print_r($user->errors);
-    echo $db->getLastError;
-} else
-    echo "user created with id = " . $id;
-```
-
-3. Multisave
-
-```php
-$user = new user;
-$user->login = 'demo';
-$user->pass = 'demo';
-
-$p = new product;
-$p->title = "Apples";
-$p->price = 0.5;
-$p->seller = $user;
-$p->save();
-```
-
-After `save()` is called, both new objects (user and product) will be saved.
-
-
-### Update
-To update model properties just set them and call `save()` method. Values that need to be changed could be passed as an array to the `save()` method as well.
-
-```php
-$user = user::byId(1);
-$user->password = 'demo2';
-$user->save();
-```
-```php
-$data = Array('password', 'demo2');
-$user = user::byId(1);
-$user->save($data);
-```
-
-### Delete
-Use `delete()` method on any loaded object.
-```php
-$user = user::byId(1);
-$user->delete();
-```
-
-### Relations
-Currently Model supports only `hasMany` and `hasOne` relations. To use them declare `$relations` array in the model class.
-After that you can get related object via variable names defined as keys.
-
-## hasOne example:
-```php
-    protected $relations = Array(
-        'person' => Array("hasOne", "person", 'id');
-    );
-
-    ...
-
-    $user = user::byId(1);
-    // sql: select * from users where id = $personValue
-    echo $user->person->firstName . " " . $user->person->lastName . " have the following products:\n";
-    // one more sql: select * from person where id=x
-```
-Please note, that following way of querying will execute 2 sql queries:
-1. `select * from users where id=1`
-2. `select * from person where id=x`
-
-To optimize this into single select join query use `with()` method.
-```php
-   $user = user::with('person')->byId(1);
-   // sql: select * from users left join person on person.id = users.id wher id = 1;
-    echo $user->person->firstName . " " . $user->person->lastName . " have the following products:\n";
-```
-
-## hasMany example:
-In the `hasMany` array should be defined the target object name (product in example) and a relation key (userid).
-```php
-    protected $relations = Array(
-        'products' => Array("hasMany", "product", 'userid')
-    );
-
-    ...
-
-    $user = user::byId(1);
-    // sql: select * from $product_table where userid = $userPrimaryKey
-    foreach ($user->products as $p) {
-            echo $p->title;
+// 用户实体/模型类
+class User extends Model
+{
+    /**
+     * 表的主键id,默认为 id，如果不是 id，需要定义 $primaryKey 属性，如果主键值是id，可以不定义
+     *
+     * @var string
+     */
+    protected $primaryKey = 'id';
+    
+    /**
+     * 表名称，如果不设置则默认为类名的 [下划线] 形式,如果表名和类名不一致，需要定义 $table 属性
+     *     例如：如果类名为 User 对应的数据库表名为 user，如果不是就需要定义 $table 属性
+     *          如果类名为 UserRole 对应的数据库表名为 user_role
+     *
+     * @var string
+     */
+    protected $dbTable = 'users';
+    
+    /**
+     * 定义一个用户有多个关联地址 (一对多关系)
+     */
+    public function address(){
+        return $this->hasMany(Address::class, 'user_id', 'id');
     }
-```
-
-### Joining tables
-```php
-$depts = product::join('user');
-$depts = product::join('user', 'productid');
-```
-
-First parameter will set an object which should be joined. Second paramter will define a key. Default key is `$objectName+'Id'`
-
-
-NOTE: Objects returned with `join()` will not save changes to a joined properties. For this you can use relationships.
-
-### Timestamps
-Library provides a transparent way to set timestamps of an object creation and its modification:
-To enable that define `$timestamps` array as follows:
-```php
-protected $timestamps = Array ('createdAt', 'updatedAt');
-```
-Field names can't be changed.
-
-### Array Fields
-Model can automatically handle array type of values. Optionaly you can store arrays in json encoded or in pipe delimited format.
-To enable automatic json serialization of the field define `$jsonFields` array in your modal:
-```php
-    protected $jsonFields = Array('options');
-```
-To enable pipe delimited storage of the field, define `$arrayFields` array in your modal:
-```php
-    protected $arrayFields = Array('sections');
-```
-The following code will now store `'options'` variable as a json string in the database, and will return an array on load.
-Same with the `'sections'` variable except that it will be stored in pipe delimited format.
-```php
-    $user = new user;
-    $user->login = 'admin';
-    $user->options = Array('canReadNews', 'canPostNews', 'canDeleteNews');
-    $user->sections = Array('news', 'companyNews');
-    $user->save();
-    ...
-    $user = user::byId(1);
-    print_r($user->options);
-```
-
-### Validation and Error checking
-Before saving and updating the row, Model does input validation. In case validation rules are set but their criteria is
-not met, then `save()` will return an error with its description. For example:
-```php
-$id = $user->save();
-if (!$id) {
-    // show all validation errors
-    print_r($user->errors);
-    echo $db->getLastQuery();
-    echo $db->getLastError();
+    
+    /**
+     * 定义一个用户从属于一个国家 (多对一关系)
+     */
+    public function country(){
+        return $this->belongsTo(Country::class, 'country_id', 'id');
+    }
+    
+    /**
+    * 定义一个用户有一个身份证信息 (一对一关系)
+    */
+    public function idCard(){
+        return $this->hasOne(IdCard::class, 'user_id', 'id');
+    }
+    
+    /**
+    * 定义一个用户在多个文章中发表了评论 (远程一对多关系)
+    */
+    public function posts(){
+        return $this->belongsToMany(Post::class, Articel::class, 'user_id', 'article_id','id','id');
+    }
+    
+    /**
+    * 定义一个用户有多个角色 (多对多关系)
+    */
+    public function roles(){
+        return $this->belongsToMany(Role::class, UserRole::class, 'user_id', 'role_id','id','id');
+    }
 }
-echo "user were created with id" . $id;
-```
-Validation rules must be defined in `$dbFields` array.
-```php
-  protected $dbFields = Array(
-    'login' => Array('text', 'required'),
-    'password' => Array('text'),
-    'createdAt' => Array('datetime'),
-    'updatedAt' => Array('datetime'),
-    'custom' => Array('/^test/'),
-  );
-```
-First parameter is a field type. Types could be the one of following: text, bool, int, datetime or a custom regexp.
-Second parameter is 'required' and its defines that following entry field be always defined.
-
-**NOTE:** All variables which are not defined in the `$dbFields` array will be ignored from insert/update statement.
-
-### Using array as a return value
-Model can return its data as array instead of object. To do that, the `ArrayBuilder()` function should be used in the beginning of the call.
-```php
-    $user = user::ArrayBuilder()->byId(1);
-    echo $user['login'];
-
-    $users = user::ArrayBuilder()->orderBy("id", "desc")->get();
-    foreach ($users as $u)
-        echo $u['login'];
-```
-
-The following call will return data only of the called instance without any relations data. Use `with()` function to include relation data as well.
-```php
-    $user = user::ArrayBuilder()->with("product")->byId(1);
-    print_r ($user['products']);
-```
-
-### Using json as a return value
-Together with `ArrayBuilder()` and `ObjectBuilder()`, Model can also return a result in json format to avoid extra coding.
-```php
-    $userjson = user::JsonBuilder()->with("product")->byId(1);
-```
-### Object serialization
-
-Object could be easily converted to a json string or an array.
-
-```php
-    $user = user::byId(1);
-    // echo will display json representation of an object
-    echo $user;
-    // userJson will contain json representation of an object
-    $userJson = $user->toJson();
-    // userArray will contain array representation of an object
-    $userArray = $user->toArray();
-```
-
-### Pagination
-Use paginate() instead of get() to fetch paginated result
-```php
-$page = 1;
-// set page limit to 2 results per page. 20 by default
-product::$pageLimit = 2;
-$products = product::arraybuilder()->paginate($page);
-echo "showing $page out of " . product::$totalPages;
 
 ```
 
-### Hidden Fields
-Sometimes it's important to block some fields that can be accessed from outside the model class (for example, the user password).
+### 调用User实体类的方法
 
-To block the access to certain fields using the `->` operator, you can declare the  `$hidden` array into the model class. This array holds column names that can't be accessed with the `->` operator.
+```
+use xxx/User;// 引入上面定义的 User 类
 
-For example:
+class TestUser
+{
+    public function getUserList(){
+        $user = new User();
+        $res = $user->where('status',1)->get();
+        foreach($res as $key => $item){
 
-```php
-class User extends Model {
-    protected $dbFields = array(
-        'username' => array('text', 'required'),
-        'password' => array('text', 'required'),
-        'is_admin' => array('bool'),
-        'token' => array('text')
-    );
+            // 打印获取到的每个用户数据
+            print_r($item->toArray());
 
-    protected $hidden = array(
-        'password', 'token'
-    );
+            // 获取用户的名称
+            print_r($item->name);
+            
+            // 修改id为1的用户的名称
+            if($item->id == 1){
+                $item->name = 'name_测试';
+                $item->save();
+            }
+            
+            // 删除没有关联国家的用户
+            if($item->country_id == 0){
+                $item->delete();
+            }
+            
+            // TODO: 其他操作
+        }
+    }
+    
+    // ...
 }
 ```
 
-If you try to:
-```php
-echo $user->password;
-echo $user->token;
+## 支持的操作方法
+
+### 获取表名称
+
+```
+class TestUser
+{
+    public function test(){
+        $user = new User();
+        $user->getTableName();
+    }
+}
 ```
 
-Will return `null`, and also:
-```php
-$user->password = "my-new-password";
+### 插入数据
+
+```
+class TestUser
+{
+    public function test1(){
+        $user = new User();
+        $user->fill([
+            'name' => '...',
+            ...
+        ]);
+        $user->save();
+    }
+    
+    public function test2(){
+        $user = new User([
+            'name' => '...',
+            ...
+        ]);
+        $user->save();
+    }
+    
+    public function test3(){
+        $user = new User();
+        $user->create([
+            'name' => '...',
+            ...
+        ]);
+    }
+}
 ```
 
-Won't change the current `password` value.
+### 查询数据
 
-### Examples
+```
+class TestUser
+{
+    public function test1(){
+        $user = User::query()->find(1);
+    }
+    
+    public function test2(){
+        $user = User::query()->where('status',1)->get();
+    }
+    
+    public function test3(){
+        $user = User::query()->where('status',1)->first();
+    }
+    
+    public function test4(){
+        $user = User::query()->where('status',1)->firstOrFail();
+    }
+    
+    public function test5(){
+        $user = User::query()->where('status',1)->get();
+    }
+    
+    public function test6(){
+        $user = User::query()
+          ->where(function($query){
+             $query->where('age','>',21);
+          })
+          ->get();
+    }
+    
+    // ...
+    
+```
 
-Please look for a use examples in <a href='tests/ModelTests.php'>tests file</a> and test models inside the <a href='tests/models/'>test models</a> directory
+### 更新数据
+
+```
+class TestUser
+{
+    public function test1(){
+        $user = User::query()->find(1);
+        $user->roles();
+    }
+    
+    public function test2(){
+        $user = User::query()->find(1);
+        $user->update([
+            'name' => '...',
+            ...
+        ]);
+    }
+}
+```
+
+## 高级用法
+
+```
+class TestUser
+{
+    public function test1(){
+        $user = User::query()->find(1);
+        $user->roles()->get();
+        // OR
+        $user->roles()->where(...)->get();
+    }
+    
+    public function test2(){
+        $user = User::query()->find(1);
+        $idcard = $user->idCard();
+    }
+}
+```

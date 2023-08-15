@@ -11,7 +11,7 @@ composer require zxf/tools
 ## 初始化
 
 ```
-use zxf\database\Db;
+use zxf\Database\Db;
 
 $db = new Db([
     'host'     => '127.0.0.1',

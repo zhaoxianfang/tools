@@ -9,23 +9,25 @@ namespace zxf\Facade;
  * @link https://gitee.com/zhaoxianfang/tools
  *
  * @method string getTableName()
- * @method mixed query()
- * @method mixed fill()
+ * @method static query()
+ * @method mixed fill(array $data)
  * @method mixed refresh()
- * @method mixed save()
- * @method mixed create()
- * @method mixed createOrFail()
- * @method mixed update()
- * @method Model find()
- * @method Model findOrFail()
+ * @method mixed save(array $data = [])
+ * @method mixed create(array $data = [])
+ * @method mixed createOrFail(array $data = [])
+ * @method mixed update(array $data = [])
+ * @method Model find($id)
+ * @method Model findOrFail($id)
  * @method Model first()
  * @method Model get()
- * @method Model hasMany()
- * @method Model belongsTo()
- * @method Model hasOne()
- * @method Model hasManyThrough()
- * @method Model setData()
- * @method Model getData()
+ *
+ * @method Model hasMany($table, $foreignKey, $localKey, $field)
+ * @method Model belongsTo($table, $foreignKey, $ownerKey, $field)
+ * @method Model hasOne($table, $foreignKey, $field = '*')
+ * @method Model belongsToMany($table, $throughTable, $ownerForeignKey, $throughForeignKey, $ownerKey = "id",$throughKey = "id", $field = '*')
+ *
+ * @method Model setData($data = [], $multi = false)
+ * @method Model toArray()
  */
 class Model extends FacadeBase implements FacadeInterface
 {

@@ -526,6 +526,7 @@ class Db
             $this->clear();
             return $stmt;
         } catch (PDOException $e) {
+            $this->clear();
             throw new Exception("数据库错误：" . $e->getMessage());
         }
     }
@@ -622,7 +623,6 @@ class Db
             $parameters       = array_values($data);
             $this->parameters = empty($this->parameters) ? $parameters : array_merge($parameters, $this->parameters);
             $stmt             = $this->execute();
-
             return $stmt->rowCount();
 
         } catch (Exception $e) {
@@ -824,7 +824,9 @@ class Db
         try {
             $callback($this);
             $this->pdo->commit();
+            $this->clear();
         } catch (Exception $e) {
+            $this->clear();
             $this->pdo->rollBack();
             throw new Exception("事务回滚：" . $e->getMessage());
         }
@@ -841,7 +843,7 @@ class Db
      */
     public function clear()
     {
-
+        $this->query      = ''; // 最后一次查询的 SQL 语句
         $this->parameters = []; // 参数绑定
 
         $this->fieldStr = ''; // 解析后的查询字段
@@ -857,7 +859,6 @@ class Db
         $this->union = []; // 联合查询
 
         // 不清空的字段
-        // $this->query      = ''; // 最后一次查询的 SQL 语句
         // $this->table = ''; // 当前操作的数据表
         // $this->error = ''; // 异常信息
 

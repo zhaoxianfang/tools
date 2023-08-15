@@ -11,15 +11,21 @@ namespace zxf\Facade;
  * @method string getTableName()
  * @method mixed query()
  * @method mixed fill()
+ * @method mixed refresh()
  * @method mixed save()
  * @method mixed create()
  * @method mixed createOrFail()
- * @method mixed find()
+ * @method mixed update()
+ * @method Model find()
  * @method Model findOrFail()
+ * @method Model first()
+ * @method Model get()
  * @method Model hasMany()
  * @method Model belongsTo()
  * @method Model hasOne()
  * @method Model hasManyThrough()
+ * @method Model setData()
+ * @method Model getData()
  */
 class Model extends FacadeBase implements FacadeInterface
 {

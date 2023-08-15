@@ -10,11 +10,11 @@ use ArrayAccess;
  *      'a'=>'aa',
  *      'b'=>'bb'
  * ];
- * $config = new DataArray($options);
+ * $data = new DataArray($options);
  * 1、直接使用数组的方式调用
- * var_dump($config['a']);
+ * var_dump($data['a']);
  * 2、使用对象的方式调用
- * var_dump($config->get('a'));
+ * var_dump($data->get('a'));
  *
  * @package zxf\tools
  */
@@ -26,16 +26,16 @@ class DataArray implements ArrayAccess
      *
      * @var array
      */
-    private $config = [];
+    private $data = [];
 
     /**
-     * Config constructor.
+     * data constructor.
      *
      * @param array $options
      */
     public function __construct(array $options)
     {
-        $this->config = $options;
+        $this->data = $options;
     }
 
     /**
@@ -61,6 +61,23 @@ class DataArray implements ArrayAccess
         return $this->offsetGet($offset);
     }
 
+    public function __get($key)
+    {
+        return $this->get($key);
+    }
+
+    public function __set($key, $value)
+    {
+        $this->set($key, $value);
+    }
+
+    public function __unset($key)
+    {
+        if (array_key_exists($key, $this->data)) {
+            unset($this->data[$key]);
+        }
+    }
+
     /**
      * 合并数据到对象
      *
@@ -69,12 +86,24 @@ class DataArray implements ArrayAccess
      *
      * @return array
      */
-    public function merge(array $data, $append = false)
+    public function merge(array $data, bool $append = true): array
     {
-        if ($append) {
-            return $this->config = array_merge($this->config, $data);
-        }
-        return array_merge($this->config, $data);
+        return $this->data = $append && !empty($this->data) && !empty($data) ? array_merge($this->data, $data) : $data;
+    }
+
+    public function toArray(): array
+    {
+        return $this->data;
+    }
+
+    public function hasValue($value): bool
+    {
+        return in_array($value, $this->data);
+    }
+
+    public function hasKey($key): bool
+    {
+        return array_key_exists($key, $this->data);
     }
 
     /**
@@ -87,9 +116,9 @@ class DataArray implements ArrayAccess
     public function offsetSet($offset, $value)
     {
         if (is_null($offset)) {
-            $this->config[] = $value;
+            $this->data[] = $value;
         } else {
-            $this->config[$offset] = $value;
+            $this->data[$offset] = $value;
         }
     }
 
@@ -101,9 +130,9 @@ class DataArray implements ArrayAccess
      * @return bool
      */
     #[\ReturnTypeWillChange]
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
-        return isset($this->config[$offset]);
+        return isset($this->data[$offset]);
     }
 
     /**
@@ -115,9 +144,9 @@ class DataArray implements ArrayAccess
     public function offsetUnset($offset = null)
     {
         if (is_null($offset)) {
-            $this->config = [];
+            $this->data = [];
         } else {
-            unset($this->config[$offset]);
+            unset($this->data[$offset]);
         }
     }
 
@@ -132,8 +161,8 @@ class DataArray implements ArrayAccess
     public function offsetGet($offset = null)
     {
         if (is_null($offset)) {
-            return $this->config;
+            return $this->data;
         }
-        return isset($this->config[$offset]) ? $this->config[$offset] : null;
+        return isset($this->data[$offset]) ? $this->data[$offset] : null;
     }
 }

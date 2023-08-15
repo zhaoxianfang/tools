@@ -3,7 +3,7 @@
 
 namespace zxf\Database;
 
-use zxf\Database\Db;
+use Exception;
 use zxf\tools\DataArray;
 
 class Model
@@ -32,7 +32,8 @@ class Model
     /**
      * 查询到的数据集合
      */
-    protected $items;
+    protected $item;
+    protected $data;
 
     public $connectionName = 'default';
 
@@ -69,50 +70,79 @@ class Model
     /**
      * 填充数据
      */
-    public function fill()
+    public function fill(array $data)
     {
-        // TODO
+        $this->data = $data;
+        return $this;
+    }
 
+    // 刷新数据
+    public function refresh()
+    {
+        $this->data = $this->find($this->data[$this->primaryKey]);
+        return $this;
     }
 
     /**
-     * 更新或者插入数据
+     * 更新或者插入 单行数据
      */
-    public function save()
+    public function save(array $data = [])
     {
-        // TODO
+        $data && $this->fill($data);
+        if ($id = $this->getPrimaryKeyValue()) {
+            $this->db->update($this->data);
+        } else {
+            $id = $this->db->insertGetId($this->data);
+        }
+        $this->find($id);
+        return $this;
+    }
+
+    /**
+     * 获取主键字段对应的值
+     */
+    private function getPrimaryKeyValue()
+    {
+        return !empty($this->data) ? $this->data[$this->primaryKey] : null;
     }
 
     /**
      * 插入数据
      */
-    public function create()
+    public function create(array $data = [])
     {
-        // TODO
+        $data && $this->fill($data);
+        $id = $this->db->insertGetId($this->data);
+        $this->find($id);
+        return $this;
     }
 
     /**
      * 插入数据 ,失败则抛出异常
      */
-    public function createOrFail($id)
+    public function createOrFail(array $data = [])
     {
-        // TODO
+        $data && $this->fill($data);
+        $id = $this->db->insertGetId($this->data);
+        if ($id) {
+            $this->find($id);
+        } else {
+            throw new Exception('操作失败');
+        }
+        return $this;
     }
 
     /**
      * 更新数据
      */
-    public function update()
+    public function update(array $data = [])
     {
-        // TODO
-    }
-
-    /**
-     * 插入或修改数据
-     */
-    public function createOrUpdate()
-    {
-        // TODO
+        $data && $this->fill($data);
+        $this->db->update($this->data);
+        if ($id = $this->getPrimaryKeyValue()) {
+            $this->find($id);
+        }
+        return $this;
     }
 
     /**
@@ -120,10 +150,18 @@ class Model
      */
     public function find($id)
     {
-        // TODO
         $res = $this->db->where($this->primaryKey, $id)->first();
         if ($res) {
-            $this->setData($res);
+            $this->setData($res, false);
+        }
+        return $this;
+    }
+
+    public function first()
+    {
+        $res = $this->db->first();
+        if ($res) {
+            $this->setData($res, false);
         }
         return $this;
     }
@@ -133,7 +171,22 @@ class Model
      */
     public function findOrFail($id)
     {
-        // TODO
+        $res = $this->db->where($this->primaryKey, $id)->first();
+        if ($res) {
+            $this->setData($res, false);
+        } else {
+            throw new Exception('数据不存在:' . $id);
+        }
+        return $this;
+    }
+
+    public function get()
+    {
+        $res = $this->db->get();
+        if ($res) {
+            return $this->setData($res, true);
+        }
+        return null;
     }
 
     /**
@@ -149,6 +202,7 @@ class Model
      * @param string $field
      *
      * @return Db
+     * @throws Exception
      */
     public function hasMany($table, $foreignKey, $localKey, $field): Db
     {
@@ -173,6 +227,7 @@ class Model
      * @param string $field
      *
      * @return Db
+     * @throws Exception
      */
     public function belongsTo($table, $foreignKey, $ownerKey, $field)
     {
@@ -215,6 +270,7 @@ class Model
      * @param string $field             例如 要查询的评论表的字段
      *
      * @return mixed
+     * @throws Exception
      */
     public function hasManyThrough($table, $throughTable, $ownerForeignKey, $throughForeignKey, $ownerKey = "id", $throughKey = "id", $field = '*')
     {
@@ -230,16 +286,26 @@ class Model
             ->get();
     }
 
-    protected function setData($items = [], $multi = false)
+    public function setData($data = [], $multi = false)
     {
         if ($multi) {
-            foreach ($items as $key => $item) {
-                $this->items[$key] = new DataArray($item);
+            $models = [];
+            foreach ($data as $item) {
+                $model = self::query();
+                $model->setData($item, false);
+                $models[] = $model;
             }
+            return $models;
         } else {
-            $this->items = new DataArray($items);
+            $this->item = new DataArray($data);
+            return $this;
         }
-        return $this;
+    }
+
+    // 是否有数据
+    public function getData(): bool
+    {
+        return $this->item;
     }
 
     public function __get($name)
@@ -248,8 +314,8 @@ class Model
             return null;
         }
 
-        if (isset($this->items[$name])) {
-            return $this->items[$name];
+        if (isset($this->item[$name])) {
+            return $this->item[$name];
         }
 
         return null;
@@ -266,7 +332,7 @@ class Model
             return $this;
         }
 
-        $this->items[$name] = $value;
+        $this->item[$name] = $value;
         return $this;
     }
 

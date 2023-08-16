@@ -57,7 +57,7 @@ namespace zxf\Facade;
  * @method mixed getError()
  * @method mixed when()
  * @method mixed exec()
- * @method mixed queryDb()
+ * @method mixed query()
  * @method mixed quote()
  */
 class Db extends FacadeBase implements FacadeInterface

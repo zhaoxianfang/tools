@@ -6,14 +6,14 @@ use \Exception;
 
 use zxf\Database\Contracts\MysqlInterface;
 use zxf\Database\Driver\Mysql\PdoDriver;
-use zxf\Database\Driver\MysqliDriver;
+use zxf\Database\Driver\Mysql\MysqliDriver;
 
 class Db
 {
     // 驱动器 MysqlInterface
     protected $driver;
     // 驱动器名称
-    protected $driverName = 'pdo';
+    protected static $driverName = 'pdo';
 
     /**
      * 实例
@@ -69,10 +69,10 @@ class Db
      */
     public function __construct($connectionName = 'default', ...$args)
     {
-        if ($this->driverName == 'pdo' && extension_loaded('pdo')) {
+        if (self::$driverName == 'pdo' && extension_loaded('pdo')) {
             $this->driver = PdoDriver::class;
         }
-        if ($this->driverName == 'mysqli' && extension_loaded('mysqli')) {
+        if (self::$driverName == 'mysqli' && extension_loaded('mysqli')) {
             $this->driver = MysqliDriver::class;
         }
         if (empty($this->driver)) {
@@ -83,10 +83,11 @@ class Db
         }
     }
 
-    public static function instance($args = [])
+    public static function instance($driverName = 'pdo', $connectionName = 'default', ...$args)
     {
         if (is_null(self::$instance)) {
-            self::$instance = new static(...$args);
+            self::$driverName = $driverName ?? 'pdo';
+            self::$instance = new static($connectionName, ...$args);
         }
         return self::$instance;
     }
@@ -134,7 +135,7 @@ class Db
         if (!is_subclass_of($this->driver, MysqlInterface::class)) {
             throw new Exception("数据库驱动异常!");
         }
-        if ($params) {
+        if (empty($params)) {
             throw new Exception("Database 配置异常!");
         }
         $this->connectSettings[$name] = $params;
@@ -146,15 +147,14 @@ class Db
         if (!isset($this->connectSettings[$connectName])) {
             throw new Exception('未设置连接配置文件');
         }
-        if (!empty($connectDriver = $this->mysqlInstance[$connectName]) && is_object($connectDriver)) {
+        if (!empty($this->mysqlInstance) && !empty($connectDriver = $this->mysqlInstance[$connectName]) && is_object($connectDriver)) {
             self::$activeConnectionObj  = $connectDriver;
             self::$activeConnectionName = $connectName;
             return $this;
         }
 
         $params                            = $this->connectSettings[$connectName];
-        $mysqlIoc                          = new \ReflectionClass($this->driver);
-        $driverObj                         = $mysqlIoc->newInstanceArgs($connectName, $params);
+        $driverObj                         = new $this->driver($connectName, $params);
         $this->mysqlInstance[$connectName] = $driverObj;
         self::$activeConnectionObj         = $driverObj;
         self::$activeConnectionName        = $connectName;

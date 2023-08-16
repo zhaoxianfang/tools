@@ -33,12 +33,14 @@ class PdoDriver implements MysqlInterface
 
     private $config = []; // 连接配置信息
 
-
     /**
      * 构造函数，初始化数据库连接
      */
     public function __construct($connectionName = 'default', ...$args)
     {
+        if (!extension_loaded('pdo')) {
+            throw new Exception('不支持的扩展:pdo');
+        }
         $this->connect('default', ...$args);
     }
 
@@ -334,7 +336,7 @@ class PdoDriver implements MysqlInterface
      */
     public function orWhereColumn($first, $operator = '=', $second = null)
     {
-        $this->whereColumn($first, $operator = '=', $second = null, $boolean = 'OR');
+        $this->whereColumn($first, $operator, $second, $boolean = 'OR');
         return $this;
     }
 
@@ -402,7 +404,6 @@ class PdoDriver implements MysqlInterface
     private function parseJoin($operator = 'INNER', ...$conditions)
     {
         if ($conditions[1] instanceof Closure) {
-            // TODO 闭包函数
             $fun      = $conditions[1];
             $subClass = self::newQuery();
             $fun($subClass);
@@ -518,9 +519,17 @@ class PdoDriver implements MysqlInterface
         return $this;
     }
 
-    public function limit($offset = 0, $limit = 10)
+    public function limit(...$args)
     {
-        $this->limitStr = $offset . ', ' . $limit;
+        if(empty($args)){
+            return $this;
+        }
+        $count = count($args);
+        if($count == 1){
+            $this->limitStr = $args[0];
+        }else{
+            $this->limitStr = $args[0].', '.$args[1];
+        }
         return $this;
     }
 
@@ -564,7 +573,7 @@ class PdoDriver implements MysqlInterface
     public function exists()
     {
         $this->fieldStr = ' 1 ';
-        return $this->first() ? true : false;
+        return (bool)$this->first();
     }
 
     /**
@@ -831,14 +840,14 @@ class PdoDriver implements MysqlInterface
             throw new Exception("事务执行失败：参数必须是一个匿名函数");
         }
 
-        $this->pdo->beginTransaction();
+        $this->beginTransaction();
         try {
             $callback($this);
-            $this->pdo->commit();
+            $this->commit();
             $this->reset();
         } catch (Exception $e) {
             $this->reset();
-            $this->pdo->rollBack();
+            $this->rollBack();
             throw new Exception("事务回滚：" . $e->getMessage());
         }
     }

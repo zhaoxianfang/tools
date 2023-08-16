@@ -125,7 +125,7 @@ interface MysqlInterface
     // 排序功能
     public function orderBy(...$columns);
 
-    public function limit($offset = 0, $limit = 10);
+    public function limit(...$args);
 
     /**
      * 执行查询
@@ -244,9 +244,6 @@ interface MysqlInterface
      * 执行事务
      */
     public function transaction($callback);
-
-    // 检测是否在一个事务内
-    public function inTransaction();
 
     /**
      * 清除查询条件和参数

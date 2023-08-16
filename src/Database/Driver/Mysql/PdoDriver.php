@@ -6,9 +6,9 @@ use \Closure;
 use \Exception;
 use \PDO;
 use \PDOException;
-use zxf\Database\Contracts\MysqlInterface;
+use zxf\Database\Driver\MySQLAbstract;
 
-class PdoDriver implements MysqlInterface
+class PdoDriver extends MySQLAbstract
 {
     private $stmt; // PDO 运行实例
     private $pdo; // PDO 实例

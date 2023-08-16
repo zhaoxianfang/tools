@@ -6,9 +6,9 @@ use Closure;
 use \Exception;
 use ReflectionClass;
 use ReflectionException;
-use zxf\Database\Contracts\MysqlInterface;
+use zxf\Database\Driver\MySQLAbstract;
 
-class MysqliDriver implements MysqlInterface
+class MysqliDriver extends MySQLAbstract
 {
     // mysqli 连接信息
     private $conn;

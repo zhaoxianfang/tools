@@ -56,31 +56,35 @@ class Db
      */
     public function connect($connectionName = 'default', ...$args)
     {
-        if (
-            empty($args) || !is_array($config = $args[0]) || count($config) < 4
-            || empty($config['host'])
-            || empty($config['dbname'])
-            || empty($config['username'])
-            || !isset($config['password'])
-        ) {
+        if (!$this->getConfig($connectionName, ...$args)) {
+            return false;
+        }
+
+        if (!extension_loaded('pdo')) {
+            throw new Exception('不支持的扩展:pdo');
+        }
+
+        try {
+            $pdoIc     = new \ReflectionClass('pdo');
+            $this->pdo = $pdoIc->newInstanceArgs($this->config);
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (\PDOException $e) {
+            throw new Exception("Database 连接失败：" . $e->getMessage());
+        }
+        return $this;
+    }
+
+    private function getConfig($connectionName = 'default', ...$args)
+    {
+        if (empty($args) || !is_array($config = $args[0]) || count($config) < 4 || empty($config['host']) || empty($config['dbname']) || empty($config['username']) || !isset($config['password'])) {
             if (!function_exists('config') || empty($config = config('tools_database.mysql.' . $connectionName))) {
-                $this->pdo = null;
                 return false;
             }
         }
-        $host     = $config['host'];
-        $dbname   = $config['dbname'];
-        $username = $config['username'];
-        $password = $config['password'] ?? '';
 
-        try {
-            $this->config = compact('host', 'dbname', 'username', 'password');
-            $this->pdo    = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (\PDOException $e) {
-            die("连接失败：" . $e->getMessage());
-        }
-        return $this;
+        $dns          = "mysql:host={$config['host']};dbname={$config['dbname']};charset=utf8mb4";
+        $this->config = [$dns, $config['username'], $config['password'] ?? ''];
+        return $this->config;
     }
 
     /**

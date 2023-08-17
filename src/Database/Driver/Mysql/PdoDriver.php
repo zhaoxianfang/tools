@@ -374,7 +374,7 @@ class PdoDriver extends MySQLAbstract
     }
 
     // 添加获取单个值的聚合查询方法
-    private function aggregate($function, $column)
+    public function aggregate($function, $column)
     {
         try {
             $this->fieldStr = "$function($column)";

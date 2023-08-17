@@ -279,6 +279,9 @@ interface MysqlInterface
      */
     public function getIndexes();
 
+    // 添加获取单个值的聚合查询方法,$function为聚合函数名(SUM、COUNT、AVG...)，$column为字段名(*、id、name...)
+    public function aggregate($function, $column);
+
     /**
      * 获取结果数量
      */

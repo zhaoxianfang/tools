@@ -44,13 +44,15 @@ class DateTools
 
     /**
      * @desc 友好时间显示
-     * @param $time 时间戳
+     *
+     * @param string $time 时间戳
      * @param string $lang $lang 语言, cn 中文, en 英文
+     *
      * @return bool|string
      */
-    function get_friend_date($time, $lang = 'cn')
+    function get_friend_date(string $time, string $lang = 'cn')
     {
-        if (!$time) {
+        if (empty($time)) {
             return '';
         }
         $f_date = '';

@@ -2,6 +2,7 @@
 
 namespace zxf\Database\Driver;
 
+use Closure;
 use zxf\Database\Contracts\MysqlInterface;
 
 abstract class MySQLAbstract implements MysqlInterface
@@ -316,16 +317,24 @@ abstract class MySQLAbstract implements MysqlInterface
     /**
      * 传入的$column值存在时才执行
      *
-     * @param $column
-     * @param $callback
+     * @param      $value    字段值
+     * @param      $callback 闭包函数
+     * @param null $default  当$column不存在时执行的回调
      *
      * @return $this
      */
-    public function when($column, $callback)
+    public function when($value, $callback, $default = null)
     {
-        if (!empty($column) && $callback instanceof Closure && is_callable($callback)) {
-            $callback($this, $column);
+        if ($value) {
+            if ($callback instanceof Closure && is_callable($callback)) {
+                $callback($this, $value);
+            }
+        } elseif ($default) {
+            if ($default instanceof Closure && is_callable($default)) {
+                $default($this, $value);
+            }
         }
+
         return $this;
     }
 

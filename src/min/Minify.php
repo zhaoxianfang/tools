@@ -270,7 +270,7 @@ abstract class Minify
 
                 // we can safely ignore patterns for positions we've unset earlier,
                 // because we know these won't show up anymore
-                if (array_key_exists($i, $positions) == false) {
+                if (!array_key_exists($i, $positions)) {
                     continue;
                 }
 

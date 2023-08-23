@@ -361,10 +361,13 @@ class FileTools
 
     /**
      * @desc 文件字节转具体大小 array("B", "KB", "MB", "GB", "TB", "PB","EB","ZB","YB")， 默认转成M
-     * @param $size 文件字节
+     *
+     * @param int $size 文件字节
+     * @param int $dec
+     *
      * @return string
      */
-    public function byteFormat($size, $dec = 2)
+    public function byteFormat(int $size, $dec = 2)
     {
         $units = array("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB");
         $pos   = 0;

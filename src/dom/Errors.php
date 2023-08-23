@@ -23,7 +23,7 @@ class Errors
     {
         self::$internalErrors = libxml_use_internal_errors(true);
 
-        if (\LIBXML_VERSION < 20900) {
+        if (\LIBXML_VERSION < 20900 && PHP_VERSION_ID < 80000) {
             self::$disableEntities = libxml_disable_entity_loader(true);
         }
     }
@@ -41,7 +41,7 @@ class Errors
 
         libxml_use_internal_errors(self::$internalErrors);
 
-        if (\LIBXML_VERSION < 20900) {
+        if (\LIBXML_VERSION < 20900 && PHP_VERSION_ID < 80000) {
             libxml_disable_entity_loader(self::$disableEntities);
         }
     }

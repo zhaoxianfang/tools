@@ -117,7 +117,7 @@ class CINmsi extends CINBarcode1D
 
         // Checking if all chars are allowed
         for ($i = 0; $i < $c; $i++) {
-            if (array_search($this->text[$i], $this->keys) === false) {
+            if (!in_array($this->text[$i], $this->keys)) {
                 throw new CINParseException('msi', 'The character \'' . $this->text[$i] . '\' is not allowed.');
             }
         }

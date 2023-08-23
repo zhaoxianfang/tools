@@ -108,7 +108,7 @@ class Rsa
 
     public function __destruct()
     {
-        is_resource($this->_priKey) && @openssl_free_key($this->_priKey);
-        is_resource($this->_pubKey) && @openssl_free_key($this->_pubKey);
+        is_resource($this->_priKey) && PHP_VERSION_ID < 80000 && openssl_free_key($this->_priKey);
+        is_resource($this->_pubKey) && PHP_VERSION_ID < 80000 && openssl_free_key($this->_pubKey);
     }
 }

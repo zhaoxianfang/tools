@@ -1689,7 +1689,7 @@ class PHPMailer
         } catch (Exception $exc) {
             $this->setError($exc->getMessage());
             $this->edebug($exc->getMessage());
-            if ($this->Mailer === 'smtp' && $this->SMTPKeepAlive == true && $this->smtp->connected()) {
+            if ($this->Mailer === 'smtp' && $this->SMTPKeepAlive && $this->smtp->connected()) {
                 $this->smtp->reset();
             }
             if ($this->exceptions) {

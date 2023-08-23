@@ -15,7 +15,7 @@ class Xml
      *
      * @return array|mixed|string
      */
-    public function xml2arr($xml)
+    public static function xml2arr($xml)
     {
         if (PHP_VERSION_ID < 80000) {
             //禁止引用外部xml实体

@@ -602,7 +602,7 @@ if (!function_exists('is_idcard')) {
             return false;
         } else {
             // 如果身份证顺序码是996 997 998 999，这些是为百岁以上老人的特殊编码
-            if (array_search(substr($idcard, 12, 3), array('996', '997', '998', '999')) !== false) {
+            if (in_array(substr($idcard, 12, 3), array('996', '997', '998', '999'))) {
                 $idcard = substr($idcard, 0, 6) . '18' . substr($idcard, 6, 9);
             } else {
                 $idcard = substr($idcard, 0, 6) . '19' . substr($idcard, 6, 9);

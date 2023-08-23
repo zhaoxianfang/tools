@@ -82,7 +82,7 @@ class CINisbn extends CINean13
 
         // Special case, if we have 10 digits, the last one can be X
         if ($c === 10) {
-            if (array_search($this->text[9], $this->keys) === false && $this->text[9] !== 'X') {
+            if (!in_array($this->text[9], $this->keys) && $this->text[9] !== 'X') {
                 throw new CINParseException('isbn', 'The character \'' . $this->text[9] . '\' is not allowed.');
             }
 
@@ -90,7 +90,7 @@ class CINisbn extends CINean13
             $this->text = substr($this->text, 0, 9);
         }
 
-        return parent::checkCharsAllowed();
+        parent::checkCharsAllowed();
     }
 
     /**
@@ -106,7 +106,7 @@ class CINisbn extends CINean13
         } elseif ($c === 9 || $c === 10) {
             if ($c === 10) {
                 // Before dropping it, we check if it's legal
-                if (array_search($this->text[9], $this->keys) === false && $this->text[9] !== 'X') {
+                if (!in_array($this->text[9], $this->keys) && $this->text[9] !== 'X') {
                     throw new CINParseException('isbn', 'The character \'' . $this->text[9] . '\' is not allowed.');
                 }
 

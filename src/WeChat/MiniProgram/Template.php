@@ -2,7 +2,7 @@
 
 namespace zxf\WeChat\MiniProgram;
 
-use zxf\WeChat\WeChatBase;
+use zxf\WeChat\Contracts\WeChatBase;
 
 /**
  * 公众号小程序模板消息支持

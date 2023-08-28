@@ -3,7 +3,7 @@
 namespace zxf\WeChat\OfficialAccount;
 
 use Exception;
-use zxf\WeChat\WeChatBase;
+use zxf\WeChat\Contracts\WeChatBase;
 
 /**
  * 扫一扫接入管理(源自英文文档)

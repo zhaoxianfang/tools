@@ -3,7 +3,7 @@
 namespace zxf\WeChat\MiniProgram;
 
 use Exception;
-use zxf\WeChat\WeChatBase;
+use zxf\WeChat\Contracts\WeChatBase;
 
 /**
  * 微信小程序二维码管理

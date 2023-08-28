@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\WeChat;
+namespace zxf\WeChat\Contracts;
 
 use Exception;
 use zxf\Facade\Curl;
@@ -8,7 +8,7 @@ use zxf\Facade\Request;
 use zxf\tools\Cache;
 use zxf\tools\DataArray;
 
-class WeChatBase extends WechatCode
+abstract class WeChatBase extends WechatCode
 {
     // 微信请求地址
     protected $urlBase = "https://api.weixin.qq.com/API_URL?ACCESS_TOKEN";
@@ -116,7 +116,7 @@ class WeChatBase extends WechatCode
         $this->accessToken = "";
         $this->tryAgainNum = 0;
         // 缓存最近一次的配置
-        $this->cache->set('lately_wechat_config', $config);
+        $this->cache->set('lately_wechat_config', $this->config->toArray());
 
         return $this;
     }

@@ -2,8 +2,6 @@
 
 namespace zxf\WeChat\Contracts;
 
-use zxf\WeChat\WeChatBase;
-
 /**
  * 微信支付基础类
  */

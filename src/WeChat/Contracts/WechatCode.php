@@ -1,8 +1,8 @@
 <?php
 
-namespace zxf\WeChat;
+namespace zxf\WeChat\Contracts;
 
-class WechatCode
+abstract class WechatCode
 {
     // 直播错误码参照
     public static $errCode = [

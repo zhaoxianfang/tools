@@ -2,7 +2,7 @@
 
 namespace zxf\WeChat\OfficialAccount;
 
-use zxf\WeChat\WeChatBase;
+use zxf\WeChat\Contracts\WeChatBase;
 
 
 /**

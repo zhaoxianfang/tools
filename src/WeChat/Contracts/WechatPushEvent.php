@@ -5,7 +5,6 @@ namespace zxf\WeChat\Contracts;
 use Exception;
 use zxf\tools\DataArray;
 use zxf\WeChat\Prpcrypt\Prpcrypt;
-use zxf\WeChat\WeChatBase;
 
 /**
  * 微信通知处理基本类

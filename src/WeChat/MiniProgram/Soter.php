@@ -3,7 +3,7 @@
 namespace zxf\WeChat\MiniProgram;
 
 use Exception;
-use zxf\WeChat\WeChatBase;
+use zxf\WeChat\Contracts\WeChatBase;
 
 /**
  * 小程序生物认证

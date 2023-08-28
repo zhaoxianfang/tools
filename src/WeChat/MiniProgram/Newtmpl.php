@@ -3,7 +3,7 @@
 namespace zxf\WeChat\MiniProgram;
 
 use Exception;
-use zxf\WeChat\WeChatBase;
+use zxf\WeChat\Contracts\WeChatBase;
 
 /**
  * 公众号小程序订阅消息支持

@@ -3,7 +3,7 @@
 namespace zxf\WeChat\OfficialAccount;
 
 use Exception;
-use zxf\WeChat\WeChatBase;
+use zxf\WeChat\Contracts\WeChatBase;
 
 /**
  * OpenApi 管理

@@ -2,7 +2,7 @@
 
 namespace zxf\WeChat\MiniProgram\Live;
 
-use zxf\WeChat\WeChatBase;
+use zxf\WeChat\Contracts\WeChatBase;
 
 /**
  * 小程序直播

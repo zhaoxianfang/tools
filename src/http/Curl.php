@@ -422,11 +422,12 @@ class Curl
         if (!file_exists($filePath) || !is_readable($filePath)) {
             throw new Exception(sprintf('文件不存在或者不可读: "%s"', $filePath));
         }
+        // return "@{$filename};filename={$postname};type={$mimetype}";
 
         if (class_exists('\CURLFile')) {
             $data = ['media' => new \CURLFile(realpath($filePath))];
         } else {
-            $data = ['media' => '@' . realpath($filePath)];//<=5.5
+             $data = ['media' => '@' . realpath($filePath)];//<=5.5
         }
 
         $reqData = !empty($params) ? array_merge($data, $params) : $data;

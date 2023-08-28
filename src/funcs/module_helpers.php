@@ -58,7 +58,11 @@ if (!function_exists('get_module_name')) {
             }
             return $toUnderlineConvert ? underline_convert($modulesNamespaceArr[1]) : $modulesNamespaceArr[1];
         } catch (\Exception $err) {
-            return $toUnderlineConvert ? 'app' : 'App';
+            $url = request()->path();
+            if (empty($url) || empty(array_filter($pathArr = explode('/', $url)))) {
+                return 'home';
+            }
+            return $toUnderlineConvert && !empty($pathArr['0']) ? $pathArr['0'] : 'app';
         }
     }
 }

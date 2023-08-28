@@ -6,15 +6,16 @@ use Exception;
 use zxf\Facade\Curl;
 use zxf\Facade\Request;
 use zxf\tools\Cache;
+use zxf\tools\DataArray;
 
 class WeChatBase extends WechatCode
 {
     // 微信请求地址
-    private $urlBase = "https://api.weixin.qq.com/API_URL?ACCESS_TOKEN";
+    protected $urlBase = "https://api.weixin.qq.com/API_URL?ACCESS_TOKEN";
 
     // 已经解析好的接口请求url地址
     protected $url = "";
-    // 未解析的原始url
+    // 未解析的原始url, $urlBase 中的 API_URL
     protected $originalUrl = "";
 
     //curl 对象
@@ -53,10 +54,15 @@ class WeChatBase extends WechatCode
         "appsecret"      => "",
         "encodingaeskey" => "",
         "token_callback" => "",
+        // 配置商户支付参数（可选，在使用支付功能时需要）
         "mch_id"         => "",
         "mch_key"        => "",
-        "ssl_key"        => "",
-        "ssl_cer"        => "",
+
+        // 配置商户支付双向证书目录（可选，在使用退款|打款|红包时需要）
+        'ssl_key'        => '',
+        'ssl_cer'        => '',
+        // 缓存目录配置（可选，需拥有读写权限）
+        'cache_path'     => '',
     ];
 
     public function __construct(array $config = [])
@@ -94,6 +100,8 @@ class WeChatBase extends WechatCode
         }
         $this->config = $config + $this->config;
 
+        $this->config = new DataArray($this->config);
+
         if (empty($this->config["appid"])) {
             $this->error("Missing Config -- [appid]");
         }
@@ -124,6 +132,63 @@ class WeChatBase extends WechatCode
     }
 
     /**
+     * 获取配置
+     *
+     * @return array
+     */
+    public function getConfig(): array
+    {
+        return $this->config;
+    }
+
+
+    /**
+     * 请求接口中是否使用 access_token 参数
+     *
+     * @param bool $bool
+     *
+     * @return $this
+     */
+    public function enableToken(bool $bool = true): self
+    {
+        $this->useToken = $bool;
+        return $this;
+    }
+
+    /**
+     * 获取 API_URL
+     */
+    public function getApiUrl()
+    {
+        return $this->originalUrl;
+    }
+
+    /**
+     * 设置原始请求的 API_URL,http 开头的不设置值
+     *
+     * @param string $url
+     *
+     * @return WeChatBase
+     */
+    public function setApiUrl(string $url = "")
+    {
+        if (substr($url, 0, 4) != "http") {
+            $this->originalUrl = $url;
+        }
+        return $this;
+    }
+
+    /**
+     * 判断是否加载了EasyWeChat
+     *
+     * @return bool
+     */
+    public function isEasyWeChat(): bool
+    {
+        return \class_exists("EasyWeChat\Factory");
+    }
+
+    /**
      * 抛出异常
      *
      * @param string $message
@@ -138,33 +203,76 @@ class WeChatBase extends WechatCode
     }
 
     /**
-     * 解析url
+     * =======================================================================================
+     *       ACCESS_TOKEN 模块  开始
+     * =======================================================================================
+     */
+
+    /**
+     * 去微信请求 access_token 参数
      *
-     * @param string $apiUrl   接口请求地址
-     * @param array  $params   拼接在url中的附加参数
-     * @param bool   $reqToken 仅 requestToken() 方法调用
+     * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-access-token/getAccessToken.html
      *
-     * @return string
+     * @return void
      * @throws Exception
      */
-    public function parseUrl(string $apiUrl = "", $params = [], $reqToken = false): string
+    private function requestToken(): void
     {
-        if (empty($apiUrl)) {
-            throw new Exception("接口请求地址不能为空");
+        $this->useToken = false;
+        $url            = $this->parseUrl("cgi-bin/token", [
+            "grant_type" => "client_credential",
+            "appid"      => $this->config["appid"],
+            "secret"     => $this->config["appsecret"],
+        ]);
+        $this->useToken = true;
+
+        $res = $this->http->get($url, "json");
+
+        if (isset($res["errcode"]) && $res["errcode"] > 0) {
+            $this->error($this->getMessage($res["errcode"]), $res["errcode"]);
         }
-        $baseUrl = substr($apiUrl, 0, 4) == "http" ? $apiUrl : $this->urlBase;
 
-        // 是否需要拼接 access_token
-        $token    = ($reqToken || $this->useToken) ? "" : "access_token=" . $this->getAccessToken();
-        $url      = str_replace(["API_URL", "ACCESS_TOKEN"], [$apiUrl, $token], $baseUrl);
-        $urlQuery = !empty($params) ? http_build_query($params) : "";
+        if (!empty($res["access_token"])) {
+            $this->accessToken = $res["access_token"];
+            $expiresIn         = (!empty($res["expires_in"]) && $res["expires_in"] > 0) ? $res["expires_in"] : 7100;
+            // 缓存token
+            $this->setAccessToken($res["access_token"], (int)$expiresIn);
+        } else {
+            $this->accessToken = "";
+            $this->delAccessToken();
+        }
+    }
 
-        if (!empty($urlQuery) && is_bool(stripos($url, $urlQuery))) {
-            $url = trim($url, '?');
-            $url .= ((stripos($url, "?")) ? "&" : "?") . $urlQuery;
+    /**
+     * 获取稳定版接口调用凭据
+     *
+     * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-access-token/getStableAccessToken.html
+     */
+    public function getStableAccessToken()
+    {
+        $this->useToken = false;
+        $url            = $this->parseUrl("cgi-bin/stable_token", [
+            "grant_type"    => "client_credential",
+            "appid"         => $this->config["appid"],
+            "secret"        => $this->config["appsecret"],
+            "force_refresh" => true, // 默认使用 false。1. force_refresh = false 时为普通调用模式，access_token 有效期内重复调用该接口不会更新 access_token；2. 当force_refresh = true 时为强制刷新模式，会导致上次获取的 access_token 失效，并返回新的 access_token
+        ]);
+        $this->useToken = true;
+
+        $res = $this->http->post($url, "json");
+        if (isset($res["errcode"]) && $res["errcode"] > 0) {
+            $this->error($this->getMessage($res["errcode"]), $res["errcode"]);
         }
 
-        return $url;
+        if (!empty($res["access_token"])) {
+            $this->accessToken = $res["access_token"];
+            $expiresIn         = (!empty($res["expires_in"]) && $res["expires_in"] > 0) ? $res["expires_in"] : 7100;
+            // 缓存token
+            $this->setAccessToken($res["access_token"], (int)$expiresIn);
+        } else {
+            $this->accessToken = "";
+            $this->delAccessToken();
+        }
     }
 
     /**
@@ -199,7 +307,7 @@ class WeChatBase extends WechatCode
     public function setAccessToken(string $accessToken = "", int $expiresIn = 7100): self
     {
         if (!is_string($accessToken) || empty($accessToken)) {
-            throw new Exception("Invalid AccessToken type, need string.");
+            return $this->error("Invalid AccessToken type, need string.");
         }
         // 缓存token
         $this->cache->set($this->config["appid"] . "_access_token", $accessToken, $expiresIn);
@@ -219,87 +327,45 @@ class WeChatBase extends WechatCode
     }
 
     /**
-     * 获取配置
-     *
-     * @return array
+     * =======================================================================================
+     *       ACCESS_TOKEN 模块  结束
+     * =======================================================================================
      */
-    public function getConfig(): array
-    {
-        return $this->config;
-    }
+
 
     /**
-     * 请求接口中是否使用 access_token 参数
+     * 解析请求的url
      *
-     * @param bool $bool
+     * @param string     $apiUrl   接口请求地址 例如 https://api.weixin.qq.com/card/create?access_token=ACCESS_TOKEN 中的
+     *                             card/create
+     * @param array|null $params   拼接在url中的附加参数
      *
-     * @return $this
-     */
-    public function enableToken(bool $bool = true): self
-    {
-        $this->useToken = $bool;
-        return $this;
-    }
-
-    /**
-     * 设置原始请求的 API_URL,http 开头的不设置值
-     *
-     * @param string $url
-     *
-     * @return $this
-     */
-    public function setOriginalUrl(string $url = ""): self
-    {
-        if (substr($url, 0, 4) != "http") {
-            $this->originalUrl = $url;
-        }
-        return $this;
-    }
-
-    public function getOriginalUrl()
-    {
-        return $this->originalUrl;
-    }
-
-    /**
-     * 去微信请求 access_token 参数
-     *
-     * @return void
+     * @return string
      * @throws Exception
      */
-    private function requestToken(): void
+    public function parseUrl(string $apiUrl = "", ?array $params = []): string
     {
-        $url = $this->parseUrl("cgi-bin/token", [
-            "grant_type" => "client_credential",
-            "appid"      => $this->config["appid"],
-            "secret"     => $this->config["appsecret"],
-        ], true);
-
-        $res = $this->http->get($url, "json");
-
-        if (isset($res["errcode"]) && $res["errcode"] > 0) {
-            $this->error($this->getMessage($res["errcode"]), $res["errcode"]);
+        if (empty($apiUrl)) {
+            return $this->error("接口请求地址不能为空");
         }
 
-        if (!empty($res["access_token"])) {
-            $this->accessToken = $res["access_token"];
-            $expiresIn         = (!empty($res["expires_in"]) && $res["expires_in"] > 0) ? $res["expires_in"] : 7100;
-            // 缓存token
-            $this->setAccessToken($res["access_token"], (int)$expiresIn);
-        } else {
-            $this->accessToken = "";
-            $this->delAccessToken();
-        }
-    }
+        $this->setApiUrl($apiUrl);
 
-    /**
-     * 判断是否加载了EasyWeChat
-     *
-     * @return bool
-     */
-    public function isEasyWeChat(): bool
-    {
-        return \class_exists("EasyWeChat\Factory");
+        $baseUrl = substr($apiUrl, 0, 4) == "http" ? $apiUrl : $this->urlBase;
+
+        // 是否需要拼接 access_token
+        $token = !$this->useToken ? '' : "access_token=" . $this->getAccessToken();
+
+        $url = str_replace(["API_URL", "ACCESS_TOKEN"], [$apiUrl, $token], $baseUrl);
+
+        $urlQuery = !empty($params) ? http_build_query($params) : "";
+
+        if (!empty($urlQuery) && is_bool(stripos($url, $urlQuery))) {
+            $url = trim($url, '?');
+            $url .= ((stripos($url, "?")) ? "&" : "?") . $urlQuery;
+        }
+
+        return $url;
     }
 
     /**
@@ -307,33 +373,16 @@ class WeChatBase extends WechatCode
      *
      * @param string       $url
      * @param array|string $data
-     * @param string       $urlParams 拼接在url中的参数
+     * @param array        $urlParams 拼接在url中的参数
      *
      * @return mixed
      * @throws Exception
      */
-    public function post(string $url = "", array|string $data = [], $urlParams = []): mixed
+    public function post(string $url = "", array|string $data = [], $urlParams = [])
     {
-        $this->setOriginalUrl($url);
         $this->url = $this->parseUrl($url, $urlParams);
-
-        $result = $this->http->setParams($data)->post($this->url);
-
-        if (isset($result["errcode"]) && $result["errcode"] > 0) {
-            if (in_array($result["errcode"], $this->tryAgainCode)) {
-                if ($this->tryAgainNum > $this->tryAgainMax) {
-                    $this->enableToken(true);
-                    $this->error("尝试多次请求都失败了!", $result["errcode"]);
-                }
-                $this->tryAgainNum++;
-                $this->getAccessToken(true);
-                return $this->post($url, $data);
-            }
-            $result["message"] = $this->getMessage($result["errcode"]);
-        }
-        $this->enableToken(true);
-        $this->tryAgainNum = 0;
-        return $result;
+        $result    = $this->http->setParams($data)->post($this->url);
+        return $this->getCurlResult($result, 'post', $url, $data, $urlParams);
     }
 
     /**
@@ -348,27 +397,57 @@ class WeChatBase extends WechatCode
      */
     public function get(string $url = "", array|string $data = [], $urlParams = [])
     {
-        $this->setOriginalUrl($url);
         $this->url = $this->parseUrl($url, $urlParams);
+        $result    = $this->http->setParams($data)->get($this->url);
+        return $this->getCurlResult($result, 'get', $url, $data, $urlParams);
+    }
 
-        $result = $this->http->setParams($data)->get($this->url);
-
-        if (isset($result["errcode"]) && $result["errcode"] > 0) {
-            if (in_array($result["errcode"], $this->tryAgainCode)) {
+    /**
+     * 获取curl请求结果,如果请求失败,则尝试重新请求
+     *
+     * @param string       $funcStr 请求方法 get/post
+     * @param              $curlResult
+     * @param string       $url
+     * @param array|string $data
+     * @param              $urlParams
+     *
+     * @return mixed
+     * @throws Exception
+     */
+    private function getCurlResult($curlResult, string $funcStr, string $url = "", array|string $data = [], $urlParams = [], ...$args)
+    {
+        if (isset($curlResult["errcode"]) && $curlResult["errcode"] > 0) {
+            if (in_array($curlResult["errcode"], $this->tryAgainCode)) {
                 if ($this->tryAgainNum > $this->tryAgainMax) {
-                    $this->enableToken(true);
-                    $this->error("尝试多次请求都失败了!", $result["errcode"]);
+                    $this->tryAgainNum = 0;
+                    return $this->error("尝试多次请求都失败了!", $curlResult["errcode"]);
                 }
                 $this->tryAgainNum++;
                 $this->getAccessToken(true);
-                return $this->get($url, $data);
+                return $this->$funcStr($url, $data, $urlParams, ...$args);
             }
-            $result["message"] = $this->getMessage($result["errcode"]);
+            $curlResult["message"] = $this->getMessage($curlResult["errcode"]);
         }
-        $this->enableToken(true);
         $this->tryAgainNum = 0;
-        return $result;
+        return $curlResult;
     }
+
+    /**
+     * 直接调用http上传文件(不包含视频文件)
+     *
+     * @param string     $url       请求地址
+     * @param string     $filePath  文件绝对路径
+     * @param array|null $urlParams 拼接在url中的参数
+     *
+     * @return mixed
+     * @throws Exception
+     */
+    public function httpUpload(string $url = "", string $filePath = '', ?array $urlParams = [])
+    {
+        $this->url = $this->parseUrl($url, $urlParams);
+        return $this->http->upload($this->url, $filePath);
+    }
+
 
     /**
      *  请求上传【素材】文件 ,主要用在上传公众号素材或者小程序临时图片
@@ -401,7 +480,7 @@ class WeChatBase extends WechatCode
             $url = "cgi-bin/material/add_material";
         }
         $this->url = $this->parseUrl($url, ["type" => $type]);
-        $this->setOriginalUrl($url);
+        $this->setApiUrl($url);
 
         $data = [];
         if ($type == "video") {
@@ -417,22 +496,13 @@ class WeChatBase extends WechatCode
             "Content-Disposition" => "form-data; name='media'; filename='" . basename($filePath) . "'",
         ];
         $result  = $this->http->setHeader($headers)->upload($this->url, $filePath, $data);
-        if (isset($result["errcode"]) && $result["errcode"] > 0) {
-            if (in_array($result["errcode"], $this->tryAgainCode)) {
-                if ($this->tryAgainNum > $this->tryAgainMax) {
-                    $this->enableToken(true);
-                    $this->error("尝试多次请求都失败了!", $result["errcode"]);
-                }
-                $this->tryAgainNum++;
-                $this->getAccessToken(true);
-                return $this->upload($mediaType, $filePath, $type, $videoTitle, $videoDescription);
-            }
-            $result["message"] = $this->getMessage($result["errcode"]);
-        }
-        $this->enableToken(true);
-        $this->tryAgainNum = 0;
-        return $result;
+        return $this->getCurlResult($result, 'upload', $url, $data, [], $videoTitle, $videoDescription);
     }
+
+    // ===========================================================================================
+    // 之前实现的代码
+    // ===========================================================================================
+
 
     /**
      * 上传非素材类文件
@@ -447,7 +517,7 @@ class WeChatBase extends WechatCode
     public function customUpload(string $url = "", string $filePath = "", array $params = [])
     {
         $this->url = $this->parseUrl($url, $params);
-        $this->setOriginalUrl($url);
+        $this->setApiUrl($url);
 
         $headers = [
             "Content-Disposition" => "form-data; name='media'; filename='" . basename($filePath) . "'",
@@ -473,7 +543,29 @@ class WeChatBase extends WechatCode
     public function download($url = "", $savePath = "", array $params = [])
     {
         $this->url = $this->parseUrl($url, $params);
-        $this->setOriginalUrl($url);
+        $this->setApiUrl($url);
         return $this->http->download($url, $savePath);
+    }
+
+    // 上传素材
+    public function uploadFile($url, $filePath, $params = [], $videoTitle = "", $videoDescription = "")
+    {
+        $data = [];
+        $type = "image";
+        if (str_contains($filePath, '.mp4')) {
+            $type = "video";
+        }
+        if ($type == "video") {
+            $data["description"] = json_encode(
+                [
+                    "title"        => $videoTitle,
+                    "introduction" => $videoDescription,
+                ],
+                JSON_UNESCAPED_UNICODE
+            );
+        }
+        $this->url = $this->parseUrl($url, $params);
+        $this->setApiUrl($url);
+        return $this->http->upload($this->url, $filePath, $data);
     }
 }

@@ -41,10 +41,10 @@ class DataArray implements ArrayAccess
     /**
      * 设置配置项值
      *
-     * @param string                    $offset
-     * @param string|array|null|integer $value
+     * @param string                     $offset
+     * @param string|array|null|int|bool $value
      */
-    public function set($offset, $value)
+    public function set(string $offset, $value)
     {
         $this->offsetSet($offset, $value);
     }
@@ -56,9 +56,9 @@ class DataArray implements ArrayAccess
      *
      * @return array|string|null
      */
-    public function get($offset = null)
+    public function get(string $offset = null, $default = null)
     {
-        return $this->offsetGet($offset);
+        return $this->offsetGet($offset) ?? $default;
     }
 
     public function __get($key)
@@ -163,6 +163,6 @@ class DataArray implements ArrayAccess
         if (is_null($offset)) {
             return $this->data;
         }
-        return isset($this->data[$offset]) ? $this->data[$offset] : null;
+        return $this->data[$offset] ?? null;
     }
 }

@@ -20,14 +20,14 @@ return [
     //  mysql
     'mysql' => [
         'default' => [
-            'host'     => env('EXT_MYSQL_HOST', '127.0.0.1'),
-            'username' => env('EXT_MYSQL_HOST', 'root'),
-            'password' => env('EXT_MYSQL_HOST', ''),
-            'db'       => env('EXT_MYSQL_HOST', 'test'),
-            'port'     => env('EXT_MYSQL_HOST', 3306),
-            // 'prefix'   => env('EXT_MYSQL_HOST', ''),
-            'charset'  => env('EXT_MYSQL_HOST', 'utf8mb4'),
-            'socket'   => env('EXT_MYSQL_SOCKET', null),
+            'host'     => env('TOOLS_MYSQL_HOST', '127.0.0.1'),
+            'username' => env('TOOLS_MYSQL_HOST', 'root'),
+            'password' => env('TOOLS_MYSQL_HOST', ''),
+            'db'       => env('TOOLS_MYSQL_HOST', 'test'),
+            'port'     => env('TOOLS_MYSQL_HOST', 3306),
+            // 'prefix'   => env('TOOLS_MYSQL_HOST', ''),
+            'charset'  => env('TOOLS_MYSQL_HOST', 'utf8mb4'),
+            'socket'   => env('TOOLS_MYSQL_SOCKET', null),
         ],
     ],
     //  redis 等其他配置

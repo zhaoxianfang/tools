@@ -32,7 +32,8 @@
     "ext-pdo": "*",
     "ext-gd": "*",
     "ext-dom": "*",
-    "ext-iconv": "*"
+    "ext-iconv": "*",
+    "ext-openssl": "*"
   },
   "autoload": {
     "psr-4": {

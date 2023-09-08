@@ -1,4 +1,10 @@
 "use strict";
+
+// 采集单个网页并保存为图片
+// $savePath = './11.png'; // 保存的文件路径
+// $url = 'https://abc.com/docs'; // 采集的网址
+// $command = ".../phantomjs '.../render_multi_url.js' '".$url."' '".$savePath."' '1500'"; // 要执行的命令  1500为延迟时间
+
 var system = require('system');
 var webPage = require('webpage');
 var page = webPage.create();

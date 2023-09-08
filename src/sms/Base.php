@@ -73,8 +73,8 @@ abstract class Base
     public function __construct(string $key = null, string $secret = null)
     {
         if (empty($key) && function_exists('config')) {
-            $this->key    = config('ext_notice.sms.' . $this->driver . '.app_id');
-            $this->secret = config('ext_notice.sms.' . $this->driver . '.secret');
+            $this->key    = config('tools_notice.sms.' . $this->driver . '.app_id');
+            $this->secret = config('tools_notice.sms.' . $this->driver . '.secret');
         } else {
             $this->key    = $key;
             $this->secret = $secret;
@@ -86,11 +86,12 @@ abstract class Base
      *
      * @access public
      *
-     * @param array $options 参数
+     * @param string|null $key
+     * @param string|null $secret
      *
      * @return Base
      */
-    public static function instance($key, $secret)
+    public static function instance(?string $key, ?string $secret)
     {
         if (is_null(self::$instance)) {
             self::$instance = new static($key, $secret);

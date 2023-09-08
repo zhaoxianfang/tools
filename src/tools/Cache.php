@@ -13,6 +13,7 @@ class Cache
 
     // 当前操作的key
     private $currentKey = '';
+
     // 缓存文件存储的地址
     private $fileWritePath = '';
 
@@ -26,7 +27,9 @@ class Cache
     /**
      * 初始化实例
      *
-     * @return Cache
+     * @param array $config
+     *
+     * @return Cache|null
      */
     public static function instance(array $config = []): ?Cache
     {
@@ -54,6 +57,47 @@ class Cache
         }
     }
 
+
+    /**
+     * 设置缓存路径
+     *
+     * @param string $path
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setCacheDir(string $path)
+    {
+        if (!is_dir($path)) {
+            throw new Exception('file_cache: ' . $path . ' 不是一个有效路径 ');
+        }
+        if (!is_writable($path)) {
+            throw new Exception('file_cache: 路径 "' . $path . '" 不可写');
+        }
+
+        $path                       = rtrim($path, '/') . '/';
+        $this->config['cache_path'] = $path;
+
+        return $this;
+    }
+
+    /**
+     * 设置缓存存储类型
+     *
+     * @param int $mode
+     *
+     * @return $this
+     */
+    public function setMode(int $mode = 1)
+    {
+        if ($mode == 1) {
+            $this->config['mode'] = 1;
+        } else {
+            $this->config['mode'] = 2;
+        }
+        return $this;
+    }
+
     /**
      * 得到缓存信息
      *
@@ -61,6 +105,7 @@ class Cache
      * @param bool|array|null|string $default 默认值
      *
      * @return bool|array|null|string
+     * @throws Exception
      */
     public function get(string $key = '', bool|array|null|string $default = null)
     {
@@ -86,6 +131,7 @@ class Cache
      * @param string $file
      *
      * @return bool|array
+     * @throws Exception
      */
     private function checkFileExpiryOrContent(string $file)
     {
@@ -133,6 +179,7 @@ class Cache
      * @param string $key
      *
      * @return bool
+     * @throws Exception
      */
     public function delete(string $key = ''): bool
     {
@@ -147,7 +194,7 @@ class Cache
         $res = is_file($file) && unlink($file);
         $dir = dirname($file);
         if (dir_is_empty($dir)) {
-            deldir($dir, true);
+            deldir($dir);
         }
         return $res;
     }
@@ -158,6 +205,7 @@ class Cache
      * @param string $key 键
      *
      * @return boolean true 缓存存在 false 缓存不存在
+     * @throws Exception
      */
     public function has(string $key = ''): bool
     {
@@ -290,46 +338,6 @@ class Cache
     }
 
     /**
-     * 设置缓存路径
-     *
-     * @param string $path
-     *
-     * @return $this
-     * @throws Exception
-     */
-    public function setCacheDir(string $path)
-    {
-        if (!is_dir($path)) {
-            throw new Exception('file_cache: ' . $path . ' 不是一个有效路径 ');
-        }
-        if (!is_writable($path)) {
-            throw new Exception('file_cache: 路径 "' . $path . '" 不可写');
-        }
-
-        $path                       = rtrim($path, '/') . '/';
-        $this->config['cache_path'] = $path;
-
-        return $this;
-    }
-
-    /**
-     * 设置缓存存储类型
-     *
-     * @param int $mode
-     *
-     * @return $this
-     */
-    public function setMode(int $mode = 1)
-    {
-        if ($mode == 1) {
-            $this->config['mode'] = 1;
-        } else {
-            $this->config['mode'] = 2;
-        }
-        return $this;
-    }
-
-    /**
      * 删除所有缓存
      *
      * @return bool
@@ -348,7 +356,7 @@ class Cache
      * 自定义写入缓存文件 如果写入成功，返回存储文件路径
      *
      * @param string $filename 文件名
-     * @param        $contents 内容
+     * @param mixed  $contents 内容
      *
      * @return false|string
      * @throws Exception

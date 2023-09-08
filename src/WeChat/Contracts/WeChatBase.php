@@ -47,20 +47,14 @@ abstract class WeChatBase extends WechatCode
     // 允许最大重试次数
     private $tryAgainMax = 2;
 
-    // 小程序配置
+    // 微信配置
     protected $config = [
         "token"          => "",
         "appid"          => "",
         "appsecret"      => "",
         "encodingaeskey" => "",
         "token_callback" => "",
-        // 配置商户支付参数（可选，在使用支付功能时需要）
-        "mch_id"         => "",
-        "mch_key"        => "",
 
-        // 配置商户支付双向证书目录（可选，在使用退款|打款|红包时需要）
-        'ssl_key'        => '',
-        'ssl_cer'        => '',
         // 缓存目录配置（可选，需拥有读写权限）
         'cache_path'     => '',
     ];
@@ -89,8 +83,11 @@ abstract class WeChatBase extends WechatCode
     /**
      * 初始化配置参数
      */
-    private function init(array $config = []): self
+    private function init(array $config = []): bool|static
     {
+        if (empty($config)) {
+            return false;
+        }
         $this->request = Request::instance();
         $this->http    = Curl::instance();
         $this->cache   = Cache::instance();
@@ -112,12 +109,21 @@ abstract class WeChatBase extends WechatCode
             $this->error("Missing Config -- [token]");
         }
 
+        empty($this->config['cache_path']) || $this->cache->setCacheDir($this->config['cache_path']);
+
         $this->url         = "";
         $this->accessToken = "";
         $this->tryAgainNum = 0;
         // 缓存最近一次的配置
         $this->cache->set('lately_wechat_config', $this->config->toArray());
 
+        return $this;
+    }
+
+    public function setDriver(string $driver = 'default')
+    {
+        $config = config('tools_wechat.' . $driver, []);
+        $this->init($config);
         return $this;
     }
 
@@ -172,7 +178,7 @@ abstract class WeChatBase extends WechatCode
      */
     public function setApiUrl(string $url = "")
     {
-        if (substr($url, 0, 4) != "http") {
+        if (!str_starts_with($url, "http")) {
             $this->originalUrl = $url;
         }
         return $this;
@@ -351,7 +357,7 @@ abstract class WeChatBase extends WechatCode
 
         $this->setApiUrl($apiUrl);
 
-        $baseUrl = substr($apiUrl, 0, 4) == "http" ? $apiUrl : $this->urlBase;
+        $baseUrl = str_starts_with($apiUrl, "http") ? $apiUrl : $this->urlBase;
 
         // 是否需要拼接 access_token
         $token = !$this->useToken ? '' : "access_token=" . $this->getAccessToken();
@@ -405,11 +411,12 @@ abstract class WeChatBase extends WechatCode
     /**
      * 获取curl请求结果,如果请求失败,则尝试重新请求
      *
-     * @param string       $funcStr 请求方法 get/post
      * @param              $curlResult
+     * @param string       $funcStr 请求方法 get/post
      * @param string       $url
      * @param array|string $data
-     * @param              $urlParams
+     * @param array        $urlParams
+     * @param mixed        ...$args
      *
      * @return mixed
      * @throws Exception

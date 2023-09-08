@@ -19,7 +19,7 @@ class QqOauth implements Handle
     public function __construct(array $config = [])
     {
         if (function_exists('config') && empty($config)) {
-            $this->config = config('ext_auth.qq.default') ?? [];
+            $this->config = config('tools_auth.qq.default') ?? [];
         } else {
             $this->config = [
                 'client_id'     => $config['client_id'],

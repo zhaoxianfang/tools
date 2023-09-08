@@ -16,7 +16,7 @@ class WeiboOauth implements Handle
     public function __construct(array $config = [])
     {
         if (function_exists('config') && empty($config)) {
-            $config = config('ext_auth.sina.default') ?? [];
+            $config = config('tools_auth.sina.default') ?? [];
         }
         $this->config = [
             'client_id'     => $config['wb_akey'],

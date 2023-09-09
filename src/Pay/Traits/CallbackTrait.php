@@ -20,7 +20,7 @@ trait CallbackTrait
     protected function parseCallbackData()
     {
         $header = $this->getHeaders();
-
+        // TODO: 请根据实际情况获取
         $inWechatpaySignature = $header['WECHATPAY-SIGNATURE'];// 请根据实际情况获取
         $inWechatpayTimestamp = $header['WECHATPAY-TIMESTAMP'];;// 请根据实际情况获取
         $inWechatpayNonce = $header['WECHATPAY-NONCE'];// 请根据实际情况获取

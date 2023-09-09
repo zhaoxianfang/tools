@@ -189,17 +189,19 @@ abstract class WeChatPayBase
         } else {
             empty($data['mchid']) || $data['mchid'] = $this->config['mchid']; // 直连商户号
         }
-        return $data;
+        return $data ?? [];
     }
 
     protected function post(array $data = [])
     {
         $data = ($data && $this->body) ? array_merge($this->body, $data) : ($data ?: $this->body);
+        $data = $data ?: [];
         $this->appendBody($data);
 
         $url    = $this->parseUrl($this->url);
         $header = $this->v3CreateHeader($url, 'POST', $data);
 
+        $data   = is_array($data) ? json_encode($data, JSON_UNESCAPED_UNICODE) : $data;
         $result = $this->http->setHeader($header, false)->setParams($data)->post($url);
         $this->clear();
         return $result;
@@ -208,6 +210,7 @@ abstract class WeChatPayBase
     protected function get(array $data = [])
     {
         $data   = ($data && $this->body) ? array_merge($this->body, $data) : ($data ?: $this->body);
+        $data   = $data ?: [];
         $params = $this->appendBody($data);
 
         $url    = $this->parseUrl($this->url, $params);

@@ -382,12 +382,12 @@ class Model
     {
         $class = self::class;
         if (method_exists($class, $method)) {
-            return call_user_func_array(array($class, $method), $arg);
+            return call_user_func_array(array($class, $method), ...$arg);
         }
 
         if (empty($class->db)) {
             $class = self::query();
         }
-        return call_user_func_array(array($class->db, $method), $arg);
+        return call_user_func_array(array($class->db, $method), ...$arg);
     }
 }

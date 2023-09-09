@@ -45,13 +45,13 @@ class PayFactory
     /**
      * 动态的获取一个接口实现
      *
-     * @param string $driver
-     * @param array  $arguments
+     * @param string     $driver
+     * @param array|null $arguments
      *
      * @return mixed
      * @throws Exception
      */
-    public static function __callStatic(string $driver, array $arguments)
+    public static function __callStatic(string $driver, ?array $arguments)
     {
         return self::call($driver, ...$arguments);
     }

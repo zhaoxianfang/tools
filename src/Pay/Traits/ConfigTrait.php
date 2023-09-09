@@ -34,7 +34,7 @@ trait ConfigTrait
         if (empty($config) || !is_array($config) || empty($config['cache_path'])) {
             throw new Exception('未正确配置 tools_pay.wechat.' . $connectionName);
         }
-        empty($this->cache) || $this->cache = Cache::instance();
+        empty($this->cache) && $this->cache = Cache::instance();
         $this->cache->setCacheDir($config['cache_path']);
 
         $this->config = new DataArray(array_merge($this->config, $config));

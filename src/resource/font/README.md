@@ -1,5 +1,6 @@
 说明：本库中的字体来源 为 【猫啃网】(https://www.maoken.com/all-fonts) 、 提供的免费字体
 
+ZhuqueFangsong 朱雀仿宋
 yuanti    圆体
 diandain   点点像素体-方形
 diandain_yt   点点像素体-圆形

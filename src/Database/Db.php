@@ -208,13 +208,13 @@ class Db
     {
         $class = self::class;
         if (method_exists($class, $method)) {
-            return call_user_func_array(array($class, $method), $arg);
+            return call_user_func_array(array($class, $method), ...$arg);
         }
 
         if (empty(self::$activeConnectionObj)) {
             $class = new static;
             $class->connect();
         }
-        return call_user_func_array(array($class::$activeConnectionObj, $method), $arg);
+        return call_user_func_array(array($class::$activeConnectionObj, $method), ...$arg);
     }
 }

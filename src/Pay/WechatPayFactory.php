@@ -48,13 +48,13 @@ class WechatPayFactory
     /**
      * 调用微信支付的各种支持方式
      *
-     * @param string $driver
-     * @param array  $arguments
+     * @param string     $driver
+     * @param array|null $arguments
      *
      * @return mixed
      * @throws Exception
      */
-    public static function __callStatic(string $driver, ...$arguments): PayInterface
+    public static function __callStatic(string $driver = 'default', ?array $arguments = []): PayInterface
     {
         if (in_array($driver, array_keys(self::$payTypeMap))) {
             return new self::$bindingTypes[$driver](...$arguments);

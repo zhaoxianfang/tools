@@ -69,7 +69,7 @@ class Cache
     public function setCacheDir(string $path)
     {
         if (!is_dir($path)) {
-            throw new Exception('file_cache: ' . $path . ' 不是一个有效路径 ');
+            create_dir($path);
         }
         if (!is_writable($path)) {
             throw new Exception('file_cache: 路径 "' . $path . '" 不可写');

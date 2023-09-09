@@ -50,7 +50,7 @@ trait SignTrait
         $nonce  = Formatter::nonce();
         $method = strtoupper($method);
         //POST请求时 需要 转JSON字符串
-        $body    = $method == 'GET' ? '' : (!empty($body) ? strval($body) : '');
+        $body    = $method == 'GET' ? '' : (!empty($body) ? json_encode($body) : '');
         $message = $method . "\n" .
                    $canonical_url . "\n" .
                    $timestamp . "\n" .
@@ -61,6 +61,7 @@ trait SignTrait
         openssl_sign($message, $raw_sign, openssl_get_privatekey($mchPrivateKey), 'sha256WithRSAEncryption');
         $sign = base64_encode($raw_sign);
 
+        // 商户证书序列号
         $serial_no = $this->getSerialNo($mchPublicCertPath);
 
         //生成Authorization
@@ -88,10 +89,11 @@ trait SignTrait
     }
 
     /**
-     * 获取证书 序号
+     * 获取证书 序号 对比发现返回的和 getSerialNo() 方法的返回值 不太对
      *
      * @return mixed
      * @throws Exception
+     * @deprecated 请使用 getSerialNo() 方法
      */
     public function getCert()
     {
@@ -141,10 +143,11 @@ trait SignTrait
      */
     public function getJsApiSignParams(?string $prepay_id = ''): array
     {
-        $merchantPrivateKeyInstance = Rsa::from($this->config['mch_private_cert']);
+        $private_file_url           = 'file://' . realpath($this->config['mch_private_cert']);
+        $merchantPrivateKeyInstance = Rsa::from($private_file_url);
         $prepay_id                  = $prepay_id ?: 'wx' . date('YmdHis') . Random::build('alnum', 10);
         $params                     = [
-            'appId'     => $this->config['app_id'],
+            'appId'     => $this->config['appid'],
             'timeStamp' => (string)Formatter::timestamp(),
             'nonceStr'  => Formatter::nonce(),
             'package'   => 'prepay_id=' . $prepay_id,

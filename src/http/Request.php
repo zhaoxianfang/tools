@@ -194,7 +194,7 @@ class Request
      *
      * @return array
      */
-    protected function body()
+    public function body()
     {
         return (array)$this->input + (array)$this->request + (array)$this->files;
     }

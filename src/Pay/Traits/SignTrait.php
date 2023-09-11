@@ -171,7 +171,8 @@ trait SignTrait
      */
     public function getAppSignParams(?string $prepayid = ''): array
     {
-        $merchantPrivateKeyInstance = Rsa::from($this->config['mch_private_cert']);
+        $private_file_url           = 'file://' . realpath($this->config['mch_private_cert']);
+        $merchantPrivateKeyInstance = Rsa::from($private_file_url);
         $prepayid                   = $prepayid ?: 'wx' . date('YmdHis') . Random::build('alnum', 10);
         $params                     = [
             'appId'     => $this->config['app_id'],

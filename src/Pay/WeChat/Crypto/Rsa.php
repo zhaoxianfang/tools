@@ -165,7 +165,7 @@ class Rsa
      *                                                                                                    `self::KEY_TYPE_PRIVATE`.
      *
      * @return \OpenSSLAsymmetricKey|resource|mixed
-     * @throws UnexpectedValueException
+     * @throws UnexpectedValueException|\Exception
      */
     public static function from($thing, string $type = self::KEY_TYPE_PRIVATE)
     {
@@ -174,7 +174,7 @@ class Rsa
             : openssl_pkey_get_private(self::parse($thing));
 
         if (false === $pkey) {
-            throw new UnexpectedValueException(sprintf(
+            throw new \Exception(sprintf(
                 'Cannot load %s from(%s), please take care about the \$thing input.',
                 $isPublic ? 'publicKey' : 'privateKey',
                 gettype($thing)

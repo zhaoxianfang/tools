@@ -17,7 +17,7 @@ trait UploadImageTrait
     public function uploadRequestAction()
     {
         if (!in_array('sha256WithRSAEncryption', \openssl_get_md_methods(true))) {
-            throw new \RuntimeException("当前PHP环境不支持SHA256withRSA");
+            throw new \Exception("当前PHP环境不支持SHA256withRSA");
         }
         $headerParam    = $this->uploadHeaderParam(); //获取头部信息
         $boundarystr    = "--{$this->boundary}\r\n";// $out是post的内容

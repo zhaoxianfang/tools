@@ -34,7 +34,7 @@ use function strpos;
 use function substr;
 use function wordwrap;
 
-use UnexpectedValueException;
+use Exception;
 
 /**
  * RSA `PKEY` loader and encrypt/decrypt/sign/verify methods.
@@ -109,7 +109,7 @@ class Rsa
      * @param string $thing - The string in `PKCS#8` format.
      *
      * @return \OpenSSLAsymmetricKey|resource|mixed
-     * @throws UnexpectedValueException
+     * @throws Exception
      */
     public static function fromPkcs8(string $thing)
     {
@@ -124,7 +124,7 @@ class Rsa
      *                      `self::KEY_TYPE_PRIVATE`.
      *
      * @return \OpenSSLAsymmetricKey|resource|mixed
-     * @throws UnexpectedValueException
+     * @throws Exception
      */
     public static function fromPkcs1(string $thing, string $type = self::KEY_TYPE_PRIVATE)
     {
@@ -137,7 +137,7 @@ class Rsa
      * @param string $thing - The string in `SKPI` format.
      *
      * @return \OpenSSLAsymmetricKey|resource|mixed
-     * @throws UnexpectedValueException
+     * @throws Exception
      */
     public static function fromSpki(string $thing)
     {
@@ -165,12 +165,12 @@ class Rsa
      *                                                                                                    `self::KEY_TYPE_PRIVATE`.
      *
      * @return \OpenSSLAsymmetricKey|resource|mixed
-     * @throws UnexpectedValueException|\Exception
+     * @throws Exception
      */
     public static function from($thing, string $type = self::KEY_TYPE_PRIVATE)
     {
         $pkey = ($isPublic = $type === static::KEY_TYPE_PUBLIC)
-            ? openssl_pkey_get_public(self::parse($thing, $type))
+            ? openssl_get_publickey(self::parse($thing, $type))
             : openssl_pkey_get_private(self::parse($thing));
 
         if (false === $pkey) {
@@ -270,14 +270,14 @@ class Rsa
      * @link https://www.openssl.org/docs/man1.1.1/man3/RSA_public_encrypt.html
      *
      * @param int $padding - The padding mode, only support `OPENSSL_PKCS1_PADDING` or `OPENSSL_PKCS1_OAEP_PADDING`,
-     *                     otherwise thrown `\UnexpectedValueException`.
+     *                     otherwise thrown `\Exception`.
      *
-     * @throws UnexpectedValueException
+     * @throws Exception
      */
     private static function paddingModeLimitedCheck(int $padding): void
     {
         if (!($padding === OPENSSL_PKCS1_OAEP_PADDING || $padding === OPENSSL_PKCS1_PADDING)) {
-            throw new UnexpectedValueException(sprintf("Doesn't supported padding mode(%d), here only support OPENSSL_PKCS1_OAEP_PADDING or OPENSSL_PKCS1_PADDING.", $padding));
+            throw new Exception(sprintf("Doesn't supported padding mode(%d), here only support OPENSSL_PKCS1_OAEP_PADDING or OPENSSL_PKCS1_PADDING.", $padding));
         }
     }
 
@@ -296,14 +296,14 @@ class Rsa
      *                                                                                   `OPENSSL_PKCS1_OAEP_PADDING`.
      *
      * @return string - The base64-encoded ciphertext.
-     * @throws UnexpectedValueException
+     * @throws Exception
      */
     public static function encrypt(string $plaintext, $publicKey, int $padding = OPENSSL_PKCS1_OAEP_PADDING): string
     {
         self::paddingModeLimitedCheck($padding);
 
         if (!openssl_public_encrypt($plaintext, $encrypted, $publicKey, $padding)) {
-            throw new UnexpectedValueException('Encrypting the input $plaintext failed, please checking your $publicKey whether or nor correct.');
+            throw new Exception('Encrypting the input $plaintext failed, please checking your $publicKey whether or nor correct.');
         }
 
         return base64_encode($encrypted);
@@ -319,12 +319,12 @@ class Rsa
      * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed $publicKey - The public key.
      *
      * @return boolean - True is passed, false is failed.
-     * @throws UnexpectedValueException
+     * @throws Exception
      */
     public static function verify(string $message, string $signature, $publicKey): bool
     {
         if (($result = openssl_verify($message, base64_decode($signature), $publicKey, OPENSSL_ALGO_SHA256)) === false) {
-            throw new UnexpectedValueException('Verified the input $message failed, please checking your $publicKey whether or nor correct.');
+            throw new Exception('Verified the input $message failed, please checking your $publicKey whether or nor correct.');
         }
 
         return $result === 1;
@@ -338,12 +338,12 @@ class Rsa
      * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|resource|string|mixed $privateKey - The private key.
      *
      * @return string - The base64-encoded signature.
-     * @throws UnexpectedValueException
+     * @throws Exception
      */
     public static function sign(string $message, $privateKey): string
     {
         if (!openssl_sign($message, $signature, $privateKey, OPENSSL_ALGO_SHA256)) {
-            throw new UnexpectedValueException('Signing the input $message failed, please checking your $privateKey whether or nor correct.');
+            throw new Exception('Signing the input $message failed, please checking your $privateKey whether or nor correct.');
         }
 
         return base64_encode($signature);
@@ -376,14 +376,14 @@ class Rsa
      *                                                                                                         `OPENSSL_PKCS1_OAEP_PADDING`.
      *
      * @return string - The utf-8 plaintext.
-     * @throws UnexpectedValueException
+     * @throws Exception
      */
     public static function decrypt(string $ciphertext, $privateKey, int $padding = OPENSSL_PKCS1_OAEP_PADDING): string
     {
         self::paddingModeLimitedCheck($padding);
 
         if (!openssl_private_decrypt(base64_decode($ciphertext), $decrypted, $privateKey, $padding)) {
-            throw new UnexpectedValueException('Decrypting the input $ciphertext failed, please checking your $privateKey whether or nor correct.');
+            throw new Exception('Decrypting the input $ciphertext failed, please checking your $privateKey whether or nor correct.');
         }
 
         return $decrypted;

@@ -14,8 +14,7 @@ use function openssl_decrypt;
 
 use const OPENSSL_RAW_DATA;
 
-use RuntimeException;
-use UnexpectedValueException;
+use Exception;
 
 /**
  * Aes encrypt/decrypt using `aes-256-gcm` algorithm with additional authenticated data(`aad`).
@@ -25,12 +24,12 @@ class AesGcm implements AesInterface
     /**
      * Detect the ext-openssl whether or nor including the `aes-256-gcm` algorithm
      *
-     * @throws RuntimeException
+     * @throws Exception
      */
     private static function preCondition(): void
     {
         if (!in_array(static::ALGO_AES_256_GCM, openssl_get_cipher_methods())) {
-            throw new RuntimeException('It looks like the ext-openssl extension missing the `aes-256-gcm` cipher method.');
+            throw new Exception('It looks like the ext-openssl extension missing the `aes-256-gcm` cipher method.');
         }
     }
 
@@ -51,7 +50,7 @@ class AesGcm implements AesInterface
         $ciphertext = openssl_encrypt($plaintext, static::ALGO_AES_256_GCM, $key, OPENSSL_RAW_DATA, $iv, $tag, $aad, static::BLOCK_SIZE);
 
         if (false === $ciphertext) {
-            throw new UnexpectedValueException('Encrypting the input $plaintext failed, please checking your $key and $iv whether or nor correct.');
+            throw new Exception('Encrypting the input $plaintext failed, please checking your $key and $iv whether or nor correct.');
         }
 
         return base64_encode($ciphertext . $tag);
@@ -77,13 +76,13 @@ class AesGcm implements AesInterface
 
         /* Manually checking the length of the tag, because the `openssl_decrypt` was mentioned there, it's the caller's responsibility. */
         if ($tagLength > static::BLOCK_SIZE || ($tagLength < 12 && $tagLength !== 8 && $tagLength !== 4)) {
-            throw new RuntimeException('The inputs `$ciphertext` incomplete, the bytes length must be one of 16, 15, 14, 13, 12, 8 or 4.');
+            throw new Exception('The inputs `$ciphertext` incomplete, the bytes length must be one of 16, 15, 14, 13, 12, 8 or 4.');
         }
 
         $plaintext = openssl_decrypt(substr($ciphertext, 0, $tailLength), static::ALGO_AES_256_GCM, $key, OPENSSL_RAW_DATA, $iv, $authTag, $aad);
 
         if (false === $plaintext) {
-            throw new UnexpectedValueException('Decrypting the input $ciphertext failed, please checking your $key and $iv whether or nor correct.');
+            throw new Exception('Decrypting the input $ciphertext failed, please checking your $key and $iv whether or nor correct.');
         }
 
         return $plaintext;

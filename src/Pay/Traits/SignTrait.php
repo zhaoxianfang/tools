@@ -31,7 +31,7 @@ trait SignTrait
     public function v3GetWechatAuthorization(string $url, string $method = 'GET', $body = ''): string
     {
         if (!in_array('sha256WithRSAEncryption', \openssl_get_md_methods(true))) {
-            throw new \RuntimeException("当前PHP环境不支持SHA256withRSA");
+            throw new \Exception("当前PHP环境不支持SHA256withRSA");
         }
 
         $config            = $this->config->toArray();

@@ -15,6 +15,8 @@ return [
             "sub_mchid" => "", // 子商户号(可选，可在请求参数中传入)
 
             "v3_secret_key"    => "", // 在商户平台上设置的APIv3密钥
+            "wechatpay_serial" => "", // 通过微信wechatpay安装包下载的证书文件内容
+
             'mch_private_cert' => '', // 商户私钥('.cer', '.crt', '.pem' 后缀的证书文件路径 或者 内容字符串)
             'mch_public_cert'  => '', // 商户公钥('.cer', '.crt', '.pem' 后缀的证书文件路径 或者 内容字符串)
             "notify_url"       => "", // 默认的异步通知地址，通知URL必须为直接可访问的URL，不允许携带查询串，要求必须为https地址

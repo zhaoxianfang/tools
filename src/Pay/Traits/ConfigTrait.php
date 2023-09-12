@@ -30,9 +30,9 @@ trait ConfigTrait
         if (!function_exists('config')) {
             throw new Exception('未定义函数 config()');
         }
-        $config = config('tools_pay.wechat.' . $connectionName);
+        $config = config('tools_wechat.' . $connectionName);
         if (empty($config) || !is_array($config) || empty($config['cache_path'])) {
-            throw new Exception('未正确配置 tools_pay.wechat.' . $connectionName);
+            throw new Exception('未正确配置 tools_wechat.' . $connectionName);
         }
         empty($this->cache) && $this->cache = Cache::instance();
         $this->cache->setCacheDir($config['cache_path']);

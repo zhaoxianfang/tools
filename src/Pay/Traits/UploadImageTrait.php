@@ -3,6 +3,8 @@
 namespace zxf\Pay\Traits;
 
 
+use Exception;
+
 /**
  * 上传图片
  * https://blog.csdn.net/CS__Love/article/details/123482031
@@ -17,7 +19,7 @@ trait UploadImageTrait
     public function uploadRequestAction()
     {
         if (!in_array('sha256WithRSAEncryption', \openssl_get_md_methods(true))) {
-            throw new \Exception("当前PHP环境不支持SHA256withRSA");
+            throw new Exception("当前PHP环境不支持SHA256withRSA");
         }
         $headerParam    = $this->uploadHeaderParam(); //获取头部信息
         $boundarystr    = "--{$this->boundary}\r\n";// $out是post的内容

@@ -3,6 +3,7 @@
 namespace zxf\Pay\Traits;
 
 use Exception;
+use zxf\Pay\WeChat\Crypto\AesGcm;
 use zxf\Pay\WeChat\Crypto\Rsa;
 use zxf\Pay\WeChat\Formatter;
 use zxf\tools\Random;
@@ -31,12 +32,12 @@ trait SignTrait
     public function v3GetWechatAuthorization(string $url, string $method = 'GET', $body = ''): string
     {
         if (!in_array('sha256WithRSAEncryption', \openssl_get_md_methods(true))) {
-            throw new \Exception("当前PHP环境不支持SHA256withRSA");
+            throw new Exception("当前PHP环境不支持SHA256withRSA");
         }
 
         $config            = $this->config->toArray();
-        $mchPrivateKey     = $config['mch_private_cert'] ?? null; // 商户私钥 内容字符或者文件路径
-        $mchPublicCertPath = $config['mch_public_cert'] ?? null; // 商户公钥 内容字符或者文件路径
+        $mchPrivateKey     = $config['apiclient_key'] ?? null; // 商户私钥 内容字符或者文件路径
+        $mchPublicCertPath = $config['apiclient_cert'] ?? null; // 商户公钥 内容字符或者文件路径
         $mchid             = $config['mchid'] ?? null; // 商户ID
 
         $url_parts     = parse_url($url);
@@ -91,16 +92,55 @@ trait SignTrait
     /**
      * 获取证书 序号 对比发现返回的和 getSerialNo() 方法的返回值 不太对
      *
+     * @param string $saveDir
+     *
      * @return mixed
      * @throws Exception
      * @deprecated 请使用 getSerialNo() 方法
      */
-    public function getCert()
+    public function getCert(string $saveDir = ''): mixed
     {
         $url      = 'https://api.mch.weixin.qq.com/v3/certificates';
         $header   = $this->v3CreateHeader($url, 'GET', '');
         $header[] = 'User-Agent:' . $this->config->get('mchid');
-        return $this->http->setHeader($header, false)->get($url); // 返回数组中包含了证书序号 serial_no
+        $res      = $this->http->setHeader($header, false)->get($url); // 返回数组中包含了证书序号 serial_no
+        return !empty($saveDir) ? $this->saveCertFile($res, $saveDir) : $res;
+    }
+
+    /**
+     * 把证书内容保存到本地指定文件夹下
+     *
+     * @param array  $certApiBody
+     * @param string $saveDir
+     *
+     * @return array
+     * @throws Exception
+     */
+    private function saveCertFile(array $certApiBody, string $saveDir = ''): array
+    {
+        $filePath = [];
+        foreach ($certApiBody['data'] as $item) {
+            // 使用PHP7的数据解构语法，从Array中解构并赋值变量
+            [
+                'encrypt_certificate' => [
+                    'ciphertext'      => $ciphertext,
+                    'nonce'           => $nonce,
+                    'associated_data' => $aad,
+                ],
+            ] = $item;
+
+            $apiV3Key = $this->config['v3_secret_key'];
+
+            // 加密文本消息解密
+            $certContent = AesGcm::decrypt($ciphertext, $apiV3Key, $nonce, $aad);
+            // 把解密后的文本转换为PHP Array数组
+            is_dir($saveDir) || mkdir($saveDir, 0755, true);
+            $fileName = $saveDir . DIRECTORY_SEPARATOR . 'wechat_pay_' . $item['serial_no'] . '.pem';
+            file_put_contents($fileName, $certContent);
+            $filePath[] = $fileName;
+        }
+        return $filePath;
+
     }
 
     // 获取商户公钥证书内容
@@ -122,9 +162,11 @@ trait SignTrait
     }
 
     // 商户Api证书序列号
-    private function getSerialNo(string $mchPublicCertPath): string
+    public function getSerialNo(?string $mchPublicCertPath=''): string
     {
-        $info = openssl_x509_parse($this->getPublicCert($mchPublicCertPath));
+        $apiclient_cert    = $this->config['apiclient_cert'] ?? null; // 商户公钥 内容字符或者文件路径
+        $mchPublicCertPath = empty($mchPublicCertPath) ? $apiclient_cert : $mchPublicCertPath;
+        $info              = openssl_x509_parse($this->getPublicCert($mchPublicCertPath));
 
         if (false === $info || !isset($info['serialNumberHex'])) {
             throw new Exception('公钥证书读取失败，请检查配置文件 是否正确');
@@ -143,7 +185,7 @@ trait SignTrait
      */
     public function getJsApiSignParams(?string $prepay_id = ''): array
     {
-        $private_file_url           = 'file://' . realpath($this->config['mch_private_cert']);
+        $private_file_url           = 'file://' . realpath($this->config['apiclient_key']);
         $merchantPrivateKeyInstance = Rsa::from($private_file_url);
         $prepay_id                  = $prepay_id ?: 'wx' . date('YmdHis') . Random::build('alnum', 10);
         $params                     = [
@@ -171,7 +213,7 @@ trait SignTrait
      */
     public function getAppSignParams(?string $prepayid = ''): array
     {
-        $private_file_url           = 'file://' . realpath($this->config['mch_private_cert']);
+        $private_file_url           = 'file://' . realpath($this->config['apiclient_key']);
         $merchantPrivateKeyInstance = Rsa::from($private_file_url);
         $prepayid                   = $prepayid ?: 'wx' . date('YmdHis') . Random::build('alnum', 10);
         $params                     = [
@@ -192,7 +234,7 @@ trait SignTrait
     private function getEncrypt($str)
     {
         //$str是待加密字符串
-        $public_key = $this->getPublicCert($this->config['mch_public_cert']);
+        $public_key = $this->getPublicCert($this->config['apiclient_cert']);
         $encrypted  = '';
         if (openssl_public_encrypt($str, $encrypted, $public_key, OPENSSL_PKCS1_OAEP_PADDING)) {
             //base64编码

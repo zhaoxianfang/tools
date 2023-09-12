@@ -170,11 +170,11 @@ class Rsa
     public static function from($thing, string $type = self::KEY_TYPE_PRIVATE)
     {
         $pkey = ($isPublic = $type === static::KEY_TYPE_PUBLIC)
-            ? openssl_get_publickey(self::parse($thing, $type))
+            ? openssl_pkey_get_public(self::parse($thing, $type))
             : openssl_pkey_get_private(self::parse($thing));
 
         if (false === $pkey) {
-            throw new \Exception(sprintf(
+            throw new Exception(sprintf(
                 'Cannot load %s from(%s), please take care about the \$thing input.',
                 $isPublic ? 'publicKey' : 'privateKey',
                 gettype($thing)

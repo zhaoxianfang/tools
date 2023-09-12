@@ -21,4 +21,6 @@ return [
             'client_secret' => env('TOOLS_QQ_MOBILE_APP_KEY', ''),
         ],
     ],
+    // 微信Wechat 使用 tools_wechat配置文件中的配置
+
 ];

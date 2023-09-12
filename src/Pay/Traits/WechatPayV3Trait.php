@@ -2,6 +2,8 @@
 
 namespace zxf\Pay\Traits;
 
+use Exception;
+
 trait WechatPayV3Trait
 {
     // 每个 use WechatPayV3Trait 的类都必须定义这个属性
@@ -85,7 +87,7 @@ trait WechatPayV3Trait
      */
     public function pay(?string $prepay_id = '')
     {
-        throw new \Exception('请重写 pay 方法');
+        throw new Exception('请重写 pay 方法');
     }
 
     /**
@@ -112,6 +114,17 @@ trait WechatPayV3Trait
     }
 
     /**
+     * 退款回调
+     *
+     * @link https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_11.shtml
+     *       https://pay.weixin.qq.com/wiki/doc/apiv3_partner/apis/chapter4_1_11.shtml
+     */
+    public function refunded(\Closure $func)
+    {
+        $this->payed($func);
+    }
+
+    /**
      * 发起退款|申请退款
      *
      * @link https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_9.shtml
@@ -131,42 +144,40 @@ trait WechatPayV3Trait
      */
     public function queryRefund(string $out_refund_no = '')
     {
-        !$this->isService() && $this->withRequestFields(['sub_mchid']);
+        $this->isService() && $this->withRequestFields(['sub_mchid']);
         return $this->url("v3/refund/domestic/refunds/{$out_refund_no}")->get();
     }
 
-    /**
-     * 退款回调
-     *
-     * @link https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_11.shtml
-     *       https://pay.weixin.qq.com/wiki/doc/apiv3_partner/apis/chapter4_1_11.shtml
-     */
-    public function refunded(\Closure $func)
-    {
-        $callbackData = $this->parseCallbackData();
-        $res          = $func($callbackData);// 判断闭包返回数据 true or false
-        http_response_code(200);
-        ob_clean(); // 清空缓冲区
-        echo $res ? json_encode([
-            "code"    => "SUCCESS",
-            "message" => "成功",
-        ]) : json_encode([
-            "code"    => "FAIL",
-            "message" => "失败",
-        ]);
-        flush();// 强制输出到浏览器
-        die;
-    }
 
     /**
      * 查询交易账单
      *
      * @link https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_6.shtml
      *       https://pay.weixin.qq.com/wiki/doc/apiv3_partner/apis/chapter4_1_6.shtml
+     *
+     * @param array  $data    查询参数
+     * @param string $saveDir 保存目录
+     *
+     * @return string
      */
-    public function queryBill(array $data = [])
+    public function queryBill(array $data = [], string $saveDir = '')
     {
-        return $this->url("v3/bill/tradebill")->body($data)->get();
+        $res = $this->url("v3/bill/tradebill")->body($data)->get();
+        if (!empty($res['download_url'])) {
+            return $this->downloadBill($res['download_url'], $saveDir);
+        }
+        return $res;
+    }
+
+    // 输出CSV到浏览器
+    protected function toBrowser($content)
+    {
+        $appId = $this->isService() ? $this->config['sub_mchid'] : $this->config['mchid'];
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename=' . $appId . '_' . date('YmdHis') . '.csv');
+        header('Cache-Control: max-age=0');
+        echo $content;
+        die;
     }
 
     /**
@@ -175,9 +186,12 @@ trait WechatPayV3Trait
      * @link https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_7.shtml
      *       https://pay.weixin.qq.com/wiki/doc/apiv3_partner/apis/chapter4_1_7.shtml
      */
-    public function queryFlowBill(array $data = [])
+    public function queryFlowBill(array $data = [], string $saveDir = '')
     {
-        return $this->url("v3/bill/fundflowbill")->body($data)->get();
+        $res = $this->url("v3/bill/fundflowbill")->body($data)->get();
+        if (!empty($res['download_url'])) {
+            return $this->downloadBill($res['download_url'], $saveDir);
+        }
     }
 
     /**
@@ -187,9 +201,18 @@ trait WechatPayV3Trait
      * @link https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_8.shtml
      *       https://pay.weixin.qq.com/wiki/doc/apiv3_partner/apis/chapter4_1_8.shtml
      */
-    public function downloadBill()
+    public function downloadBill(string $download_url = '', string $saveDir = '')
     {
-        throw new \Exception('请重写 downloadBill 方法');
+        $content = $this->url($download_url)->body([])->get();
+        if (!empty($saveDir)) {
+            is_dir($saveDir) || mkdir($saveDir, 0755, true);
+            $appId    = $this->isService() ? $this->config['sub_mchid'] : $this->config['mchid'];
+            $fileName = $saveDir . DIRECTORY_SEPARATOR . $appId . '_' . date('YmdHis') . '.csv';
+            file_put_contents($fileName, $content);
+            return $fileName;
+        } else {
+            $this->toBrowser($content);
+        }
     }
 
     /**
@@ -200,7 +223,7 @@ trait WechatPayV3Trait
     public function subMerchantFundflowbill(array $data = [])
     {
         if (!$this->isService()) {
-            throw new \Exception('普通商户模式不支持申请单个子商户资金账单');
+            throw new Exception('普通商户模式不支持申请单个子商户资金账单');
         }
         return $this->url("v3/bill/sub-merchant-fundflowbill")->body($data)->get();
     }

@@ -8,6 +8,7 @@ use zxf\Facade\Request;
 use zxf\Pay\Traits\CallbackTrait;
 use zxf\Pay\Traits\CombineTrait;
 use zxf\Pay\Traits\ConfigTrait;
+use zxf\Pay\Traits\HttpTrait;
 use zxf\Pay\Traits\SignTrait;
 use zxf\tools\Cache;
 use zxf\tools\DataArray;
@@ -17,7 +18,7 @@ use zxf\tools\DataArray;
  */
 abstract class WeChatPayBase
 {
-    use SignTrait, ConfigTrait, CombineTrait, CallbackTrait;
+    use SignTrait, ConfigTrait, CombineTrait, CallbackTrait, HttpTrait;
 
     // 微信支付请求地址
     protected string $urlBase = "https://api.mch.weixin.qq.com/API_URL";
@@ -48,9 +49,9 @@ abstract class WeChatPayBase
         "v3_secret_key"    => "", // 在商户平台上设置的APIv3密钥
         "wechatpay_serial" => "", // 通过微信wechatpay安装包下载的证书文件内容
 
-        'mch_private_cert' => '', // 商户私钥('.cer', '.crt', '.pem' 后缀的证书文件路径 或者 内容字符串)
-        'mch_public_cert'  => '', // 商户公钥('.cer', '.crt', '.pem' 后缀的证书文件路径 或者 内容字符串)
-        "notify_url"       => "", // 默认的异步通知地址，通知URL必须为直接可访问的URL，不允许携带查询串，要求必须为https地址
+        'apiclient_key'  => '', // 商户私钥('.cer', '.crt', '.pem' 后缀的证书文件路径 或者 内容字符串)
+        'apiclient_cert' => '', // 商户公钥('.cer', '.crt', '.pem' 后缀的证书文件路径 或者 内容字符串)
+        "notify_url"     => "", // 默认的异步通知地址，通知URL必须为直接可访问的URL，不允许携带查询串，要求必须为https地址
 
         'cache_path' => '',// 缓存目录配置（可选，需拥有读写权限）
     ];
@@ -110,7 +111,7 @@ abstract class WeChatPayBase
      *
      * @return $this
      */
-    protected function url(string $url = '')
+    public function url(string $url = '')
     {
         $this->url = $url;
         return $this;
@@ -122,7 +123,7 @@ abstract class WeChatPayBase
         return $this;
     }
 
-    protected function body(array $body = [], bool $toString = false)
+    public function body(array $body = [], bool $toString = false)
     {
         $this->body = $toString ? json_encode($body) : $body;
         return $this;
@@ -140,26 +141,6 @@ abstract class WeChatPayBase
     public function error(string $message = "", int $code = 500)
     {
         throw new Exception(!empty($message) ? $message : "出错啦", $code);
-    }
-
-    protected function parseUrl(?string $url = '', ?array $params = [])
-    {
-        $url = $url ?: $this->url;
-
-        if (empty($url)) {
-            return $this->error("接口请求地址不能为空");
-        }
-
-        $baseUrl  = str_starts_with($url, "http") ? $url : $this->urlBase;
-        $url      = str_replace(["API_URL"], [$url], $baseUrl);
-        $urlQuery = !empty($params) ? http_build_query($params) : "";
-
-        if (!empty($urlQuery) && is_bool(stripos($url, $urlQuery))) {
-            $url = trim($url, '?');
-            $url .= ((stripos($url, "?")) ? "&" : "?") . $urlQuery;
-        }
-
-        return $url;
     }
 
     /**
@@ -183,45 +164,6 @@ abstract class WeChatPayBase
         return $data;
     }
 
-    public function checkGetData(array &$data = [])
-    {
-        if ($this->isService()) {
-            empty($data['sp_mchid']) || $data['sp_mchid'] = $this->config['sp_mchid']; // 服务商户号
-            empty($data['sub_mchid']) || $data['sub_mchid'] = $this->config['sub_mchid']; // 子商户号
-        } else {
-            empty($data['mchid']) || $data['mchid'] = $this->config['mchid']; // 直连商户号
-        }
-        return $data ?? [];
-    }
-
-    protected function post(array $data = [])
-    {
-        $data = ($data && $this->body) ? array_merge($this->body, $data) : ($data ?: $this->body);
-        $data = $data ?: [];
-        $this->appendBody($data);
-
-        $url    = $this->parseUrl($this->url);
-        $header = $this->v3CreateHeader($url, 'POST', $data);
-
-        $data   = is_array($data) ? json_encode($data, JSON_UNESCAPED_UNICODE) : $data;
-        $result = $this->http->setHeader($header, false)->setParams($data)->post($url);
-        $this->clear();
-        return $result;
-    }
-
-    protected function get(array $data = [])
-    {
-        $data   = ($data && $this->body) ? array_merge($this->body, $data) : ($data ?: $this->body);
-        $data   = $data ?: [];
-        $params = $this->appendBody($data);
-
-        $url    = $this->parseUrl($this->url, $params);
-        $header = $this->v3CreateHeader($url, 'GET', '');
-
-        $result = $this->http->setHeader($header, false)->get($this->parseUrl($this->url, $params));
-        $this->clear();
-        return $result;
-    }
 
     protected function clear()
     {

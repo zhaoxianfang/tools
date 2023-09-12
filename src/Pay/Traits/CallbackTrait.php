@@ -31,7 +31,7 @@ trait CallbackTrait
 
 
         // 根据通知的平台证书序列号，查询本地平台证书文件，
-        // $platformPublicKeyInstance = Rsa::from('file://' . $this->config['mch_public_cert'], Rsa::KEY_TYPE_PUBLIC);
+        // $platformPublicKeyInstance = Rsa::from('file://' . $this->config['apiclient_cert'], Rsa::KEY_TYPE_PUBLIC);
         $platformPublicKeyInstance = openssl_get_publickey('file://' . $this->config['wechatpay_serial']);// 通过微信wechatpay安装包下载的证书文件内容
 
         // 检查通知时间偏移量，允许5分钟之内的偏移

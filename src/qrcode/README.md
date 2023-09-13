@@ -79,7 +79,6 @@ wzny  亡者农药体
 heiti   方正黑体简体
 lishu   隶书
 haoshenti   优设好身体
-fzkt  方正楷体
 fangsong   方正仿宋简体
 kaiti   方正楷体简体
 ```

@@ -26,7 +26,7 @@ class TextToPNG
 
     private static $calculateNum = 0; //自动计算文字次数
 
-    private $font           = './../resource/font/lishu.ttf'; //默认字体. 相对于脚本存放目录的相对路径.
+    private $font           = './../resource/font/YuFanXinYu.ttf'; //默认字体. 相对于脚本存放目录的相对路径.
     private $text           = "Hello!"; // 默认文字.
     private $size           = 24; //默认字体大小，会自动适配
     private $rot            = 0; // 旋转角度.
@@ -45,9 +45,10 @@ class TextToPNG
 
     /**
      * 初始化
+     *
      * @param array $options 参数
      */
-    public static function instance($options = [])
+    public static function instance(array $options = [])
     {
         if (is_null(self::$instance)) {
             self::$instance = new static($options);
@@ -57,11 +58,13 @@ class TextToPNG
 
     /**
      * 设置文本
-     * @Author   ZhaoXianFang
+     *
+     * 
      * @DateTime 2019-03-20
+     *
      * @param string $text [description]
      */
-    public function setText($text = 'Hello!')
+    public function setText(string $text = 'Hello!')
     {
         $this->text = $text;
         return $this;
@@ -80,7 +83,7 @@ class TextToPNG
 
     /**
      * 进行绘画
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2019-03-20
      * @return   [type]       [description]
      */
@@ -220,7 +223,7 @@ class TextToPNG
 
     /**
      * 设置文字颜色
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2019-03-20
      * @param string $hexVal [16进制背景色]
      */
@@ -232,7 +235,7 @@ class TextToPNG
 
     /**
      * 设置背景色
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2019-03-20
      * @param string $hexVal [16进制背景色]
      */
@@ -280,7 +283,7 @@ class TextToPNG
 
     /**
      * 设置画布大小
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2019-03-20
      * @param string $width [description]
      * @param string $height [description]
@@ -295,7 +298,7 @@ class TextToPNG
 
     /**
      * 设置字体
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2019-03-20
      * @param string $filepath [description]
      */
@@ -308,7 +311,7 @@ class TextToPNG
         return $this;
     }
 
-    public function setFontStyle($style = 'xingshu')
+    public function setFontStyle($style = 'YuFanXinYu')
     {
         $this->font = dirname(dirname(__FILE__)) . '/resource/font/' . $style . '.ttf';
         if (!is_file($this->font)) {
@@ -320,7 +323,7 @@ class TextToPNG
 
     /**
      * 设置图片是否透明
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2019-03-20
      * @param boolean $val [description]
      */
@@ -332,7 +335,7 @@ class TextToPNG
 
     /**
      * 设置旋转角度
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2019-03-20
      * @param integer $rotate [description]
      */

@@ -34,7 +34,7 @@ Db::newQuery()->connect('default', [
 
 ### 在框架中使用
 
-如果在框架中使用，可以在`config/tools_database.php`中配置mysql 连接配置
+如果在框架中使用，可以在`config/tools_other.php`中配置mysql 连接配置
 
 ```
 <?php

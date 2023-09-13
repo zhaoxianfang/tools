@@ -19,7 +19,7 @@ class MysqlTool
     /**
      * 生成mysql数据字典
      *
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2020-11-27
      *
      * @param string $dbserver   [服务器地址ip或域名]

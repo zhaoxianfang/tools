@@ -89,7 +89,7 @@ class AliYunSms extends Base
             'Version'          => $this->version,
         ];
         $data['PhoneNumbers']  = implode(',', $this->mobiles);
-        $data['SignName']      = !empty($this->sign) ? $this->sign : config('tools_notice.sms.aliyun.sign');
+        $data['SignName']      = !empty($this->sign) ? $this->sign : config('tools_other.sms.aliyun.sign');
         $data['TemplateParam'] = json_encode($this->params);
         return $data;
     }

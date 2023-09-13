@@ -73,8 +73,8 @@ abstract class Base
     public function __construct(string $key = null, string $secret = null)
     {
         if (empty($key) && function_exists('config')) {
-            $this->key    = config('tools_notice.sms.' . $this->driver . '.app_id');
-            $this->secret = config('tools_notice.sms.' . $this->driver . '.secret');
+            $this->key    = config('tools_other.sms.' . $this->driver . '.app_id');
+            $this->secret = config('tools_other.sms.' . $this->driver . '.secret');
         } else {
             $this->key    = $key;
             $this->secret = $secret;

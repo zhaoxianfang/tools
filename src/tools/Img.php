@@ -36,7 +36,7 @@ class Img
 
     /**
      * 将图片处理为圆角
-     * @Author    ZhaoXianFang
+     * 
      * @DateTime  2020-04-05
      * @param     [type]       $imgPath     [要处理的图片路径]
      * @param boolean $newFilePath [可选][保存路径]
@@ -121,7 +121,7 @@ class Img
 
     /**
      * 修改图片尺寸[支持透明图片修改]
-     * @Author    ZhaoXianFang
+     * 
      * @DateTime  2020-04-05
      * @param     [type]       $filePath    [原图路径]
      * @param boolean $newFilePath [可选][保存路径]
@@ -190,7 +190,7 @@ class Img
 
     /**
      * 解决imagecopymerge 函数背景黑色问题,参数与 imagecopymerge 保持一直
-     * @Author    ZhaoXianFang
+     * 
      * @DateTime  2020-04-05
      * @param     [type]       $dst_im [目标图像]
      * @param     [type]       $src_im [被拷贝的源图像]
@@ -228,7 +228,7 @@ class Img
 
     /**
      * 图片水印 和 拼接合并
-     * @Author    ZhaoXianFang
+     * 
      * @DateTime  2020-04-05
      * @param string $bigImgPath [description]
      * @param string $smallImgPath [description]
@@ -454,7 +454,7 @@ class Img
 
     /**
      * 在图片对象上 添加文字
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2020-04-07
      * @param    [type]       $image      [图片对象]
      * @param int $size [文字大小]

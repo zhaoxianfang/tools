@@ -81,7 +81,7 @@ class MysqliDriver extends MySQLAbstract
     private function getConfig($connectionName = 'default', ...$args)
     {
         if (empty($args) || !is_array($config = $args[0]) || count($config) < 4 || empty($config['host']) || empty($config['dbname']) || empty($config['username']) || !isset($config['password'])) {
-            if (!function_exists('config') || empty($config = config('tools_database.mysql.' . $connectionName))) {
+            if (!function_exists('config') || empty($config = config('tools_other.mysql.' . $connectionName))) {
                 return false;
             }
         }

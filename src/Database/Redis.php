@@ -47,7 +47,7 @@ class Redis
     private function __construct(array $config = [], $attr = array())
     {
         if (function_exists('config') && empty($config)) {
-            $config = config('tools_database.redis.default') ?? [];
+            $config = config('tools_other.redis.default') ?? [];
         }
         $this->attr  = array_merge($this->attr, $attr);
         $this->redis = new PhpRedis();

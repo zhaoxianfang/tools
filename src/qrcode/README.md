@@ -58,7 +58,7 @@ $qrCode
 ```
 $qrCode->setLabelFontPath("你的ttf文件.ttf");
 
-$qrCode->setLabelFontPath(dirname(__DIR__) . "/resource/font/oppo.ttf");
+$qrCode->setLabelFontPath(dirname(__DIR__) . "/resource/font/YuFanXinYu.ttf");
 ```
 
 #### 使用内置的字体
@@ -71,34 +71,17 @@ $qrCode->useFontFile('xingshu');
 支持的字体
 
 ```
-yuanti    圆体
-diandain   点点像素体-方形
-diandain_yt   点点像素体-圆形
-diandain_lx   点点像素体-菱形
-lishu   隶书
-qiuhong   秋鸿楷体
-taiwan_lishu   台湾隶书
-xingshu   行书
-code   代码体
-caoshu   草书
-kaiti   方正楷体简体
-fangsong   方正仿宋简体
-oppo   OPPO官方字体
-ali_puhui   阿里巴巴普惠体2.0
-baotuxiaobai   包图小白体
-heiti   方正黑体简体
-honglei    鸿雷板书简体
-haoshenti   优设好身体
-myshouxie   沐瑶软笔手写体
-foxi  佛系体
-wzny  亡者农药体
-sj_sjjt  三极瘦金简体
+YuFanXinYu 余繁新语
+ZhuqueFangsong 朱雀仿宋
+LXGWHeartSerifCHS 霞鹜铭心宋体
 sh_jjt  三极尖叫体
-sj_qyxz  三极秦韵小篆
-a_kspy  Aa楷书拼音
+wzny  亡者农药体
+heiti   方正黑体简体
+lishu   隶书
+haoshenti   优设好身体
 fzkt  方正楷体
-sj_kdt  三极空叠体
-sj_ltjhjt  三极立体极黑简体
+fangsong   方正仿宋简体
+kaiti   方正楷体简体
 ```
 
 ## BarCode 创建条形码
@@ -135,7 +118,7 @@ $barcode->draw(); // 把图片直接绘画到浏览器
 ```
 $barcode->setLabelFontPath("你的ttf文件.ttf");
 
-$barcode->setLabelFontPath(dirname(__DIR__) . "/resource/font/oppo.ttf");
+$barcode->setLabelFontPath(dirname(__DIR__) . "/resource/font/YuFanXinYu.ttf");
 ```
 
 #### 使用内置的字体

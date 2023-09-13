@@ -400,7 +400,7 @@ class BarCode extends BarcodeType
     private function _getFontPath()
     {
         if (empty($this->label_font_path)) {
-            return dirname(__DIR__) . "/resource/font/heiti.ttf";
+            return dirname(__DIR__) . "/resource/font/YuFanXinYu.ttf";
         }
         return $this->label_font_path;
     }
@@ -429,7 +429,7 @@ class BarCode extends BarcodeType
      *
      * @return $this
      */
-    public function useFontFile(string $fontName = 'oppo'): BarCode
+    public function useFontFile(string $fontName = 'YuFanXinYu'): BarCode
     {
         $this->setLabelFontPath(dirname(__DIR__) . "/resource/font/" . $fontName . ".ttf");
 

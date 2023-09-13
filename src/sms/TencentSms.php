@@ -63,7 +63,7 @@ class TencentSms extends Base
             'SecretId'    => $this->key,
             'Action'      => 'SendSms',
             'Version'     => $this->version,
-            'Sign'        => !empty($this->sign) ? $this->sign : config('tools_notice.sms.tencent.sign'),
+            'Sign'        => !empty($this->sign) ? $this->sign : config('tools_other.sms.tencent.sign'),
             'Nonce'       => rand(10000, 99999),
             'TemplateID'  => $this->template,
             'SmsSdkAppid' => $this->appid,

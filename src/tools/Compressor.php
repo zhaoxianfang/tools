@@ -16,7 +16,7 @@ namespace zxf\tools;
 
 /**
  * 功能：图片压缩类（可改变图片大小和压缩质量以及保留宽高压缩）
- * @Author   ZhaoXianFang
+ * 
  * @DateTime 2019-03-08
  *
  * 调用示例：
@@ -138,7 +138,7 @@ class Compressor
      * @param $compressImageName
      * @return $this
      * @throws \Exception
-     * @author 19/1/17 ZhaoXianFang
+     * 
      */
     public function set($imagePath, $savePath = null)
     {
@@ -177,7 +177,7 @@ class Compressor
      * @param int $level
      * @return ImgCompressor
      * @throws \Exception
-     * @author 19/1/17 ZhaoXianFang
+     * 
      */
     public function compress($level = 7.5)
     {
@@ -194,7 +194,6 @@ class Compressor
      *
      * @param $image
      * @return bool
-     * @author 19/1/16 ZhaoXianFang
      */
     private function ifTransparent($image)
     {
@@ -211,7 +210,7 @@ class Compressor
 
     /**
      * 等比例缩放
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2019-03-08
      * @param string $percent [设置比例 0.1~1][图片压缩比例，0-1 #原图压缩，不缩放，但体积大大降低]
      * @return   [type]                [description]
@@ -230,7 +229,7 @@ class Compressor
      * @param $height
      * @return $this
      * @throws \Exception
-     * @author 19/1/17 ZhaoXianFang
+     * 
      */
     public function resize($width, $height)
     {
@@ -314,7 +313,7 @@ class Compressor
      * 获取结果
      *
      * @return 保存的图片信息或者 直接输出到浏览器[由是否保存本地来决定]
-     * @author 19/1/17 ZhaoXianFang
+     * 
      */
     public function get($toBase64String = false)
     {

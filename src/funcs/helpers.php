@@ -44,7 +44,7 @@ if (!function_exists('truncate')) {
     /**
      * 文章去除标签截取文字
      *
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2018-09-12
      *
      * @param string  $string [被截取字符串]
@@ -129,7 +129,7 @@ if (!function_exists('is_crawler')) {
     /**
      * [isCrawler 检测是否为爬虫]
      *
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2019-12-24
      *
      * @param boolean $returnName          [是否返回爬虫名称]
@@ -182,7 +182,7 @@ if (!function_exists('img_to_gray')) {
     /**
      * [img_to_gray 把彩色图片转换为灰度图片,支持透明色]
      *
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2019-06-24
      *
      * @param string $imgFile  [源图片地址]
@@ -376,7 +376,7 @@ if (!function_exists('response_and_continue')) {
     /**
      * 输出json后继续在后台执行指定方法
      *
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2019-01-07
      *
      * @param array        $responseDara   立即响应的数组数据
@@ -428,7 +428,7 @@ if (!function_exists('num_to_cn')) {
     /**
      * 数字转换为中文
      *
-     * @Author   ZhaoXianFang
+     * 
      *
      * @param float|int|string $num  目标数字
      * @param bool             $mode 模式[true:金额（默认）,false:普通数字表示]
@@ -698,7 +698,7 @@ if (!function_exists('str_rand')) {
     /**
      * 生成随机字符串
      *
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2017-06-28
      *
      * @param integer $length 字符串长度
@@ -769,7 +769,7 @@ if (!function_exists('img_to_base64')) {
     /**
      * 图片转 base64
      *
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2017-07-18
      *
      * @param    [type]       $image_file [description]
@@ -815,7 +815,7 @@ if (!function_exists('is_json')) {
     /**
      * [is_json 判断json]
      *
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2018-12-27
      *
      * @param    [type]       $string [description]
@@ -852,7 +852,7 @@ if (!function_exists('convert_underline')) {
     /**
      * 下划线转驼峰
      *
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2018-08-29
      *
      * @param string $str
@@ -871,7 +871,7 @@ if (!function_exists('underline_convert')) {
     /**
      * 驼峰转下划线
      *
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2018-08-29
      * @return   string       [description]
      */
@@ -886,7 +886,7 @@ if (!function_exists('check_pass_strength')) {
      * 验证等保测2级评密码强度
      * 验证密码强度是否符合 至少包含大小写字母、数字、特殊字符大于8个字符
      *
-     * @Author   ZhaoXianFang
+     * 
      * @DateTime 2020-01-08
      *
      * @param string $password [description]

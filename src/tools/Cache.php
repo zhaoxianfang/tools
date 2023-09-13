@@ -49,7 +49,8 @@ class Cache
     public function __construct(array $config = [])
     {
         if (empty($config['cache_path'])) {
-            $config['cache_path'] = sys_get_temp_dir() . '/cache';
+            $defaultPath          = function_exists('config') && !empty($defaultPath = config('tools_other.cache_path')) ? realpath($defaultPath) : '';
+            $config['cache_path'] = !empty($defaultPath) ? $defaultPath : sys_get_temp_dir() . '/cache';
             create_dir($config['cache_path']);
         }
         if (!empty($config)) {

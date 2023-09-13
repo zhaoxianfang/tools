@@ -19,7 +19,7 @@ class Factory
     public function setDriver($driver = 'default')
     {
         $this->driver = $driver;
-        $this->config = config('tools_notice.mail.' . $this->driver);
+        $this->config = config('tools_other.mail.' . $this->driver);
         return $this;
     }
 

@@ -94,7 +94,8 @@ class Factory
         try {
             //Server settings
             $this->mailObj->SMTPDebug = SMTP::DEBUG_SERVER;                      //启用详细调试输出
-            $this->mailObj->isSMTP();                                            //使用SMTP发送
+            // $this->mailObj->isSMTP();                                            //使用SMTP发送
+            $this->mailObj->Mailer     = $this->config['mailer'];                                          //使用SMTP发送
             $this->mailObj->Host       = $this->config['host'];                     //将SMTP服务器设置为通过发送 例如：smtp.qq.com
             $this->mailObj->SMTPAuth   = true;                                   //启用SMTP身份验证
             $this->mailObj->Username   = $this->config['username'];                     //SMTP username 例如：123456@qq.com

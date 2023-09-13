@@ -31,13 +31,14 @@ return [
     // 邮件通知
     'mail'       => [
         'default' => [
-            'host'        => env('TOOLS_MAIL_HOST', 'smtp.qq.com'), //stmp服务地址
-            'username'    => env('TOOLS_MAIL_USERNAME', ''), // 登录邮箱的账号
-            'password'    => env('TOOLS_MAIL_PASSWORD', ''),//客户端授权密码，注意不是登录密码
-            'smtp_secure' => env('TOOLS_MAIL_SMTP_SECURE', 'ssl'),//使用ssl协议
-            'smtp_auth'   => env('TOOLS_MAIL_SMTP_AUTH', true),//设置是否进行权限校验
-            'port'        => env('TOOLS_MAIL_PORT', '465'),//端口设置
-            'form'        => env('TOOLS_MAIL_FROM', '威四方'),//邮件来源，例如 威四方
+            'mailer'      => env('MAIL_MAILER', 'smtp'), //stmp服务地址
+            'host'        => env('MAIL_HOST', 'smtp.qq.com'), //stmp服务地址
+            'username'    => env('MAIL_USERNAME', ''), // 登录邮箱的账号
+            'password'    => env('MAIL_PASSWORD', ''),//客户端授权密码，注意不是登录密码
+            'smtp_secure' => env('MAIL_ENCRYPTION', 'ssl'),//使用ssl协议
+            'smtp_auth'   => env('MAIL_SMTP_AUTH', true),//设置是否进行权限校验
+            'port'        => env('MAIL_PORT', '465'),//端口设置
+            'form'        => env('MAIL_FROM_NAME', '威四方'),//邮件来源，例如 威四方
         ],
     ],
 
@@ -46,23 +47,23 @@ return [
     // ====================================================
     'redis'      => [
         'default' => [
-            'host'    => env('TOOLS_REDIS_HOST', ''),
-            'port'    => env('TOOLS_REDIS_PORT', '6379'),
+            'host'    => env('REDIS_HOST', ''),
+            'port'    => env('REDIS_PORT', '6379'),
             'timeout' => env('TOOLS_REDIS_TIME_OUT', '5'),
-            'auth'    => env('TOOLS_REDIS_AUTH', ''),
+            'auth'    => env('REDIS_PASSWORD', ''),
         ],
     ],
     //  mysql
     'mysql'      => [
         'default' => [
-            'host'     => env('TOOLS_MYSQL_HOST', '127.0.0.1'),
-            'username' => env('TOOLS_MYSQL_HOST', 'root'),
-            'password' => env('TOOLS_MYSQL_HOST', ''),
-            'db'       => env('TOOLS_MYSQL_HOST', 'test'),
-            'port'     => env('TOOLS_MYSQL_HOST', 3306),
-            // 'prefix'   => env('TOOLS_MYSQL_HOST', ''),
-            'charset'  => env('TOOLS_MYSQL_HOST', 'utf8mb4'),
-            'socket'   => env('TOOLS_MYSQL_SOCKET', null),
+            'host'     => env('DB_HOST', '127.0.0.1'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
+            'db'       => env('DB_DATABASE', 'test'),
+            'port'     => env('DB_PORT', 3306),
+            // 'prefix'   => env('DB_PREFIX', ''),
+            'charset'  => env('DB_CHARSET', 'utf8mb4'),
+            'socket'   => env('DB_SOCKET', null),
         ],
     ],
 ];

@@ -38,6 +38,8 @@ trait ConfigTrait
         $this->cache->setCacheDir($config['cache_path']);
 
         $this->config = new DataArray(array_merge($this->config, $config));
+        $mode         = $this->config->get('mode', 'merchant');
+        $this->setMode($mode); // 设置支付商模式
         if (empty($this->cache->get('lately_wechat_pay_config_' . $connectionName, []))) {
             $this->cache->set('lately_wechat_pay_config_' . $connectionName, $this->config->toArray());
         }

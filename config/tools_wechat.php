@@ -11,6 +11,9 @@ return [
         "notify_url"       => "", // 默认的异步通知地址，通知URL必须为直接可访问的URL，不允许携带查询串，要求必须为https地址
         'cache_path'       => '',// 缓存目录配置（可选，需拥有读写权限）
 
+        // 设置支付商模式 service:服务商模式 merchant:普通商户模式，不填默认为普通商户模式
+        "mode"             => 'merchant',
+
         // 公众号配置
         'secret'           => env('TOOLS_WECHAT_OPEN_PLATFORM_SECRET', ''),
         'token'            => env('TOOLS_WECHAT_OPEN_PLATFORM_TOKEN', ''),
@@ -30,7 +33,7 @@ return [
         "sub_mchid"        => "", // 子商户号(可选，可在请求参数中传入)
 
         // 微信V3配置
-        "v3_secret_key"    => "", // 在商户平台上手动输入设置的APIv3密钥
+        "v3_secret_key"    => "", // 在商户平台上手动输入设置的APIv3密钥:账户中心->API安全中心->APIv3密钥->设置密钥
         "wechatpay_serial" => "", // 可以调用 WechatPayFactory::JsApi('default')->getCert('你的证书保存文件夹路径') 获取
     ],
     // 小程序,自定义键名

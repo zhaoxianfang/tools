@@ -38,7 +38,8 @@ trait SignTrait
         $config            = $this->config->toArray();
         $mchPrivateKey     = $config['apiclient_key'] ?? null; // 商户私钥 内容字符或者文件路径
         $mchPublicCertPath = $config['apiclient_cert'] ?? null; // 商户公钥 内容字符或者文件路径
-        $mchid             = $config['mchid'] ?? null; // 商户ID
+        // 商户ID
+        $mchid = $this->isService() ? $config['sub_mchid'] : $config['mchid'];; // 商户ID
 
         $url_parts     = parse_url($url);
         $canonical_url = ($url_parts['path'] . (!empty($url_parts['query']) ? "?${url_parts['query']}" : ""));
@@ -162,7 +163,7 @@ trait SignTrait
     }
 
     // 商户Api证书序列号
-    public function getSerialNo(?string $mchPublicCertPath=''): string
+    public function getSerialNo(?string $mchPublicCertPath = ''): string
     {
         $apiclient_cert    = $this->config['apiclient_cert'] ?? null; // 商户公钥 内容字符或者文件路径
         $mchPublicCertPath = empty($mchPublicCertPath) ? $apiclient_cert : $mchPublicCertPath;
@@ -187,7 +188,7 @@ trait SignTrait
     {
         $private_file_url           = 'file://' . realpath($this->config['apiclient_key']);
         $merchantPrivateKeyInstance = Rsa::from($private_file_url);
-        $prepay_id                  = $prepay_id ?: 'wx' . date('YmdHis') . Random::build('alnum', 10);
+        $prepay_id                  = $prepay_id ?? 'wx' . date('YmdHis') . Random::build('alnum', 10);
         $params                     = [
             'appId'     => $this->config['appid'],
             'timeStamp' => (string)Formatter::timestamp(),
@@ -215,7 +216,7 @@ trait SignTrait
     {
         $private_file_url           = 'file://' . realpath($this->config['apiclient_key']);
         $merchantPrivateKeyInstance = Rsa::from($private_file_url);
-        $prepayid                   = $prepayid ?: 'wx' . date('YmdHis') . Random::build('alnum', 10);
+        $prepayid                   = $prepayid ?? 'wx' . date('YmdHis') . Random::build('alnum', 10);
         $params                     = [
             'appId'     => $this->config['app_id'],
             'partnerid' => $this->config['mchid'],

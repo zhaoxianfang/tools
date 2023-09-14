@@ -30,7 +30,7 @@ abstract class WeChatBase extends WechatCode
     protected static $instance;
 
     // 请求接口时候需要的 access_token
-    private string $accessToken = "";
+    private string|null $accessToken = "";
 
     // 接口url中是否使用 $accessToken 参数
     public bool $useToken = true;
@@ -48,7 +48,7 @@ abstract class WeChatBase extends WechatCode
     private int $tryAgainMax = 2;
 
     // 微信配置
-    protected $config = [
+    protected array|DataArray $config = [
         "token"      => "",
         "appid"      => "",
         "secret"     => "",
@@ -86,12 +86,14 @@ abstract class WeChatBase extends WechatCode
     private function init(string $driver = 'default'): bool|static
     {
         $config = config('tools_wechat.' . $driver);
-        if (empty($config) || empty($config = $this->cache->get('lately_wechat_config', []))) {
-            return false;
-        }
+
         $this->request = Request::instance();
         $this->http    = Curl::instance();
         $this->cache   = Cache::instance();
+
+        if (empty($config) && empty($config = $this->cache->get('lately_wechat_config', []))) {
+            return false;
+        }
 
         $this->config = new DataArray($config + $this->config);
 
@@ -382,7 +384,7 @@ abstract class WeChatBase extends WechatCode
     public function post(string $url = "", array|string $data = [], $urlParams = [])
     {
         $this->url = $this->parseUrl($url, $urlParams);
-        $result    = $this->http->setParams($data)->post($this->url);
+        $result    = $this->http->setParams($data, 'json')->post($this->url);
         return $this->getCurlResult($result, 'post', $url, $data, $urlParams);
     }
 
@@ -399,7 +401,7 @@ abstract class WeChatBase extends WechatCode
     public function get(string $url = "", array|string $data = [], $urlParams = [])
     {
         $this->url = $this->parseUrl($url, $urlParams);
-        $result    = $this->http->setParams($data)->get($this->url);
+        $result    = $this->http->setParams($data, 'string')->get($this->url);
         return $this->getCurlResult($result, 'get', $url, $data, $urlParams);
     }
 

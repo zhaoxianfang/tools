@@ -37,9 +37,7 @@ trait HttpTrait
         $this->httpReqData = $data;
         $this->useJson     = $useJson;
 
-        $data = $useJson ? json_encode($data) : $data;
-
-        $result = $this->http->setHeader($header, false)->setParams($data)->post($url);
+        $result = $this->http->setHeader($header, false)->setParams($data, $useJson ? 'json' : 'array')->post($url);
         if ($this->checkReqIsFail($result)) {
             return $this->retryHttp('POST');
         }
@@ -229,9 +227,8 @@ trait HttpTrait
         }
 
         $method = strtolower($method);
-        $data   = $this->useJson ? json_encode($this->httpReqData) : $this->httpReqData;
 
-        $result = $this->http->setHeader($header, false)->setParams($data)->$method($url);
+        $result = $this->http->setHeader($header, false)->setParams($this->httpReqData, $this->useJson ? 'json' : 'array')->$method($url);
         $this->clear();
         return $result;
     }

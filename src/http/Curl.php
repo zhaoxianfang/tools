@@ -36,7 +36,7 @@ class Curl
     /**
      * 判断资源类型是否需要初始化 CURL,防止第二次调用时候第一次的资源被释放
      *
-     * 
+     *
      * @DateTime 2018-12-29
      * @return void [type]       [description]
      * @throws Exception
@@ -233,7 +233,7 @@ class Curl
      * setParams( {'a'=>'str_a'});
      * @throws Exception
      */
-    public function setParams($params, $data_type = 'array')
+    public function setParams($params, $data_type = 'json')
     {
         $this->initCurl();
         //支持json数据数据提交
@@ -588,7 +588,7 @@ class Curl
     /**
      * 生成随机的userAgent
      *
-     * 
+     *
      * @DateTime 2018-12-28
      * @return string [type]       [description]
      */

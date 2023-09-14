@@ -49,9 +49,11 @@ class Cache
     public function __construct(array $config = [])
     {
         if (empty($config['cache_path'])) {
-            $defaultPath          = function_exists('config') && !empty($defaultPath = config('tools_other.cache_path')) ? realpath($defaultPath) : '';
-            $config['cache_path'] = !empty($defaultPath) ? $defaultPath : sys_get_temp_dir() . '/cache';
-            create_dir($config['cache_path']);
+            $defaultPath = function_exists('config') ? config('tools_other.cache_path') : '';
+            $path        = !empty($defaultPath) ? $defaultPath : sys_get_temp_dir();
+            create_dir($path);
+            $config['cache_path'] = realpath($path);
+
         }
         if (!empty($config)) {
             $this->config = array_merge($this->config, $config);

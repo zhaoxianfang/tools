@@ -10,78 +10,25 @@ class Request
     /**
      * @var object 对象实例
      */
-    protected static $instance;
+    protected static object $instance;
 
-    /**
-     * 指示“overridden 重写”请求方法的键。通常用于支持REST API上的方法。例如PUT。
-     *
-     * @var string
-     */
-    const OVERRIDE = 'HTTP_X_HTTP_METHOD_OVERRIDE';
-
-    /**
-     * 受信任代理IP地址的数组。
-     *
-     * @var array
-     */
-    protected $proxies = [];
-
-    /**
-     * URI解析器数组。
-     *
-     * @var array
-     */
-    protected $resolvers = [];
-
-    /**
-     * 请求的所有输入数据。用作缓存。
-     *
-     * @var array
-     */
-    protected $input   = [];
-    protected $headers = [];
-    protected $servers = [];
-
-    protected $post     = [];
-    protected $get      = [];
-    protected $files    = [];
-    protected $request  = [];
-    protected $sessions = [];
-    protected $cookies  = [];
-    protected $env      = [];
-
-    // 请求类型
-    protected $contentType = '';
-
-    /**
-     * 请求方法
-     *
-     * @var string
-     */
-    protected $method = 'GET';
-
-    /**
-     * 媒体类型格式的数组。
-     *
-     * @var array
-     */
-    protected $formats = [
-        'html' => ['text/html', 'application/xhtml+xml'],
-        'txt'  => ['text/plain'],
-        'js'   => [
-            'application/javascript',
-            'application/x-javascript', 'text/javascript',
-        ],
-        'css'  => ['text/css'],
-        'json' => ['application/json', 'application/x-json'],
-        'xml'  => [
-            'text/xml', 'application/xml',
-            'application/x-xml',
-        ],
-        'rdf'  => ['application/rdf+xml'],
-        'atom' => ['application/atom+xml'],
-        'rss'  => ['application/rss+xml'],
-    ];
+    private ?string $contentType = '';
+    private ?array  $body;
+    private ?array  $overridden  = [];
+    private ?array  $get         = [];
+    private ?array  $post        = [];
+    private ?array  $input       = [];
+    private ?array  $files       = [];
+    private ?array  $sessions    = [];
+    private ?array  $cookies     = [];
+    private ?array  $env         = [];
+    private ?array  $servers     = [];
+    private ?array  $headers     = [];
+    private mixed   $protocol;
+    private mixed   $method;
+    private mixed   $query;
+    private mixed   $userAgent;
+    private mixed   $port;
 
     public function __construct()
     {
@@ -92,6 +39,9 @@ class Request
     {
         if (is_null(self::$instance) || $refresh) {
             self::$instance = new static();
+        } else {
+            // 重新初始化
+            self::$instance->init();
         }
         return self::$instance;
     }
@@ -103,42 +53,54 @@ class Request
      */
     private function init()
     {
-        if (!empty($this->input)) {
-            return $this;
-        }
+        // 获取请求的内容类型
+        $this->contentType = $_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'];
+        // 获取请求的body内容
+        $this->body = file_get_contents('php://input') ?? $GLOBALS['HTTP_RAW_POST_DATA'];
+        // 获取重写的参数
+        $this->overridden = $_SERVER['REDIRECT_STATUS'] ?? [];
+        // 获取GET参数
+        $this->get = $_GET ?? [];
+        // 获取POST参数
+        $this->post = !empty($_POST) ? $_POST : (!empty($GLOBALS['HTTP_RAW_POST_DATA']) ? $GLOBALS['HTTP_RAW_POST_DATA'] : []);
+        // 获取输入参数（可能是GET或POST）
+        $this->input = $_REQUEST ?? [];
+        // 获取文件参数
+        $this->files = $_FILES ?? [];
+        // 获取Session参数
+        $this->sessions = $_SESSION ?? [];
+        // 获取Cookie参数
+        $this->cookies = $_COOKIE ?? [];
+        // 获取环境变量参数
+        $this->env = $_ENV ?? [];
+        // 获取服务器参数
+        $this->servers = $_SERVER ?? [];
+        // 获取协议类型（HTTP或HTTPS）
+        $this->protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : ($this->servers['SERVER_PROTOCOL'] ?: 'http');
+        // 获取请求方法（GET、POST等）
+        $this->method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        // 获取查询字符串参数（URL中"?"后的部分）
+        $this->query = $_SERVER['QUERY_STRING'] ?? '';
+        // 获取用户代理（User-Agent）信息
+        $this->userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
 
-        $this->get      = !empty($_GET) ? $_GET : [];
-        $this->request  = !empty($_REQUEST) ? $_REQUEST : [];
-        $this->files    = !empty($_FILES) ? $_FILES : [];
-        $this->sessions = !empty($_SESSION) ? $_SESSION : [];
-        $this->cookies  = !empty($_COOKIE) ? $_COOKIE : [];
-        $this->env      = !empty($_ENV) ? $_ENV : [];
-        $this->servers  = !empty($_SERVER) ? $_SERVER : [];
+        // 获取请求的端口号信息（如果是HTTP默认端口80，HTTPS默认端口443）
+        $this->port = $this->port();
 
-        $getContent    = file_get_contents('php://input');
-        $getContentArr = [];
-        if (!in_array(substr($getContent, 0, 5), ['<?xml', '<xml>'])) {
-            mb_parse_str($getContent, $getContentArr);
-            if ($this->servers['REQUEST_METHOD'] == "POST") {
-                $this->post = $getContentArr;
-            }
-        } else {
+        if ($this->isXml($this->body)) {
             //解析xml
             //1、把整个文件读入一个字符串中：(用于接收xml文件)
             //2、转换形式良好的 XML 字符串为 SimpleXMLElement 对象，然后输出对象的键和元素：(用于处理接收到的xml数据，将其转换成对象)
-            $xml_object = simplexml_load_string($getContent, 'SimpleXMLElement', LIBXML_NOCDATA);
+            $xml_object = simplexml_load_string($this->body, 'SimpleXMLElement', LIBXML_NOCDATA);
             //3、对象转成json
             $xml_json = json_encode($xml_object);
             //4、json再转成数组
-            $getContentArr = json_decode($xml_json, true);
-
-            $this->post = $getContentArr;
+            $this->post = json_decode($xml_json, true);
+            $this->body = $this->post;
         }
-        $this->input = !empty($getContentArr) ? array_merge($this->input, $getContentArr) : $this->input;
+        $this->input = !empty($this->post) ? array_merge($this->input, $this->post) : $this->input;
 
-        $post       = !empty($_POST) ? $_POST : (!empty($GLOBALS['HTTP_RAW_POST_DATA']) ? $GLOBALS['HTTP_RAW_POST_DATA'] : []);
-        $this->post = !empty($post) ? (!empty($this->post) ? array_merge($this->post, $post) : $post) : $this->post;
-
+        // 获取请求头信息
         if (!function_exists('apache_request_headers')) {
             $headersData = array();
             $headers     = headers_list();
@@ -151,11 +113,13 @@ class Request
             $this->headers = array_change_key_case(apache_request_headers(), CASE_UPPER);
         }
 
-        // 变量属性初始化结束后再调用方法
-        $this->method      = $this->method();
-        $this->contentType = $this->getContentType();
-
         return $this;
+    }
+
+    // 判断数据是否为 XML 的辅助函数
+    public function isXml($data): bool
+    {
+        return str_starts_with($data, '<');
     }
 
     /**
@@ -163,40 +127,17 @@ class Request
      */
     private function getContentType()
     {
-        if (isset($this->servers['CONTENT_TYPE'])) {
-            return $this->servers['CONTENT_TYPE'];
-        }
-        if (isset($this->servers['HTTP_CONTENT_TYPE'])) {
-            return $this->servers['HTTP_CONTENT_TYPE'];
-        }
-        return null;
+        return $this->contentType ?? null;
     }
 
     /**
-     * 获取超级全局数组中项的值。
-     *
-     * @param array  $array   超全局数组
-     * @param string $key     数组的键
-     * @param string $default 默认值
-     *
-     * @return mixed
-     */
-    private function lookup($array, $key, $default)
-    {
-        if ($key === null) {
-            return $array;
-        }
-        return isset($array[$key]) ? $array[$key] : $default;
-    }
-
-    /**
-     * 返回包含所有输入数据的单个数组 (i.e. GET, POST, PUT and DELETE).
+     * 返回包含所有输入数据的单个数组
      *
      * @return array
      */
     public function body()
     {
-        return (array)$this->input + (array)$this->request + (array)$this->files;
+        return (array)$this->body ?? [];
     }
 
     /**
@@ -206,7 +147,15 @@ class Request
      */
     protected function overridden()
     {
-        return isset($this->post[Request::OVERRIDE]) || isset($this->servers[Request::OVERRIDE]);
+        return !empty($this->overridden);
+    }
+
+    private function parseData(array $data, string|null $key = null, mixed $default = null)
+    {
+        if ($key === null) {
+            return $data;
+        }
+        return $data[$key] ?? $default;
     }
 
     /**
@@ -223,32 +172,27 @@ class Request
      *   $input = Request::get();
      * </code>
      *
-     * @param string $key     数组的键值
-     * @param string $default 默认值
+     * @param string|null $key     数组的键值
+     * @param mixed       $default 默认值
      *
-     * @return string        如果键未定义，则为NULL。
+     * @return mixed        如果键未定义，则为NULL。
      */
-    public function get($key = null, $default = null)
+    public function get(string $key = null, mixed $default = null): mixed
     {
-        return $this->lookup($this->get, $key, $default);
+        return $this->parseData($this->get, $key, $default);
     }
 
     /**
      * 获取$_POST数组中项目的值。
      *
-     * @param string $key     数组的键值
-     * @param string $default 默认值
+     * @param string|null $key     数组的键值
+     * @param mixed       $default 默认值
      *
-     * @return string          如果键未定义，则为NULL。
+     * @return mixed          如果键未定义，则为NULL。
      */
-    public function post($key = null, $default = null)
+    public function post(string $key = null, mixed $default = null): mixed
     {
-        return $this->lookup($this->post, $key, $default);
-    }
-
-    public function request($key = null, $default = null)
-    {
-        return $this->lookup($this->request, $key, $default);
+        return $this->parseData($this->post, $key, $default);
     }
 
     /**
@@ -259,8 +203,11 @@ class Request
      *
      * @return $this
      */
-    public function addPost($keys = null, $value = null)
+    public function addPost(string|array $keys = '', mixed $value = null): static
     {
+        if (empty($keys)) {
+            return $this;
+        }
         if (is_array($keys) && count($keys) != count($keys, 1)) {
             // 是数组却为二维数组
             $this->post = $keys + $this->post;
@@ -273,13 +220,16 @@ class Request
     /**
      * 追加get数据
      *
-     * @param string|array $keys  需要批量添加时传入二维数组，单个添加时候传入字符串
-     * @param mixed        $value 被追加的值，$keys为字符串时候生效
+     * @param array|string $keys  需要批量添加时传入二维数组，单个添加时候传入字符串
+     * @param mixed|null   $value 被追加的值，$keys为字符串时候生效
      *
      * @return $this
      */
-    public function addGet($keys = null, $value = null)
+    public function addGet(array|string $keys = '', mixed $value = null): static
     {
+        if (empty($keys)) {
+            return $this;
+        }
         if (is_array($keys) && count($keys) != count($keys, 1)) {
             // 是数组却为二维数组
             $this->get = $keys + $this->get;
@@ -290,152 +240,135 @@ class Request
     }
 
     /**
-     * 获取通过PUT或DELETE方法提交的项的值。
-     *
-     * @param string $key     数组的键值
-     * @param string $default 默认值
-     *
-     * @return string 如果键未定义，则为NULL。
-     */
-    protected function stream($key, $default)
-    {
-        if ($this->overridden()) {
-            return $this->lookup($this->post, $key, $default);
-        }
-
-        return $this->lookup($this->input, $key, $default);
-    }
-
-    /**
      * 获取通过PUT提交的项的值
      * method (either spoofed or via REST).
      *
-     * @param string $key     数组的键值
-     * @param string $default 默认值
+     * @param string|null $key     数组的键值
+     * @param mixed       $default 默认值
      *
      * @return string
      */
-    public function put($key = null, $default = null)
+    public function put(string|null $key = null, mixed $default = null)
     {
-        return $this->method() === 'PUT' ? $this->stream($key, $default) : $default;
+        return $this->method() === 'PUT' ? $this->post($key, $default) : $default;
     }
 
     /**
      * 获取通过DELETE提交的项目的值
      * method (either spoofed or via REST).
      *
-     * @param string $key     数组的键值
-     * @param string $default 默认值
+     * @param string|null $key     数组的键值
+     * @param mixed       $default 默认值
      *
      * @return string
      */
-    public function delete($key = null, $default = null)
+    public function delete(string|null $key = null, mixed $default = null)
     {
-        return $this->method() === 'DELETE' ? $this->stream($key, $default) : $default;
+        return $this->method() === 'DELETE' ? $this->post($key, $default) : $default;
     }
 
     /**
      * 获取$_FILES数组中项目的值。
      *
-     * @param string $key     数组的键值
-     * @param string $default 默认值
+     * @param string|null $key     数组的键值
+     * @param string      $default 默认值
      *
      * @return string
      */
-    public function files($key = null, $default = null)
+    public function files(string|null $key = null, mixed $default = null)
     {
-        return $this->lookup($this->files, $key, $default);
+        return $this->parseData($this->files, $key, $default);
     }
 
     /**
      * 获取$_SESSION数组中项目的值。
      *
-     * @param string $key     数组的键值
-     * @param string $default 默认值
+     * @param string|null $key     数组的键值
+     * @param string      $default 默认值
      *
      * @return string
      */
-    public function session($key = null, $default = null)
+    public function session(string|null $key = null, mixed $default = null)
     {
-        return $this->lookup($this->sessions, $key, $default);
+        return $this->parseData($this->sessions, $key, $default);
     }
 
     /**
      * 获取$_COOKIE数组中项目的值。
      *
-     * @param string $key     数组的键值
-     * @param string $default 默认值
+     * @param string|null $key     数组的键值
+     * @param string      $default 默认值
      *
      * @return string
      */
-    public function cookie($key = null, $default = null)
+    public function cookie(string|null $key = null, mixed $default = null)
     {
-        return $this->lookup($this->cookies, $key, $default);
+        return $this->parseData($this->cookies, $key, $default);
     }
 
     /**
      * 获取$_ENV数组中项目的值。
      *
-     * @param string $key     数组的键值
-     * @param string $default 默认值
+     * @param string|null $key     数组的键值
+     * @param string      $default 默认值
      *
      * @return string
      */
-    public function env($key = null, $default = null)
+    public function env(string|null $key = null, mixed $default = null)
     {
-        return $this->lookup($this->env, $key, $default);
+        return $this->parseData($this->env, $key, $default);
     }
 
     /**
      * 获取$_SERVER数组中项的值。
      *
-     * @param string $key     数组的键值
-     * @param string $default 默认值
+     * @param string|null $key     数组的键值
+     * @param string      $default 默认值
      *
      * @return string
      */
-    public function server($key = null, $default = null)
+    public function server(string|null $key = null, mixed $default = null)
     {
-        return $this->lookup($this->servers, $key, $default);
+        return $this->parseData($this->servers, $key, $default);
     }
 
     /**
      * 获取请求头
      *
-     * @param $key
-     * @param $default
+     * @param string|null $key
+     * @param mixed       $default
      *
      * @return array|mixed|string
      */
-    public function headers($key = null, $default = null)
+    public function headers(string|null $key = null, mixed $default = null)
     {
-        return $this->lookup($this->headers, $key, $default);
+        return $this->parseData($this->headers, $key, $default);
     }
 
     /**
      * 从通过Get、POST、PUT或DELETE提交的输入数据中获取项目的值。
      *
-     * @param string $key     数组的键值
-     * @param string $default 默认值
+     * @param string|null $key     数组的键值
+     * @param mixed       $default 默认值
      *
      * @return string
      */
-    public function input($key = null, $default = null)
+    public function input(string|null $key = null, mixed $default = null)
     {
-        return $this->lookup((array)$this->input + (array)$this->request + (array)$this->post + (array)$this->get, $key, $default);
+        return $this->parseData((array)$this->input + (array)$this->post + (array)$this->get, $key, $default);
     }
 
     /**
      * 从通过Get、POST、PUT、DELETE或FILES提交的输入数据中获取项的值。
      *
-     * @param string $key     数组的键值
-     * @param string $default 默认值
+     * @param string|null $key     数组的键值
+     * @param string      $default 默认值
      *
      * @return string
      */
-    public function all($key = null, $default = null)
+    public function all(string|null $key = null, mixed $default = null)
     {
-        return $this->lookup((array)$this->input + (array)$this->request + (array)$this->post + (array)$this->get + (array)$this->files, $key, $default);
+        return $this->parseData((array)$this->input + (array)$this->post + (array)$this->get + (array)$this->files, $key, $default);
     }
 
     /**
@@ -449,11 +382,11 @@ class Request
      *   $input = Request::only(array('username', 'email'));
      * </code>
      *
-     * @param array $keys The keys to select from the input.
+     * @param array|string $keys The keys to select from the input.
      *
      * @return array
      */
-    public function only($keys)
+    public function only(array|string $keys)
     {
         return array_intersect_key(
             $this->input(), array_flip((array)$keys)
@@ -471,11 +404,11 @@ class Request
      *   $input = Request::except(array('username', 'email'));
      * </code>
      *
-     * @param array $keys 要从输入中忽略的键。
+     * @param array|string $keys 要从输入中忽略的键。
      *
      * @return array
      */
-    public function except($keys)
+    public function except(array|string $keys)
     {
         return array_diff_key(
             $this->input(), array_flip((array)$keys)
@@ -495,11 +428,11 @@ class Request
      *   if (Request::has(array('id', 'name'))) { // do stuff }
      * </code>
      *
-     * @param mixed $keys 输入数据键或键数组。
+     * @param array|string $keys 输入数据键或键数组。
      *
      * @return bool
      */
-    public function has($keys)
+    public function has(array|string $keys)
     {
         foreach ((array)$keys as $key) {
             if (trim($this->input($key)) == '') {
@@ -514,13 +447,11 @@ class Request
      *
      * 默认为HTTP/1.1。
      *
-     * @param string $default 默认值
-     *
      * @return string
      */
-    public function protocol($default = 'HTTP/1.1')
+    public function protocol()
     {
-        return $this->server('SERVER_PROTOCOL', $default);
+        return $this->protocol;
     }
 
     /**
@@ -532,7 +463,7 @@ class Request
      *
      * @return string
      */
-    public function scheme($decorated = false)
+    public function scheme(bool $decorated = false)
     {
         $scheme = $this->secure() ? 'https' : 'http';
         return $decorated ? "$scheme://" : $scheme;
@@ -565,8 +496,7 @@ class Request
      */
     public function method()
     {
-        $method = $this->overridden() ? (isset($this->post[Request::OVERRIDE]) ? $this->post[Request::OVERRIDE] : $this->servers[Request::OVERRIDE]) : $this->servers['REQUEST_METHOD'];
-        return strtoupper($method);
+        return strtoupper($this->method);
     }
 
     /**
@@ -588,7 +518,7 @@ class Request
      *
      * @return integer|float
      */
-    public function time($format = '')
+    public function time(string $format = '')
     {
         $format = (!empty($format) && is_string($format)) ? $format : 'Y-m-d H:i:s';
         return date($format, $this->server('REQUEST_TIME'));
@@ -599,9 +529,9 @@ class Request
      *
      * @return bool
      */
-    public function isAjax()
+    public function isAjax(): bool
     {
-        return isset($this->servers['HTTP_X_REQUESTED_WITH']) ? strtoupper($this->servers['HTTP_X_REQUESTED_WITH']) == 'XMLHTTPREQUEST' : false;
+        return isset($this->servers['HTTP_X_REQUESTED_WITH']) && strtoupper($this->servers['HTTP_X_REQUESTED_WITH']) == 'XMLHTTPREQUEST';
     }
 
     /**
@@ -618,12 +548,12 @@ class Request
         return !empty($val = $this->server('HTTP_X_PJAX')) ? ($pjax ? $val : true) : false;
     }
 
-    public function isPost()
+    public function isPost(): bool
     {
         return $this->method() == 'POST';
     }
 
-    public function isGet()
+    public function isGet(): bool
     {
         return $this->method() == 'GET';
     }
@@ -631,11 +561,11 @@ class Request
     /**
      * 获取网页是从哪个页面链接过来的
      *
-     * @param string $default 默认值
+     * @param null $default 默认值
      *
-     * @return string
+     * @return array|string|null
      */
-    public function referrer($default = null)
+    public function referrer($default = null): array|string|null
     {
         return $this->server('HTTP_REFERRER', $default);
     }
@@ -649,7 +579,7 @@ class Request
      *
      * @return array
      */
-    public function resolvers($resolvers = [])
+    public function resolvers(array $resolvers = [])
     {
         if ($resolvers || empty($this->resolvers)) {
             $this->resolvers = $resolvers + [
@@ -663,6 +593,16 @@ class Request
         }
 
         return $this->resolvers;
+    }
+
+    /**
+     * 获取请求的URL. e.g. http://a.com/bar?q=foo
+     *
+     * @return string
+     */
+    public function fullUrl(): string
+    {
+        return $this->scheme(true) . $this->host() . $this->port(true) . $this->uri() . $this->query(true);
     }
 
     /**
@@ -696,12 +636,9 @@ class Request
      *
      * @return string
      */
-    public function query($decorated = false)
+    public function query(bool $decorated = false)
     {
-        if (count($this->get)) {
-            $query = http_build_query($this->get);
-            return $decorated ? "?$query" : $query;
-        }
+        return $decorated ? "?$this->query" : $this->query;
     }
 
     /**
@@ -711,7 +648,7 @@ class Request
      *
      * @return array
      */
-    public function segments($default = [])
+    public function segments(array $default = [])
     {
         return explode('/', trim($this->uri() ?: $default, '/'));
     }
@@ -721,12 +658,12 @@ class Request
      *
      * 使用负索引以相反顺序检索段。
      *
-     * @param int    $index   A one-based segment index. 基于一的段索引。
-     * @param string $default 默认值
+     * @param int         $index   A one-based segment index. 基于一的段索引。
+     * @param string|null $default 默认值
      *
      * @return string
      */
-    public function segment($index, $default = null)
+    public function segment(int $index, string $default = null)
     {
         $segments = $this->segments();
 
@@ -735,7 +672,7 @@ class Request
             $segments = array_reverse($segments);
         }
 
-        return $this->lookup($segments, $index - 1, $default);
+        return $this->parseData($segments, $index - 1, $default);
     }
 
     /**
@@ -746,33 +683,19 @@ class Request
      *
      * @return array
      */
-    protected function parse($terms, $regex)
+    protected function parse(string $terms, string $regex)
     {
-        $result = array();
+        $result = [];
 
         foreach (array_reverse(explode(',', $terms)) as $part) {
             if (preg_match("/{$regex}/", $part, $m)) {
-                $quality            = isset($m['quality']) ? $m['quality'] : 1;
+                $quality            = $m['quality'] ?? 1;
                 $result[$m['term']] = $quality;
             }
         }
 
         arsort($result);
         return array_keys($result);
-    }
-
-    /**
-     * 将格式与媒体类型相关联。
-     *
-     * @param string $format 格式。
-     * @param string $type   媒体类型。
-     *
-     * @return $this
-     */
-    public function format($format, $types)
-    {
-        $this->formats[$format] = is_array($types) ? $types : array($types);
-        return $this;
     }
 
     /**
@@ -786,7 +709,7 @@ class Request
      */
     public function language($default = null)
     {
-        return $this->lookup($this->languages(), 0, $default);
+        return $this->parseData($this->languages(), 0, $default);
     }
 
     /**
@@ -800,62 +723,6 @@ class Request
             $this->server('HTTP_ACCEPT_LANGUAGE', 'en'),
             '(?P<term>[\w\-]+)+(?:;q=(?P<quality>[0-9]+\.[0-9]+))?'
         );
-    }
-
-    /**
-     * 格式化媒体类型。
-     *
-     * @param string $type   媒体类型。
-     * @param bool   $strict 返回原始 media type.
-     *
-     * @return string
-     */
-    protected function media($type, $strict = false)
-    {
-        if ($strict) {
-            return $type;
-        }
-
-        $type = preg_split('/\s*;\s*/', $type)[0];
-        foreach ($this->formats as $format => $types) {
-            if (in_array($type, (array)$types)) {
-                return $format;
-            }
-        }
-
-        return $type;
-    }
-
-    /**
-     * 获取请求主体的媒体类型。
-     *
-     * 默认值 'application/x-www-form-urlencoded'.
-     *
-     * @param string $default 默认值
-     * @param bool   $strict  返回原始 media type.
-     *
-     * @return string
-     */
-    public function type($default = null, $strict = false)
-    {
-        $type = $this->server('HTTP_CONTENT_TYPE', $default ?: 'application/x-www-form-urlencoded');
-        return $this->media($type, $strict);
-    }
-
-    /**
-     * 获取客户端首选的媒体类型。
-     *
-     * 默认 'html'.
-     *
-     * @param string $default 默认值
-     * @param bool   $strict  返回原始 media type.
-     *
-     * @return string
-     */
-    public function accept($default = null, $strict = false)
-    {
-        $type = $this->lookup($this->accepts(), 0, $default);
-        return $this->media($type, $strict);
     }
 
     /**
@@ -876,13 +743,13 @@ class Request
      *
      * 默认 'utf-8'.
      *
-     * @param string $default 默认值
+     * @param string|null $default 默认值
      *
      * @return string
      */
-    public function charset($default = null)
+    public function charset(string $default = null)
     {
-        return $this->lookup($this->charsets(), 0, $default);
+        return $this->parseData($this->charsets(), 0, $default);
     }
 
     /**
@@ -900,13 +767,13 @@ class Request
     /**
      * 获取用户代理. e.g. Mozilla/5.0 (Macintosh; ...)
      *
-     * @param string $default 默认值
+     * @param string|null $default 默认值
      *
      * @return string
      */
-    public function userAgent($default = null)
+    public function userAgent(string $default = null)
     {
-        return $this->server('HTTP_USER_AGENT', $default);
+        return $this->userAgent ?? $default;
     }
 
     /**
@@ -942,11 +809,11 @@ class Request
      * 解析顺序是请求的“host”标头，然后是“server name”指令，然后是服务器IP地址。
      * 端口号（如果存在）将被剥离。
      *
-     * @param string $default 默认值
+     * @param string|null $default 默认值
      *
      * @return string
      */
-    public function host($default = null)
+    public function host(string|null $default = null)
     {
         $keys = ['HTTP_HOST', 'SERVER_NAME', 'SERVER_ADDR'];
 
@@ -1038,10 +905,9 @@ class Request
             return true;
         } elseif ($this->server('HTTP_X_WAP_PROFILE') || $this->server('HTTP_PROFILE')) {
             return true;
-        } elseif ($this->server('HTTP_USER_AGENT') && preg_match('/(blackberry|configuration\/cldc|hp |hp-|htc |htc_|htc-|iemobile|kindle|midp|mmp|motorola|mobile|nokia|opera mini|opera |Googlebot-Mobile|YahooSeeker\/M1A1-R2D2|android|iphone|ipod|mobi|palm|palmos|pocket|portalmmm|ppc;|smartphone|sonyericsson|sqh|spv|symbian|treo|up.browser|up.link|vodafone|windows ce|xda |xda_)/i', $this->server('HTTP_USER_AGENT'))) {
+        } elseif ($this->server('HTTP_USER_AGENT') && preg_match('/(Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|blackberry|configuration\/cldc|hp |hp-|htc |htc_|htc-|iemobile|kindle|midp|mmp|motorola|mobile|nokia|opera mini|opera |Googlebot-Mobile|YahooSeeker\/M1A1-R2D2|android|iphone|ipod|mobi|palm|palmos|pocket|portalmmm|ppc;|smartphone|sonyericsson|sqh|spv|symbian|treo|up.browser|up.link|vodafone|windows ce|xda |xda_)/i', $this->server('HTTP_USER_AGENT'))) {
             return true;
         }
-
         return false;
     }
 
@@ -1055,12 +921,14 @@ class Request
      *
      * @return string
      */
-    public function port($decorated = false)
+    public function port(bool $decorated = false)
     {
-        $port = $this->entrusted() ? $this->server('X_FORWARDED_PORT') : null;
-
-        $port = $port ?: $this->server('SERVER_PORT');
-
+        if ($this->port) {
+            return $this->port;
+        }
+        $port       = $this->entrusted() ? $this->server('X_FORWARDED_PORT') : null;
+        $port       = $port ?: $this->server('SERVER_PORT');
+        $this->port = $port ?: 80;
         return $decorated ? (in_array($port, [80, 443]) ? '' : ":$port") : $port;
     }
 }

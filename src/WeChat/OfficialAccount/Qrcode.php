@@ -10,7 +10,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class Qrcode extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 创建二维码ticket

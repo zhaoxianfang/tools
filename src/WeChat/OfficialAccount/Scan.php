@@ -10,7 +10,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class Scan extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 获取商户信息

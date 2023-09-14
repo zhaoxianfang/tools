@@ -10,5 +10,5 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class LiveBase extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 }

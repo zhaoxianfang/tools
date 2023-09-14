@@ -10,7 +10,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class Qrcode extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 获取小程序码（永久有效）

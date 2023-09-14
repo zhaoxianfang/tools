@@ -10,6 +10,6 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class Ocr extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
 }

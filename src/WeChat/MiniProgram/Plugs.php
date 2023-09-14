@@ -10,7 +10,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class Plugs extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 1.申请使用插件

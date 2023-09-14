@@ -10,7 +10,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class Custom extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 获取客服消息内的临时素材

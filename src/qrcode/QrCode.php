@@ -165,7 +165,7 @@ class QrCode
     {
         $this->setPath(dirname(__DIR__) . "/qrcode/Resources/data");
         $this->setImagePath(dirname(__DIR__) . "/qrcode/Resources/image");
-        $this->setLabelFontPath(dirname(__DIR__) . "/resource/font/YuFanXinYu.ttf");
+        $this->setLabelFontPath(dirname(__DIR__) . "/resource/font/pmzdxx.ttf");
         $this->setText($text);
     }
 
@@ -558,7 +558,7 @@ class QrCode
      *
      * @return $this
      */
-    public function useFontFile(string $fontName = 'YuFanXinYu'): QrCode
+    public function useFontFile(string $fontName = 'pmzdxx'): QrCode
     {
         $this->setLabelFontPath(dirname(__DIR__) . "/resource/font/" . $fontName . ".ttf");
 

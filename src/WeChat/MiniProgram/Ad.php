@@ -10,7 +10,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class Ad extends WeChatBase
 {
-    public $useToken = false;
+    public bool $useToken = false;
 
     /**
      * 回传广告数据

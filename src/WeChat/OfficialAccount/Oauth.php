@@ -10,7 +10,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class Oauth extends WeChatBase
 {
-    public $useToken = false;
+    public bool $useToken = false;
 
     /**
      * Oauth 授权跳转接口
@@ -43,9 +43,9 @@ class Oauth extends WeChatBase
     public function getOauthAccessToken(string $code = '')
     {
         $appid     = $this->config['appid'];
-        $appsecret = $this->config['appsecret'];
+        $secret = $this->config['secret'];
         $code      = $code ?? ($_GET['code'] ?? '');
-        return $this->get('sns/oauth2/access_token', [], ['code' => $code, 'grant_type' => 'authorization_code', 'appid' => $appid, 'secret' => $appsecret]);
+        return $this->get('sns/oauth2/access_token', [], ['code' => $code, 'grant_type' => 'authorization_code', 'appid' => $appid, 'secret' => $secret]);
     }
 
     /**

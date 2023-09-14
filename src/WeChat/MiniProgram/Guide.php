@@ -11,7 +11,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class Guide extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 服务号添加导购

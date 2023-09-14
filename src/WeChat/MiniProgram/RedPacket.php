@@ -7,7 +7,7 @@ use zxf\WeChat\Contracts\WeChatBase;
 
 class RedPacket extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 获取微信红包封面

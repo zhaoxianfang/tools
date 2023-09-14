@@ -11,7 +11,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class Template extends WeChatBase
 {
-    public $useToken = false;
+    public bool $useToken = false;
 
     /**
      * 获取小程序模板库标题列表

@@ -12,7 +12,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class News extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 新增永久素材（原接口有所改动）

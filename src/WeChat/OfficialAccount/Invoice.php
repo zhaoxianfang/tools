@@ -12,6 +12,6 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class Invoice extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
 }

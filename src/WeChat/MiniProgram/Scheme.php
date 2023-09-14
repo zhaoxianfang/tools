@@ -10,7 +10,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class Scheme extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
 
     /**

@@ -13,7 +13,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class UniqueItemCode extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 申请二维码

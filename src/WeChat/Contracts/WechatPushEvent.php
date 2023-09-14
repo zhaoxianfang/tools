@@ -11,7 +11,7 @@ use zxf\WeChat\Prpcrypt\Prpcrypt;
  */
 class WechatPushEvent extends WeChatBase
 {
-    public $useToken = false;
+    public bool $useToken = false;
 
     /**
      * 公众号APPID
@@ -55,10 +55,9 @@ class WechatPushEvent extends WeChatBase
      */
     protected $input;
 
-
-    public function __construct(array $options)
+    public function __construct(string $key = 'default')
     {
-        parent::__construct($options);
+        parent::__construct($key);
         // 参数初始化
         $this->input = new DataArray($_REQUEST);
         $this->appid = $this->config->get('appid');
@@ -67,10 +66,10 @@ class WechatPushEvent extends WeChatBase
             $this->postxml     = $this->getRawInput();
             $this->encryptType = $this->input->get('encrypt_type');
             if ($this->isEncrypt()) {
-                if (empty($options['encodingaeskey'])) {
-                    return $this->error('Missing Config -- [encodingaeskey]!', 400);
+                if (empty($options['aes_key'])) {
+                    return $this->error('Missing Config -- [aes_key]!', 400);
                 }
-                $prpcrypt = new Prpcrypt($this->config->get('encodingaeskey'));
+                $prpcrypt = new Prpcrypt($this->config->get('aes_key'));
                 $result   = $this->xml2arr($this->postxml);
                 $array    = $prpcrypt->decrypt($result['Encrypt']);
                 if (intval($array[0]) > 0) {
@@ -182,7 +181,7 @@ class WechatPushEvent extends WeChatBase
     {
         $xml = $this->arr2xml(empty($data) ? $this->message : $data);
         if ($this->isEncrypt() || $isEncrypt) {
-            $prpcrypt = new Prpcrypt($this->config->get('encodingaeskey'));
+            $prpcrypt = new Prpcrypt($this->config->get('aes_key'));
             // 如果是第三方平台，加密得使用 component_appid
             $component_appid = $this->config->get('component_appid');
             $appid           = empty($component_appid) ? $this->appid : $component_appid;

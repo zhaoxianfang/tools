@@ -7,7 +7,7 @@ use zxf\WeChat\Contracts\WeChatBase;
 
 class Wifi extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 获取 Wi-Fi 门店列表

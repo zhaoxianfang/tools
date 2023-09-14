@@ -7,7 +7,7 @@ use zxf\WeChat\Contracts\WeChatBase;
 
 class Script extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 删除JSAPI授权TICKET

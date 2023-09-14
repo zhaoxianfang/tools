@@ -26,7 +26,7 @@ class TextToPNG
 
     private static $calculateNum = 0; //自动计算文字次数
 
-    private $font           = './../resource/font/YuFanXinYu.ttf'; //默认字体. 相对于脚本存放目录的相对路径.
+    private $font           = './../resource/font/pmzdxx.ttf'; //默认字体. 相对于脚本存放目录的相对路径.
     private $text           = "Hello!"; // 默认文字.
     private $size           = 24; //默认字体大小，会自动适配
     private $rot            = 0; // 旋转角度.
@@ -311,7 +311,7 @@ class TextToPNG
         return $this;
     }
 
-    public function setFontStyle($style = 'YuFanXinYu')
+    public function setFontStyle($style = 'pmzdxx')
     {
         $this->font = dirname(dirname(__FILE__)) . '/resource/font/' . $style . '.ttf';
         if (!is_file($this->font)) {

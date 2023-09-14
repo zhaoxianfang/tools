@@ -11,7 +11,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class QrcodeJump extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 增加或修改二维码规则

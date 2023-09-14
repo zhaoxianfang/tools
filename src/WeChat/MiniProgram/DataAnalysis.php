@@ -10,7 +10,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class DataAnalysis extends WeChatBase
 {
-    public $useToken = false;
+    public bool $useToken = false;
 
 
     /**

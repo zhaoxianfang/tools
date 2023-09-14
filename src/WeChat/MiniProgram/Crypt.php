@@ -11,7 +11,7 @@ use zxf\WeChat\MiniProgram\crypt\WXBizDataCrypt;
  */
 class Crypt extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 数据签名校验
@@ -44,7 +44,7 @@ class Crypt extends WeChatBase
     public function session(string $code)
     {
         $appid  = $this->config->get('appid');
-        $secret = $this->config->get('appsecret');
+        $secret = $this->config->get('secret');
         return $this->get('sns/jscode2session', [], ['appid' => $appid, 'secret' => $secret, 'js_code' => $code, 'grant_type' => 'authorization_code']);
     }
 

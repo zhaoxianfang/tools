@@ -15,7 +15,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class Product extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 查询商品信息

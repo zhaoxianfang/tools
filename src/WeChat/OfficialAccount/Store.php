@@ -12,7 +12,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class Store extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 上传图片

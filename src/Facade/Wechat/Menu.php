@@ -19,6 +19,6 @@ class Menu extends FacadeBase implements FacadeInterface
 {
     public static function getFacadeAccessor()
     {
-        return \zxf\WeChat\Offiaccount\Menu::class;
+        return \zxf\WeChat\OfficialAccount\Menu::class;
     }
 }

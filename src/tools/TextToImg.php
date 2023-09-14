@@ -40,7 +40,7 @@ class TextToImg
         $this->height = $height;
 
         // 初始化一种字体
-        $this->fontFile = dirname(__FILE__, 2) . '/resource/font/YuFanXinYu.ttf';
+        $this->fontFile = dirname(__FILE__, 2) . '/resource/font/pmzdxx.ttf';
 
         // 创建一张新图片，并设置背景色
         $this->image = imagecreatetruecolor($this->width, $this->height);
@@ -77,7 +77,7 @@ class TextToImg
      * @return $this
      * @throws Exception
      */
-    public function setFontStyle(string $style = 'YuFanXinYu')
+    public function setFontStyle(string $style = 'pmzdxx')
     {
         $this->fontFile = dirname(__FILE__, 2) . '/resource/font/' . $style . '.ttf';
         if (!is_file($this->fontFile)) {

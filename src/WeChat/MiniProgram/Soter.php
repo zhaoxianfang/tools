@@ -10,7 +10,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class Soter extends WeChatBase
 {
-    public $useToken = false;
+    public bool $useToken = false;
 
     /**
      * SOTER 生物认证秘钥签名验证

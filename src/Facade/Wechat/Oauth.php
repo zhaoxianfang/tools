@@ -18,6 +18,6 @@ class Oauth extends FacadeBase implements FacadeInterface
 {
     public static function getFacadeAccessor()
     {
-        return \zxf\WeChat\Oplatform\Oauth::class;
+        return \zxf\WeChat\OfficialAccount\Oauth::class;
     }
 }

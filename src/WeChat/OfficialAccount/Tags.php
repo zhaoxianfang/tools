@@ -7,7 +7,7 @@ use zxf\WeChat\Contracts\WeChatBase;
 
 class Tags extends WeChatBase
 {
-    public $useToken = true;
+    public bool $useToken = true;
 
     /**
      * 获取粉丝标签列表

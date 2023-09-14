@@ -14,15 +14,15 @@ abstract class WeChatBase extends WechatCode
     protected $urlBase = "https://api.weixin.qq.com/API_URL?ACCESS_TOKEN";
 
     // 已经解析好的接口请求url地址
-    protected $url = "";
+    protected string $url = "";
     // 未解析的原始url, $urlBase 中的 API_URL
-    protected $originalUrl = "";
+    protected string $originalUrl = "";
 
     //curl 对象
-    protected $http = "";
+    protected $http;
 
     // 缓存对象
-    protected $cache = "";
+    protected $cache;
 
     /**
      * @var object 对象实例数组
@@ -30,10 +30,10 @@ abstract class WeChatBase extends WechatCode
     protected static $instance;
 
     // 请求接口时候需要的 access_token
-    private $accessToken = "";
+    private string $accessToken = "";
 
     // 接口url中是否使用 $accessToken 参数
-    public $useToken = true;
+    public bool $useToken = true;
 
     // Request 请求对象
     public $request;
@@ -42,68 +42,64 @@ abstract class WeChatBase extends WechatCode
     private $tryAgainCode = ["40014", "40001", "41001", "42001"];
 
     // 当前重请求次数
-    private $tryAgainNum = 0;
+    private int $tryAgainNum = 0;
 
     // 允许最大重试次数
-    private $tryAgainMax = 2;
+    private int $tryAgainMax = 2;
 
     // 微信配置
     protected $config = [
-        "token"          => "",
-        "appid"          => "",
-        "appsecret"      => "",
-        "encodingaeskey" => "",
-        "token_callback" => "",
+        "token"      => "",
+        "appid"      => "",
+        "secret"     => "",
+        "aes_key"    => "",
+        "notify_url" => "",
 
         // 缓存目录配置（可选，需拥有读写权限）
-        'cache_path'     => '',
+        'cache_path' => '',
     ];
 
-    public function __construct(array $config = [])
+    public function __construct(string $key = 'default')
     {
-        return $this->init($config);
+        return $this->init($key);
     }
 
     /**
      * 静态创建对象
      *
-     * @param array $config
+     * @param string $driver
      *
      * @return static
      */
-    public static function instance(array $config = []): self
+    public static function instance(string $driver = 'default'): self
     {
-        $key = md5(get_called_class() . (!empty($config) ? serialize($config) : ""));
+        $key = md5(get_called_class() . $driver);
         if (isset(self::$instance[$key]) && !empty(self::$instance[$key])) {
             return self::$instance[$key];
         }
-        return self::$instance[$key] = new static($config);
+        return self::$instance[$key] = new static($driver);
     }
 
     /**
      * 初始化配置参数
      */
-    private function init(array $config = []): bool|static
+    private function init(string $driver = 'default'): bool|static
     {
-        if (empty($config)) {
+        $config = config('tools_wechat.' . $driver);
+        if (empty($config) || empty($config = $this->cache->get('lately_wechat_config', []))) {
             return false;
         }
         $this->request = Request::instance();
         $this->http    = Curl::instance();
         $this->cache   = Cache::instance();
 
-        if (empty($config)) {
-            $config = $this->cache->get('lately_wechat_config', []);
-        }
-        $this->config = $config + $this->config;
-
-        $this->config = new DataArray($this->config);
+        $this->config = new DataArray($config + $this->config);
 
         if (empty($this->config["appid"])) {
             $this->error("Missing Config -- [appid]");
         }
-        if (empty($this->config["appsecret"])) {
-            $this->error("Missing Config -- [appsecret]");
+        if (empty($this->config["secret"])) {
+            $this->error("Missing Config -- [secret]");
         }
         if (empty($this->config["token"])) {
             $this->error("Missing Config -- [token]");
@@ -122,8 +118,7 @@ abstract class WeChatBase extends WechatCode
 
     public function setDriver(string $driver = 'default')
     {
-        $config = config('tools_wechat.' . $driver, []);
-        $this->init($config);
+        $this->init($driver);
         return $this;
     }
 
@@ -228,7 +223,7 @@ abstract class WeChatBase extends WechatCode
         $url            = $this->parseUrl("cgi-bin/token", [
             "grant_type" => "client_credential",
             "appid"      => $this->config["appid"],
-            "secret"     => $this->config["appsecret"],
+            "secret"     => $this->config["secret"],
         ]);
         $this->useToken = true;
 
@@ -260,7 +255,7 @@ abstract class WeChatBase extends WechatCode
         $url            = $this->parseUrl("cgi-bin/stable_token", [
             "grant_type"    => "client_credential",
             "appid"         => $this->config["appid"],
-            "secret"        => $this->config["appsecret"],
+            "secret"        => $this->config["secret"],
             "force_refresh" => true, // 默认使用 false。1. force_refresh = false 时为普通调用模式，access_token 有效期内重复调用该接口不会更新 access_token；2. 当force_refresh = true 时为强制刷新模式，会导致上次获取的 access_token 失效，并返回新的 access_token
         ]);
         $this->useToken = true;

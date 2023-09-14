@@ -10,7 +10,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class TransactionGuarantee extends WeChatBase
 {
-    public $useToken = false;
+    public bool $useToken = false;
 
     /**
      * 获取小程序交易体验分违规记录

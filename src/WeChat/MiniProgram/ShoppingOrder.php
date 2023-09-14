@@ -10,7 +10,7 @@ use zxf\WeChat\Contracts\WeChatBase;
  */
 class ShoppingOrder extends WeChatBase
 {
-    public $useToken = false;
+    public bool $useToken = false;
 
     /**
      * 上传购物详情

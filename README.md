@@ -332,22 +332,16 @@ $qrCode->setLabelFontPath(dirname(__DIR__) . "/resource/font/Arial.ttf");
 
 ```
 $qrCode->useFontFile('字体名称，不带.ttf后缀');
-$qrCode->useFontFile('xingshu');
+$qrCode->useFontFile('pmzdxx');
 ```
 
 支持的字体
 
 ```
-YuFanXinYu 余繁新语
-ZhuqueFangsong 朱雀仿宋
-LXGWHeartSerifCHS 霞鹜铭心宋体
-sh_jjt  三极尖叫体
-wzny  亡者农药体
-heiti   方正黑体简体
+pmzdxx 庞门正道细线体
 lishu   隶书
-haoshenti   优设好身体
+heiti   方正黑体简体
 fangsong   方正仿宋简体
-kaiti   方正楷体简体
 ```
 
 ## BarCode 创建条形码
@@ -391,7 +385,7 @@ $barcode->setLabelFontPath(dirname(__DIR__) . "/resource/font/Arial.ttf");
 
 ```
 $barcode->useFontFile('字体名称，不带.ttf后缀');
-$barcode->useFontFile('xingshu');
+$barcode->useFontFile('pmzdxx');
 ```
 
 ### 其他参数
@@ -465,7 +459,7 @@ $text = 'hello';
 $color = '#ffffff';
 $bgcolor = '#cccccc';
 $rotate = 0;
-$font = 'diandian'; // 使用的字体
+$font = 'pmzdxx'; // 使用的字体
 
 TextToPNG::instance()->setFontStyle($font)->setText($text)->setSize('900', '500')->setColor($color)->setBackgroundColor($bgcolor)->setTransparent(false)->setRotate($rotate)->draw();
 ```
@@ -495,16 +489,10 @@ use zxf\tools\TextToImage;
 #### 附 文字转图片 可使用的字体参照
 
 ```
-YuFanXinYu 余繁新语
-ZhuqueFangsong 朱雀仿宋
-LXGWHeartSerifCHS 霞鹜铭心宋体
-sh_jjt  三极尖叫体
-wzny  亡者农药体
-heiti   方正黑体简体
+pmzdxx 庞门正道细线体
 lishu   隶书
-haoshenti   优设好身体
+heiti   方正黑体简体
 fangsong   方正仿宋简体
-kaiti   方正楷体简体
 ```
 
 ### Sms 发送短信

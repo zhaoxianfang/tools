@@ -1,8 +1,9 @@
 <?php
 
-namespace zxf\Pay\Traits;
+namespace zxf\Pay\WeChat\Merchant;
 
 use Exception;
+use zxf\Pay\WeChat\WeChatPayBase;
 
 /**
  * 商家转账到零钱（针对普通商户）
@@ -11,7 +12,7 @@ use Exception;
  * @link https://pay.weixin.qq.com/wiki/doc/apiv3/open/pay/chapter4_3_4.shtml
  *       https://pay.weixin.qq.com/docs/merchant/apis/batch-transfer-to-balance/transfer-batch/initiate-batch-transfer.html
  */
-trait TransferToBalanceTrait
+class TransferToBalance extends WeChatPayBase
 {
     public function checkMode()
     {

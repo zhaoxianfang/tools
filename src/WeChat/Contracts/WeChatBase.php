@@ -219,7 +219,7 @@ abstract class WeChatBase extends WechatCode
      * @return void
      * @throws Exception
      */
-    private function requestToken(): void
+    public function requestToken(): void
     {
         $this->useToken = false;
         $url            = $this->parseUrl("cgi-bin/token", [

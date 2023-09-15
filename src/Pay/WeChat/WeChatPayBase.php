@@ -10,7 +10,6 @@ use zxf\Pay\Traits\CombineTrait;
 use zxf\Pay\Traits\ConfigTrait;
 use zxf\Pay\Traits\HttpTrait;
 use zxf\Pay\Traits\SignTrait;
-use zxf\Pay\Traits\TransferToBalanceTrait;
 use zxf\Pay\Traits\withHeaderSerialTrait;
 use zxf\Pay\Traits\MediaTrait;
 use zxf\tools\Cache;
@@ -21,7 +20,7 @@ use zxf\tools\DataArray;
  */
 abstract class WeChatPayBase
 {
-    use SignTrait, ConfigTrait, CombineTrait, CallbackTrait, HttpTrait, withHeaderSerialTrait, MediaTrait, TransferToBalanceTrait;
+    use SignTrait, ConfigTrait, CombineTrait, CallbackTrait, HttpTrait, withHeaderSerialTrait, MediaTrait;
 
     // 微信支付请求地址
     protected string $urlBase = "https://api.mch.weixin.qq.com/API_URL";

@@ -4,9 +4,12 @@ namespace zxf\Facade;
 /**
  * http请求信息获取
  *
+ * @method static bool isXml($data)                                             数据是否为xml格式
+ * @method static string|null getContentType()                                  获取请求类型
+ * @method static array body()                                                  返回包含所有输入数据的单个数组
+ * @method static bool overridden()                                             检查请求方法是否已被重写
  * @method static string|array|null get($key = null, $default = null)           获取get请求方式的请求参数($key:指定字段，不传值表示全部，$default:未获取到$key时返回的默认值)
  * @method static string|array|null post($key = null, $default = null)          获取post请求方式的请求参数($key:指定字段，不传值表示获取全部$_POST参数包含xml，$default:未获取到$key时返回的默认值)
- * @method static string|array|null request($key = null, $default = null)       获取get或post的数据($key:指定字段，不传值表示全部，$default:未获取到$key时返回的默认值)
  * @method static string|array|null put($key = null, $default = null)           获取put请求方式的请求参数($key:指定字段，不传值表示全部，$default:未获取到$key时返回的默认值)
  * @method static string|array|null delete($key = null, $default = null)        获取delete请求方式的请求参数($key:指定字段，不传值表示全部，$default:未获取到$key时返回的默认值)
  * @method static mixed addPost($keys = null, $value = null)                    追加post参数($keys:需要批量添加时传入二维数组，单个添加时候传入字符串; $value 被追加的值，$keys为字符串时候生效)
@@ -40,10 +43,8 @@ namespace zxf\Facade;
  * @method static string query($decorated = false)                              获取请求查询字符串($decorated 添加 ? 前缀.). e.g. q=search&foo=bar
  * @method static string segment($index, $default = null)                       获取请求的特定URI段
  * @method static array segments($default = [])                                 获取请求的URI段。
- * @method static array format($format, $types)                                 将格式与媒体类型相关联。
  * @method static string language($default = null)                              获取客户端首选的语言。
  * @method static array languages()                                             获取客户端首选语言的有序数组。
- * @method static string type($default = null, $strict = false)                 获取请求主体的媒体类型($default默认值, $strict:返回原始 media type.)。默认值 'application/x-www-form-urlencoded'.
  * @method static string accept($default = null, $strict = false)               获取客户端首选的媒体类型
  * @method static array accepts()                                               获取客户端首选的媒体类型的有序数组
  * @method static string charset($default = null)                               获取客户端首选的媒体类型。 默认 'utf-8'.

@@ -125,7 +125,7 @@ class Request
     /**
      * 获取请求类型
      */
-    private function getContentType()
+    public function getContentType(): ?string
     {
         return $this->contentType ?? null;
     }
@@ -145,7 +145,7 @@ class Request
      *
      * @return bool
      */
-    protected function overridden()
+    public function overridden()
     {
         return !empty($this->overridden);
     }

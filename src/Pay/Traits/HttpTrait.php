@@ -85,7 +85,7 @@ trait HttpTrait
         $this->httpReqData = $data;
         $this->useJson     = false;
 
-        $result = $this->http->setHeader($header, false)->setParams($data)->delete($url);
+        $result = $this->http->setHeader($header, false)->setParams($data,'json')->delete($url);
         if ($this->checkReqIsFail($result)) {
             return $this->retryHttp('delete');
         }
@@ -109,7 +109,7 @@ trait HttpTrait
         $this->httpReqData = $data;
         $this->useJson     = false;
 
-        $result = $this->http->setHeader($header, false)->setParams($data)->put($url);
+        $result = $this->http->setHeader($header, false)->setParams($data,'json')->put($url);
         if ($this->checkReqIsFail($result)) {
             return $this->retryHttp('put');
         }
@@ -133,7 +133,7 @@ trait HttpTrait
         $this->httpReqData = $data;
         $this->useJson     = false;
 
-        $result = $this->http->setHeader($header, false)->setParams($data)->patch($url);
+        $result = $this->http->setHeader($header, false)->setParams($data,'json')->patch($url);
         if ($this->checkReqIsFail($result)) {
             return $this->retryHttp('patch');
         }

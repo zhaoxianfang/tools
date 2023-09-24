@@ -85,7 +85,7 @@ class WeiboOauth implements Handle
             'access_token' => $access_token,
         ]);
 
-        $userInfo           = $this->client->setParams($query)->get($url);
+        $userInfo           = $this->client->setParams($query,'array')->get($url);
 
         $userInfo['openid'] = $uid;
         !empty($access_token_info) && ($userInfo['isRealName'] = $access_token_info['isRealName']);

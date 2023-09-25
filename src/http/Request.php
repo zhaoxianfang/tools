@@ -10,20 +10,20 @@ class Request
     /**
      * @var object 对象实例
      */
-    protected static object $instance;
+    protected static $instance;
 
     private ?string $contentType = '';
-    private ?array  $body;
-    private ?array  $overridden  = [];
-    private ?array  $get         = [];
-    private ?array  $post        = [];
-    private ?array  $input       = [];
-    private ?array  $files       = [];
-    private ?array  $sessions    = [];
-    private ?array  $cookies     = [];
-    private ?array  $env         = [];
-    private ?array  $servers     = [];
-    private ?array  $headers     = [];
+    private mixed   $body;
+    private mixed   $overridden  = [];
+    private mixed   $get         = [];
+    private mixed   $post        = [];
+    private mixed   $input       = [];
+    private mixed   $files       = [];
+    private mixed   $sessions    = [];
+    private mixed   $cookies     = [];
+    private mixed   $env         = [];
+    private mixed   $servers     = [];
+    private mixed   $headers     = [];
     private mixed   $protocol;
     private mixed   $method;
     private mixed   $query;
@@ -54,9 +54,9 @@ class Request
     private function init()
     {
         // 获取请求的内容类型
-        $this->contentType = $_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'];
+        $this->contentType = $_SERVER['CONTENT_TYPE'] ?? ($_SERVER['HTTP_CONTENT_TYPE'] ?? 'text/html');
         // 获取请求的body内容
-        $this->body = file_get_contents('php://input') ?? $GLOBALS['HTTP_RAW_POST_DATA'];
+        $this->body = file_get_contents('php://input') ?? $GLOBALS['HTTP_RAW_POST_DATA'] ?? [];
         // 获取重写的参数
         $this->overridden = $_SERVER['REDIRECT_STATUS'] ?? [];
         // 获取GET参数
@@ -880,9 +880,9 @@ class Request
 
         foreach ($ips as $ip) {
             if (
-                filter_var($ip, FILTER_VALIDATE_IP,
-                    FILTER_FLAG_IPV4 || FILTER_FLAG_IPV6 ||
-                    FILTER_FLAG_NO_PRIV_RANGE || FILTER_FLAG_NO_RES_RANGE)
+            filter_var($ip, FILTER_VALIDATE_IP,
+                FILTER_FLAG_IPV4 || FILTER_FLAG_IPV6 ||
+                FILTER_FLAG_NO_PRIV_RANGE || FILTER_FLAG_NO_RES_RANGE)
             ) {
                 return $ip;
             }
@@ -923,12 +923,8 @@ class Request
      */
     public function port(bool $decorated = false)
     {
-        if ($this->port) {
-            return $this->port;
-        }
-        $port       = $this->entrusted() ? $this->server('X_FORWARDED_PORT') : null;
-        $port       = $port ?: $this->server('SERVER_PORT');
-        $this->port = $port ?: 80;
-        return $decorated ? (in_array($port, [80, 443]) ? '' : ":$port") : $port;
+        $port       = $_SERVER['SERVER_PORT'] ?? ($_SERVER['X_FORWARDED_PORT'] ?? 80);
+        $this->port = $port;
+        return $decorated ? (in_array($port, [80, 443]) ? '' : ":{$port}") : $port;
     }
 }

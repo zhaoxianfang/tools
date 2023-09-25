@@ -11,7 +11,7 @@ class Response
     /**
      * @var object 对象实例
      */
-    protected static object $instance;
+    protected static $instance;
 
     private array $headers    = [];
     private mixed $body;

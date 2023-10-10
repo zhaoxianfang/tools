@@ -28,7 +28,7 @@ page.viewportSize = {width: 1200, height: 1280};
 //打开网址
 page.open(url, function start(status) {
     if ('success' !== status) {
-        console.log('加载网页地址错误！');
+        console.log("[shot_failed]:1");
         phantom.exit();
     } else {
         // page.onLoadFinished = function() {
@@ -36,7 +36,7 @@ page.open(url, function start(status) {
         setTimeout(function () {
             //截图格式为jpg 80%的图片质量
             page.render(filePath, {format: 'png', quality: '100'});
-            console.log('success');
+            console.log("[shot_succeed]:1");
             //退出phantomjs 避免phantomjs导致内存泄露
             phantom.exit();
         }, timeOut);

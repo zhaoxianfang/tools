@@ -24,8 +24,6 @@ use zxf\ScreenShot\ScreenShot;
 // $url: 被截图网页  url
 // $savePath: 截图成功后的保存文件完整地址
 $res = ScreenShot::init($softPath='/Users/linian/extend')->setUrl($url = 'http://www.baidu.com')->setWaitTime(2500)->run($savePath = __DIR__.'/img/'.time().'.png');
-
-$res 返回 true|fales 表示是否截图成功
 ```
 
 ### 多个网页截图

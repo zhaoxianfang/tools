@@ -44,7 +44,7 @@ if (!function_exists('truncate')) {
     /**
      * 文章去除标签截取文字
      *
-     * 
+     *
      * @DateTime 2018-09-12
      *
      * @param string  $string [被截取字符串]
@@ -129,7 +129,7 @@ if (!function_exists('is_crawler')) {
     /**
      * [isCrawler 检测是否为爬虫]
      *
-     * 
+     *
      * @DateTime 2019-12-24
      *
      * @param boolean $returnName          [是否返回爬虫名称]
@@ -182,7 +182,7 @@ if (!function_exists('img_to_gray')) {
     /**
      * [img_to_gray 把彩色图片转换为灰度图片,支持透明色]
      *
-     * 
+     *
      * @DateTime 2019-06-24
      *
      * @param string $imgFile  [源图片地址]
@@ -376,7 +376,7 @@ if (!function_exists('response_and_continue')) {
     /**
      * 输出json后继续在后台执行指定方法
      *
-     * 
+     *
      * @DateTime 2019-01-07
      *
      * @param array        $responseDara   立即响应的数组数据
@@ -428,7 +428,7 @@ if (!function_exists('num_to_cn')) {
     /**
      * 数字转换为中文
      *
-     * 
+     *
      *
      * @param float|int|string $num  目标数字
      * @param bool             $mode 模式[true:金额（默认）,false:普通数字表示]
@@ -698,7 +698,7 @@ if (!function_exists('str_rand')) {
     /**
      * 生成随机字符串
      *
-     * 
+     *
      * @DateTime 2017-06-28
      *
      * @param integer $length 字符串长度
@@ -769,7 +769,7 @@ if (!function_exists('img_to_base64')) {
     /**
      * 图片转 base64
      *
-     * 
+     *
      * @DateTime 2017-07-18
      *
      * @param    [type]       $image_file [description]
@@ -815,7 +815,7 @@ if (!function_exists('is_json')) {
     /**
      * [is_json 判断json]
      *
-     * 
+     *
      * @DateTime 2018-12-27
      *
      * @param    [type]       $string [description]
@@ -852,7 +852,7 @@ if (!function_exists('convert_underline')) {
     /**
      * 下划线转驼峰
      *
-     * 
+     *
      * @DateTime 2018-08-29
      *
      * @param string $str
@@ -871,7 +871,7 @@ if (!function_exists('underline_convert')) {
     /**
      * 驼峰转下划线
      *
-     * 
+     *
      * @DateTime 2018-08-29
      * @return   string       [description]
      */
@@ -886,7 +886,7 @@ if (!function_exists('check_pass_strength')) {
      * 验证等保测2级评密码强度
      * 验证密码强度是否符合 至少包含大小写字母、数字、特殊字符大于8个字符
      *
-     * 
+     *
      * @DateTime 2020-01-08
      *
      * @param string $password [description]
@@ -1286,5 +1286,87 @@ if (!function_exists('is_mobile')) {
         } else {
             return false;
         }
+    }
+}
+
+if (!function_exists('url_conversion')) {
+    /**
+     * 把 ./ 和 ../ 开头的资源地址转换为绝对地址
+     *
+     * @param string $string       需要转换的字符串
+     * @param string $prefixString 拼接的前缀字符
+     *
+     * @return string
+     */
+    function url_conversion(string $string = '', string $prefixString = ''): string
+    {
+        if (empty($string) || empty($prefixString)) {
+            return $string;
+        }
+        // 判断$string是否是 / 、./ 或者 ../ 开头的url字符串
+        if (mb_substr($string, 0, 1, "utf-8") == '/' || mb_substr($string, 0, 2, "utf-8") == './' || mb_substr($string, 0, 3, "utf-8") == '../') {
+            return url_conversion_to_prefix_path($string, $prefixString);
+        }
+        $linkAttr       = ['href', 'src', 'durl'];
+        $linkAttrString = implode('|', $linkAttr); // 数组转为字符串 用 | 分割，例如：href|src|durl
+
+        // 正则查找 $linkAttr 属性中 以 ./、../、/ 和文件夹名称开头的图片或超链接的相对路径 URL 地址字符串
+        $pattern = '/(' . $linkAttrString . ')="(?:\.\/|\.\.|\/)?([^"]+)"/';
+        preg_match_all($pattern, $string, $matches);
+        $relativeURLs = $matches[0];
+        $originalPath = []; // 原始的相对路径数组
+        $replacePath  = []; // 替换成的前缀路径数组
+        foreach ($relativeURLs as $findStr) {
+            // 删除 $findStr 字符串中的 href= 或者 src=
+            $findStr        = preg_replace('/(' . $linkAttrString . ')=["\']/i', '', $findStr);
+            $originalPath[] = $findStr;
+            $replacePath[]  = url_conversion_to_prefix_path($findStr, $prefixString);
+        }
+        if (!empty($originalPath) && !empty($replacePath)) {
+            // 批量替换地址
+            $string = str_replace($originalPath, $replacePath, $string);
+        }
+        return $string;
+    }
+}
+if (!function_exists('url_conversion_to_prefix_path')) {
+    /**
+     * 把 $url 中的 相对路径 转换为$prefix前缀路径, 建议调用 url_conversion() 方法
+     *
+     * @param string $url
+     * @param string $prefix
+     *
+     * @return string
+     */
+    function url_conversion_to_prefix_path(string $url = '', string $prefix = ''): string
+    {
+        if (empty($url) || empty($prefix)) {
+            return $url;
+        }
+        if (mb_substr($url, 0, 4, "utf-8") != 'http') {
+            //用 / 把 $prefix  拆分为数组
+            $domain_prefix_arr = explode('/', trim($prefix, '/'));
+            if (mb_substr($url, 0, 1, "utf-8") == '/') {
+                // 处理 / 开头的路径
+                if (mb_substr($prefix, 0, 4, "utf-8") == 'http') {
+                    // 解析URL
+                    $urlInfo = parse_url($prefix);
+                    $domain  = $urlInfo['scheme'] . '://' . $urlInfo['host'] . (!empty($urlInfo['port']) ? ':' . $urlInfo['port'] : '');
+                    return $domain . $url;
+                } else {
+                    return $domain_prefix_arr[0] . $url;
+                }
+            }
+            // 查找 $url 字符串中出现了几次 ../
+            $count = mb_substr_count($url, '../', "utf-8");
+            // 从 $domain_prefix_arr 中删除 $count 个元素
+            $count > 0 && array_splice($domain_prefix_arr, -$count);
+            // 用 / 把 $domain_prefix_arr  拼接为字符串
+            $prefix = implode('/', $domain_prefix_arr);
+            // 去掉 $url 字符串中的 ../ 和 ./
+            $url = str_replace(['../', './'], '', $url);
+            $url = rtrim($prefix, '/') . '/' . ltrim($url, '/');
+        }
+        return $url;
     }
 }

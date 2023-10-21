@@ -23,10 +23,10 @@ use zxf\PHPMailer\Factory;
 $mail = Factory::instance('default');
 $mail->setSubject('PHPMailer SMTP test')
 ->setContent('This is a test email')
-->addAddress('abc@example.com'，'收件人')
-->addCC('abc111@example.com'，'抄送人A')
-->addBCC('abc111333@example.com'，'秘密抄送人B')
-->addAttachment('/path/a.csv'，'发送文件')
+->addAddress('abc@example.com','收件人')
+->addCC('abc111@example.com','抄送人A')
+->addBCC('abc111333@example.com','秘密抄送人B')
+->addAttachment('/path/a.csv','发送文件')
 ->send();
 ```
 

@@ -14,6 +14,8 @@ class Factory
         $this->setDriver($driver);
 
         $this->mailObj = new PHPMailer(true);
+        $this->setDebug(false);
+        $this->setAuth(true);
     }
 
     public function setDriver($driver = 'default')
@@ -71,6 +73,21 @@ class Factory
         return $this;
     }
 
+    // 设置debug模式
+    // DEBUG_SERVER:启用详细调试输出;DEBUG_OFF关闭调试模式
+    public function setDebug(bool $debug = false)
+    {
+        $this->mailObj->SMTPDebug = $debug ? SMTP::DEBUG_SERVER : SMTP::DEBUG_OFF;
+        return $this;
+    }
+
+    // 启用SMTP身份验证
+    public function setAuth(bool $auth = true)
+    {
+        $this->mailObj->SMTPAuth = $auth;
+        return $this;
+    }
+
 
     /**
      * 初始化
@@ -86,25 +103,25 @@ class Factory
         return new static($driver);
     }
 
-    public function send(...$args)
+    public function send()
     {
         //创建一个实例；传递“true”将启用异常
         //调试时候传递“true”，其他时候建议为空
 
         try {
             //Server settings
-            $this->mailObj->SMTPDebug = SMTP::DEBUG_SERVER;                      //启用详细调试输出
+            // $this->mailObj->SMTPDebug = SMTP::DEBUG_OFF;                         // DEBUG_SERVER:启用详细调试输出;DEBUG_OFF关闭调试模式
             // $this->mailObj->isSMTP();                                            //使用SMTP发送
             $this->mailObj->Mailer     = $this->config['mailer'];                                          //使用SMTP发送
             $this->mailObj->Host       = $this->config['host'];                     //将SMTP服务器设置为通过发送 例如：smtp.qq.com
-            $this->mailObj->SMTPAuth   = true;                                   //启用SMTP身份验证
-            $this->mailObj->Username   = $this->config['username'];                     //SMTP username 例如：123456@qq.com
-            $this->mailObj->Password   = $this->config['password'];                               //SMTP password //客户端授权密码，注意不是登录密码
-            $this->mailObj->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //使用ssl协议 - 启用隐式TLS加密
-            $this->mailObj->Port       = $this->config['port'] ?? 465;                                    //要连接的TCP端口；如果已设置，请使用587 `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+            $this->mailObj->SMTPAuth   = !isset($this->config['auth']) || (bool)$this->config['auth'];    //启用SMTP身份验证
+            $this->mailObj->Username   = $this->config['username'];                 //SMTP username 例如：123456@qq.com
+            $this->mailObj->Password   = $this->config['password'];                 //SMTP password //客户端授权密码，注意不是登录密码
+            $this->mailObj->SMTPSecure = isset($this->config['secure']) ? $this->config['secure'] : PHPMailer::ENCRYPTION_SMTPS;               //使用ssl协议 - 启用隐式TLS加密
+            $this->mailObj->Port       = $this->config['port'] ?? 465;              //要连接的TCP端口；如果已设置，请使用587 `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
 
             // 发件人
-            $this->mailObj->setFrom($this->config['username'], $this->config['form'] ?? 'System');         //设置邮箱的来源，邮箱与$this->mailObj->Username一致，名称随意
+            $this->mailObj->setFrom($this->config['username'], $this->config['form'] ?? 'Mail');         //设置邮箱的来源，邮箱与$this->mailObj->Username一致，名称随意
 
             //收件人
             // $this->mailObj->addAddress('joe@example.net', 'Joe User');     //添加收件人
@@ -130,5 +147,17 @@ class Factory
             // echo "无法发送消息。Mailer错误: {$this->mailObj->ErrorInfo}";
             throw new \Exception("无法发送消息。Mailer错误: {$this->mailObj->ErrorInfo}");
         }
+    }
+
+    public function __call($method, $args)
+    {
+        if (method_exists($this, $method)) {
+            return call_user_func_array(array($this, $method), $args);
+        }
+        if (empty($this->mailObj)) {
+            return $this;
+        }
+
+        return call_user_func_array(array($this->mailObj, $method), $args);
     }
 }

@@ -1295,10 +1295,11 @@ if (!function_exists('url_conversion')) {
      *
      * @param string $string       需要转换的字符串
      * @param string $prefixString 拼接的前缀字符
+     * @param array  $linkAttr     需要转换的标签属性，例如：href、src、durl
      *
      * @return string
      */
-    function url_conversion(string $string = '', string $prefixString = ''): string
+    function url_conversion(string $string = '', string $prefixString = '', array $linkAttr = ['href', 'src']): string
     {
         if (empty($string) || empty($prefixString)) {
             return $string;
@@ -1307,24 +1308,37 @@ if (!function_exists('url_conversion')) {
         if (mb_substr($string, 0, 1, "utf-8") == '/' || mb_substr($string, 0, 2, "utf-8") == './' || mb_substr($string, 0, 3, "utf-8") == '../') {
             return url_conversion_to_prefix_path($string, $prefixString);
         }
-        $linkAttr       = ['href', 'src', 'durl'];
-        $linkAttrString = implode('|', $linkAttr); // 数组转为字符串 用 | 分割，例如：href|src|durl
-
-        // 正则查找 $linkAttr 属性中 以 ./、../、/ 和文件夹名称开头的图片或超链接的相对路径 URL 地址字符串
-        $pattern = '/(' . $linkAttrString . ')="(?:\.\/|\.\.|\/)?([^"]+)"/';
+        $linkAttrString = implode('|', $linkAttr); // 数组转为字符串 用 (竖线)`|` 分割，例如：href|src|durl
+        // 正则查找 $linkAttr 属性中 以 ./、../、/ 和文件夹名称开头的图片或超链接的相对路径 URL 地址字符串,要求src、href等前面至少带一个空格，避免操作 src 和 oldsrc 都识别到src的情况
+        // $pattern = '/\s+(href|src)\s*=\s*"(?:\.\/|\.\.|\/)?([^"|^\']+)"/';
+        $pattern = '/\s+(' . $linkAttrString . ')\s*=\s*"(?:\.\/|\.\.|\/)?([^"|^\']+)"/';
         preg_match_all($pattern, $string, $matches);
-        $relativeURLs = $matches[0];
-        $originalPath = []; // 原始的相对路径数组
-        $replacePath  = []; // 替换成的前缀路径数组
+
+        $relativeURLs    = $matches[0];
+        $originalPath    = []; // 原始的相对路径数组
+        $replacePath     = []; // 替换成的前缀路径数组
+        $plusReplacePath = []; // 加强版替换路径数组
         foreach ($relativeURLs as $findStr) {
-            // 删除 $findStr 字符串中的 href= 或者 src=
-            $findStr        = preg_replace('/(' . $linkAttrString . ')=["\']/i', '', $findStr);
+            // 删除 $findStr 字符串中的 href= 或者 src= durl= 字符串
+            $findStr        = preg_replace('/\s+(' . $linkAttrString . ')\s*=\s*["\']/i', '', $findStr);
             $originalPath[] = $findStr;
             $replacePath[]  = url_conversion_to_prefix_path($findStr, $prefixString);
         }
         if (!empty($originalPath) && !empty($replacePath)) {
+            // 批量替换地址;直接在此处替换会导致 出现相同的'link'字符串时候会被替换多次，导致出现错误的结果
+            // $string = str_replace($originalPath, $replacePath, $string);
+
+            // 加强版开始开始表演：找出 'link' 相关字符串的前缀(例如src、href等)最为批量替换的前缀，防止被多次替换
+            // 强化前缀字符串
+            $strengthenAttr = $matches[1];
+            foreach ($originalPath as $index => $item) {
+                // 判断最后一个引号是单引号还是双引号
+                $lastQuotationMark = substr($relativeURLs[$index], -1);
+                // 把替换结果拼上 $linkAttr 对应的前缀，例如 ` src="` 或者 ` href="等
+                $plusReplacePath[$index] = ' ' . $strengthenAttr[$index] . '=' . $lastQuotationMark . $replacePath[$index];
+            }
             // 批量替换地址
-            $string = str_replace($originalPath, $replacePath, $string);
+            $string = str_replace($relativeURLs, $plusReplacePath, $string);
         }
         return $string;
     }
@@ -1357,7 +1371,7 @@ if (!function_exists('url_conversion_to_prefix_path')) {
                     return $domain_prefix_arr[0] . $url;
                 }
             }
-            // 查找 $url 字符串中出现了几次 ../
+            // 查找 $url 字符串中出现了几次 ../ ,例如：../../ ,不要查找 ./ ，因为 ./ 表示0次
             $count = mb_substr_count($url, '../', "utf-8");
             // 从 $domain_prefix_arr 中删除 $count 个元素
             $count > 0 && array_splice($domain_prefix_arr, -$count);

@@ -4,7 +4,6 @@
 
 update_at:2023-05-09
 
-
 ## 最小安装
 
 虽然手动或使用Composer安装整个软件包简单、方便、可靠，但您可能希望在项目中只包含重要文件。至少你需要src/PHPMail.php。
@@ -15,6 +14,24 @@ update_at:2023-05-09
 真的，使用Composer要容易得多！
 
 ## 简单示例
+
+### 方式一
+
+```
+use zxf\PHPMailer\Factory;
+
+$mail = Factory::instance('default');
+$mail->setSubject('PHPMailer SMTP test')
+->setContent('This is a test email')
+->addAddress('abc@example.com'，'收件人')
+->addCC('abc111@example.com'，'抄送人A')
+->addBCC('abc111333@example.com'，'秘密抄送人B')
+->addAttachment('/path/a.csv'，'发送文件')
+->send();
+```
+
+### 方式二
+
 ```
 <?php
 //将PHPMailer类导入全局命名空间
@@ -67,6 +84,7 @@ try {
 ```
 
 PHPMailer默认为英语，可以设置语言
+
 ```
 //加载中文
 $mail->setLanguage('zh_cn');
@@ -75,6 +93,7 @@ $mail->setLanguage('zh_cn', '/optional/path/to/language/directory/');
 ```
 
 其他方法
+
 ```
 $mail->getLastMessageID()
 $mail->postSend()

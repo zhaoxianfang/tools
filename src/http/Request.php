@@ -76,7 +76,7 @@ class Request
         // 获取服务器参数
         $this->servers = $_SERVER ?? [];
         // 获取协议类型（HTTP或HTTPS）
-        $this->protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : ($this->servers['SERVER_PROTOCOL'] ?: 'http');
+        $this->protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : (isset($this->servers['SERVER_PROTOCOL']) ? $this->servers['SERVER_PROTOCOL'] : 'http');
         // 获取请求方法（GET、POST等）
         $this->method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         // 获取查询字符串参数（URL中"?"后的部分）
@@ -880,9 +880,9 @@ class Request
 
         foreach ($ips as $ip) {
             if (
-            filter_var($ip, FILTER_VALIDATE_IP,
-                FILTER_FLAG_IPV4 || FILTER_FLAG_IPV6 ||
-                FILTER_FLAG_NO_PRIV_RANGE || FILTER_FLAG_NO_RES_RANGE)
+                filter_var($ip, FILTER_VALIDATE_IP,
+                    FILTER_FLAG_IPV4 || FILTER_FLAG_IPV6 ||
+                    FILTER_FLAG_NO_PRIV_RANGE || FILTER_FLAG_NO_RES_RANGE)
             ) {
                 return $ip;
             }

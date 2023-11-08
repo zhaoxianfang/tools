@@ -62,7 +62,8 @@ class WechatPushEvent extends WeChatBase
         $this->input = new DataArray($_REQUEST);
         $this->appid = $this->config->get('appid');
         // 推送消息处理
-        if ($_SERVER['REQUEST_METHOD'] == "POST") {
+        $method = !empty($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
+        if ($method == "POST") {
             $this->postxml     = $this->getRawInput();
             $this->encryptType = $this->input->get('encrypt_type');
             if ($this->isEncrypt()) {
@@ -78,7 +79,7 @@ class WechatPushEvent extends WeChatBase
                 list($this->postxml, $this->appid) = [$array[1], $array[2]];
             }
             $this->receive = new DataArray($this->xml2arr($this->postxml));
-        } elseif ($_SERVER['REQUEST_METHOD'] == "GET" && $this->checkSignature()) {
+        } elseif ($method == "GET" && $this->checkSignature()) {
             @ob_clean();
             exit($this->input->get('echostr'));
         } else {

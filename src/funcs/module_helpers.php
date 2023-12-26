@@ -51,12 +51,16 @@ if (!function_exists('get_module_name')) {
     function get_module_name(?bool $toUnderlineConvert = false)
     {
         try {
-            $routeNamespace      = request()->route()->action['namespace'];
-            $modulesNamespaceArr = array_filter(explode('\\', explode('Http\Controllers', $routeNamespace)[0]));
-            if (empty($modulesNamespaceArr) || $modulesNamespaceArr[0] != modules_name()) {
+            if (php_sapi_name() !== 'cli') {
+                $routeNamespace      = request()->route()->action['namespace'];
+                $modulesNamespaceArr = array_filter(explode('\\', explode('Http\Controllers', $routeNamespace)[0]));
+                if (empty($modulesNamespaceArr) || $modulesNamespaceArr[0] != modules_name()) {
+                    return $toUnderlineConvert ? 'app' : 'App';
+                }
+                return $toUnderlineConvert ? underline_convert($modulesNamespaceArr[1]) : $modulesNamespaceArr[1];
+            } else {
                 return $toUnderlineConvert ? 'app' : 'App';
             }
-            return $toUnderlineConvert ? underline_convert($modulesNamespaceArr[1]) : $modulesNamespaceArr[1];
         } catch (\Exception $err) {
             $url = request()->path();
             if (empty($url) || empty(array_filter($pathArr = explode('/', $url)))) {

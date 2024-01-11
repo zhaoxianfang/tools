@@ -35,7 +35,7 @@ class SMTP
      *
      * @var string
      */
-    const VERSION = '6.8.0';
+    const VERSION = '6.9.1';
 
     /**
      * SMTP line break constant.
@@ -187,15 +187,27 @@ class SMTP
      */
     protected $smtp_transaction_id_patterns = [
         'exim' => '/[\d]{3} OK id=(.*)/',
-        'sendmail' => '/[\d]{3} 2.0.0 (.*) Message/',
-        'postfix' => '/[\d]{3} 2.0.0 Ok: queued as (.*)/',
-        'Microsoft_ESMTP' => '/[0-9]{3} 2.[\d].0 (.*)@(?:.*) Queued mail for delivery/',
+        'sendmail' => '/[\d]{3} 2\.0\.0 (.*) Message/',
+        'postfix' => '/[\d]{3} 2\.0\.0 Ok: queued as (.*)/',
+        'Microsoft_ESMTP' => '/[0-9]{3} 2\.[\d]\.0 (.*)@(?:.*) Queued mail for delivery/',
         'Amazon_SES' => '/[\d]{3} Ok (.*)/',
         'SendGrid' => '/[\d]{3} Ok: queued as (.*)/',
-        'CampaignMonitor' => '/[\d]{3} 2.0.0 OK:([a-zA-Z\d]{48})/',
+        'CampaignMonitor' => '/[\d]{3} 2\.0\.0 OK:([a-zA-Z\d]{48})/',
         'Haraka' => '/[\d]{3} Message Queued \((.*)\)/',
         'ZoneMTA' => '/[\d]{3} Message queued as (.*)/',
         'Mailjet' => '/[\d]{3} OK queued as (.*)/',
+    ];
+
+    /**
+     * Allowed SMTP XCLIENT attributes.
+     * Must be allowed by the SMTP server. EHLO response is not checked.
+     *
+     * @see https://www.postfix.org/XCLIENT_README.html
+     *
+     * @var array
+     */
+    public static $xclient_allowed_attributes = [
+        'NAME', 'ADDR', 'PORT', 'PROTO', 'HELO', 'LOGIN', 'DESTADDR', 'DESTPORT'
     ];
 
     /**
@@ -299,7 +311,7 @@ class SMTP
                 "\t",
                     //Trim trailing space
                 trim(
-                    //Indent for readability, except for trailing break
+                //Indent for readability, except for trailing break
                     str_replace(
                         "\n",
                         "\n                   \t                  ",
@@ -564,11 +576,11 @@ class SMTP
                 if (
                     //Format from https://tools.ietf.org/html/rfc4616#section-2
                     //We skip the first field (it's forgery), so the string starts with a null byte
-                    !$this->sendCommand(
-                        'User & Password',
-                        base64_encode("\0" . $username . "\0" . $password),
-                        235
-                    )
+                !$this->sendCommand(
+                    'User & Password',
+                    base64_encode("\0" . $username . "\0" . $password),
+                    235
+                )
                 ) {
                     return false;
                 }
@@ -704,7 +716,7 @@ class SMTP
      * Send an SMTP DATA command.
      * Issues a data command and sends the msg_data to the server,
      * finalizing the mail transaction. $msg_data is the message
-     * that is to be send with the headers. Each header needs to be
+     * that is to be sent with the headers. Each header needs to be
      * on a single line followed by a <CRLF> with the message headers
      * and the message body being separated by an additional <CRLF>.
      * Implements RFC 821: DATA <CRLF>.
@@ -732,7 +744,7 @@ class SMTP
         $lines = explode("\n", str_replace(["\r\n", "\r"], "\n", $msg_data));
 
         /* To distinguish between a complete RFC822 message and a plain message body, we check if the first field
-         * of the first line (':' separated) does not contain a space then it _should_ be a header and we will
+         * of the first line (':' separated) does not contain a space then it _should_ be a header, and we will
          * process all lines before a blank line as headers.
          */
 
@@ -969,6 +981,25 @@ class SMTP
             $rcpt,
             [250, 251]
         );
+    }
+
+    /**
+     * Send SMTP XCLIENT command to server and check its return code.
+     *
+     * @return bool True on success
+     */
+    public function xclient(array $vars)
+    {
+        $xclient_options = "";
+        foreach ($vars as $key => $value) {
+            if (in_array($key, SMTP::$xclient_allowed_attributes)) {
+                $xclient_options .= " {$key}={$value}";
+            }
+        }
+        if (!$xclient_options) {
+            return true;
+        }
+        return $this->sendCommand('XCLIENT', 'XCLIENT' . $xclient_options, 250);
     }
 
     /**

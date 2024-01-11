@@ -2,6 +2,8 @@
 
 namespace zxf\http;
 
+use Exception;
+
 /**
  * HTTP 响应
  */

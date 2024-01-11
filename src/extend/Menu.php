@@ -52,42 +52,42 @@ namespace zxf\extend;
 
 class Menu
 {
-    protected $arr           = [];
-    protected $pk            = 'id';               // 主键
-    protected $pid           = 'pid';              // 父级id
-    protected $childlist     = 'childlist';        // 子级菜单键名
-    protected $weigh         = 'weigh';            // 权重
-    protected $title         = 'title';            // Tree 展示的作用字段
-    protected $href          = 'name';             // Tree 中路由跳转的地址名称字段，一般为路由名称，也可以是url地址
-    protected $icon          = 'icon';             // 左侧字体小图标 字段名称
-    protected $badge         = 'badge_text';       //badge 图标
-    protected $badgeStyle    = 'badge_text_style'; //badge 图标 样式
-    protected $showchildicon = false;              //子级菜单显示icon小图标
-    protected $showNavIcon   = false;              //前台nav 一级导航是否显示icon小图标
-    protected $menuType      = 'inspinia';            //目录类型 adminlte|layuiadmin|nazox|inspinia  (admin导航 默认为 inspinia,前台top_nav导航 默认为 adminlte)
+    protected array  $arr           = [];
+    protected string $pk            = 'id';               // 主键
+    protected string $pid           = 'pid';              // 父级id
+    protected string $childlist     = 'childlist';        // 子级菜单键名
+    protected string $weigh         = 'weigh';            // 权重
+    protected string $title         = 'title';            // Tree 展示的作用字段
+    protected string $href          = 'name';             // Tree 中路由跳转的地址名称字段，一般为路由名称，也可以是url地址
+    protected string $icon          = 'icon';             // 左侧字体小图标 字段名称
+    protected string $badge         = 'badge_text';       //badge 图标
+    protected string $badgeStyle    = 'badge_text_style'; //badge 图标 样式
+    protected bool   $showchildicon = false;              //子级菜单显示icon小图标
+    protected bool   $showNavIcon   = false;              //前台nav 一级导航是否显示icon小图标
+    protected string $menuType      = 'inspinia';         //目录类型 adminlte|layuiadmin|nazox|inspinia  (admin导航 默认为 inspinia,前台top_nav导航 默认为 adminlte)
 
     protected static $instance;
     //默认配置
-    protected $config  = [];
-    public    $options = [];
+    protected array $config  = [];
+    public array    $options = [];
     //是否返回 $this
-    protected $returnClass = false;
+    protected bool $returnClass = false;
     //触发的菜单
-    protected $activeMenu = '';
+    protected string $activeMenu = '';
     //url地址前缀
-    protected $urlPrefix = ''; //  /classify
+    protected string $urlPrefix = ''; //  /classify
 
-    protected $domain = ''; // 域名
+    protected string $domain = ''; // 域名
 
-    protected $activeMenuIds   = []; // 查询出该被激活的菜单的所有父级菜单id
-    protected $activeMenuItems = []; // 查询出该被激活的菜单的所有父级菜单列表
+    protected array $activeMenuIds   = []; // 查询出该被激活的菜单的所有父级菜单id
+    protected array $activeMenuItems = []; // 查询出该被激活的菜单的所有父级菜单列表
 
     /**
      * 生成树型结构所需修饰符号，可以换成图片
      *
      * @var array
      */
-    protected $iconStyle = array(' │', ' ├', ' └');
+    protected array $iconStyle = [' │', ' ├', ' └'];
 
     public function __construct($options = [])
     {
@@ -116,7 +116,7 @@ class Menu
         $this->domain          = '';                    // 域名
         $this->href            = 'name';                // url字段
         $this->icon            = 'icon';                    // 左侧字体小图标
-        $this->activeMenuItems = '';                    // 查询出该被激活的菜单的所有父级菜单列表
+        $this->activeMenuItems = [];                    // 查询出该被激活的菜单的所有父级菜单列表
 
         return $this;
     }
@@ -141,18 +141,18 @@ class Menu
     /**
      * 初始化方法
      *
-     * @param array 2维数组，例如：
-     *      array(
-     *      1 => array('id'=>'1','pid'=>0,'name'=>'一级栏目一'),
-     *      2 => array('id'=>'2','pid'=>0,'name'=>'一级栏目二'),
-     *      3 => array('id'=>'3','pid'=>1,'name'=>'二级栏目一'),
-     *      4 => array('id'=>'4','pid'=>1,'name'=>'二级栏目二'),
-     *      5 => array('id'=>'5','pid'=>2,'name'=>'二级栏目三'),
-     *      6 => array('id'=>'6','pid'=>3,'name'=>'三级栏目一'),
-     *      7 => array('id'=>'7','pid'=>3,'name'=>'三级栏目二')
-     *      )
+     * @param array $arr 2维数组，例如：
+     *                   array(
+     *                   1 => array('id'=>'1','pid'=>0,'name'=>'一级栏目一'),
+     *                   2 => array('id'=>'2','pid'=>0,'name'=>'一级栏目二'),
+     *                   3 => array('id'=>'3','pid'=>1,'name'=>'二级栏目一'),
+     *                   4 => array('id'=>'4','pid'=>1,'name'=>'二级栏目二'),
+     *                   5 => array('id'=>'5','pid'=>2,'name'=>'二级栏目三'),
+     *                   6 => array('id'=>'6','pid'=>3,'name'=>'三级栏目一'),
+     *                   7 => array('id'=>'7','pid'=>3,'name'=>'三级栏目二')
+     *                   )
      */
-    public function init($arr = [], $pk = 'id', $pid = 'pid', $rootId = 0, $initTree = true, $childlist = 'childlist')
+    public function init(array $arr = [], string $pk = 'id', string $pid = 'pid', int $rootId = 0, bool $initTree = true, string $childlist = 'childlist')
     {
         $this->clear();
 
@@ -175,9 +175,11 @@ class Menu
     /**
      * 设置域名
      *
-     * @param string $flag [description]
+     * @param string $domain
+     *
+     * @return Menu
      */
-    public function setDomain($domain = ''): self
+    public function setDomain(string $domain = ''): self
     {
         $this->domain = $domain; // 域名
         return $this;
@@ -186,11 +188,11 @@ class Menu
     /**
      * 是否返回 $this 配合 getTreeTwo 用
      *
-     * @param string $flag [description]
+     * @param bool $flag [description]
      */
-    public function setReturn($flag = false): self
+    public function setReturn(bool $flag = false): self
     {
-        $this->returnClass = $flag ? true : false;
+        $this->returnClass = $flag;
         return $this;
     }
 
@@ -199,18 +201,18 @@ class Menu
      *
      * @param boolean $flag [description]
      */
-    public function setAdminMenuIcon($flag = false): self
+    public function setAdminMenuIcon(bool $flag = false): self
     {
-        $this->showchildicon = $flag ? true : false;
+        $this->showchildicon = (bool)$flag;
         return $this;
     }
 
     /**
      * 设置权重名
      *
-     * @param boolean $str [description]
+     * @param bool|string $str [description]
      */
-    public function setWeigh($str = ''): self
+    public function setWeigh(bool|string $str = ''): self
     {
         $this->weigh = $str;
         return $this;
@@ -219,7 +221,9 @@ class Menu
     /**
      * 设置tree 展示的标题字段
      *
-     * @param string $name [description]
+     * @param string $str
+     *
+     * @return Menu
      */
     public function setTitle($str = 'title')
     {
@@ -234,7 +238,7 @@ class Menu
      *
      * @return $this
      */
-    public function setHref($str = 'name')
+    public function setHref(string $str = 'name')
     {
         $this->href = $str;
         return $this;
@@ -346,7 +350,7 @@ class Menu
      *
      * @return array|mixed [type]                [description]
      */
-    private function reduce(array $arrData = [], $lv = 0)
+    private function reduce(array $arrData = [], int $lv = 0)
     {
         $listArr = array();
         if (!$arrData) {
@@ -383,14 +387,14 @@ class Menu
     /**
      * 自定义 数组排序
      *
-     * @param array  $arrays     [被排序数组]
-     * @param string $sort_key   [被排序字段]
-     * @param string $sort_order [排序方式]
-     * @param string $sort_type  [排序类型]
+     * @param array      $arrays     [被排序数组]
+     * @param string     $sort_key   [被排序字段]
+     * @param int|string $sort_order [排序方式]
+     * @param int|string $sort_type  [排序类型]
      *
      * @return   array|bool                   [description]
      */
-    private function my_sort($arrays, $sort_key, $sort_order = SORT_ASC, $sort_type = SORT_NUMERIC)
+    private function my_sort(array $arrays, string $sort_key, int|string $sort_order = SORT_ASC, int|string $sort_type = SORT_NUMERIC)
     {
         $key_arrays = [];
         if (is_array($arrays)) {
@@ -429,7 +433,7 @@ class Menu
      * @param string $menuType          [默认adminlte目录]
      *                                  仅支持 adminlte|layuiadmin|nazox|inspinia
      */
-    public function setMenuType($menuType = 'inspinia')
+    public function setMenuType(string $menuType = 'inspinia')
     {
         $this->menuType = $menuType;
         return $this;
@@ -443,7 +447,7 @@ class Menu
      *
      * @return   string              [description]
      */
-    public function createMenu($pk = 0, $scope = 'admin'): string
+    public function createMenu(int $pk = 0, string $scope = 'admin'): string
     {
         // 获取激活菜单ids 和菜单items
         list($this->activeMenuIds, $this->activeMenuItems) = $this->getActiveMenuIds();

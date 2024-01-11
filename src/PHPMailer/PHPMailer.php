@@ -358,6 +358,13 @@ class PHPMailer
     public $AuthType = '';
 
     /**
+     * SMTP SMTPXClient command attibutes
+     *
+     * @var array
+     */
+    protected $SMTPXClient = [];
+
+    /**
      * An implementation of the PHPMailer OAuthTokenProvider interface.
      *
      * @var OAuthTokenProvider
@@ -750,7 +757,7 @@ class PHPMailer
      *
      * @var string
      */
-    const VERSION = '6.8.0';
+    const VERSION = '6.9.1';
 
     /**
      * Error severity: message only, continue processing.
@@ -795,7 +802,7 @@ class PHPMailer
      * The maximum line length supported by mail().
      *
      * Background: mail() will sometimes corrupt messages
-     * with headers headers longer than 65 chars, see #818.
+     * with headers longer than 65 chars, see #818.
      *
      * @var int
      */
@@ -928,7 +935,7 @@ class PHPMailer
                 "\t",
                     //Trim trailing space
                 trim(
-                    //Indent for readability, except for trailing break
+                //Indent for readability, except for trailing break
                     str_replace(
                         "\n",
                         "\n                   \t                  ",
@@ -1311,7 +1318,7 @@ class PHPMailer
         if (
             (false === $pos)
             || ((!$this->has8bitChars(substr($address, ++$pos)) || !static::idnSupported())
-            && !static::validateAddress($address))
+                && !static::validateAddress($address))
         ) {
             $error_message = sprintf(
                 '%s (From): %s',
@@ -1479,7 +1486,7 @@ class PHPMailer
                     $punycode = idn_to_ascii(
                         $domain,
                         \IDNA_DEFAULT | \IDNA_USE_STD3_RULES | \IDNA_CHECK_BIDI |
-                            \IDNA_CHECK_CONTEXTJ | \IDNA_NONTRANSITIONAL_TO_ASCII,
+                        \IDNA_CHECK_CONTEXTJ | \IDNA_NONTRANSITIONAL_TO_ASCII,
                         \INTL_IDNA_VARIANT_UTS46
                     );
                 } elseif (defined('INTL_IDNA_VARIANT_2003')) {
@@ -1571,6 +1578,10 @@ class PHPMailer
 
             //Validate From, Sender, and ConfirmReadingTo addresses
             foreach (['From', 'Sender', 'ConfirmReadingTo'] as $address_kind) {
+                if ($this->{$address_kind} === null) {
+                    $this->{$address_kind} = '';
+                    continue;
+                }
                 $this->{$address_kind} = trim($this->{$address_kind});
                 if (empty($this->{$address_kind})) {
                     continue;
@@ -1645,7 +1656,7 @@ class PHPMailer
                     $this->MIMEBody
                 );
                 $this->MIMEHeader = static::stripTrailingWSP($this->MIMEHeader) . static::$LE .
-                    static::normalizeBreaks($header_dkim) . static::$LE;
+                                    static::normalizeBreaks($header_dkim) . static::$LE;
             }
 
             return true;
@@ -1689,7 +1700,7 @@ class PHPMailer
         } catch (Exception $exc) {
             $this->setError($exc->getMessage());
             $this->edebug($exc->getMessage());
-            if ($this->Mailer === 'smtp' && $this->SMTPKeepAlive && $this->smtp->connected()) {
+            if ($this->Mailer === 'smtp' && $this->SMTPKeepAlive == true && $this->smtp->connected()) {
                 $this->smtp->reset();
             }
             if ($this->exceptions) {
@@ -1998,6 +2009,38 @@ class PHPMailer
     }
 
     /**
+     * Provide SMTP XCLIENT attributes
+     *
+     * @param string $name  Attribute name
+     * @param ?string $value Attribute value
+     *
+     * @return bool
+     */
+    public function setSMTPXclientAttribute($name, $value)
+    {
+        if (!in_array($name, SMTP::$xclient_allowed_attributes)) {
+            return false;
+        }
+        if (isset($this->SMTPXClient[$name]) && $value === null) {
+            unset($this->SMTPXClient[$name]);
+        } elseif ($value !== null) {
+            $this->SMTPXClient[$name] = $value;
+        }
+
+        return true;
+    }
+
+    /**
+     * Get SMTP XCLIENT attributes
+     *
+     * @return array
+     */
+    public function getSMTPXclientAttributes()
+    {
+        return $this->SMTPXClient;
+    }
+
+    /**
      * Send mail via SMTP.
      * Returns false if there is a bad MAIL FROM, RCPT, or DATA input.
      *
@@ -2024,6 +2067,9 @@ class PHPMailer
             $smtp_from = $this->From;
         } else {
             $smtp_from = $this->Sender;
+        }
+        if (count($this->SMTPXClient)) {
+            $this->smtp->xclient($this->SMTPXClient);
         }
         if (!$this->smtp->mail($smtp_from)) {
             $this->setError($this->lang('from_failed') . $smtp_from . ' : ' . implode(',', $this->smtp->getError()));
@@ -2187,10 +2233,17 @@ class PHPMailer
                     $this->smtp->hello($hello);
                     //Automatically enable TLS encryption if:
                     //* it's not disabled
+                    //* we are not connecting to localhost
                     //* we have openssl extension
                     //* we are not already using SSL
                     //* the server offers STARTTLS
-                    if ($this->SMTPAutoTLS && $sslext && 'ssl' !== $secure && $this->smtp->getServerExt('STARTTLS')) {
+                    if (
+                        $this->SMTPAutoTLS &&
+                        $this->Host !== 'localhost' &&
+                        $sslext &&
+                        $secure !== 'ssl' &&
+                        $this->smtp->getServerExt('STARTTLS')
+                    ) {
                         $tls = true;
                     }
                     if ($tls) {
@@ -2281,8 +2334,8 @@ class PHPMailer
         $PHPMAILER_LANG = [
             'authenticate' => 'SMTP Error: Could not authenticate.',
             'buggy_php' => 'Your version of PHP is affected by a bug that may result in corrupted messages.' .
-                ' To fix it, switch to sending using SMTP, disable the mail.add_x_header option in' .
-                ' your php.ini, switch to MacOS or Linux, or upgrade your PHP to version 7.0.17+ or 7.1.3+.',
+                           ' To fix it, switch to sending using SMTP, disable the mail.add_x_header option in' .
+                           ' your php.ini, switch to MacOS or Linux, or upgrade your PHP to version 7.0.17+ or 7.1.3+.',
             'connect_host' => 'SMTP Error: Could not connect to SMTP host.',
             'data_not_accepted' => 'SMTP Error: data not accepted.',
             'empty_message' => 'Message body empty',
@@ -2428,7 +2481,7 @@ class PHPMailer
         }
 
         return $this->encodeHeader($this->secureHeader($addr[1]), 'phrase') .
-            ' <' . $this->secureHeader($addr[0]) . '>';
+               ' <' . $this->secureHeader($addr[0]) . '>';
     }
 
     /**
@@ -2766,7 +2819,7 @@ class PHPMailer
     public function getSentMIMEMessage()
     {
         return static::stripTrailingWSP($this->MIMEHeader . $this->mailHeader) .
-            static::$LE . static::$LE . $this->MIMEBody;
+               static::$LE . static::$LE . $this->MIMEBody;
     }
 
     /**
@@ -4048,6 +4101,79 @@ class PHPMailer
     }
 
     /**
+     * Clear a specific custom header by name or name and value.
+     * $name value can be overloaded to contain
+     * both header name and value (name:value).
+     *
+     * @param string      $name  Custom header name
+     * @param string|null $value Header value
+     *
+     * @return bool True if a header was replaced successfully
+     */
+    public function clearCustomHeader($name, $value = null)
+    {
+        if (null === $value && strpos($name, ':') !== false) {
+            //Value passed in as name:value
+            list($name, $value) = explode(':', $name, 2);
+        }
+        $name = trim($name);
+        $value = (null === $value) ? null : trim($value);
+
+        foreach ($this->CustomHeader as $k => $pair) {
+            if ($pair[0] == $name) {
+                // We remove the header if the value is not provided or it matches.
+                if (null === $value ||  $pair[1] == $value) {
+                    unset($this->CustomHeader[$k]);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Replace a custom header.
+     * $name value can be overloaded to contain
+     * both header name and value (name:value).
+     *
+     * @param string      $name  Custom header name
+     * @param string|null $value Header value
+     *
+     * @return bool True if a header was replaced successfully
+     * @throws Exception
+     */
+    public function replaceCustomHeader($name, $value = null)
+    {
+        if (null === $value && strpos($name, ':') !== false) {
+            //Value passed in as name:value
+            list($name, $value) = explode(':', $name, 2);
+        }
+        $name = trim($name);
+        $value = (null === $value) ? '' : trim($value);
+
+        $replaced = false;
+        foreach ($this->CustomHeader as $k => $pair) {
+            if ($pair[0] == $name) {
+                if ($replaced) {
+                    unset($this->CustomHeader[$k]);
+                    continue;
+                }
+                if (strpbrk($name . $value, "\r\n") !== false) {
+                    if ($this->exceptions) {
+                        throw new Exception($this->lang('invalid_header'));
+                    }
+
+                    return false;
+                }
+                $this->CustomHeader[$k] = [$name, $value];
+                $replaced = true;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Add an error message to the error container.
      *
      * @param string $msg
@@ -4354,7 +4480,7 @@ class PHPMailer
         $this->AltBody = static::normalizeBreaks($this->html2text($message, $advanced));
         if (!$this->alternativeExists()) {
             $this->AltBody = 'This is an HTML-only message. To view it, activate HTML in your email application.'
-                . static::$LE;
+                             . static::$LE;
         }
 
         return $this->Body;
@@ -4919,7 +5045,7 @@ class PHPMailer
                 $headersToSign[] = $header['label'] . ': ' . $header['value'];
                 if ($this->DKIM_copyHeaderFields) {
                     $copiedHeaders[] = $header['label'] . ':' . //Note no space after this, as per RFC
-                        str_replace('|', '=7C', $this->DKIM_QP($header['value']));
+                                       str_replace('|', '=7C', $this->DKIM_QP($header['value']));
                 }
                 continue;
             }
@@ -4932,7 +5058,7 @@ class PHPMailer
                         $headersToSign[] = $header['label'] . ': ' . $header['value'];
                         if ($this->DKIM_copyHeaderFields) {
                             $copiedHeaders[] = $header['label'] . ':' . //Note no space after this, as per RFC
-                                str_replace('|', '=7C', $this->DKIM_QP($header['value']));
+                                               str_replace('|', '=7C', $this->DKIM_QP($header['value']));
                         }
                         //Skip straight to the next header
                         continue 2;
@@ -4976,17 +5102,17 @@ class PHPMailer
         //which is appended after calculating the signature
         //https://tools.ietf.org/html/rfc6376#section-3.5
         $dkimSignatureHeader = 'DKIM-Signature: v=1;' .
-            ' d=' . $this->DKIM_domain . ';' .
-            ' s=' . $this->DKIM_selector . ';' . static::$LE .
-            ' a=' . $DKIMsignatureType . ';' .
-            ' q=' . $DKIMquery . ';' .
-            ' t=' . $DKIMtime . ';' .
-            ' c=' . $DKIMcanonicalization . ';' . static::$LE .
-            $headerKeys .
-            $ident .
-            $copiedHeaderFields .
-            ' bh=' . $DKIMb64 . ';' . static::$LE .
-            ' b=';
+                               ' d=' . $this->DKIM_domain . ';' .
+                               ' s=' . $this->DKIM_selector . ';' . static::$LE .
+                               ' a=' . $DKIMsignatureType . ';' .
+                               ' q=' . $DKIMquery . ';' .
+                               ' t=' . $DKIMtime . ';' .
+                               ' c=' . $DKIMcanonicalization . ';' . static::$LE .
+                               $headerKeys .
+                               $ident .
+                               $copiedHeaderFields .
+                               ' bh=' . $DKIMb64 . ';' . static::$LE .
+                               ' b=';
         //Canonicalize the set of headers
         $canonicalizedHeaders = $this->DKIM_HeaderC(
             $headerValues . static::$LE . $dkimSignatureHeader

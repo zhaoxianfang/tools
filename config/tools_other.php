@@ -28,23 +28,6 @@ return [
         ],
         // ...
     ],
-    // 邮件通知
-    'mail'       => [
-        'default'  => [
-            'mailer'      => env('MAIL_MAILER', 'smtp'), //stmp、mail、sendmail、qmail
-            'host'        => env('MAIL_HOST', 'smtp.qq.com'), //stmp服务地址
-            'username'    => env('MAIL_USERNAME', ''), // 登录邮箱的账号
-            'password'    => env('MAIL_PASSWORD', ''),//客户端授权密码，注意不是登录密码
-            'smtp_secure' => env('MAIL_ENCRYPTION', 'ssl'),//使用ssl或tls协议
-            'smtp_auth'   => env('MAIL_SMTP_AUTH', true),//设置是否进行权限校验
-            'port'        => env('MAIL_PORT', '465'),//端口设置
-            'form'        => env('MAIL_FROM_NAME', '威四方'),//邮件来源，例如 威四方
-        ],
-        // 故障转移，按照顺序依次发送，直到成功或全部都试一遍
-        'failover' => [
-            'default',
-        ],
-    ],
 
     // ====================================================
     // 数据库相关的配置，mysql、redis、elastic 等

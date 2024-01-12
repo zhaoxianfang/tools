@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\laravel\Modules\Support\Config;
+namespace zxf\Laravel\Modules\Support\Config;
 
 class GenerateConfigReader
 {

@@ -1,10 +1,10 @@
 <?php
 
-namespace zxf\laravel\Modules\Middleware;
+namespace zxf\Laravel\Modules\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use zxf\laravel\Trace\Handle;
+use zxf\Laravel\Trace\Handle;
 
 class ExtendMiddleware
 {

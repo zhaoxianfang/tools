@@ -9,8 +9,8 @@
 ### 引入
 
 ```
-use zxf\database\Db;
-use zxf\database\Model;
+use zxf\Database\Db;
+use zxf\Database\Model;
 ```
 
 操作方法详见

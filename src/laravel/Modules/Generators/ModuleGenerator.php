@@ -1,15 +1,15 @@
 <?php
 
-namespace zxf\laravel\Modules\Generators;
+namespace zxf\Laravel\Modules\Generators;
 
 use Illuminate\Config\Repository as Config;
 use Illuminate\Console\Command as Console;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
-use zxf\laravel\Modules\Contracts\ActivatorInterface;
-use zxf\laravel\Modules\FileRepository;
-use zxf\laravel\Modules\Support\Config\GenerateConfigReader;
-use zxf\laravel\Modules\Support\Stub;
+use zxf\Laravel\Modules\Contracts\ActivatorInterface;
+use zxf\Laravel\Modules\FileRepository;
+use zxf\Laravel\Modules\Support\Config\GenerateConfigReader;
+use zxf\Laravel\Modules\Support\Stub;
 
 class ModuleGenerator extends Generator
 {

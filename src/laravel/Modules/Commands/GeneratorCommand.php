@@ -1,10 +1,10 @@
 <?php
 
-namespace zxf\laravel\Modules\Commands;
+namespace zxf\Laravel\Modules\Commands;
 
 use Illuminate\Console\Command;
-use zxf\laravel\Modules\Exceptions\FileAlreadyExistException;
-use zxf\laravel\Modules\Generators\FileGenerator;
+use zxf\Laravel\Modules\Exceptions\FileAlreadyExistException;
+use zxf\Laravel\Modules\Generators\FileGenerator;
 
 abstract class GeneratorCommand extends Command
 {
@@ -79,7 +79,7 @@ abstract class GeneratorCommand extends Command
     /**
      * Get class namespace.
      *
-     * @param \zxf\laravel\Modules $module
+     * @param \zxf\Laravel\Modules $module
      *
      * @return string
      */

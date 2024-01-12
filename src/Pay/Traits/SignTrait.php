@@ -6,8 +6,8 @@ use Exception;
 use zxf\Pay\WeChat\Crypto\AesGcm;
 use zxf\Pay\WeChat\Crypto\Rsa;
 use zxf\Pay\WeChat\Formatter;
-use zxf\tools\Random;
-use zxf\tools\Str;
+use zxf\Tools\Random;
+use zxf\Tools\Str;
 
 /**
  * 获取微信支付v3 签名信息

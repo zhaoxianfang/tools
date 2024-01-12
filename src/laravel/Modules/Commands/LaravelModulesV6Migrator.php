@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace zxf\laravel\Modules\Commands;
+namespace zxf\Laravel\Modules\Commands;
 
 use Illuminate\Console\Command;
-use zxf\laravel\Modules\Contracts\RepositoryInterface;
-use zxf\laravel\Modules\Module;
+use zxf\Laravel\Modules\Contracts\RepositoryInterface;
+use zxf\Laravel\Modules\Module;
 
 class LaravelModulesV6Migrator extends Command
 {

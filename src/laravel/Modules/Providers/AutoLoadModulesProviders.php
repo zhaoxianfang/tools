@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\laravel\Modules\Providers;
+namespace zxf\Laravel\Modules\Providers;
 
 use Illuminate\Contracts\Foundation\Application;
 use ReflectionException;

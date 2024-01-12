@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\laravel\Modules\Generators;
+namespace zxf\Laravel\Modules\Generators;
 
 abstract class Generator
 {

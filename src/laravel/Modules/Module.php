@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\laravel\Modules;
+namespace zxf\Laravel\Modules;
 
 use Illuminate\Cache\CacheManager;
 use Illuminate\Container\Container;
@@ -9,8 +9,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Translation\Translator;
-use zxf\laravel\Modules\Contracts\ActivatorInterface;
-use zxf\laravel\Modules\Support\Config\GenerateConfigReader;
+use zxf\Laravel\Modules\Contracts\ActivatorInterface;
+use zxf\Laravel\Modules\Support\Config\GenerateConfigReader;
 
 abstract class Module
 {

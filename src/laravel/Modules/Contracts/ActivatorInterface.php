@@ -1,8 +1,8 @@
 <?php
 
-namespace zxf\laravel\Modules\Contracts;
+namespace zxf\Laravel\Modules\Contracts;
 
-use zxf\laravel\Modules\Module;
+use zxf\Laravel\Modules\Module;
 
 interface ActivatorInterface
 {

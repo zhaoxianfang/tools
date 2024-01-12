@@ -30,6 +30,6 @@ class Curl extends FacadeBase implements FacadeInterface
 {
     public static function getFacadeAccessor()
     {
-        return \zxf\http\Curl::class;
+        return \zxf\Http\Curl::class;
     }
 }

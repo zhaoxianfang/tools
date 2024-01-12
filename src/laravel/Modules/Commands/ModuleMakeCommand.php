@@ -1,10 +1,10 @@
 <?php
 
-namespace zxf\laravel\Modules\Commands;
+namespace zxf\Laravel\Modules\Commands;
 
 use Illuminate\Console\Command;
-use zxf\laravel\Modules\Contracts\ActivatorInterface;
-use zxf\laravel\Modules\Generators\ModuleGenerator;
+use zxf\Laravel\Modules\Contracts\ActivatorInterface;
+use zxf\Laravel\Modules\Generators\ModuleGenerator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\laravel\Modules;
+namespace zxf\Laravel\Modules;
 
 use Countable;
 use Illuminate\Cache\CacheManager;
@@ -10,9 +10,9 @@ use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
-use zxf\laravel\Modules\Contracts\RepositoryInterface;
-use zxf\laravel\Modules\Exceptions\InvalidAssetPath;
-use zxf\laravel\Modules\Exceptions\ModuleNotFoundException;
+use zxf\Laravel\Modules\Contracts\RepositoryInterface;
+use zxf\Laravel\Modules\Exceptions\InvalidAssetPath;
+use zxf\Laravel\Modules\Exceptions\ModuleNotFoundException;
 
 abstract class FileRepository implements RepositoryInterface, Countable
 {

@@ -6,6 +6,6 @@ class Cache extends FacadeBase implements FacadeInterface
 {
     public static function getFacadeAccessor()
     {
-        return \zxf\tools\Cache::class;
+        return \zxf\Tools\Cache::class;
     }
 }

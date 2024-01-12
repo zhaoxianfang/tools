@@ -1,12 +1,12 @@
 <?php
 
-namespace zxf\laravel\Modules\Migrations;
+namespace zxf\Laravel\Modules\Migrations;
 
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use zxf\laravel\Modules\Module;
-use zxf\laravel\Modules\Support\Config\GenerateConfigReader;
+use zxf\Laravel\Modules\Module;
+use zxf\Laravel\Modules\Support\Config\GenerateConfigReader;
 
 class Migrator
 {

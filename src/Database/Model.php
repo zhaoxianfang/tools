@@ -4,7 +4,7 @@
 namespace zxf\Database;
 
 use Exception;
-use zxf\tools\DataArray;
+use zxf\Tools\DataArray;
 
 class Model
 {

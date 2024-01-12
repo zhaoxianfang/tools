@@ -61,6 +61,6 @@ class Request extends FacadeBase implements FacadeInterface
 {
     public static function getFacadeAccessor()
     {
-        return \zxf\http\Request::class;
+        return \zxf\Http\Request::class;
     }
 }

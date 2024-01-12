@@ -50,7 +50,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "zxf\\laravel\\ServiceProvider"
+        "zxf\\Laravel\\ServiceProvider"
       ],
       "aliases": {
         "Module": "zxf\\Facades\\Module"

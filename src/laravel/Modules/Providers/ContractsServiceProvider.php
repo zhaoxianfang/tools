@@ -1,10 +1,10 @@
 <?php
 
-namespace zxf\laravel\Modules\Providers;
+namespace zxf\Laravel\Modules\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use zxf\laravel\Modules\Contracts\RepositoryInterface;
-use zxf\laravel\Modules\Laravel\LaravelFileRepository;
+use zxf\Laravel\Modules\Contracts\RepositoryInterface;
+use zxf\Laravel\Modules\Laravel\LaravelFileRepository;
 
 class ContractsServiceProvider extends ServiceProvider
 {

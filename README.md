@@ -3,7 +3,7 @@
 ![](https://img.shields.io/packagist/dt/zxf/tools) ![](https://img.shields.io/github/stars/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/forks/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/tag/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/release/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/issues/zhaoxianfang/tools.svg)
 
 > 基于 php 的项目模块开发
-> 调用命名空间 使用 use zxf\…… 例如 use zxf\login\QqOauth; use zxf\min\JsMin;
+> 调用命名空间 使用 use zxf\…… 例如 use zxf\Login\QqOauth; use zxf\min\JsMin;
 
 <a href="https://weisifang.com/docs/2" target="_blank" >在线文档</a>
 
@@ -110,7 +110,7 @@ use zxf\WeChat\xxx;
 ``` php
 <?php
 
-use zxf\login\QqOauth;
+use zxf\Login\QqOauth;
 
 /**
  * QQ 互联登录
@@ -165,7 +165,7 @@ class Connect extends Controller
 ``` php
 <?php
 
-use zxf\login\WeiboOauth;
+use zxf\Login\WeiboOauth;
 
 /**
  * 新浪微博登录
@@ -218,7 +218,7 @@ class Sina extends Controller
 #### 实例化
 
 ```php
-use zxf\tools\Cache;
+use zxf\Tools\Cache;
 $cache = Cache::instance([
     'cache_dir' => "./cache", // 缓存地址
     'type'      => 'random', // 缓存方式 key: 直接使用key存储,random:对key加密存储

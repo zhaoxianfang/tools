@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\laravel\Modules\Commands;
+namespace zxf\Laravel\Modules\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;

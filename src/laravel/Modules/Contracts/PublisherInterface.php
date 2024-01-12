@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\laravel\Modules\Contracts;
+namespace zxf\Laravel\Modules\Contracts;
 
 interface PublisherInterface
 {

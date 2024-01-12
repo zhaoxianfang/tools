@@ -13,7 +13,7 @@
 ### 发布模块和配置
 
 ```
-php artisan vendor:publish --provider="zxf\laravel\ServiceProvider"
+php artisan vendor:publish --provider="zxf\Laravel\ServiceProvider"
 ```
 
 ### 在项目 composer.json 中新增自动加载

@@ -42,6 +42,6 @@ class Response extends FacadeBase implements FacadeInterface
 {
     public static function getFacadeAccessor()
     {
-        return \zxf\http\Response::class;
+        return \zxf\Http\Response::class;
     }
 }

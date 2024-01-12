@@ -1,10 +1,10 @@
 <?php
 
-namespace zxf\laravel\Modules\Commands;
+namespace zxf\Laravel\Modules\Commands;
 
 use Illuminate\Console\Command;
-use zxf\laravel\Modules\Module;
-use zxf\laravel\Modules\Publishing\AssetPublisher;
+use zxf\Laravel\Modules\Module;
+use zxf\Laravel\Modules\Publishing\AssetPublisher;
 use Symfony\Component\Console\Input\InputArgument;
 
 class PublishCommand extends Command

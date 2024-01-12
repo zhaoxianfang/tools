@@ -1,10 +1,10 @@
 <?php
 
-namespace zxf\laravel\Modules\Process;
+namespace zxf\Laravel\Modules\Process;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use zxf\laravel\Modules\Contracts\RepositoryInterface;
+use zxf\Laravel\Modules\Contracts\RepositoryInterface;
 use Symfony\Component\Process\Process;
 
 class Installer

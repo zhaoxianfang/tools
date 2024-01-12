@@ -12,8 +12,8 @@ use zxf\Pay\Traits\HttpTrait;
 use zxf\Pay\Traits\SignTrait;
 use zxf\Pay\Traits\withHeaderSerialTrait;
 use zxf\Pay\Traits\MediaTrait;
-use zxf\tools\Cache;
-use zxf\tools\DataArray;
+use zxf\Tools\Cache;
+use zxf\Tools\DataArray;
 
 /**
  * docs:https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_1.shtml

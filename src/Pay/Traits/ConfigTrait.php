@@ -3,8 +3,8 @@
 namespace zxf\Pay\Traits;
 
 use Exception;
-use zxf\tools\Cache;
-use zxf\tools\DataArray;
+use zxf\Tools\Cache;
+use zxf\Tools\DataArray;
 use function config;
 
 /**

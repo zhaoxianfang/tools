@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\laravel\Trace;
+namespace zxf\Laravel\Trace;
 
 use Illuminate\Http\Request;
 

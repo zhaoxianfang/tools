@@ -5,8 +5,8 @@ namespace zxf\WeChat\Contracts;
 use Exception;
 use zxf\Facade\Curl;
 use zxf\Facade\Request;
-use zxf\tools\Cache;
-use zxf\tools\DataArray;
+use zxf\Tools\Cache;
+use zxf\Tools\DataArray;
 
 abstract class WeChatBase extends WechatCode
 {

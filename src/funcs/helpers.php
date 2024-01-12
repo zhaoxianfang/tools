@@ -10,7 +10,7 @@ if (!function_exists('session')) {
      */
     function session($name, $value = null)
     {
-        $handle = \zxf\tools\Session::instance();
+        $handle = \zxf\Tools\Session::instance();
         if ($value != null) {
             $value = (is_array($value) || is_object($value)) ? json_encode($value) : $value;
             return $handle->$name = $value;
@@ -26,7 +26,7 @@ if (!function_exists('cache')) {
      */
     function cache($name, $value = null, $expiry = '+1 day')
     {
-        $handle = \zxf\tools\Cache::instance();
+        $handle = \zxf\Tools\Cache::instance();
         if (is_null($value)) {
             return $handle->delete($name);
         }

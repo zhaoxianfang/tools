@@ -1,8 +1,8 @@
 <?php
 
-namespace zxf\laravel\BuilderQuery;
+namespace zxf\Laravel\BuilderQuery;
 
-use zxf\laravel\BuilderQuery\WhereHasIn;
+use zxf\Laravel\BuilderQuery\WhereHasIn;
 
 class WhereHasNotIn extends WhereHasIn
 {

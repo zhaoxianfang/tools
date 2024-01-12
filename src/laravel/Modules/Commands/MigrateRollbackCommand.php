@@ -1,10 +1,10 @@
 <?php
 
-namespace zxf\laravel\Modules\Commands;
+namespace zxf\Laravel\Modules\Commands;
 
 use Illuminate\Console\Command;
-use zxf\laravel\Modules\Migrations\Migrator;
-use zxf\laravel\Modules\Traits\MigrationLoaderTrait;
+use zxf\Laravel\Modules\Migrations\Migrator;
+use zxf\Laravel\Modules\Traits\MigrationLoaderTrait;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 

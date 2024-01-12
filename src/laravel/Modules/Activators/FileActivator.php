@@ -1,13 +1,13 @@
 <?php
 
-namespace zxf\laravel\Modules\Activators;
+namespace zxf\Laravel\Modules\Activators;
 
 use Illuminate\Cache\CacheManager;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
-use zxf\laravel\Modules\Contracts\ActivatorInterface;
-use zxf\laravel\Modules\Module;
+use zxf\Laravel\Modules\Contracts\ActivatorInterface;
+use zxf\Laravel\Modules\Module;
 
 class FileActivator implements ActivatorInterface
 {

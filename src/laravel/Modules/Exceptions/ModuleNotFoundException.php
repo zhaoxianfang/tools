@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\laravel\Modules\Exceptions;
+namespace zxf\Laravel\Modules\Exceptions;
 
 class ModuleNotFoundException extends \Exception
 {

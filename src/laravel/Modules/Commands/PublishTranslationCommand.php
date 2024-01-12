@@ -1,10 +1,10 @@
 <?php
 
-namespace zxf\laravel\Modules\Commands;
+namespace zxf\Laravel\Modules\Commands;
 
 use Illuminate\Console\Command;
-use zxf\laravel\Modules\Module;
-use zxf\laravel\Modules\Publishing\LangPublisher;
+use zxf\Laravel\Modules\Module;
+use zxf\Laravel\Modules\Publishing\LangPublisher;
 use Symfony\Component\Console\Input\InputArgument;
 
 class PublishTranslationCommand extends Command

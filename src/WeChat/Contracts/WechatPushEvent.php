@@ -3,7 +3,7 @@
 namespace zxf\WeChat\Contracts;
 
 use Exception;
-use zxf\tools\DataArray;
+use zxf\Tools\DataArray;
 use zxf\WeChat\Prpcrypt\Prpcrypt;
 
 /**

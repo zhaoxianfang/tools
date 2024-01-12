@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\laravel\Modules\Support;
+namespace zxf\Laravel\Modules\Support;
 
 class Stub
 {

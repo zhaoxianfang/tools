@@ -1,9 +1,9 @@
 <?php
 
-namespace zxf\laravel\Modules\Generators;
+namespace zxf\Laravel\Modules\Generators;
 
 use Illuminate\Filesystem\Filesystem;
-use zxf\laravel\Modules\Exceptions\FileAlreadyExistException;
+use zxf\Laravel\Modules\Exceptions\FileAlreadyExistException;
 
 class FileGenerator extends Generator
 {

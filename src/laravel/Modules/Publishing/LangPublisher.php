@@ -1,8 +1,8 @@
 <?php
 
-namespace zxf\laravel\Modules\Publishing;
+namespace zxf\Laravel\Modules\Publishing;
 
-use zxf\laravel\Modules\Support\Config\GenerateConfigReader;
+use zxf\Laravel\Modules\Support\Config\GenerateConfigReader;
 
 class LangPublisher extends Publisher
 {

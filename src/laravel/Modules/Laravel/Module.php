@@ -1,12 +1,12 @@
 <?php
 
-namespace zxf\laravel\Modules\Laravel;
+namespace zxf\Laravel\Modules\Laravel;
 
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Foundation\ProviderRepository;
 use Illuminate\Support\Str;
-use zxf\laravel\Modules\Module as BaseModule;
+use zxf\Laravel\Modules\Module as BaseModule;
 
 class Module extends BaseModule
 {

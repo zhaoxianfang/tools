@@ -1,11 +1,11 @@
 <?php
 
-namespace  zxf\laravel\Modules\Publishing;
+namespace  zxf\Laravel\Modules\Publishing;
 
 use Illuminate\Console\Command;
-use  zxf\laravel\Modules\Contracts\PublisherInterface;
-use  zxf\laravel\Modules\Contracts\RepositoryInterface;
-use  zxf\laravel\Modules\Module;
+use  zxf\Laravel\Modules\Contracts\PublisherInterface;
+use  zxf\Laravel\Modules\Contracts\RepositoryInterface;
+use  zxf\Laravel\Modules\Module;
 
 abstract class Publisher implements PublisherInterface
 {

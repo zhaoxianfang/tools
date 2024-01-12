@@ -1,9 +1,9 @@
 <?php
 
-namespace zxf\laravel\Modules;
+namespace zxf\Laravel\Modules;
 
 use Illuminate\Filesystem\Filesystem;
-use zxf\laravel\Modules\Exceptions\InvalidJsonException;
+use zxf\Laravel\Modules\Exceptions\InvalidJsonException;
 
 class Json
 {

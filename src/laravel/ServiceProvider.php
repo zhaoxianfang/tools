@@ -1,18 +1,18 @@
 <?php
 
-namespace zxf\laravel;
+namespace zxf\Laravel;
 
 use Illuminate\Database\Eloquent\Builder;
-use zxf\laravel\BuilderQuery;
-use zxf\laravel\Modules\Contracts;
-use zxf\laravel\Modules\Laravel;
-use zxf\laravel\Modules\Activators\FileActivator;
-use zxf\laravel\Modules\Providers\ConsoleServiceProvider;
-use zxf\laravel\Modules\Providers\ContractsServiceProvider;
-use zxf\laravel\Modules\Providers\ModulesRouteServiceProvider;
-use zxf\laravel\Modules\Providers\AutoLoadModulesProviders;
+use zxf\Laravel\BuilderQuery;
+use zxf\Laravel\Modules\Contracts;
+use zxf\Laravel\Modules\Laravel;
+use zxf\Laravel\Modules\Activators\FileActivator;
+use zxf\Laravel\Modules\Providers\ConsoleServiceProvider;
+use zxf\Laravel\Modules\Providers\ContractsServiceProvider;
+use zxf\Laravel\Modules\Providers\ModulesRouteServiceProvider;
+use zxf\Laravel\Modules\Providers\AutoLoadModulesProviders;
 use Illuminate\Pagination\Paginator;
-use zxf\laravel\Modules\Middleware\ExtendMiddleware;
+use zxf\Laravel\Modules\Middleware\ExtendMiddleware;
 
 /**
  * 支持 laravel 服务注入
@@ -255,7 +255,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
             echo PHP_EOL . '==================================================================================' . PHP_EOL;
             echo '| 插    件 | composer require zxf/tools                                          |' . PHP_EOL;
             echo '| 格    言 | 人生在勤，不索何获                                                  |' . PHP_EOL;
-            echo '| 模块发布 | php artisan vendor:publish --provider="zxf\laravel\ServiceProvider" |' . PHP_EOL;
+            echo '| 模块发布 | php artisan vendor:publish --provider="zxf\Laravel\ServiceProvider" |' . PHP_EOL;
             echo '| 文档地址 | https://weisifang.com/docs/2                                        |' . PHP_EOL;
             echo '==================================================================================' . PHP_EOL;
         }

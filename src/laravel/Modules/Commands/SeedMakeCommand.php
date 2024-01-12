@@ -1,12 +1,12 @@
 <?php
 
-namespace zxf\laravel\Modules\Commands;
+namespace zxf\Laravel\Modules\Commands;
 
 use Illuminate\Support\Str;
-use zxf\laravel\Modules\Support\Config\GenerateConfigReader;
-use zxf\laravel\Modules\Support\Stub;
-use zxf\laravel\Modules\Traits\CanClearModulesCache;
-use zxf\laravel\Modules\Traits\ModuleCommandTrait;
+use zxf\Laravel\Modules\Support\Config\GenerateConfigReader;
+use zxf\Laravel\Modules\Support\Stub;
+use zxf\Laravel\Modules\Traits\CanClearModulesCache;
+use zxf\Laravel\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 

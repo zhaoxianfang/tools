@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\laravel\BuilderQuery;
+namespace zxf\Laravel\BuilderQuery;
 
 use Illuminate\Database\Eloquent;
 use Illuminate\Database\Eloquent\Relations;

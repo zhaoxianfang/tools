@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\laravel\Modules;
+namespace zxf\Laravel\Modules;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection as BaseCollection;

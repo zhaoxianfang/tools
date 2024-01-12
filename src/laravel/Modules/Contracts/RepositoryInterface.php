@@ -1,9 +1,9 @@
 <?php
 
-namespace zxf\laravel\Modules\Contracts;
+namespace zxf\Laravel\Modules\Contracts;
 
-use zxf\laravel\Modules\Exceptions\ModuleNotFoundException;
-use zxf\laravel\Modules\Module;
+use zxf\Laravel\Modules\Exceptions\ModuleNotFoundException;
+use zxf\Laravel\Modules\Module;
 
 interface RepositoryInterface
 {

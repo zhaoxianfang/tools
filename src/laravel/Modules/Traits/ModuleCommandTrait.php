@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\laravel\Modules\Traits;
+namespace zxf\Laravel\Modules\Traits;
 
 trait ModuleCommandTrait
 {

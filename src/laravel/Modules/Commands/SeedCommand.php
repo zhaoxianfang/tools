@@ -1,15 +1,15 @@
 <?php
 
-namespace zxf\laravel\Modules\Commands;
+namespace zxf\Laravel\Modules\Commands;
 
 use ErrorException;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Str;
-use zxf\laravel\Modules\Contracts\RepositoryInterface;
-use zxf\laravel\Modules\Module;
-use zxf\laravel\Modules\Support\Config\GenerateConfigReader;
-use zxf\laravel\Modules\Traits\ModuleCommandTrait;
+use zxf\Laravel\Modules\Contracts\RepositoryInterface;
+use zxf\Laravel\Modules\Module;
+use zxf\Laravel\Modules\Support\Config\GenerateConfigReader;
+use zxf\Laravel\Modules\Traits\ModuleCommandTrait;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;

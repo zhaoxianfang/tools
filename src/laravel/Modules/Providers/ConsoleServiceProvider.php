@@ -1,9 +1,9 @@
 <?php
 
-namespace zxf\laravel\Modules\Providers;
+namespace zxf\Laravel\Modules\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use zxf\laravel\Modules\Commands;
+use zxf\Laravel\Modules\Commands;
 
 class ConsoleServiceProvider extends ServiceProvider
 {

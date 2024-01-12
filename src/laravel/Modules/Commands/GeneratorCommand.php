@@ -32,7 +32,7 @@ abstract class GeneratorCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         $path = str_replace('\\', '/', $this->getDestinationFilePath());
 
@@ -43,12 +43,13 @@ abstract class GeneratorCommand extends Command
         $contents = $this->getTemplateContents();
 
         try {
-            $overwriteFile = $this->hasOption('force') ? $this->option('force') : false;
-            (new FileGenerator($path, $contents))->withFileOverwrite($overwriteFile)->generate();
+            $this->components->task("Generating file {$path}",function () use ($path,$contents) {
+                $overwriteFile = $this->hasOption('force') ? $this->option('force') : false;
+                (new FileGenerator($path, $contents))->withFileOverwrite($overwriteFile)->generate();
+            });
 
-            $this->info("Created : {$path}");
         } catch (FileAlreadyExistException $e) {
-            $this->error("File : {$path} already exists.");
+            $this->components->error("File : {$path} already exists.");
 
             return E_ERROR;
         }
@@ -71,7 +72,7 @@ abstract class GeneratorCommand extends Command
      *
      * @return string
      */
-    public function getDefaultNamespace() : string
+    public function getDefaultNamespace(): string
     {
         return '';
     }
@@ -79,7 +80,7 @@ abstract class GeneratorCommand extends Command
     /**
      * Get class namespace.
      *
-     * @param \zxf\Laravel\Modules $module
+     * @param \Nwidart\Modules\Module $module
      *
      * @return string
      */

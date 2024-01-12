@@ -13,7 +13,13 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
+    {
+        parent::boot();
+
+    }
+
+    public function map(): void
     {
         // 加载自定义模块路由
         if (!$this->app->routesAreCached()) {
@@ -31,8 +37,11 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
         if (!is_dir(base_path($this->getModulesName()))) {
             return false;
         }
-        $modules = array_slice(scandir(base_path($this->getModulesName())), 2);
+        $modules = scandir(base_path($this->getModulesName()));
         foreach ($modules as $module) {
+            if (str_starts_with($module, '.')) {
+                continue;
+            }
             $this->mapModuleRoute($module);
         }
     }
@@ -41,11 +50,11 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
      * 查询路由文件夹下的路由文件，并根据该文件名设置路由命名和中间件
      *    例如：Routes 文件夹下有一个 api.php 文件，则该路由文件对应的控制器路径为 \Http\Controllers\Api\ ,使用的中间件为 api
      *
-     * @param $module
+     * @param string $module
      *
      * @return void
      */
-    protected function mapModuleRoute($module)
+    protected function mapModuleRoute(string $module)
     {
         $userMiddlewareGroups = []; // 用户定义的中间件组 名称(别名)
         // 判断是否有 获取中间件组的方法
@@ -66,8 +75,8 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
             // 判断中间件是否存在 中间件组中`$middlewareGroups`
             $useMiddlewareName = in_array($lowRouteName, $userMiddlewareGroups) ? $lowRouteName : '';
 
-            // 默认 使用  extend_module 和  $useMiddlewareName 中间件
-            $middlewareGroup = (!$autoUseMiddleware || empty($useMiddlewareName)) ? ['extend_module'] : ['extend_module', $useMiddlewareName];
+            // 默认 使用  tools_middleware 和  $useMiddlewareName 中间件
+            $middlewareGroup = (!$autoUseMiddleware || empty($useMiddlewareName)) ? ['tools_middleware'] : ['tools_middleware', $useMiddlewareName];
             // 需要自动加上路由前缀的文件，例如 api.php
             $addPrefix = (!empty($routeNeedAddPrefixAndName) && in_array($lowRouteName, $routeNeedAddPrefixAndName)) ? $lowRouteName : '';
             // 需要自动加上路由名称的文件，例如 api.php

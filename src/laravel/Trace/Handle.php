@@ -3,18 +3,24 @@
 namespace zxf\Laravel\Trace;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 class Handle
 {
     protected $startTime;
     protected $startMemory;
     protected $config = [
-        'file' => '',
-        'tabs' => ['base' => '基本', 'file' => '文件', 'sql' => 'SQL'],
+        'tabs' => [
+            'base'    => 'Base',
+            'route'   => 'Route',
+            'sql'     => 'SQL',
+            'session' => 'SESSION',
+            'cookie'  => 'COOKIE',
+            'request' => 'REQUEST',
+        ],
     ];
 
-    protected $sqlList  = [];
-    protected $fileList = [];
+    protected $sqlList = [];
     protected $request;
 
     // 实例化并传入参数
@@ -32,7 +38,16 @@ class Handle
         }
         $this->startTime   = constant('LARAVEL_START') ?? microtime(true);
         $this->startMemory = memory_get_usage();
-        $this->fileList    = $this->getFileInfo();
+
+        $this->listenSql();
+
+        listen_sql($this->sqlList, false);
+        return $this;
+    }
+
+    // 监听sql
+    private function listenSql()
+    {
         listen_sql($this->sqlList, false);
         return $this;
     }
@@ -43,86 +58,105 @@ class Handle
             // 运行在命令行下
             return '';
         }
-        $sqlArr   = [];
-        $sqlTimes = 0;
-        foreach ($this->sqlList as $sqlItem) {
-            $sqlArr[] = '执行时间(' . $sqlItem['time'] . 's) : ' . $sqlItem['sql'];
-            $sqlTimes = bcadd($sqlTimes, $sqlItem['time'], 3);
-        }
+        list($sql, $sqlTimes) = $this->getSqlInfo();
+        $base    = $this->getBaseInfo($sqlTimes);
+        $route   = $this->getRouteInfo();
+        $session = $this->getSessionInfo();
+        $cookie  = $this->getCookieInfo();
+        $request = $this->getRequestInfo();
 
+        // 页面Trace信息
+        $trace = [];
+        foreach ($this->config['tabs'] as $name => $title) {
+            $name   = strtolower($name);
+            $result = [];
+            foreach ($$name as $subTitle => $item) {
+                $result[] = is_numeric($subTitle) ? $item : '【' . $subTitle . '】' . $item;
+            }
+            $trace[$title] = $result;
+        }
+        if ($this->request->isMethod('get')) {
+            // return $this->randerPage($trace) . $this->randerConsole($trace);
+            return $this->randerPage($trace);
+        }
+        // return $this->randerConsole($trace);
+        return '';
+    }
+
+    private function getBaseInfo($sqlTimes = 0)
+    {
         // 获取基本信息
         $runtime = round(microtime(true) - $this->startTime, 3);
         $reqs    = $runtime > 0 ? number_format(1 / $runtime, 2) : '∞';
-
-        $base = [
+        $base    = [
             '请求信息' => '【' . $this->request->method() . '】' . $this->request->fullUrl(),
             '运行时间' => round(microtime(true) - $this->startTime, 3) . '秒',
-            '吞吐率'  => $reqs . 'req/s',
+            '吞吐率'   => $reqs . 'req/s',
             '内存消耗' => '内存消耗：' . number_format((memory_get_usage() - $this->startMemory) / 1024, 2) . 'kb',
-            '文件加载' => count($this->fileList) . '个',
             '查询信息' => $sqlTimes . '秒',
         ];
 
         if ($this->request->session()) {
             $base['会话信息'] = 'SESSION_ID=' . $this->request->session()->getId();
         }
-
-        $loadFileList = $this->fileList;
-
-        // 页面Trace信息
-        $trace = [];
-        foreach ($this->config['tabs'] as $name => $title) {
-            $name = strtolower($name);
-            switch ($name) {
-                case 'base': // 基本信息
-                    $baseResult = [];
-                    foreach ($base as $subTitle => $item) {
-                        $baseResult[] = '【' . $subTitle . '】' . $item;
-                    }
-                    $trace[$title] = $baseResult;
-                    break;
-                case 'file': // 文件信息
-                    $trace[$title] = $loadFileList;
-                    break;
-                case 'sql': // sql信息
-                    $trace[$title] = $sqlArr;
-                    break;
-                default: // 调试信息
-                    if (strpos($name, '|')) {
-                        // 多组信息
-                        $names  = explode('|', $name);
-                        $result = [];
-                        foreach ($names as $item) {
-                            $result = array_merge($result, $log[$item] ?? []);
-                        }
-                        $trace[$title] = $result;
-                    } else {
-                        $trace[$title] = $log[$name] ?? '';
-                    }
-            }
-        }
-        if ($this->request->isMethod('get')) {
-            return $this->randerPage($trace) . $this->randerConsole($trace);
-        }
-        return $this->randerConsole($trace);
+        return $base;
     }
 
-    /**
-     * 获取文件加载信息
-     * @access protected
-     * @return integer|array
-     */
-    protected function getFileInfo()
+    private function getRouteInfo()
     {
-        $files = get_included_files();
-        $info  = [];
-
-        foreach ($files as $key => $file) {
-            $info[] = $file . ' ( ' . number_format(filesize($file) / 1024, 2) . ' KB )';
-        }
-
-        return $info;
+        $route  = Route::current();
+        $action = $route->getAction();
+        return [
+            'uri'        => request()->method() . ' ' . $route->uri(),
+            'middleware' => $route->middleware(),
+            'controller' => $route->getControllerClass(),
+            'action'     => $route->getActionMethod(),
+            'where'      => $action['where'] ?? [],
+            'as'         => $route->getName(),
+            'prefix'     => $route->getPrefix(),
+            'parameters' => $route->parameters(),
+        ];
     }
+
+    private function getSqlInfo()
+    {
+        $sqlArr   = [];
+        $sqlTimes = 0;
+        foreach ($this->sqlList as $sqlItem) {
+            $sqlArr[] = '执行时间(' . $sqlItem['time'] . 's) : ' . $sqlItem['sql'];
+            $sqlTimes = bcadd($sqlTimes, $sqlItem['time'], 3);
+        }
+        return [$sqlArr, $sqlTimes];
+    }
+
+    private function getSessionInfo()
+    {
+        $session = app('session');
+        if (empty($session)) {
+            return $_SESSION ?? [];
+        }
+        return $session;
+    }
+
+    private function getCookieInfo()
+    {
+        if (empty($cookie = cookie())) {
+            return $_COOKIE ?? [];
+        }
+        return cookie();
+    }
+
+    private function getRequestInfo()
+    {
+        $request = request();
+        return [
+            'path'   => $request->path(),
+            'header' => $request->header(),
+            'ip'     => $request->ip(),
+            'body'   => $request->all(),
+        ];
+    }
+
 
     public function randerPage($trace)
     {

@@ -27,7 +27,7 @@ class ModuleMakeCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         $names = $this->argument('name');
         $success = true;
@@ -39,6 +39,7 @@ class ModuleMakeCommand extends Command
                 ->setConfig($this->laravel['config'])
                 ->setActivator($this->laravel[ActivatorInterface::class])
                 ->setConsole($this)
+                ->setComponent($this->components)
                 ->setForce($this->option('force'))
                 ->setType($this->getModuleType())
                 ->setActive(!$this->option('disabled'))
@@ -67,7 +68,6 @@ class ModuleMakeCommand extends Command
     protected function getOptions()
     {
         return [
-            ['all', null, InputOption::VALUE_NONE, '生成 modules.php 配置中 包含 generate 为 false 的所有模块'],
             ['plain', 'p', InputOption::VALUE_NONE, 'Generate a plain module (without some resources).'],
             ['api', null, InputOption::VALUE_NONE, 'Generate an api module.'],
             ['web', null, InputOption::VALUE_NONE, 'Generate a web module.'],
@@ -77,19 +77,15 @@ class ModuleMakeCommand extends Command
     }
 
     /**
-    * Get module type .
-    *
-    * @return string
-    */
+     * Get module type .
+     *
+     * @return string
+     */
     private function getModuleType()
     {
         $isPlain = $this->option('plain');
-        $isApi   = $this->option('api');
-        $isAall  = $this->option('all');
+        $isApi = $this->option('api');
 
-        if($isAall){
-            return 'all';
-        }
         if ($isPlain && $isApi) {
             return 'web';
         }

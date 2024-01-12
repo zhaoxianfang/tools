@@ -26,8 +26,8 @@ class ExtendMiddleware
 
         $response = $next($request);
 
-        // 打印sql执行日
-        if (!app()->runningInConsole() && $request->isMethod('get') && config('app.debug')) {
+        // 在响应发送到浏览器前处理任务。
+        if (!app()->runningInConsole() && $request->isMethod('get') && config('app.debug') && !empty($traceHandle)) {
             $traceContent = $traceHandle->output();
 
             $pageContent = get_protected_value($response, 'content');
@@ -43,8 +43,9 @@ class ExtendMiddleware
     /**
      * 在响应发送到浏览器后处理任务。
      *
-     * @param \Illuminate\Http\Request $request
+     * @param \Illuminate\Http\Request  $request
      * @param \Illuminate\Http\Response $response
+     *
      * @return void
      */
     public function terminate($request, $response)

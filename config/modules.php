@@ -87,7 +87,7 @@ return [
                 'PROVIDER_NAMESPACE',
             ],
         ],
-        'gitkeep'      => false,
+        'gitkeep'      => true,
     ],
 
     'paths'      => [

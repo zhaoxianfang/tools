@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * $STUDLY_NAME$ 模块配置文件
+ *      调用方式：config('$LOWER_NAME$.name')
+ */
 return [
     'name' => '$STUDLY_NAME$'
 ];

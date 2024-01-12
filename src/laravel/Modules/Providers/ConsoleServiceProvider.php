@@ -39,6 +39,7 @@ class ConsoleServiceProvider extends ServiceProvider
         Commands\MigrateStatusCommand::class,
         Commands\MigrationMakeCommand::class,
         Commands\ModelMakeCommand::class,
+        Commands\ObserverMakeCommand::class,
         Commands\PublishCommand::class,
         Commands\PublishConfigurationCommand::class,
         Commands\PublishTranslationCommand::class,

@@ -2,8 +2,7 @@
 
 namespace zxf\Laravel;
 
-use Illuminate\Database\Eloquent\Builder;
-use zxf\Laravel\BuilderQuery;
+use zxf\Laravel\BuilderQuery\Builder as WhereHasInBuilder;
 use zxf\Laravel\Modules\Contracts;
 use zxf\Laravel\Modules\Laravel;
 use zxf\Laravel\Modules\Activators\FileActivator;
@@ -27,22 +26,13 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         is_laravel() && parent::__construct($app);
     }
 
-    public function register()
-    {
-        // 注册modules 模块服务
-        $this->registerModulesServices();
-
-        $this->registerProviders();
-
-        $this->mergeConfigFrom(__DIR__ . '/../../config/modules.php', 'modules');
-
-        // 注册 whereHasIn 的几个查询方式来替换 whereHas 查询全表扫描的问题
-        $this->registerBuilderQuery();
-    }
-
     public function boot()
     {
+        if (!is_laravel()) {
+            return;
+        }
         $this->bootPublishes();
+
         // 加载模块boot
         $this->mapModuleBoot();
 
@@ -52,51 +42,26 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $this->tips();
     }
 
+    public function register()
+    {
+        if (!is_laravel()) {
+            return;
+        }
+        // 注册modules 模块服务
+        $this->registerModulesServices();
+
+        $this->registerProviders();
+
+        $this->mergeConfigFrom(__DIR__ . '/../../config/modules.php', 'modules');
+
+        // 注册 whereHasIn 的几个查询方式来替换 whereHas 查询全表扫描的问题
+        WhereHasInBuilder::register($this);
+    }
+
+
     public function provides()
     {
 
-    }
-
-    // 框架自带的 whereHas 模型查询方法会进行全表扫描，倒是查询巨慢，使用下面几个方法进行替代实现
-    protected function registerBuilderQuery()
-    {
-        Builder::macro('whereHasIn', function ($relationName, $callable = null) {
-            return (new BuilderQuery\WhereHasIn($this, $relationName, function ($nextRelation, $builder) use ($callable) {
-                if ($nextRelation) {
-                    return $builder->whereHasIn($nextRelation, $callable);
-                }
-
-                if ($callable) {
-                    return $builder->callScope($callable);
-                }
-
-                return $builder;
-            }))->execute();
-        });
-        Builder::macro('orWhereHasIn', function ($relationName, $callable = null) {
-            return $this->orWhere(function ($query) use ($relationName, $callable) {
-                return $query->whereHasIn($relationName, $callable);
-            });
-        });
-
-        Builder::macro('whereHasNotIn', function ($relationName, $callable = null) {
-            return (new BuilderQuery\WhereHasNotIn($this, $relationName, function ($nextRelation, $builder) use ($callable) {
-                if ($nextRelation) {
-                    return $builder->whereHasNotIn($nextRelation, $callable);
-                }
-
-                if ($callable) {
-                    return $builder->callScope($callable);
-                }
-
-                return $builder;
-            }))->execute();
-        });
-        Builder::macro('orWhereHasNotIn', function ($relationName, $callable = null) {
-            return $this->orWhere(function ($query) use ($relationName, $callable) {
-                return $query->whereHasNotIn($relationName, $callable);
-            });
-        });
     }
 
     // 设置数据分页模板
@@ -142,12 +107,12 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         if (is_dir(base_path(modules_name()))) {
             $this->app->register(ConsoleServiceProvider::class);
         }
-
-        // 注册自定义 中间件 extend_module
-        $this->app->singleton(ExtendMiddleware::class);
-        $this->app->alias(ExtendMiddleware::class, 'extend_module');
-
         $this->app->register(ContractsServiceProvider::class);
+
+
+        // 注册自定义 中间件 tools_middleware
+        $this->app->singleton(ExtendMiddleware::class);
+        $this->app->alias(ExtendMiddleware::class, 'tools_middleware');
 
         // 注册路由
         $this->app->register(ModulesRouteServiceProvider::class);
@@ -171,7 +136,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                 $this->registerConfig($module, $moduleLower);
                 $this->registerViews($module, $moduleLower);
                 $this->loadMigrationsFrom(module_path($module, 'Database/Migrations'));
-                // $this->loadFactoriesFrom(module_path($module, 'Database/factories'));
             }
         }
     }
@@ -187,10 +151,10 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
         if (is_dir($langPath)) {
             $this->loadTranslationsFrom($langPath, $moduleLower);
-            $this->loadJsonTranslationsFrom($langPath, $moduleLower);
+            $this->loadJsonTranslationsFrom($langPath);
         } else {
             $this->loadTranslationsFrom(module_path($module, 'Resources/lang'), $moduleLower);
-            $this->loadJsonTranslationsFrom(module_path($module, 'Resources/lang'), $moduleLower);
+            $this->loadJsonTranslationsFrom(module_path($module, 'Resources/lang'));
         }
     }
 

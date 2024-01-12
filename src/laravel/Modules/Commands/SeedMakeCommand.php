@@ -12,7 +12,8 @@ use Symfony\Component\Console\Input\InputOption;
 
 class SeedMakeCommand extends GeneratorCommand
 {
-    use ModuleCommandTrait, CanClearModulesCache;
+    use CanClearModulesCache;
+    use ModuleCommandTrait;
 
     protected $argumentName = 'name';
 
@@ -35,7 +36,7 @@ class SeedMakeCommand extends GeneratorCommand
      *
      * @return array
      */
-    protected function getArguments()
+    protected function getArguments(): array
     {
         return [
             ['name', InputArgument::REQUIRED, 'The name of seeder will be created.'],
@@ -45,10 +46,8 @@ class SeedMakeCommand extends GeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
-    protected function getOptions()
+    protected function getOptions(): array
     {
         return [
             [
@@ -60,10 +59,7 @@ class SeedMakeCommand extends GeneratorCommand
         ];
     }
 
-    /**
-     * @return mixed
-     */
-    protected function getTemplateContents()
+    protected function getTemplateContents(): mixed
     {
         $module = $this->laravel['modules']->findOrFail($this->getModuleName());
 
@@ -75,10 +71,7 @@ class SeedMakeCommand extends GeneratorCommand
         ]))->render();
     }
 
-    /**
-     * @return mixed
-     */
-    protected function getDestinationFilePath()
+    protected function getDestinationFilePath(): mixed
     {
         $this->clearCache();
 
@@ -90,23 +83,25 @@ class SeedMakeCommand extends GeneratorCommand
     }
 
     /**
-     * Get seeder name.
-     *
-     * @return string
+     * Get the seeder name.
      */
-    private function getSeederName()
+    private function getSeederName(): string
     {
-        $end = $this->option('master') ? 'DatabaseSeeder' : 'TableSeeder';
+        $string = $this->argument('name');
+        $string .= $this->option('master') ? 'Database' : '';
+        $suffix = 'Seeder';
 
-        return Str::studly($this->argument('name')) . $end;
+        if (strpos($string, $suffix) === false) {
+            $string .= $suffix;
+        }
+
+        return Str::studly($string);
     }
 
     /**
      * Get default namespace.
-     *
-     * @return string
      */
-    public function getDefaultNamespace() : string
+    public function getDefaultNamespace(): string
     {
         $module = $this->laravel['modules'];
 

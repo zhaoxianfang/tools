@@ -2,18 +2,28 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Module $STUDLY_NAME$</title>
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-       {{-- Laravel Mix - CSS File --}}
-       {{-- <link rel="stylesheet" href="{{ mix('css/$LOWER_NAME$.css') }}"> --}}
+        <title>$STUDLY_NAME$ Module - {{ config('app.name', 'Laravel') }}</title>
 
+        <meta name="description" content="{{ $description ?? '' }}">
+        <meta name="keywords" content="{{ $keywords ?? '' }}">
+        <meta name="author" content="{{ $author ?? '' }}">
+
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+        {{-- Vite CSS --}}
+        {{-- {{ module_vite('build-$LOWER_NAME$', 'resources/assets/sass/app.scss') }} --}}
     </head>
+
     <body>
         @yield('content')
 
-        {{-- Laravel Mix - JS File --}}
-        {{-- <script src="{{ mix('js/$LOWER_NAME$.js') }}"></script> --}}
+        {{-- Vite JS --}}
+        {{-- {{ module_vite('build-$LOWER_NAME$', 'resources/assets/js/app.js') }} --}}
     </body>
 </html>

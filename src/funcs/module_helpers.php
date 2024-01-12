@@ -52,7 +52,7 @@ if (!function_exists('get_module_name')) {
     {
         try {
             if (php_sapi_name() !== 'cli') {
-                $routeNamespace      = request()->route()->action['namespace'];
+                $routeNamespace      = request()->route()->getAction()['namespace'];
                 $modulesNamespaceArr = array_filter(explode('\\', explode('Http\Controllers', $routeNamespace)[0]));
                 if (empty($modulesNamespaceArr) || $modulesNamespaceArr[0] != modules_name()) {
                     return $toUnderlineConvert ? 'app' : 'App';
@@ -62,11 +62,7 @@ if (!function_exists('get_module_name')) {
                 return $toUnderlineConvert ? 'app' : 'App';
             }
         } catch (\Exception $err) {
-            $url = request()->path();
-            if (empty($url) || empty(array_filter($pathArr = explode('/', $url)))) {
-                return 'home';
-            }
-            return $toUnderlineConvert && !empty($pathArr['0']) ? $pathArr['0'] : 'app';
+            return get_url_module_name($toUnderlineConvert);
         }
     }
 }
@@ -75,14 +71,14 @@ if (!function_exists('get_url_module_name')) {
     /**
      * 获取 url 中的模块名称(url前缀模块名称), 例如：http://www.xxx.com/docs/xxx/xxx/xxx 中的 docs
      */
-    function get_url_module_name(): string
+    function get_url_module_name(?bool $toUnderlineConvert = false): string
     {
         try {
             $path    = request()->path();
             $pathArr = explode('/', $path);
-            return underline_convert($pathArr[0] ?? 'app');
+            return $toUnderlineConvert ? underline_convert($pathArr[0] ?? 'app') : ($pathArr[0] ?? 'App');
         } catch (\Exception $err) {
-            return 'app';
+            return $toUnderlineConvert ? 'app' : 'App';
         }
     }
 }
@@ -116,9 +112,14 @@ if (!function_exists('get_laravel_route')) {
     function get_laravel_route(): array
     {
         // 模块名
-        $modules      = get_module_name();
-        $actionName   = request()->route()->getActionName(); // 获取当前的控制器名称(不带Controller) ,闭包返回 Closure
-        $actionMethod = request()->route()->getActionMethod(); // 获取当前方法名称  ,闭包返回 Closure
+        $modules = get_module_name();
+        if (php_sapi_name() !== 'cli') {
+            $actionName   = request()->route()->getActionName(); // 获取当前的控制器名称(不带Controller) ,闭包返回 Closure
+            $actionMethod = request()->route()->getActionMethod(); // 获取当前方法名称  ,闭包返回 Closure
+        } else {
+            $actionName   = 'Closure';
+            $actionMethod = 'command';
+        }
         return [$modules, $actionName, $actionMethod];
     }
 }
@@ -127,7 +128,7 @@ if (!function_exists('listen_sql')) {
     /**
      * 监听sql
      *
-     * @param string|array $traceLogStrOrArr 监听到的sql 会 通过引用的方式，传递给$traceLogStrOrArr变量
+     * @param array|string $traceLogStrOrArr 监听到的sql 会 通过引用的方式，传递给$traceLogStrOrArr变量
      * @param bool         $addHtml          是否携带html样式
      *
      * @return void
@@ -140,7 +141,7 @@ if (!function_exists('listen_sql')) {
      *      // 打印sql追踪
      *      echo $logStr;
      */
-    function listen_sql(&$traceLogStrOrArr = '', bool $addHtml = true)
+    function listen_sql(array|string &$traceLogStrOrArr = '', bool $addHtml = false)
     {
         // 监听sql执行
         $style = $contentStyle = '';

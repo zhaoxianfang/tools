@@ -26,8 +26,10 @@ class PublishCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
+        $this->components->info('Publishing module assets...');
+
         if ($name = $this->argument('module')) {
             $this->publish($name);
 
@@ -67,7 +69,7 @@ class PublishCommand extends Command
             ->setConsole($this)
             ->publish();
 
-        $this->line("<info>Published</info>: {$module->getStudlyName()}");
+        $this->components->task($module->getStudlyName(), fn()=>true);
     }
 
     /**

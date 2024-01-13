@@ -3,7 +3,7 @@
  * BarCode
  */
 
-namespace zxf\Qrcode;
+namespace zxf\QrCode;
 
 class BarcodeType
 {

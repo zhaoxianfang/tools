@@ -7,10 +7,10 @@
  *--------------------------------------------------------------------
  */
 
-namespace zxf\Qrcode\Generator;
+namespace zxf\QrCode\Generator;
 
-use zxf\Qrcode\Generator\CINParseException;
-use zxf\Qrcode\Generator\CINcode128;
+use zxf\QrCode\Generator\CINParseException;
+use zxf\QrCode\Generator\CINcode128;
 
 class CINgs1128 extends CINcode128
 {

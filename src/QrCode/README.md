@@ -9,14 +9,14 @@
 ### 引入库
 
 ```
-use zxf\Qrcode\QrCode;
-use zxf\Qrcode\BarCode;
+use zxf\QrCode\QrCode;
+use zxf\QrCode\BarCode;
 ```
 
 ## QrCode 创建二维码
 
 ``` php
-use zxf\Qrcode\QrCode;
+use zxf\QrCode\QrCode;
 
 echo '<p>Example - QrCode</p>';
 $qrCode = new QrCode();

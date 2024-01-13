@@ -8,7 +8,7 @@
  *--------------------------------------------------------------------
  */
 
-namespace zxf\Qrcode\Generator;
+namespace zxf\QrCode\Generator;
 
 class JoinDraw
 {

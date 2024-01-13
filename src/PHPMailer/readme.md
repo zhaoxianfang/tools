@@ -18,15 +18,19 @@ update_at:2024-01-11
 
 ```
 use zxf\PHPMailer\Mail;
-
-$mail = Mail::instance();
-$mail->title('Title')
-->content('Content')
-->to('mail','name')
-->cc('mail','name')
-->bcc('mail','name')
-->attachment('xxx.csv','xxx报表');
-->send();
+try {
+    $mail = Mail::instance();
+    $mail->title('Title')
+    ->content('Content')
+    ->to('mail','name')
+    ->cc('mail','name')
+    ->bcc('mail','name')
+    ->attachment('xxx.csv','xxx报表')
+    ->send();
+} catch (\Exception $e) {
+    // 捕捉异常信息
+    // $mail->getErrors();
+}
 ```
 
 ### 方式二

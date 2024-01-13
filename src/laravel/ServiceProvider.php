@@ -170,14 +170,14 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
         $sourcePath = module_path($module, 'Resources/views');
 
-        $this->loadViewsFrom(module_path($module, 'Resources/views'), $moduleLower);
-
         if (config('modules.publishes_views', true)) {
             $this->publishes([
                 $sourcePath => $viewPath,
             ], ['views', $moduleLower . '-module-views']);
         }
         $this->loadViewsFrom(array_merge($this->getPublishableViewPaths($module, $moduleLower), [$sourcePath]), $moduleLower);
+
+        $this->loadViewsFrom(module_path($module, 'Resources/views'), $moduleLower);
     }
 
     private function getPublishableViewPaths($module, $moduleLower): array

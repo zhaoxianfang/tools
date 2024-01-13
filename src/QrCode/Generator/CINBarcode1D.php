@@ -7,13 +7,13 @@
  *--------------------------------------------------------------------
  */
 
-namespace zxf\Qrcode\Generator;
+namespace zxf\QrCode\Generator;
 
-use zxf\Qrcode\Generator\CINArgumentException;
+use zxf\QrCode\Generator\CINArgumentException;
 
-//use zxf\Qrcode\Generator\CINBarcode1D;
-use zxf\Qrcode\Generator\CINFontPhp;
-use zxf\Qrcode\Generator\CINLabel;
+//use zxf\QrCode\Generator\CINBarcode1D;
+use zxf\QrCode\Generator\CINFontPhp;
+use zxf\QrCode\Generator\CINLabel;
 
 
 abstract class CINBarcode1D extends CINBarcode

@@ -70,8 +70,8 @@ return [
             'scaffold/config' => 'Config/config.php',
         ],
         'replacements' => [
-            'routes/web'      => ['LOWER_NAME', 'STUDLY_NAME'],
-            'routes/api'      => ['LOWER_NAME'],
+            'routes/web'      => ['MODULE_NAMESPACE', 'LOWER_NAME', 'STUDLY_NAME'],
+            'routes/api'      => ['MODULE_NAMESPACE', 'LOWER_NAME', 'STUDLY_NAME'],
             'webpack'         => ['LOWER_NAME'],
             'json'            => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE', 'PROVIDER_NAMESPACE'],
             'views/index'     => ['LOWER_NAME'],
@@ -141,6 +141,7 @@ return [
             'event'           => ['path' => 'Events', 'generate' => false],
             'listener'        => ['path' => 'Listeners', 'generate' => false],
             'policies'        => ['path' => 'Policies', 'generate' => false],
+            'observer'        => ['path' => 'Observer', 'generate' => false],
             'rules'           => ['path' => 'Rules', 'generate' => false],
             'jobs'            => ['path' => 'Jobs', 'generate' => false],
             'emails'          => ['path' => 'Emails', 'generate' => false],

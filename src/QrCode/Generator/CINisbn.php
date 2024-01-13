@@ -13,11 +13,11 @@
  *--------------------------------------------------------------------
  */
 
-namespace zxf\Qrcode\Generator;
+namespace zxf\QrCode\Generator;
 
-use zxf\Qrcode\Generator\CINParseException;
-use zxf\Qrcode\Generator\CINArgumentException;
-use zxf\Qrcode\Generator\CINean13;
+use zxf\QrCode\Generator\CINParseException;
+use zxf\QrCode\Generator\CINArgumentException;
+use zxf\QrCode\Generator\CINean13;
 
 class CINisbn extends CINean13
 {

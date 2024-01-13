@@ -7,10 +7,10 @@
  *--------------------------------------------------------------------
  */
 
-namespace zxf\Qrcode\Generator;
+namespace zxf\QrCode\Generator;
 
-use zxf\Qrcode\Generator\CINParseException;
-use zxf\Qrcode\Generator\CINBarcode1D;
+use zxf\QrCode\Generator\CINParseException;
+use zxf\QrCode\Generator\CINBarcode1D;
 
 class CINcode39 extends CINBarcode1D
 {

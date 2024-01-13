@@ -15,12 +15,12 @@
  *--------------------------------------------------------------------
  */
 
-namespace zxf\Qrcode\Generator;
+namespace zxf\QrCode\Generator;
 
-use zxf\Qrcode\Generator\CINParseException;
-use zxf\Qrcode\Generator\CINBarcode;
-use zxf\Qrcode\Generator\CINBarcode1D;
-use zxf\Qrcode\Generator\CINLabel;
+use zxf\QrCode\Generator\CINParseException;
+use zxf\QrCode\Generator\CINBarcode;
+use zxf\QrCode\Generator\CINBarcode1D;
+use zxf\QrCode\Generator\CINLabel;
 
 class CINean13 extends CINBarcode1D
 {

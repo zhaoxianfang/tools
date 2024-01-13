@@ -7,7 +7,7 @@
  *--------------------------------------------------------------------
  */
 
-namespace zxf\Qrcode\Generator\Drawer;
+namespace zxf\QrCode\Generator\Drawer;
 
 abstract class CINDraw
 {

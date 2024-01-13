@@ -8,13 +8,13 @@
  *--------------------------------------------------------------------
  */
 
-namespace zxf\Qrcode\Generator;
+namespace zxf\QrCode\Generator;
 
-use zxf\Qrcode\Generator\CINBarcode;
-use zxf\Qrcode\Generator\CINColor;
-use zxf\Qrcode\Generator\CINDrawException;
-use zxf\Qrcode\Generator\Drawer\CINDrawJPG;
-use zxf\Qrcode\Generator\Drawer\CINDrawPNG;
+use zxf\QrCode\Generator\CINBarcode;
+use zxf\QrCode\Generator\CINColor;
+use zxf\QrCode\Generator\CINDrawException;
+use zxf\QrCode\Generator\Drawer\CINDrawJPG;
+use zxf\QrCode\Generator\Drawer\CINDrawPNG;
 
 class CINDrawing
 {

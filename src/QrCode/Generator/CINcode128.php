@@ -14,10 +14,10 @@
  *--------------------------------------------------------------------
  */
 
-namespace zxf\Qrcode\Generator;
+namespace zxf\QrCode\Generator;
 
-use zxf\Qrcode\Generator\CINParseException;
-use zxf\Qrcode\Generator\CINBarcode1D;
+use zxf\QrCode\Generator\CINParseException;
+use zxf\QrCode\Generator\CINBarcode1D;
 
 define('CODE128_A', 1);            // Table A
 define('CODE128_B', 2);            // Table B

@@ -7,9 +7,9 @@
  *--------------------------------------------------------------------
  */
 
-namespace zxf\Qrcode\Generator\Drawer;
+namespace zxf\QrCode\Generator\Drawer;
 
-use zxf\Qrcode\Generator\Drawer\CINDraw;
+use zxf\QrCode\Generator\Drawer\CINDraw;
 
 class CINDrawJPG extends CINDraw
 {

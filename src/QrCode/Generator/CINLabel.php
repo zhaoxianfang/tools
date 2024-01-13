@@ -7,10 +7,10 @@
  *--------------------------------------------------------------------
  */
 
-namespace zxf\Qrcode\Generator;
+namespace zxf\QrCode\Generator;
 
-use zxf\Qrcode\Generator\CINArgumentException;
-use zxf\Qrcode\Generator\CINFontPhp;
+use zxf\QrCode\Generator\CINArgumentException;
+use zxf\QrCode\Generator\CINFontPhp;
 
 class CINLabel
 {

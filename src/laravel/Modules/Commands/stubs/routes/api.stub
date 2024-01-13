@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use $MODULE_NAMESPACE$\$STUDLY_NAME$\Http\Controllers\Api;
 
 /*
 |--------------------------------------------------------------------------

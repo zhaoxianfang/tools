@@ -13,9 +13,9 @@ class Handle
         'tabs' => [
             'base'    => 'Base',
             'route'   => 'Route',
+            'view'    => 'View',
             'sql'     => 'SQL',
             'session' => 'SESSION',
-            'cookie'  => 'COOKIE',
             'request' => 'REQUEST',
         ],
     ];
@@ -62,8 +62,8 @@ class Handle
         $base    = $this->getBaseInfo($sqlTimes);
         $route   = $this->getRouteInfo();
         $session = $this->getSessionInfo();
-        $cookie  = $this->getCookieInfo();
         $request = $this->getRequestInfo();
+        $view    = $this->getViewInfo();
 
         // 页面Trace信息
         $trace = [];
@@ -71,10 +71,11 @@ class Handle
             $name   = strtolower($name);
             $result = [];
             foreach ($$name as $subTitle => $item) {
-                $result[] = is_numeric($subTitle) ? $item : '【' . $subTitle . '】' . $item;
+                $result[$subTitle] = $item;
             }
-            $trace[$title] = $result;
+            $trace[$title] = !empty($result) ? $result : ['暂无相关数据'];
         }
+
         if ($this->request->isMethod('get')) {
             // return $this->randerPage($trace) . $this->randerConsole($trace);
             return $this->randerPage($trace);
@@ -135,15 +136,7 @@ class Handle
         if (empty($session)) {
             return $_SESSION ?? [];
         }
-        return $session;
-    }
-
-    private function getCookieInfo()
-    {
-        if (empty($cookie = cookie())) {
-            return $_COOKIE ?? [];
-        }
-        return cookie();
+        return $session->all();
     }
 
     private function getRequestInfo()
@@ -157,29 +150,47 @@ class Handle
         ];
     }
 
+    public function getViewInfo()
+    {
+        $viewFiles = [];
+        // 获取当前路由的其他视图文件
+        foreach (app('view')->getFinder()->getViews() as $view) {
+            $viewFiles[] = '/' . trim(str_replace(base_path(), '', $view), '/');
+        }
+        return $viewFiles;
+    }
 
     public function randerPage($trace)
     {
         $str = <<<EOT
-    <div id="think_page_trace" style="position: fixed;bottom:0;right:0;font-size:14px;width:100%;z-index: 999999;color: #000;text-align:left;font-family:'微软雅黑';">
-    <div id="think_page_trace_tab" style="display: none;background:white;margin:0;height: 250px;">
-        <div id="think_page_trace_tab_tit" style="height:30px;padding: 6px 12px 0;border-bottom:1px solid #ececec;border-top:1px solid #ececec;font-size:16px">
+    <div id="tools_trace_page_trace" >
+    <div id="tools_trace_page_trace_tab">
+        <div id="tools_trace_page_trace_tab_tit">
 EOT;
         foreach ($trace as $key => $title) {
-            $str .= '<span style="color:#000;padding-right:12px;height:30px;line-height:30px;display:inline-block;margin-right:3px;cursor:pointer;font-weight:700">' . $key . '</span>';
+            $str .= '<span class="tools_trace_tab_title">' . $key . '</span>';
         }
         $str .= <<<EOT
         </div>
-        <div id="think_page_trace_tab_cont" style="overflow:auto;height:212px;padding:0;line-height: 24px">
+        <div id="tools_trace_page_trace_tab_cont">
 EOT;
         foreach ($trace as $tabs) {
             $str .= <<<EOT
-            <div style="display:none;">
-                <ol style="padding: 0; margin:0">
+            <div class="tools_trace_tab_list">
+                <ol>
 EOT;
             if (is_array($tabs)) {
-                foreach ($tabs as $item) {
-                    $str .= '<li style="border-bottom:1px solid #EEE;font-size:14px;padding:0 12px">' . $item . '</li>';
+                foreach ($tabs as $k => $item) {
+                    // 判断$k是否为奇数
+                    if (is_string($item)) {
+                        if (is_numeric($k)) {
+                            $str .= '<li class="tools_trace_li" >' . $item . '</li>';
+                        } else {
+                            $str .= '<li class="tools_trace_li">' . '<div class="tools_trace_li_key">' . $k . '</div><pre class="tools_trace_li_pre">' . $item . '</pre></li>';
+                        }
+                    } else {
+                        $str .= '<li class="tools_trace_li">' . '<div class="tools_trace_li_key">' . $k . '</div><pre class="tools_trace_li_pre">' . json_encode($item, JSON_PRETTY_PRINT) . '</pre></li>';
+                    }
                 }
             }
             $str .= <<<EOT
@@ -189,54 +200,17 @@ EOT;
         }
         $str .= <<<EOT
         </div>
-<div id="think_page_trace_close" style="display:none;text-align:right;height:15px;position:absolute;top:10px;right:12px;cursor:pointer;"><img style="vertical-align:top;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAQhJREFUOE+t1L0yxUAYBuDnXI9CpaJAQ2WYQUNFQ0VDpVCg8DPjp0CBhoabcBNchKsweybFZk822XC+mTRJ9tlvd99kYMw1GLMnBo/xhY+ek4Rxn9VVA9fwjvUe6BmWqjHfoZF0yX3QSyzGWBMY7pWgt5hPsRzYhT5gpglrA3PoC6ZyWBeYosuYbMNKwBgNkQoJGJ5mrkqC/VZ1NoEjnP4HjPdsBSc4xMVfOnzEdLLMA5xjHzdNaG7Jd5jL7NkerrGLEKFaNYFXWOg4gB3cYxvPsZiCI99mywFs4QmbCAc3rPRvs1oSjWiSDbxW2xP+ODVwFj9dOWvoOIwLNQK2xav4WUmwi7Hw4i+FuToVxfikpwAAAABJRU5ErkJggg==" /></div>
+<div id="tools_trace_page_trace_close"><img style="vertical-align:top;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAQhJREFUOE+t1L0yxUAYBuDnXI9CpaJAQ2WYQUNFQ0VDpVCg8DPjp0CBhoabcBNchKsweybFZk822XC+mTRJ9tlvd99kYMw1GLMnBo/xhY+ek4Rxn9VVA9fwjvUe6BmWqjHfoZF0yX3QSyzGWBMY7pWgt5hPsRzYhT5gpglrA3PoC6ZyWBeYosuYbMNKwBgNkQoJGJ5mrkqC/VZ1NoEjnP4HjPdsBSc4xMVfOnzEdLLMA5xjHzdNaG7Jd5jL7NkerrGLEKFaNYFXWOg4gB3cYxvPsZiCI99mywFs4QmbCAc3rPRvs1oSjWiSDbxW2xP+ODVwFj9dOWvoOIwLNQK2xav4WUmwi7Hw4i+FuToVxfikpwAAAABJRU5ErkJggg==" /></div>
 </div>
-<div id="think_page_trace_open" style="height:30px;float:right;text-align:right;overflow:hidden;position:fixed;bottom:0;right:0;color:#000;line-height:30px;cursor:pointer;">
+<div id="tools_trace_page_trace_open">
     <div style="background:#232323;color:#FFF;padding:0 6px;float:right;line-height:30px;font-size:14px">调试跟踪</div>
     <img width="30" style="" title="ShowPageTrace" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAABB5JREFUWEft2M1v2mYcB/CvCRiMzTstL6vSCalvU1stPXbSclsO+xO2f6L0lKjn9tRq/8TOk9pDRXbapO00aeo2JVsnpQtKeEkMwUDAGBNPjx1TcGxsY6e7jKPx8/PHv5fHBgo+fQ5/+OqLM4V6TMIFKOX5R+vfbvsRmvIahMCAQFlRlI3ZWBRFVYCzF16hSwPNYCcnI9WYSoWnVq9Q10ArWPPoFKdDWYWxTBC5q6wvUMdADYayolDTUpKMzcKM7WIOVSoAHJfeFrgMzE+oJdAPmB/QC8DLgHmBToEfArYMlNr5/smjBP1uw03ze907nUKFWr5C/f5666kkpzc5ugE23JiuHYoymkcDtNqi3565eJl0BLmrUTCR4PT46VES/eMk6Fj3mQoUx/lN7REl4UNBF8HOxho2km7PA/VbuEyoE5jumAO2O30c1HiUrufAsYx6jp9QJ7D+cIS9Jo9rmSTSMXY+gwT48y+7Kmy1eMUAHYML18HS7nvUDax63Fav//B2aTFQT7EX6DIw/bqOgVbQFWoM1iKjZI3ZVJ4eJzE5b369lHrGjNuEa6Ab6OzFyHbhBrZ0Bo13aCy9MaMaLIXJeEVdapcx3zLoBIpqZ2mYbxk0g97/5GPt8J42ib/9cwirHjOuv7QM6oFDoRVsrD+YA1Z+3cFYnthZTL9fekisrvY/kLwszD5J3NblP89gYSjiniBgO58ztbsF3m0e4CCeRoeJeu/BO90ePud5NdBuPIYfs9kLQd0Ab/ENFHsdQAH+upJHLZa8EM/VkKwOB8gPRKwJghroZaGAVpjGzV4ffyTi6jE74LXOCRrxBLiRiLVGVV2zn8hAYBi0GM4bkKy+K3TxWauF74pFpMYSHrbaoM/O8I6NYjuXWwi81zxEdtCDHAhgN1vAOBjEg9o+/k7lcJBMOS+xusdWG9irNiGK0txCHfgmkcDbGIf7Qhe3ej1SJbwqFMDHWdN9kO31sFavAhTQ4BKoJtLI9wSsdtumwAgdQimXRSmXAShKex/cqTx5NJaZLWkSmzaXGXSd51EcDBGXZfzJcbjd7+OnTAYtml4I5EYj3Dhpos4lUOgLGAZDaEc5vM28H7gpLP++v2l2yIc4+en0Z+fu661NSWHLkmwNDSsKbna7askJlABJHy7qQdJ/BCiGQurkEigpN/lYwWhm9OLO1988I+dc+OHuBErCf1mr41Wx4GhIPq3v403hutoSTmF6j1n+9eEE6vZZ7CRjxqmx/fNIg8bKksxa9qjdNrMMzDaDxjtZBJ1MJqZTvBIIaFM51/wiTzPitMfsHqu2GTSHxsuSHJ3LaGk1r516/j641+ANMImnmYFjmOsMOoHOAvXzaXY5mGegHkAr/UxGzzPoFeYbcBYqTrjHOOwiworP9X3Mrsfsvv8XdoYOW/spfXkAAAAASUVORK5CYII=">
 </div>
-
+<style>
+.tools_trace_li::after{content:"";display:block;clear:both;}#tools_trace_page_trace{position:fixed;bottom:0;right:0;font-size:14px;width:100%;z-index:999999;color:#000;text-align:left;font-family:'微软雅黑';}#tools_trace_page_trace_tab{display:none;background:white;margin:0;height:250px;}#tools_trace_page_trace_tab_tit{height:30px;padding:6px 12px 0;border-bottom:1px solid #ececec;border-top:1px solid #ececec;font-size:16px;}.tools_trace_tab_title{color:#000;padding-right:12px;height:30px;line-height:30px;display:inline-block;margin-right:3px;cursor:pointer;font-weight:700;}#tools_trace_page_trace_tab_cont{overflow:auto;height:212px;padding:0;line-height:24px;color: #999;}.tools_trace_tab_list{display:none;}.tools_trace_tab_list ol{padding:0;margin:0;}.tools_trace_li{border-bottom:1px solid #EEE;font-size:14px;padding:0 12px;}.tools_trace_li_key{width:25%;float:left;clear:both;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}#tools_trace_page_trace_close{display:none;text-align:right;height:15px;position:absolute;top:10px;right:12px;cursor:pointer;}#tools_trace_page_trace_open{height:30px;float:right;text-align:right;overflow:hidden;position:fixed;bottom:0;right:0;color:#000;line-height:30px;cursor:pointer;}pre.tools_trace_li_pre{outline:0;padding:0;margin:0;text-align:left;margin-left:25%;}
+</style>
 <script type="text/javascript">
-    (function(){
-        var tab_tit  = document.getElementById('think_page_trace_tab_tit').getElementsByTagName('span');
-        var tab_cont = document.getElementById('think_page_trace_tab_cont').getElementsByTagName('div');
-        var open     = document.getElementById('think_page_trace_open');
-        var close    = document.getElementById('think_page_trace_close').children[0];
-        var trace    = document.getElementById('think_page_trace_tab');
-        var cookie   = document.cookie.match(/thinkphp_show_page_trace=(\d\|\d)/);
-        var history  = (cookie && typeof cookie[1] != 'undefined' && cookie[1].split('|')) || [0,0];
-
-        open.onclick = function(){
-            trace.style.display = 'block';
-            this.style.display = 'none';
-            close.parentNode.style.display = 'block';
-            history[0] = 1;
-            document.cookie = 'thinkphp_show_page_trace='+history.join('|')
-        }
-        close.onclick = function(){
-            trace.style.display = 'none';
-            this.parentNode.style.display = 'none';
-            open.style.display = 'block';
-            history[0] = 0;
-            document.cookie = 'thinkphp_show_page_trace='+history.join('|')
-        }
-        for(var i = 0; i < tab_tit.length; i++){
-            tab_tit[i].onclick = (function(i){
-                return function(){
-                    for(var j = 0; j < tab_cont.length; j++){
-                        tab_cont[j].style.display = 'none';
-                        tab_tit[j].style.color = '#999';
-                    }
-                    tab_cont[i].style.display = 'block';
-                    tab_tit[i].style.color = '#000';
-                    history[1] = i;
-                    document.cookie = 'thinkphp_show_page_trace='+history.join('|')
-                }
-            })(i)
-        }
-        parseInt(history[0]) && open.click();
-        tab_tit[history[1]].click();
-    })();
+(function(){var tab_tit=document.getElementById('tools_trace_page_trace_tab_tit').getElementsByClassName('tools_trace_tab_title');var tab_cont=document.getElementById('tools_trace_page_trace_tab_cont').getElementsByClassName('tools_trace_tab_list');var open=document.getElementById('tools_trace_page_trace_open');var close=document.getElementById('tools_trace_page_trace_close').children[0];var trace=document.getElementById('tools_trace_page_trace_tab');var cookie=document.cookie.match(/tools_trace_show_page_trace=(\d\|\d)/);var history=(cookie&&typeof cookie[1]!='undefined'&&cookie[1].split('|'))||[0,0];open.onclick=function(){trace.style.display='block';this.style.display='none';close.parentNode.style.display='block';history[0]=1;document.cookie='tools_trace_show_page_trace='+history.join('|')};close.onclick=function(){trace.style.display='none';this.parentNode.style.display='none';open.style.display='block';history[0]=0;document.cookie='tools_trace_show_page_trace='+history.join('|')};for(var i=0;i<tab_tit.length;i++){tab_tit[i].onclick=(function(i){return function(){for(var j=0;j<tab_cont.length;j++){tab_cont[j].style.display='none';tab_tit[j].style.color='#999'}tab_cont[i].style.display='block';tab_tit[i].style.color='#000';history[1]=i;document.cookie='tools_trace_show_page_trace='+history.join('|')}})(i)};parseInt(history[0])&&open.click();tab_tit[history[1]]&&tab_tit[history[1]].click()})();
 </script>
 EOT;
         return $str;

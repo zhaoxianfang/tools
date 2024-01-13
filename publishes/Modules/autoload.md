@@ -14,6 +14,8 @@ Providers/ 里面继承了 \Illuminate\Support\ServiceProvider::class 类的所�
 
 ## resource 模块
 
+> 优先级高于 Modules 模块
+
 ```
 lang/modules/模块名小写/
 views/modules/模块名小写/

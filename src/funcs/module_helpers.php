@@ -55,7 +55,7 @@ if (!function_exists('get_module_name')) {
                 $routeNamespace      = request()->route()->getAction()['namespace'];
                 $modulesNamespaceArr = array_filter(explode('\\', explode('Http\Controllers', $routeNamespace)[0]));
                 if (empty($modulesNamespaceArr) || $modulesNamespaceArr[0] != modules_name()) {
-                    return $toUnderlineConvert ? 'app' : 'App';
+                    return $toUnderlineConvert ? 'command' : 'Command';
                 }
                 return $toUnderlineConvert ? underline_convert($modulesNamespaceArr[1]) : $modulesNamespaceArr[1];
             } else {
@@ -117,7 +117,7 @@ if (!function_exists('get_laravel_route')) {
             $actionName   = request()->route()->getActionName(); // 获取当前的控制器名称(不带Controller) ,闭包返回 Closure
             $actionMethod = request()->route()->getActionMethod(); // 获取当前方法名称  ,闭包返回 Closure
         } else {
-            $actionName   = 'Closure';
+            $actionName   = 'Command';
             $actionMethod = 'command';
         }
         return [$modules, $actionName, $actionMethod];

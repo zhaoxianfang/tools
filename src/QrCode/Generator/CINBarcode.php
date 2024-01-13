@@ -7,11 +7,11 @@
  *--------------------------------------------------------------------
  */
 
-namespace zxf\Qrcode\Generator;
+namespace zxf\QrCode\Generator;
 
-use zxf\Qrcode\Generator\CINColor;
-use zxf\Qrcode\Generator\CINLabel;
-use zxf\Qrcode\Generator\CINArgumentException;
+use zxf\QrCode\Generator\CINColor;
+use zxf\QrCode\Generator\CINLabel;
+use zxf\QrCode\Generator\CINArgumentException;
 
 abstract class CINBarcode
 {

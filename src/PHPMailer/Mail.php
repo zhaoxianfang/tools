@@ -77,7 +77,7 @@ class Mail
     private function getConfig(string $driver = '')
     {
         try {
-            $this->config = config("tools_mail.fail_over.{$driver}");
+            $this->config = config("tools_mail.mailers.{$driver}");
         } catch (\Exception $e) {
             throw new \Exception("邮件配置不存在:" . $driver);
         }

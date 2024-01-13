@@ -3,12 +3,12 @@
  * BarCode 生成器
  */
 
-namespace zxf\Qrcode;
+namespace zxf\QrCode;
 
-use zxf\Qrcode\BarcodeType;
-use zxf\Qrcode\Generator\CINColor;
-use zxf\Qrcode\Generator\CINDrawing;
-use zxf\Qrcode\Generator\CINFontFile;
+use zxf\QrCode\BarcodeType;
+use zxf\QrCode\Generator\CINColor;
+use zxf\QrCode\Generator\CINDrawing;
+use zxf\QrCode\Generator\CINFontFile;
 
 class BarCode extends BarcodeType
 {

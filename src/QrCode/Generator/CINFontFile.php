@@ -7,11 +7,11 @@
  *--------------------------------------------------------------------
  */
 
-namespace zxf\Qrcode\Generator;
+namespace zxf\QrCode\Generator;
 
-use zxf\Qrcode\Generator\CINArgumentException;
-use zxf\Qrcode\Generator\CINFont;
-use zxf\Qrcode\Generator\CINColor;
+use zxf\QrCode\Generator\CINArgumentException;
+use zxf\QrCode\Generator\CINFont;
+use zxf\QrCode\Generator\CINColor;
 
 class CINFontFile implements CINFont
 {

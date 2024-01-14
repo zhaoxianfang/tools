@@ -1,5 +1,14 @@
 # 使用说明
 
+## trace 页面调试
+
+在`.env`文件中添加如下配置
+
+```
+# 是否开启Trace
+APP_TRACE=true
+```
+
 ## 参考文档
 
 ```
@@ -12,6 +21,7 @@
 ```
 
 ## 常用的几个命令
+
 ```
 php artisan module:make Blog 创建模块
 php artisan module:make Blog User Auth  创建多个模块

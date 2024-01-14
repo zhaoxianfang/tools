@@ -20,14 +20,15 @@ class ExtendMiddleware
     public function handle(Request $request, Closure $next)
     {
         $traceHandle = '';
-        if (!app()->runningInConsole() && $request->isMethod('get') && config('app.debug')) {
+        $listenTrace = !app()->runningInConsole() && $request->isMethod('get') && config('modules.trace');
+        if ($listenTrace) {
             $traceHandle = (new Handle($request))->handle();
         }
 
         $response = $next($request);
 
         // 在响应发送到浏览器前处理任务。
-        if (!app()->runningInConsole() && $request->isMethod('get') && config('app.debug') && !empty($traceHandle)) {
+        if ($listenTrace && !empty($traceHandle)) {
             $traceContent = $traceHandle->output();
 
             $pageContent = get_protected_value($response, 'content');
@@ -37,7 +38,6 @@ class ExtendMiddleware
         }
 
         return $response;
-
     }
 
     /**

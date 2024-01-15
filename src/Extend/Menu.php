@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\extend;
+namespace zxf\Extend;
 
 /**
  * 自动生成后台菜单或Tree树形结构

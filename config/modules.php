@@ -61,7 +61,7 @@ return [
     | 默认关闭
     |
     */
-    'trace'                => (bool) env('APP_TRACE', false),
+    'trace'                          => (bool)env('APP_TRACE', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -86,16 +86,7 @@ return [
             'json'            => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE', 'PROVIDER_NAMESPACE'],
             'views/index'     => ['LOWER_NAME'],
             'views/master'    => ['LOWER_NAME', 'STUDLY_NAME'],
-            'scaffold/config' => ['STUDLY_NAME'],
-            'composer'        => [
-                'LOWER_NAME',
-                'STUDLY_NAME',
-                'VENDOR',
-                'AUTHOR_NAME',
-                'AUTHOR_EMAIL',
-                'MODULE_NAMESPACE',
-                'PROVIDER_NAMESPACE',
-            ],
+            'scaffold/config' => ['STUDLY_NAME', 'LOWER_NAME'],
         ],
         'gitkeep'      => true,
     ],

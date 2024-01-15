@@ -6,7 +6,8 @@ update_at:2024-01-11
 
 ## 最小安装
 
-虽然手动或使用Composer安装整个软件包简单、方便、可靠，但您可能希望在项目中只包含重要文件。至少你需要src/PHPMail.php。 如果你使用SMTP，你需要src/SMTP.php，
+虽然手动或使用Composer安装整个软件包简单、方便、可靠，但您可能希望在项目中只包含重要文件。至少你需要src/PHPMail.php。
+如果你使用SMTP，你需要src/SMTP.php，
 如果你在SMTP之前使用POP（非常不可能！），你需要src=POP3.php。 如果你没有向用户显示错误，你可以跳过语言文件夹，只处理英语错误。
 如果您使用XOAUTH2，则需要src/OAuth.php以及要进行身份验证的服务的Composer依赖项。 真的，使用Composer要容易得多！
 
@@ -31,6 +32,12 @@ try {
     // 捕捉异常信息
     // $mail->getErrors();
 }
+```
+
+```
+$mail->getLastMessageID(); //获取最后一条消息的ID
+
+$mail->reset(); // 连续发送多封邮件时，可能会需要重置邮件对象以清除之前的收件人、附件等信息
 ```
 
 ### 方式二

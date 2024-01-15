@@ -44,6 +44,11 @@ class Mail
         return new static();
     }
 
+    /**
+     * 初始化PHPMailer 和清空数据
+     *
+     * @return $this
+     */
     private function init()
     {
         // 实例化PHPMailer核心类
@@ -64,6 +69,17 @@ class Mail
             'attachment' => [], // 发送的附件列表
         ];
         $this->initFailOver();
+        return $this;
+    }
+
+    // 重置
+    public function reset()
+    {
+        $this->init();
+
+        $this->errors     = [];
+        $this->sendMailer = '';
+        $this->openDebug  = false;
         return $this;
     }
 
@@ -194,7 +210,7 @@ class Mail
             if ($this->mailObj->send()) {
                 // 发送成功，清空数据
                 $this->init();
-                return true;
+                // lastMessageID
             }
             // echo '消息已发送';
         } catch (Exception $e) {
@@ -206,6 +222,7 @@ class Mail
             // "发送失败，Mailer错误: {$this->mailObj->ErrorInfo}";
             throw new \Exception("发送失败: {$this->mailObj->ErrorInfo}");
         }
+        return true;
     }
 
     // 获取错误信息

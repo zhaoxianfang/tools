@@ -6,7 +6,6 @@ namespace zxf\Facade;
  * Mysqli Model 模型类
  *
  * @link http://github.com/zhaoxianfang/tools
- * @link https://gitee.com/zhaoxianfang/tools
  *
  * @method string getTableName()
  * @method static query()

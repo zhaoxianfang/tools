@@ -1443,4 +1443,13 @@ class ImagickDrawTool
         return $this->draw->translate($x, $y);
     }
 
+    public function __call($method, $arg)
+    {
+        if (method_exists($this, $method)) {
+            return call_user_func_array(array($this, $method), $arg);
+        }
+
+        return call_user_func_array(array($this->draw, $method), $arg);
+    }
+
 }

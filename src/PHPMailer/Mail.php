@@ -111,7 +111,7 @@ class Mail
     }
 
     /**
-     * 设置邮件发送特定通道
+     * 手动设置邮件发送特定通道
      *
      * @param string $mailer
      *

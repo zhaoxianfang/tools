@@ -21,7 +21,7 @@ use zxf\QrCode\QrCode;
 echo '<p>Example - QrCode</p>';
 $qrCode = new QrCode();
 $qrCode
-    ->setText('https://www.weisifang.com/docs') // 生成二维码的内容
+    ->setText('http://0l0.net/docs') // 生成二维码的内容
     ->setSize(200) // 设置二维码大小
     ->setPadding(10) // 设置边距
     ->setErrorCorrection('high') // 设置二维码纠错级别。 分为 high(30%)、quartile(25%)、medium(15%)、low(7%) 几种
@@ -38,7 +38,7 @@ echo '<img src="data:' . $qrCode->getContentType() . ';base64,' . $qrCode->gener
 ```php
 $qrCode = new QrCode(); // 实例化
 $qrCode
-    ->setText('https://www.weisifang.com/docs') // 生成二维码的内容
+    ->setText('http://0l0.net/docs') // 生成二维码的内容
     ->setSize(200) // 设置二维码大小
     ->setPadding(10) // 设置边距
     ->setErrorCorrection('high') // 设置二维码纠错级别。 分为 high(30%)、quartile(25%)、medium(15%)、low(7%) 几种

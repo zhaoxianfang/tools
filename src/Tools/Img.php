@@ -6,7 +6,7 @@
 // +---------------------------------------------------------------------
 // | Author     | ZhaoXianFang <1748331509@qq.com>
 // +---------------------------------------------------------------------
-// | 版权       | http://www.weisifang.com
+// | 版权       | http://http://www.0l0.net
 // +---------------------------------------------------------------------
 // | Date       | 2019-07-30
 // +---------------------------------------------------------------------
@@ -467,7 +467,7 @@ class Img
      * @param string $saveToPath [保存路径]
      * @return   [type]                   [description]
      * demo:         $white = ImageColorAllocate($image, 255,255,255);
-     *               $imgTool->drawTextImg($image, 15, 0, 50, 900, $white = false, "E:/www/weisifang.com/public/static/font/lishu.ttf", "手机号:xxx", 'save_ttf.png');
+     *               $imgTool->drawTextImg($image, 15, 0, 50, 900, $white = false, "E:/www/0l0.net/public/static/font/lishu.ttf", "手机号:xxx", 'save_ttf.png');
      */
     public function drawTextImg($image, int $size, $rot, $offset_x, $offset_y, $foreground, $fontFile, $text, $saveToPath = '')
     {

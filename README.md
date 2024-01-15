@@ -3,9 +3,9 @@
 ![](https://img.shields.io/packagist/dt/zxf/tools) ![](https://img.shields.io/github/stars/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/forks/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/tag/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/release/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/issues/zhaoxianfang/tools.svg)
 
 > 基于 php 的项目模块开发
-> 调用命名空间 使用 use zxf\…… 例如 use zxf\Login\QqOauth; use zxf\min\JsMin;
+> 调用命名空间 使用 use zxf\…… 例如 use zxf\Login\QqOauth; use zxf\Min\JsMin;
 
-<a href="https://weisifang.com/docs/2" target="_blank" >在线文档</a>
+<a href="http://0l0.net/docs/2" target="_blank" >在线文档</a>
 
 ## 引用
 
@@ -22,9 +22,9 @@ composer require zxf/tools
 | 支付            | Pay/WechatPayFactory                                                                            |
 | 截图            | ScreenShot                                                                                      |
 | 微博登录          | sina                                                                                            |
-| zxf\min\JsMin | js 压缩工具                                                                                         |
-| zxf\min\JS    | js 压缩工具(推荐)                                                                                     |
-| zxf\min\CSS   | css 压缩工具(推荐)                                                                                    |
+| zxf\Min\JsMin | js 压缩工具                                                                                         |
+| zxf\Min\JS    | js 压缩工具(推荐)                                                                                     |
+| zxf\Min\CSS   | css 压缩工具(推荐)                                                                                    |
 | QrCode        | 生成二维码                                                                                           |
 | BarCode       | 生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
 | Compressor    | 图片压缩类                                                                                           |
@@ -99,7 +99,7 @@ use zxf\WeChat\xxx;
 
 ``` php
 
-\zxf\http\Curl::instance()->setParams(['path'=>'pages/index/index'])->post($url,'json');
+\zxf\Http\Curl::instance()->setParams(['path'=>'pages/index/index'])->post($url,'json');
 
 ```
 
@@ -156,7 +156,7 @@ class Connect extends Controller
 
 ```
 
-> 提示:config('tools_auth.qq.default') 中需要包含3个元素 appid、appkey、callbackUrl
+> 提示:config('login.qq.default') 中需要包含3个元素 appid、appkey、callbackUrl
 
 ### 新浪微博登录
 
@@ -211,7 +211,7 @@ class Sina extends Controller
 
 ```
 
-> 提示:config('tools_auth.sina.default') 中需要包含3个元素 wb_akey、wb_skey、wb_callback_url
+> 提示:config('login.sina.default') 中需要包含3个元素 wb_akey、wb_skey、wb_callback_url
 
 ### Cache 文件缓存
 
@@ -265,18 +265,18 @@ $cache->has('name');
 ### jsMin 压缩
 
 ``` php
-use zxf\min\JsMin;
+use zxf\Min\JsMin;
 $minifiedCode = JsMin::minify($jsString);
 ```
 
 ### js压缩
 ```
-$minifier   = new \zxf\min\JS('var a = "hello";',$jsFilePath,...); // 实例化 并混合自动引入 任意个 需要压缩的 js 文件路径 和 代码段
+$minifier   = new \zxf\Min\JS('var a = "hello";',$jsFilePath,...); // 实例化 并混合自动引入 任意个 需要压缩的 js 文件路径 和 代码段
 $res = $minifier->minify();
 ```
 ### css压缩
 ```
-$minifier   = new \zxf\min\CSS('body { color: #000000; }',$cssFilePath,...); // 实例化 并混合自动引入 任意个 需要压缩的 css 文件路径 和 代码段
+$minifier   = new \zxf\Min\CSS('body { color: #000000; }',$cssFilePath,...); // 实例化 并混合自动引入 任意个 需要压缩的 css 文件路径 和 代码段
 $res = $minifier->minify();
 ```
 
@@ -288,7 +288,7 @@ use zxf\qrcode\QrCode;
 echo '<p>Example - QrCode</p>';
 $qrCode = new QrCode();
 $qrCode
-    ->setText('https://www.weisifang.com/docs') // 生成二维码的内容
+    ->setText('http://0l0.net/docs') // 生成二维码的内容
     ->setSize(200) // 设置二维码大小
     ->setPadding(10) // 设置边距
     ->setErrorCorrection('high') // 设置二维码纠错级别。 分为 high(30%)、quartile(25%)、medium(15%)、low(7%) 几种
@@ -305,7 +305,7 @@ echo '<img src="data:' . $qrCode->getContentType() . ';base64,' . $qrCode->gener
 ```php
 $qrCode = new QrCode(); // 实例化
 $qrCode
-    ->setText('https://www.weisifang.com/docs') // 生成二维码的内容
+    ->setText('http://0l0.net/docs') // 生成二维码的内容
     ->setSize(200) // 设置二维码大小
     ->setPadding(10) // 设置边距
     ->setErrorCorrection('high') // 设置二维码纠错级别。 分为 high(30%)、quartile(25%)、medium(15%)、low(7%) 几种
@@ -614,7 +614,7 @@ use zxf\ScreenShot\ScreenShot;
 // $softPath： 可执行文件phantomjs或者phantomjs.exe 所在目录； ScreenShot 会自动识别系统 $softPath 该使用 phantomjs 还是 phantomjs.exe
 // $url: 被截图网页  url
 // $savePath: 截图成功后的保存文件完整地址
-$res = ScreenShot::init($softPath='/Users/linian/extend')->setUrl($url = 'https://www.weisifang.com')->run($savePath = __DIR__.'/img/'.time().'.png');
+$res = ScreenShot::init($softPath='/Users/linian/extend')->setUrl($url = 'http://0l0.net')->run($savePath = __DIR__.'/img/'.time().'.png');
 
 $res 返回 true|fales 表示是否截图成功
 ```

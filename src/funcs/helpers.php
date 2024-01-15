@@ -1148,7 +1148,7 @@ if (!function_exists('str_en_code')) {
         // 动态密匙长度，相同的明文会生成不同密文就是依靠动态密匙
         $ckey_length = 4;
         // 密匙
-        $key = md5(!empty($key) ? $key : 'www.weisifang.com');
+        $key = md5(!empty($key) ? $key : 'http://www.0l0.net');
         // 密匙a会参与加解密
         $keya = md5(substr($key, 0, 16));
         // 密匙b会用来做数据完整性验证

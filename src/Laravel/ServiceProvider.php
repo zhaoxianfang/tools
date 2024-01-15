@@ -220,7 +220,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
             echo '| 插    件 | composer require zxf/tools                                          |' . PHP_EOL;
             echo '| 格    言 | 人生在勤，不索何获                                                  |' . PHP_EOL;
             echo '| 模块发布 | php artisan vendor:publish --provider="zxf\Laravel\ServiceProvider" |' . PHP_EOL;
-            echo '| 文档地址 | http://0l0.net/docs/2                                        |' . PHP_EOL;
+            echo '| 文档地址 | http://0l0.net/docs/2                                               |' . PHP_EOL;
             echo '==================================================================================' . PHP_EOL;
         }
     }

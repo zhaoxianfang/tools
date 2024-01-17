@@ -53,6 +53,6 @@ class PayFactory
      */
     public static function __callStatic(string $driver, ?array $arguments)
     {
-        return self::call($driver, ...$arguments);
+        return self::call($driver, $arguments);
     }
 }

@@ -215,7 +215,7 @@ class Mail
             // echo '消息已发送';
         } catch (Exception $e) {
             // 发送失败，重试
-            $this->errors[] = ['mailer' => $this->sendMailer, 'error' => $this->mailObj->ErrorInfo];
+            $this->errors[] = ['mailer' => $this->sendMailer, 'error' => $this->mailObj->ErrorInfo, 'time' => date('Y-m-d H:i:s')];
             if (!empty($this->failOverKeys)) {
                 return $this->send();
             }
@@ -300,6 +300,18 @@ class Mail
             return $this;
         }
         return call_user_func_array(array($this->mailObj, $method), $args);
+    }
+
+    public static function __callStatic($method, $arguments)
+    {
+        // 检查是否存在名为 $name 的静态方法
+        if (method_exists(PHPMailer::class, $method)) {
+            // 调用 $obj 的静态方法
+            return PHPMailer::$method(...$arguments);
+        } else {
+            // 处理不存在的方法调用
+            throw new \Error("Static method $method does not exist");
+        }
     }
 
     public function __get($name)

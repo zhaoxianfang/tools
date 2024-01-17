@@ -31,7 +31,7 @@ trait ConfigTrait
             throw new Exception('未定义函数 config()');
         }
         $config = config('tools_wechat.' . $connectionName);
-        if (empty($config) || !is_array($config) || empty($config['cache_path'])) {
+        if (empty($config) || !is_array($config) || empty($config['appid'])) {
             throw new Exception('未正确配置 tools_wechat.' . $connectionName);
         }
         empty($this->cache) && $this->cache = Cache::instance();

@@ -11,15 +11,15 @@ date_default_timezone_set('PRC');
  */
 class DateTools
 {
-
     /**
      * @desc 得到某天凌晨零点的时间戳
+     *
      * @param string $str
+     *
      * @return int
      */
-    public function getSomeZeroTimeStamp($str = 'today')
+    public static function getSomeZeroTimeStamp(string $str = 'today')
     {
-
         switch ($str) {
             case 'today':   // 今天凌晨零点的时间戳
                 return strtotime(date("Y-m-d"), time());
@@ -36,8 +36,8 @@ class DateTools
             case 'year_first':  // 这一年第一天凌晨零点的时间戳
                 return strtotime(date("Y-01"), time());
                 break;
-            default:   // 默认为今天凌晨零点的时间戳
-                return strtotime(date("Y-m-d"), time());
+            default:   // 指定时间字符串，eg:2017-01-01、2017-01-01 09:10:40、-1days、+1days、+1month、+1year
+                return strtotime(date("Y-m-d"), strtotime($str));
                 break;
         }
     }
@@ -45,110 +45,111 @@ class DateTools
     /**
      * @desc 友好时间显示
      *
-     * @param string $time 时间戳
+     * @param string $time 时间戳 或者 时间字符串
      * @param string $lang $lang 语言, cn 中文, en 英文
      *
      * @return bool|string
      */
-    function get_friend_date(string $time, string $lang = 'cn')
+    public static function get_friend_date(string $time, string $lang = 'cn')
     {
         if (empty($time)) {
             return '';
         }
-        $f_date = '';
-        $d      = time() - intval($time);
-        $ld     = $time - mktime(0, 0, 0, 0, 0, date('Y')); //得出年
-        $md     = $time - mktime(0, 0, 0, date('m'), 0, date('Y')); //得出月
-        $byd    = $time - mktime(0, 0, 0, date('m'), date('d') - 2, date('Y')); //前天
-        $yd     = $time - mktime(0, 0, 0, date('m'), date('d') - 1, date('Y')); //昨天
-        $dd     = $time - mktime(0, 0, 0, date('m'), date('d'), date('Y')); //今天
-        $td     = $time - mktime(0, 0, 0, date('m'), date('d') + 1, date('Y')); //明天
-        $atd    = $time - mktime(0, 0, 0, date('m'), date('d') + 2, date('Y')); //后天
+        $time       = is_numeric($time) ? $time : strtotime($time);
+        $friendDate = '';
+        $d          = time() - intval($time);
+        $ld         = $time - mktime(0, 0, 0, 0, 0, date('Y')); //得出年
+        $md         = $time - mktime(0, 0, 0, date('m'), 0, date('Y')); //得出月
+        $byd        = $time - mktime(0, 0, 0, date('m'), date('d') - 2, date('Y')); //前天
+        $yd         = $time - mktime(0, 0, 0, date('m'), date('d') - 1, date('Y')); //昨天
+        $dd         = $time - mktime(0, 0, 0, date('m'), date('d'), date('Y')); //今天
+        $td         = $time - mktime(0, 0, 0, date('m'), date('d') + 1, date('Y')); //明天
+        $atd        = $time - mktime(0, 0, 0, date('m'), date('d') + 2, date('Y')); //后天
         if ($lang == 'cn') {
             if ($d <= 10) {
-                $f_date = '刚刚';
+                $friendDate = '刚刚';
             } else {
                 switch ($d) {
                     case $d < $td:
-                        $f_date = '后天' . date('H:i', $time);
+                        $friendDate = '后天' . date('H:i', $time);
                         break;
                     case $d < 0:
-                        $f_date = '明天' . date('H:i', $time);
+                        $friendDate = '明天' . date('H:i', $time);
                         break;
                     case $d < 60:
-                        $f_date = $d . '秒前';
+                        $friendDate = $d . '秒前';
                         break;
                     case $d < 3600:
-                        $f_date = floor($d / 60) . '分钟前';
+                        $friendDate = floor($d / 60) . '分钟前';
                         break;
                     case $d < $dd:
-                        $f_date = floor($d / 3600) . '小时前';
+                        $friendDate = floor($d / 3600) . '小时前';
                         break;
                     case $d < $yd:
-                        $f_date = '昨天' . date('H:i', $time);
+                        $friendDate = '昨天' . date('H:i', $time);
                         break;
                     case $d < $byd:
-                        $f_date = '前天' . date('H:i', $time);
+                        $friendDate = '前天' . date('H:i', $time);
                         break;
                     case $d < $md:
-                        $f_date = date('m月d日 H:i', $time);
+                        $friendDate = date('m月d日 H:i', $time);
                         break;
                     case $d < $ld:
-                        $f_date = date('m月d日', $time);
+                        $friendDate = date('m月d日', $time);
                         break;
                     case $d < $atd:
                     default:
-                        $f_date = date('Y年m月d日', $time);
+                        $friendDate = date('Y年m月d日', $time);
                         break;
                 }
             }
         } else {
             if ($d <= 10) {
-                $f_date = 'just';
+                $friendDate = 'just';
             } else {
                 switch ($d) {
                     case $d < $td:
-                        $f_date = 'the day after tomorrow' . date('H:i', $time);
+                        $friendDate = 'the day after tomorrow' . date('H:i', $time);
                         break;
                     case $d < 0:
-                        $f_date = 'tomorrow' . date('H:i', $time);
+                        $friendDate = 'tomorrow' . date('H:i', $time);
                         break;
                     case $d < 60:
-                        $f_date = $d . 'seconds ago';
+                        $friendDate = $d . 'seconds ago';
                         break;
                     case $d < 3600:
-                        $f_date = floor($d / 60) . 'minutes ago';
+                        $friendDate = floor($d / 60) . 'minutes ago';
                         break;
                     case $d < $dd:
-                        $f_date = floor($d / 3600) . 'hour ago';
+                        $friendDate = floor($d / 3600) . 'hour ago';
                         break;
                     case $d < $yd:
-                        $f_date = 'yesterday' . date('H:i', $time);
+                        $friendDate = 'yesterday' . date('H:i', $time);
                         break;
                     case $d < $byd:
-                        $f_date = 'the day before yesterday' . date('H:i', $time);
+                        $friendDate = 'the day before yesterday' . date('H:i', $time);
                         break;
                     case $d < $md:
-                        $f_date = date('m-d H:i', $time);
+                        $friendDate = date('m-d H:i', $time);
                         break;
                     case $d < $ld:
-                        $f_date = date('m-d', $time);
+                        $friendDate = date('m-d', $time);
                         break;
                     case $d < $atd:
                     default:
-                        $f_date = date('Y-m-d', $time);
+                        $friendDate = date('Y-m-d', $time);
                         break;
                 }
             }
         }
-        return $f_date;
+        return $friendDate;
     }
 
     /**
      * @desc 获取当前时间的前n天
      * @return array
      */
-    function getLastDays(int $day = 7)
+    public static function getLastDays(int $day = 7)
     {
         $dayStr             = $day > 0 ? '-' . ($day - 1) . 'days' : '+' . ($day) . 'days';
         $begin              = strtotime(date('Y-m-d', strtotime($dayStr)));  // n天前
@@ -175,36 +176,42 @@ class DateTools
 
     /**
      * @desc 获取星期几的信息
-     * @param $timestamp 时间戳
+     *
+     * @param string $time 时间
      * @param string $lang 语言, cn 中文, en 英文
-     * @return mixed
+     *
+     * @return string
      */
-    function get_week_day($timestamp, $lang = 'cn')
+    public static function getWeekDay(string $time, $lang = 'cn')
     {
+        $time = is_numeric($time) ? $time : strtotime($time);
         if ($lang == 'cn') {
             $week_array = array("星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六");
-            return $week_array[date("w", $timestamp)];
+            return $week_array[date("w", $time)];
         } else {
-            return date("l"); // date("l") 可以获取英文的星期比如Sunday
+            return date("l", $time); // date("l") 可以获取英文的星期比如Sunday
         }
     }
 
 
     /**
      * @desc 获取月份
-     * @param $timestamp 时间戳
+     *
+     * @param string $time 时间
      * @param string $lang cn 中文, en 英语
+     *
      * @return string
      */
-    function get_month($timestamp, $lang = 'cn')
+    public static function getMonth($time, $lang = 'cn')
     {
+        $timestamp = is_numeric($time) ? $time : strtotime($time);
         if ($lang == 'cn') {
             $month_arr = array(
-                '1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'
+                '1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月',
             );
         } else {
             $month_arr = array(
-                'Jan.', 'Feb.', 'Mar.', 'Apr.', 'May.', 'Jun.', 'Jul.', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'
+                'Jan.', 'Feb.', 'Mar.', 'Apr.', 'May.', 'Jun.', 'Jul.', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.',
             );
         }
         $month = date('n', $timestamp);
@@ -213,10 +220,12 @@ class DateTools
 
     /**
      * @desc  判断一个字符串是否为时间戳
+     *
      * @param $timestamp  时间戳
+     *
      * @return bool|int
      */
-    function is_timestamp($timestamp)
+    public static function is_timestamp($timestamp)
     {
         $timestamp = intval($timestamp);
         if (strtotime(date('m-d-Y H:i:s', $timestamp)) === $timestamp) {

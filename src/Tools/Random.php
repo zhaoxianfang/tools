@@ -26,7 +26,7 @@ class Random
      *
      * @return string
      */
-    public function alnum($len = 6)
+    public static function alnum($len = 6)
     {
         return self::build('alnum', $len);
     }
@@ -38,7 +38,7 @@ class Random
      *
      * @return string
      */
-    public function alpha($len = 6)
+    public static function alpha($len = 6)
     {
         return self::build('alpha', $len);
     }
@@ -50,7 +50,7 @@ class Random
      *
      * @return string
      */
-    public function numeric($len = 4)
+    public static function numeric($len = 4)
     {
         return self::build('numeric', $len);
     }
@@ -62,7 +62,7 @@ class Random
      *
      * @return string
      */
-    public function nozero($len = 4)
+    public static function nozero($len = 4)
     {
         return self::build('nozero', $len);
     }
@@ -169,7 +169,7 @@ class Random
      *
      * @return string
      */
-    public function uuid()
+    public static function uuid()
     {
         return sprintf(
             '%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)

@@ -31,10 +31,13 @@ class ExtendMiddleware
         if ($listenTrace && !empty($traceHandle)) {
             $traceContent = $traceHandle->output();
 
-            $pageContent = get_protected_value($response, 'content');
+            // $pageContent = get_protected_value($response, 'content');
+            $pageContent = $response->getContent();
             $position    = strripos($pageContent, "</body>");
             $pageContent = substr_replace($pageContent, $traceContent . PHP_EOL, $position, 0);
-            set_protected_value($response, 'content', $pageContent);
+            // set_protected_value($response, 'content', $pageContent);
+
+            $response->setContent($pageContent);
         }
 
         return $response;

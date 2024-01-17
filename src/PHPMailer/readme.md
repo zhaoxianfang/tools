@@ -105,10 +105,12 @@ $mail->setLanguage('zh_cn', '/optional/path/to/language/directory/');
 其他方法
 
 ```
+use zxf\PHPMailer\Mail;
+
 $mail->getLastMessageID()
 $mail->postSend()
 验证邮箱号
-PHPMailer::validateAddress('user@example.com', function($address) {
+Mail::validateAddress('user@example.com', function($address) {
     return (strpos($address, '@') !== false);
 });
 ```

@@ -51,7 +51,7 @@ if (!function_exists('get_module_name')) {
     function get_module_name(?bool $toUnderlineConvert = false)
     {
         try {
-            if (php_sapi_name() !== 'cli') {
+            if (!app()->runningInConsole()) {
                 $routeNamespace      = request()->route()->getAction()['namespace'];
                 $modulesNamespaceArr = array_filter(explode('\\', explode('Http\Controllers', $routeNamespace)[0]));
                 if (empty($modulesNamespaceArr) || $modulesNamespaceArr[0] != modules_name()) {

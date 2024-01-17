@@ -16,7 +16,7 @@ APP_TRACE=true
 | 插    件 | composer require zxf/tools                                           |'
 | 格    言 | 人生在勤，不索何获                                                      |'
 | 模块发布 | php artisan vendor:publish --provider="zxf\Laravel\ServiceProvider"   |'
-| 文档地址 | http://0l0.net/docs/2                                          |'
+| 文档地址 | http://0l0.net/docs/2                                                 |'
 =================================================================================='
 ```
 

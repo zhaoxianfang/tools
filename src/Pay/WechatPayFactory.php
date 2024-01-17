@@ -62,4 +62,22 @@ class WechatPayFactory
             throw new Exception('支付方式不存在:' . $driver);
         }
     }
+
+    /**
+     * 调用微信支付的各种支持方式
+     *          eg: (new WechatPayFactory())->JsApi->preOrder();
+     *
+     * @param string $payType
+     *
+     * @return mixed
+     * @throws Exception
+     */
+    public function __get(string $payType = '')
+    {
+        if (in_array($payType, array_keys(self::$payTypeMap))) {
+            return new self::$bindingTypes[$payType]();
+        } else {
+            throw new Exception('支付方式不存在:' . $payType);
+        }
+    }
 }

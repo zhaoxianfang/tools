@@ -47,47 +47,6 @@ composer require zxf/tools
 | Db/Model      | Mysql 的基础操作类Db;封装调用类Model                                                                       |
 | 其他            | 还有一些没有写在此处的工具类                                                                                  |
 
-### 第三方登录
-
-```php
-<?php
-/**
- * 第三方登录回调配置参数
- */
-<?php
-/**
- * tools 配置参数
- */
-return [
-    //微博Web
-    'sina' => [
-        'default' => [
-            'wb_akey'         => env('TOOLS_SINA_WEB_AKEY', ''),
-            'wb_skey'         => env('TOOLS_SINA_WEB_SKEY', ''),
-            'wb_callback_url' => env('TOOLS_SINA_WEB_CALLBACK_URL', ''), //回调
-        ],
-    ],
-    //QQ
-    'qq'   => [
-        'default' => [
-            'client_id'     => env('TOOLS_QQ_WEB_APP_ID', ''),
-            'client_secret' => env('TOOLS_QQ_WEB_APP_KEY', ''),
-            'redirect_uri'  => env('TOOLS_QQ_WEB_CALLBACK_URL', ''),
-        ],
-        'mobile'  => [
-            'client_id'     => env('TOOLS_QQ_MOBILE_APP_ID', ''),
-            'client_secret' => env('TOOLS_QQ_MOBILE_APP_KEY', ''),
-        ],
-    ],
-    //微信
-    'wechat'    => [
-        
-    ],
-];
-
-
-
-```
 
 ### 微信
 
@@ -677,3 +636,5 @@ $cmd->getArgVal('test');
 ```
 
 
+## 更多
+<a href="http://0l0.net/docs/2" target="_blank" >查看更多</a>

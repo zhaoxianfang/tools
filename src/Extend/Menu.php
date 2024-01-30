@@ -165,8 +165,8 @@ class Menu
 
         if ($initTree) {
             // 生成树
-            // $this->arr = $this->arrayToTree();
-            $this->arrayToTreeTwo();
+            $this->arrayToTree();
+            // $this->arrayToTreeTwo();
         }
 
         return $this;
@@ -231,6 +231,18 @@ class Menu
         return $this;
     }
 
+    public function setPk($pk = 'id')
+    {
+        $this->pk = $pk;
+        return $this;
+    }
+
+    public function setPid($pid = 'pid')
+    {
+        $this->pid = $pid;
+        return $this;
+    }
+
     /**
      * 设置 Tree 中用来跳转的字段名，例如：href 或者 url,默认为 name
      *
@@ -256,15 +268,21 @@ class Menu
         return $this->arr;
     }
 
-    public function arrayToTree($list = [], $id = 'id', $pid = 'pid', $rootId = 0)
+    public function arrayToTree($data = [], $rootId = 0)
     {
-        $list = !empty($list) ? $list : $this->arr;
-        $data = [];
-        foreach ($list as $row) {
-            $data[$row[$id]]                               = $row;
-            $data[$row[$pid]][$this->childlist][$row[$id]] = &$data[$row[$id]];
+        $data = !empty($data) ? $data : $this->arr;
+        $tree = array_to_tree($data, $rootId, $this->pk, $this->pid, $this->childlist);
+        //删除无用的非根节点数据
+        foreach ($tree as $key => $item) {
+            if (!isset($item[$this->pid]) || $item[$this->pid] != $rootId) {
+                unset($tree[$key]);
+            }
         }
-        return isset($data[$rootId][$this->childlist]) ? $data[$rootId][$this->childlist] : [];
+        if ($this->returnClass) {
+            $this->arr = $tree;
+            return $this;
+        }
+        return $tree;
     }
 
     /**

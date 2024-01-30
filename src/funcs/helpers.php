@@ -1384,3 +1384,187 @@ if (!function_exists('url_conversion_to_prefix_path')) {
         return $url;
     }
 }
+
+if (!function_exists('array_to_tree')) {
+    /**
+     * 数组转Tree
+     *
+     * @param array  $array
+     * @param int    $parentId
+     * @param string $keyField
+     * @param string $pidField
+     * @param string $childField
+     *
+     * @return array
+     */
+    function array_to_tree(array $array, int $parentId = 0, string $keyField = 'id', string $pidField = 'pid', string $childField = 'children')
+    {
+        $tree = [];
+        foreach ($array as $item) {
+            if ($item[$pidField] == $parentId) {
+                $children = array_to_tree($array, $item[$keyField], $keyField, $pidField, $childField);
+                if (!empty($children)) {
+                    $item[$childField] = $children;
+                }
+                $tree[] = $item;
+            }
+        }
+        return $tree;
+    }
+}
+
+if (!function_exists('aes_encrypt')) {
+    /**
+     * AES加密
+     *
+     * @param mixed  $data 需要加密的数据 string|array
+     * @param string $key  // 32字节的密钥
+     * @param        $iv   // 16字节的向量
+     *
+     * @return string
+     */
+    function aes_encrypt($data, string $key = 'WEISIFANG_AES_KEY_01234567ABCDEF', string $iv = 'WEISIFANG_AES_IV')
+    {
+        $data      = is_string($data) ? $data : json_encode($data);
+        $encrypted = openssl_encrypt($data, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv);
+        return base64_encode($encrypted);
+    }
+}
+if (!function_exists('aes_decrypt')) {
+    /**
+     * AES解密
+     *
+     * @param string $data 需要解密的数据 string
+     * @param string $key  // 32字节的密钥
+     * @param        $iv   // 16字节的向量
+     *
+     * @return false|string
+     */
+    function aes_decrypt(string $data, string $key = 'WEISIFANG_AES_KEY_01234567ABCDEF', string $iv = 'WEISIFANG_AES_IV')
+    {
+        try {
+            $data = base64_decode($data);
+            return openssl_decrypt($data, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv);
+            //return json_decode($res, true);
+        } catch (\Exception $err) {
+            return false;
+        }
+    }
+}
+
+if (!function_exists('array_keys_search')) {
+    /**
+     * 从二维数组中搜索指定的键名，返回键名对应的值
+     *
+     * @param array $array      二维数组
+     * @param array $keys       键名数组
+     * @param bool  $onlyExists 是否只返回存在的键名对应的值
+     *
+     * @return array
+     */
+    function array_keys_search(array $array = [], array $keys = [], bool $onlyExists = false)
+    {
+        $result = [];
+        if (empty($array) || empty($keys)) {
+            return $result;
+        }
+        if ($onlyExists) {
+            // 方式一：只返回存在的键名对应的值
+            foreach ($array as $key => $value) {
+                if (in_array($key, $keys)) {
+                    $result[$key] = $value;
+                }
+            }
+        } else {
+            // 方式二：返回所有指定键名对应的值，不存在的键名返回null
+            foreach ($keys as $key) {
+                $result[$key] = $array[$key] ?? null;
+            }
+        }
+        return $result;
+    }
+}
+
+
+if (!function_exists('is_qq_browser')) {
+    /**
+     * 判断来源是否为QQ浏览器
+     *
+     * @return bool true|false
+     */
+    function is_qq_browser(): bool
+    {
+        // 获取所有的header信息
+        $headers         = getallheaders();
+        $http_user_agent = $_SERVER['HTTP_USER_AGENT'];
+        return str_contains($http_user_agent, 'MQQBrowser') || str_contains($http_user_agent, 'QQ') || isset($headers['X-QQ-From']);
+    }
+}
+
+if (!function_exists('is_wechat_browser')) {
+    /**
+     * 判断来源是否为微信浏览器
+     *
+     * @return bool true|false
+     */
+    function is_wechat_browser(): bool
+    {
+        // 获取所有的header信息
+        $headers         = getallheaders();
+        $http_user_agent = $_SERVER['HTTP_USER_AGENT'];
+        return str_contains($http_user_agent, 'MicroMessenger') || str_contains($http_user_agent, 'WeChat') || isset($headers['X-Weixin-From']);
+    }
+}
+
+if (!function_exists('is_weibo_browser')) {
+    /**
+     * 判断来源是否为微博浏览器
+     *
+     * @return bool true|false
+     */
+    function is_weibo_browser(): bool
+    {
+        // 获取所有的header信息
+        $headers         = getallheaders();
+        $http_user_agent = $_SERVER['HTTP_USER_AGENT'];
+        return str_contains($http_user_agent, 'Weibo') || isset($headers['X-Weibo-From']);
+    }
+}
+
+if (!function_exists('is_alipay_browser')) {
+    /**
+     * 判断来源是否为支付宝浏览器
+     *
+     * @return bool true|false
+     */
+    function is_alipay_browser(): bool
+    {
+        // 获取所有的header信息
+        $headers         = getallheaders();
+        $http_user_agent = $_SERVER['HTTP_USER_AGENT'];
+        return str_contains($http_user_agent, 'AlipayClient') || str_contains($http_user_agent, 'Alipay') || isset($headers['X-Weibo-From']);
+    }
+}
+
+if (!function_exists('json_string_to_array')) {
+    // 判断一个字符串是否为json格式,并返回json数组
+    function json_string_to_array($string)
+    {
+        if (is_array($string)) {
+            return $string;
+        }
+        $data = json_decode($string, true);
+        if (json_last_error() == JSON_ERROR_NONE) {
+            return $data;
+        }
+        return $string;
+    }
+}
+
+if (!function_exists('json_array_to_string')) {
+    // 判断json格式转换为字符串
+    function json_array_to_string($array)
+    {
+        return is_array($array) ? json_encode($array) : $array;
+    }
+}

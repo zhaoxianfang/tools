@@ -16,14 +16,14 @@ namespace zxf\Tools;
  *      OR
  *      $tree = Tree::instance()->setData($data);
  *      // 自定义id、pid、children配置
- *      Tree::instance($data)->setId('id')->setPid('pid')->setChildlist('children')->getTree();
+ *      Tree::instance($data)->setId('id')->setPid('pid')->setChildlist('children')->toTree();
  *      // 自定义权重字段和排序方式
- *      Tree::instance($data)->setWeight('weight')->setSortType('desc')->getTree();
+ *      Tree::instance($data)->setWeight('weight')->setSortType('desc')->toTree();
  *      // 自定义根节点id，默认为0
- *      Tree::instance($data)->setRootId(1)->getTree();
+ *      Tree::instance($data)->setRootId(1)->toTree();
  *  接口:
  *      // 获取结构树
- *      $nodes = $tree->getTree();
+ *      $nodes = $tree->toTree();
  *      // 获取所有子节点的主键（包含自己）
  *      $nodes = $tree->getChildrenAndMeIds(1);
  *      // 获取所有子节点列表（包含自己）
@@ -175,22 +175,7 @@ class Tree
      */
     public function toTree(): array
     {
-        $treeMap = []; // 使用映射表存储节点信息
-
-        foreach ($this->data as &$item) {
-            $itemId   = $item[$this->id];
-            $parentId = $item[$this->pid];
-
-            if (!isset($treeMap[$itemId])) {
-                $treeMap[$itemId] = $item; // 添加新节点到映射表中
-            } else {
-                $treeMap[$itemId] += $item; // 更新已存在节点的其他字段
-            }
-
-            if ($parentId !== null && isset($treeMap[$parentId])) {
-                $treeMap[$parentId][$this->childlist][] =& $treeMap[$itemId]; // 将当前节点添加为父节点的子节点
-            }
-        }
+        $treeMap = array_to_tree($this->data, $this->rootId, $this->id, $this->pid, $this->childlist);
 
         // $rootNodes = array_filter($treeMap, fn($item) => !$item[$this->pid]); // 找出根节点（父节点为空）
         $rootNodes = array_filter($treeMap, fn($item) => $item[$this->pid] == $this->rootId); // 找出根节点（指定根节点id）

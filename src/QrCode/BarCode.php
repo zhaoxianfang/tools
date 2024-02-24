@@ -289,7 +289,7 @@ class BarCode extends BarcodeType
 
         $font = new CINFontFile($fontPath, (is_int($this->fontSize)) ? $this->fontSize : 10);
 
-        $codeClass = "\\zxf\\qrcode\\Generator\\" . $this->barcodeType;
+        $codeClass = "\\zxf\\QrCode\\Generator\\" . $this->barcodeType;
         $code      = new $codeClass();
         if ($this->scale) {
             $code->setScale($this->scale); // Resolution

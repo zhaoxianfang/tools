@@ -79,14 +79,9 @@ class Rsa
      * @param string|null $privateKeyFile 私钥文件路径（当$saveKeysToFile为true时有效）
      * @param string|null $publicKeyFile  公钥文件路径（当$saveKeysToFile为true时有效）
      *
-     * @return bool 是否生成成功
+     * @return array|bool
      */
-    public static function generateKeyPair(
-        int $keyLength = 2048,
-        bool $saveKeysToFile = false,
-        ?string $privateKeyFile = null,
-        ?string $publicKeyFile = null
-    ): bool
+    public static function generateKeyPair(int $keyLength = 2048, bool $saveKeysToFile = false, ?string $privateKeyFile = null, ?string $publicKeyFile = null): array|bool
     {
         $config = array(
             "private_key_bits" => $keyLength,
@@ -113,10 +108,13 @@ class Rsa
             $publicKeySaveSuccess  = self::saveKeyToFile($publicKeyDetails['key'], $publicKeyFile);
 
             return $privateKeySaveSuccess && $publicKeySaveSuccess;
+        } else {
+            // 不需要保存到文件，直接返回结果
+            return [
+                'privateKey' => $privateKeyPem,
+                'publicKey'  => $publicKeyDetails['key'],
+            ];
         }
-
-        // 不需要保存到文件，直接返回成功
-        return true;
     }
 
     /**
@@ -124,10 +122,12 @@ class Rsa
      *
      * @param string      $data          待加密的数据
      * @param string|null $publicKeyFile 公钥文件路径或PEM格式的字符串
+     * @param int         $padding
      *
      * @return string|null 加密后的数据或null（如果失败）
+     * @throws Exception
      */
-    public static function encryptWithPublicKey(string $data, string $publicKeyFile = null): ?string
+    public static function encryptWithPublicKey(string $data, string $publicKeyFile = null, int $padding = OPENSSL_PKCS1_PADDING): ?string
     {
         if ($publicKeyFile) {
             self::loadPublicKey($publicKeyFile);
@@ -135,8 +135,17 @@ class Rsa
         if (self::$publicKey === null) {
             return null; // 公钥未加载
         }
+        if (
+            !in_array($padding, [
+                OPENSSL_PKCS1_PADDING,// 默认值：PKCS #1 填充。
+                OPENSSL_SSLV23_PADDING, // ：SSLv23 填充。
+                OPENSSL_NO_PADDING // ：无填充。
+            ])
+        ) {
+            self::handleError("无效的填充参数");
+        }
 
-        openssl_public_encrypt($data, $encrypted, self::$publicKey, OPENSSL_PKCS1_OAEP_PADDING);
+        openssl_public_encrypt($data, $encrypted, self::$publicKey, $padding);
         if ($encrypted === false) {
             return null; // 加密失败
         }
@@ -150,16 +159,27 @@ class Rsa
      *
      * @param string      $encryptedData  加密的数据（Base64编码）
      * @param string|null $privateKeyFile 解密私钥文件路径或PEM格式的字符串
+     * @param int         $padding
      *
      * @return string|null 解密后的数据或null（如果失败）
+     * @throws Exception
      */
-    public static function decryptWithPrivateKey(string $encryptedData, string $privateKeyFile = null): ?string
+    public static function decryptWithPrivateKey(string $encryptedData, string $privateKeyFile = null, int $padding = OPENSSL_PKCS1_PADDING): ?string
     {
         if ($privateKeyFile) {
             self::loadPrivateKey($privateKeyFile);
         }
         if (self::$privateKey === null) {
             return null; // 私钥未加载
+        }
+        if (
+            !in_array($padding, [
+                OPENSSL_PKCS1_PADDING,// 默认值：PKCS #1 填充。
+                OPENSSL_SSLV23_PADDING, // ：SSLv23 填充。
+                OPENSSL_NO_PADDING // ：无填充。
+            ])
+        ) {
+            self::handleError("无效的填充参数");
         }
 
         // 对加密的数据进行Base64解码
@@ -168,7 +188,7 @@ class Rsa
             return null; // 解码失败
         }
 
-        openssl_private_decrypt($encryptedDataDecoded, $decrypted, self::$privateKey, OPENSSL_PKCS1_OAEP_PADDING);
+        openssl_private_decrypt($encryptedDataDecoded, $decrypted, self::$privateKey, $padding);
         if ($decrypted === false) {
             return null; // 解密失败
         }

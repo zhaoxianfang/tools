@@ -13,6 +13,7 @@ namespace zxf\Tools;
 // +---------------------------------------------------------------------
 // | Date       | 2019-07-30
 // +---------------------------------------------------------------------
+use Exception;
 
 /**
  * 功能：图片压缩类（可改变图片大小和压缩质量以及保留宽高压缩）
@@ -137,15 +138,15 @@ class Compressor
      * @param $imagePath
      * @param $compressImageName
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      * 
      */
     public function set($imagePath, $savePath = null)
     {
         try {
             $this->imageInfo = getImageSize($imagePath);
-        } catch (\Exception $e) {
-            throw new \Exception('不是图片类型');
+        } catch (Exception $e) {
+            throw new Exception('不是图片类型');
         }
 
         $filesize              = filesize($imagePath); // 单位bit
@@ -169,20 +170,20 @@ class Compressor
             return $this;
         }
 
-        throw new \Exception(__METHOD__);
+        throw new Exception(__METHOD__);
     }
 
     /**
      * 压缩级别，级别越高 图片越小[图片越小越不清晰]
      * @param int $level
-     * @return ImgCompressor
-     * @throws \Exception
+     * @return Compressor
+     * @throws Exception
      * 
      */
     public function compress($level = 7.5)
     {
         if ($level < 0 || $level > 9) {
-            throw new \Exception(__METHOD__ . 'Compression level: [0, 9]');
+            throw new Exception(__METHOD__ . 'Compression level: [0, 9]');
         }
 
         $this->level = $level;
@@ -210,10 +211,13 @@ class Compressor
 
     /**
      * 等比例缩放
-     * 
+     *
      * @DateTime 2019-03-08
+     *
      * @param string $percent [设置比例 0.1~1][图片压缩比例，0-1 #原图压缩，不缩放，但体积大大降低]
-     * @return   [type]                [description]
+     *
+     * @return Compressor [type]                [description]
+     * @throws Exception
      */
     public function proportion($percent = '1')
     {
@@ -228,7 +232,7 @@ class Compressor
      * @param $width
      * @param $height
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      * 
      */
     public function resize($width, $height)
@@ -238,7 +242,7 @@ class Compressor
         } else if ($width > 0 && $height == 0) {
             $height = ($width / $this->imageInfo['0']) * $this->imageInfo['1'];
         } else if ($width <= 0 && $height <= 0) {
-            throw new \Exception('illegal size!');
+            throw new Exception('illegal size!');
         }
         ini_set('memory_limit','3072M'); // 处理图片过大导致 imagecreatetruecolor 提示空白错误问题
         $image_thump = imagecreatetruecolor($width, $height);
@@ -312,7 +316,7 @@ class Compressor
     /**
      * 获取结果
      *
-     * @return 保存的图片信息或者 直接输出到浏览器[由是否保存本地来决定]
+     * @return bool 保存的图片信息或者 直接输出到浏览器[由是否保存本地来决定]
      * 
      */
     public function get($toBase64String = false)

@@ -233,7 +233,7 @@ class Curl
      * setParams( {'a'=>'str_a'});
      * @throws Exception
      */
-    public function setParams($params, $data_type = 'json')
+    public function setParams($params, $data_type = 'array')
     {
         $this->initCurl();
         //支持json数据数据提交
@@ -295,7 +295,7 @@ class Curl
      * ```
      * @throws Exception
      */
-    public function get($url, $data_type = 'json')
+    public function get(string $url, string $data_type = 'json')
     {
         $this->initCurl();
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false);

@@ -381,7 +381,7 @@ abstract class WeChatBase extends WechatCode
      * @return mixed
      * @throws Exception
      */
-    public function post(string $url = "", array|string $data = [], $urlParams = [])
+    public function post(string $url = "", array|string $data = [], array $urlParams = [])
     {
         $this->url = $this->parseUrl($url, $urlParams);
         $result    = $this->http->setParams($data, 'json')->post($this->url);

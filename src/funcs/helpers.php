@@ -1568,3 +1568,35 @@ if (!function_exists('json_array_to_string')) {
         return is_array($array) ? json_encode($array) : $array;
     }
 }
+
+
+if (!function_exists('zxf_substr')) {
+    /**
+     * 字符串截取
+     */
+    function zxf_substr($string, $start = 0, $length = 5)
+    {
+        $string = str_ireplace(' ', '', $string); // 去除空格
+        if (function_exists('mb_substr')) {
+            $newstr = mb_substr($string, $start, $length, "UTF-8");
+        } elseif (function_exists('iconv_substr')) {
+            $newstr = iconv_substr($string, $start, $length, "UTF-8");
+        } else {
+            for ($i = 0; $i < $length; $i++) {
+                $tempstring = substr($string, $start, 1);
+                if (ord($tempstring) > 127) {
+                    $i++;
+                    if ($i < $length) {
+                        $newstring[] = substr($string, $start, 3);
+                        $string      = substr($string, 3);
+                    }
+                } else {
+                    $newstring[] = substr($string, $start, 1);
+                    $string      = substr($string, 1);
+                }
+            }
+            $newstr = join($newstring);
+        }
+        return $newstr;
+    }
+}

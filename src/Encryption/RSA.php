@@ -25,7 +25,6 @@ class RSA
     private static array $padding = [
         OPENSSL_PKCS1_PADDING,// 默认值：PKCS #1 填充。
         OPENSSL_NO_PADDING, // ：无填充。
-        OPENSSL_PKCS1_PADDING,
         OPENSSL_PKCS1_OAEP_PADDING,
     ];
 

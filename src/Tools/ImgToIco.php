@@ -13,6 +13,7 @@ namespace zxf\Tools;
 // +---------------------------------------------------------------------
 // | Date       | 2022-02-25
 // +---------------------------------------------------------------------
+use Exception;
 
 /**
  * 图片转ico格式
@@ -27,39 +28,7 @@ class ImgToIco
 {
     protected static $instance;
 
-    private $fileType = [
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-    ];
-
-    /**
-     * 图片大小
-     * 例如 32 * 32 大小
-     */
-    private $icoSize = [
-        16, 32, 64, 128,
-    ];
-
-    /**
-     * [
-     *      "0": 879,
-     *      "1": 623,
-     *      "2": 2,
-     *      "3": "width=\"879\" height=\"623\"",
-     *      "bits": 8,
-     *      "channels": 3,
-     *      "mime": "image/jpeg"
-     *      "path": "xxx/jpeg"
-     *      "size": "xxx/jpeg" // 单位bit
-     *  ]
-     */
-    private $imageInfo;
     private $resizeIm;
-
-    public function __construct()
-    {
-    }
 
     /**
      * 初始化
@@ -73,71 +42,112 @@ class ImgToIco
     }
 
     /**
-     * @param $imagePath 图片地址
-     * @param $icoSize 生成图片大小 [16,32,64,128]
-     * @return $this
-     * @throws \Exception
+     * 将PNG、JPEG或GIF图像转换为指定大小的ICO文件。
+     *
+     * @param string $sourceImage 源图像路径
+     * @param int    $size        ICO图标像素大小（例如：16, 32, 64, 128等）
+     *
+     * @throws Exception 如果源图像不存在或不受支持。
      */
-    public function set($imagePath = '', $icoSize = 32)
+    public function set(string $sourceImage = '', int $size = 16)
     {
-        try {
-            $this->imageInfo         = getImageSize($imagePath);
-            $this->imageInfo['path'] = $imagePath;
-            $this->imageInfo['size'] = filesize($imagePath); // 单位bit
-            if ($this->imageInfo['size'] > 204800) {
-                throw new \Exception(__METHOD__ . '你上传的文件过大，最大不能超过200KB');
-            }
-        } catch (\Exception $e) {
-            throw new \Exception(__METHOD__ . '不是图片类型');
+        // 检查源图像文件是否存在
+        if (!file_exists($sourceImage)) {
+            throw new Exception("源图像文件不存在：{$sourceImage}");
         }
-        if (!in_array($this->imageInfo['mime'], $this->fileType)) {
-            throw new \Exception(__METHOD__ . '不支持的文件格式');
+
+        // 获取源图像类型
+        $imageType = exif_imagetype($sourceImage);
+        if ($imageType === false) {
+            throw new Exception("不支持的图像类型：{$sourceImage}");
         }
-        switch ($this->imageInfo['mime']) {
-            case 'image/jpeg':
-                $im = imagecreatefromjpeg($this->imageInfo['path']);
+
+        // 创建GD图像资源
+        $imageResource = null;
+        switch ($imageType) {
+            case IMAGETYPE_PNG:
+                $imageResource = imagecreatefrompng($sourceImage);
                 break;
-            case 'image/png':
-                $im = imagecreatefrompng($this->imageInfo['path']);
+            case IMAGETYPE_JPEG:
+                $imageResource = imagecreatefromjpeg($sourceImage);
                 break;
-            case 'image/gif':
-                $im = imagecreatefromgif($this->imageInfo['path']);
+            case IMAGETYPE_GIF:
+                $imageResource = imagecreatefromgif($sourceImage);
                 break;
             default:
-                ;
+                throw new Exception("不支持的图像类型：{$sourceImage}");
         }
-        $size      = in_array($icoSize, $this->icoSize) ? $icoSize : 32;
-        $resize_im = imagecreatetruecolor($size, $size);
 
-        $bg = imagecolorallocatealpha($resize_im, 0, 0, 0, 127);//拾取一个完全透明的颜色，不要用imagecolorallocate拾色
-        imagefill($resize_im, 0, 0, $bg);//填充
-        imagecopyresampled($resize_im, $im, 0, 0, 0, 0, $size, $size, $this->imageInfo[0], $this->imageInfo[1]);
+        // 创建一个临时图像资源来缩放图像
+        $tempResource = imagecreatetruecolor($size, $size);
 
-        $this->resizeIm = $resize_im;
+        // 将源图像缩放到临时图像资源中
+        imagecopyresampled($tempResource, $imageResource, 0, 0, 0, 0, $size, $size, imagesx($imageResource), imagesy($imageResource));
+
+        // 释放源图像资源内存
+        imagedestroy($imageResource);
+
+        // 创建ICO图像资源
+        $icoResource = imagecreatetruecolor($size, $size);
+
+        // 如果是PNG图像，则保留透明度
+        if ($imageType === IMAGETYPE_PNG) {
+            // 保存透明度信息
+            imagesavealpha($icoResource, true);
+            // 分配一个完全透明的颜色
+            $transparentColor = imagecolorallocatealpha($icoResource, 0, 0, 0, 127);
+            // 用透明颜色填充整个图像
+            imagefill($icoResource, 0, 0, $transparentColor);
+            // 禁用混色模式以保留透明度
+            imagealphablending($icoResource, false);
+        }
+
+        // 将临时图像复制到ICO图像资源中
+        imagecopy($icoResource, $tempResource, 0, 0, 0, 0, $size, $size);
+
+        $this->resizeIm = $icoResource;
+        // 释放临时图像资源内存
+        imagedestroy($tempResource);
+
         return $this;
 
     }
 
     /**
-     * 开始 生成ico图片
-     * @param $savePath 如果需要保存到指定文件夹就填写保存路径，默认直接下载到浏览器
-     * @return false|string|void
+     * 处理 生成的ico图片
+     *
+     * @param bool|string $savePath    如果需要保存到指定文件夹就填写保存路径，默认直接下载到浏览器
+     * @param int         $permissions 文件夹权限
      */
-    public function generate($savePath = false)
+    public function generate(bool|string $savePath = false, int $permissions = 0755)
     {
-        $gd_image_array = array($this->resizeIm);
-        $icon_data      = $this->GD2ICOstring($gd_image_array);
-        $savePath       = $savePath ? ($savePath . DIRECTORY_SEPARATOR . date("Ymdhis") . rand(1, 1000) . "_favicon.ico") : false;
         if ($savePath) {
-            // 保存到指定文件夹
-            return file_put_contents($savePath, $icon_data) ? $savePath : false;
+            // 将图像保存到文件
+            create_dir($savePath, $permissions);
+            $path = $savePath . DIRECTORY_SEPARATOR . date("Ymdhis") . rand(1, 1000) . "_favicon.ico";
+            imagepng($this->resizeIm, $path, 9);
+            // 释放ICO图像资源内存
+            imagedestroy($this->resizeIm);
+            return $savePath;
         } else {
-            // 新建一个临时文件
-            $temp_file = tempnam(sys_get_temp_dir(), 'ICO_');
-            if (file_put_contents($temp_file, $icon_data)) {
-                // 下载到浏览器
-                $this->output_for_download($temp_file, 'favicon.ico');
-            }
+            // // 下载到浏览器
+            // header('Content-Type: image/x-icon');
+            // imagepng($this->resizeIm);
+            // // 释放ICO图像资源内存
+            // imagedestroy($this->resizeIm);
+            // exit;
+
+            // 返回base64
+            // 将缩放后的图像转换为PNG格式的字符串
+            ob_start();
+            imagepng($this->resizeIm);
+            $pngString = ob_get_clean();
+
+            // 释放临时图像资源内存
+            imagedestroy($this->resizeIm);
+
+            // 返回Base64编码的PNG图像字符串
+            return 'data:image/png;base64,' . base64_encode($pngString);
         }
     }
 
@@ -145,7 +155,8 @@ class ImgToIco
      * 下载文件到浏览器
      *
      * @param string $filename 文件路径
-     * @param array $title 输出的文件名
+     * @param array  $title    输出的文件名
+     *
      * @return void
      */
     private function output_for_download($filename, $title)
@@ -162,121 +173,6 @@ class ImgToIco
         fclose($file);
         unlink($filename);
         exit;
-    }
-
-    private function GD2ICOstring(&$gd_image_array)
-    {
-        foreach ($gd_image_array as $key => $gd_image) {
-            $icANDmask          = [];
-            $icANDmask[$key]    = [];
-            $ImageWidths[$key]  = ImageSX($gd_image);
-            $ImageHeights[$key] = ImageSY($gd_image);
-            $bpp[$key]          = ImageIsTrueColor($gd_image) ? 32 : 24;
-            $totalcolors[$key]  = ImageColorsTotal($gd_image);
-
-            $icXOR[$key] = '';
-            for ($y = $ImageHeights[$key] - 1; $y >= 0; $y--) {
-                $icANDmask[$key][$y] = '';
-                for ($x = 0; $x < $ImageWidths[$key]; $x++) {
-                    $argb = $this->GetPixelColor($gd_image, $x, $y);
-                    $a    = round(255 * ((127 - $argb['alpha']) / 127));
-                    $r    = $argb['red'];
-                    $g    = $argb['green'];
-                    $b    = $argb['blue'];
-
-                    if ($bpp[$key] == 32) {
-                        $icXOR[$key] .= chr($b) . chr($g) . chr($r) . chr($a);
-                    } elseif ($bpp[$key] == 24) {
-                        $icXOR[$key] .= chr($b) . chr($g) . chr($r);
-                    }
-
-                    if ($a < 128) {
-                        $icANDmask[$key][$y] .= '1';
-                    } else {
-                        $icANDmask[$key][$y] .= '0';
-                    }
-                }
-                // mask bits are 32-bit aligned per scanline
-                while (strlen($icANDmask[$key][$y]) % 32) {
-                    $icANDmask[$key][$y] .= '0';
-                }
-            }
-            $icAND[$key] = '';
-            foreach ($icANDmask[$key] as $y => $scanlinemaskbits) {
-                for ($i = 0; $i < strlen($scanlinemaskbits); $i += 8) {
-                    $icAND[$key] .= chr(bindec(str_pad(substr($scanlinemaskbits, $i, 8), 8, '0', STR_PAD_LEFT)));
-                }
-            }
-        }
-
-        foreach ($gd_image_array as $key => $gd_image) {
-            $biSizeImage = $ImageWidths[$key] * $ImageHeights[$key] * ($bpp[$key] / 8);
-
-            // BITMAPINFOHEADER - 40 bytes
-            $BitmapInfoHeader[$key] = '';
-            $BitmapInfoHeader[$key] .= "\x28\x00\x00\x00";                              // DWORD  biSize;
-            $BitmapInfoHeader[$key] .= $this->LittleEndian2String($ImageWidths[$key], 4);      // LONG   biWidth;
-            // The biHeight member specifies the combined
-            // height of the XOR and AND masks.
-            $BitmapInfoHeader[$key] .= $this->LittleEndian2String($ImageHeights[$key] * 2, 4); // LONG   biHeight;
-            $BitmapInfoHeader[$key] .= "\x01\x00";                                      // WORD   biPlanes;
-            $BitmapInfoHeader[$key] .= chr($bpp[$key]) . "\x00";                          // wBitCount;
-            $BitmapInfoHeader[$key] .= "\x00\x00\x00\x00";                              // DWORD  biCompression;
-            $BitmapInfoHeader[$key] .= $this->LittleEndian2String($biSizeImage, 4);            // DWORD  biSizeImage;
-            $BitmapInfoHeader[$key] .= "\x00\x00\x00\x00";                              // LONG   biXPelsPerMeter;
-            $BitmapInfoHeader[$key] .= "\x00\x00\x00\x00";                              // LONG   biYPelsPerMeter;
-            $BitmapInfoHeader[$key] .= "\x00\x00\x00\x00";                              // DWORD  biClrUsed;
-            $BitmapInfoHeader[$key] .= "\x00\x00\x00\x00";                              // DWORD  biClrImportant;
-        }
-
-        $icondata = "\x00\x00";                                      // idReserved;   // Reserved (must be 0)
-        $icondata .= "\x01\x00";                                      // idType;       // Resource Type (1 for icons)
-        $icondata .= $this->LittleEndian2String(count($gd_image_array), 2);  // idCount;      // How many images?
-
-        $dwImageOffset = 6 + (count($gd_image_array) * 16);
-        foreach ($gd_image_array as $key => $gd_image) {
-            // ICONDIRENTRY   idEntries[1]; // An entry for each image (idCount of 'em)
-
-            $icondata .= chr($ImageWidths[$key]);                     // bWidth;          // Width, in pixels, of the image
-            $icondata .= chr($ImageHeights[$key]);                    // bHeight;         // Height, in pixels, of the image
-            $icondata .= chr($totalcolors[$key]);                     // bColorCount;     // Number of colors in image (0 if >=8bpp)
-            $icondata .= "\x00";                                      // bReserved;       // Reserved ( must be 0)
-            $icondata .= "\x01\x00";                                  // wPlanes;         // Color Planes
-            $icondata .= chr($bpp[$key]) . "\x00";                    // wBitCount;       // Bits per pixel
-
-            $dwBytesInRes  = 40 + strlen($icXOR[$key]) + strlen($icAND[$key]);
-            $icondata      .= $this->LittleEndian2String($dwBytesInRes, 4);       // dwBytesInRes;    // How many bytes in this resource?
-            $icondata      .= $this->LittleEndian2String($dwImageOffset, 4);      // dwImageOffset;   // Where in the file is this image?
-            $dwImageOffset += strlen($BitmapInfoHeader[$key]);
-            $dwImageOffset += strlen($icXOR[$key]);
-            $dwImageOffset += strlen($icAND[$key]);
-        }
-
-        foreach ($gd_image_array as $key => $gd_image) {
-            $icondata .= $BitmapInfoHeader[$key];
-            $icondata .= $icXOR[$key];
-            $icondata .= $icAND[$key];
-        }
-
-        return $icondata;
-    }
-
-    private function LittleEndian2String($number, $minbytes = 1)
-    {
-        $intstring = '';
-        while ($number > 0) {
-            $intstring = $intstring . chr($number & 255);
-            $number    >>= 8;
-        }
-        return str_pad($intstring, $minbytes, "\x00", STR_PAD_RIGHT);
-    }
-
-    private function GetPixelColor(&$img, $x, $y)
-    {
-        if (!is_resource($img)) {
-            return false;
-        }
-        return ImageColorsForIndex($img, ImageColorAt($img, $x, $y));
     }
 }
 

@@ -55,59 +55,30 @@ class ImgToIco
         if (!file_exists($sourceImage)) {
             throw new Exception("源图像文件不存在：{$sourceImage}");
         }
+        // 创建一个空的ICO图片
+        $ico = imagecreatetruecolor($size, $size);
 
-        // 获取源图像类型
-        $imageType = exif_imagetype($sourceImage);
-        if ($imageType === false) {
-            throw new Exception("不支持的图像类型：{$sourceImage}");
-        }
+        // 开启alpha通道以支持透明度
+        imagesavealpha($ico, true);
+        $trans_color = imagecolorallocatealpha($ico, 0, 0, 0, 127);
+        imagefill($ico, 0, 0, $trans_color);
 
-        // 创建GD图像资源
-        $imageResource = null;
-        switch ($imageType) {
-            case IMAGETYPE_PNG:
-                $imageResource = imagecreatefrompng($sourceImage);
-                break;
-            case IMAGETYPE_JPEG:
-                $imageResource = imagecreatefromjpeg($sourceImage);
-                break;
-            case IMAGETYPE_GIF:
-                $imageResource = imagecreatefromgif($sourceImage);
-                break;
-            default:
-                throw new Exception("不支持的图像类型：{$sourceImage}");
-        }
+        // 获取输入图片信息
+        $imageInfo = getimagesize($sourceImage);
+        $width     = $imageInfo[0];
+        $height    = $imageInfo[1];
 
-        // 创建一个临时图像资源来缩放图像
-        $tempResource = imagecreatetruecolor($size, $size);
+        // 读取输入图片并复制到ICO图片中
+        $inputImage = imagecreatefromstring(file_get_contents($sourceImage));
+        imagecopyresampled($ico, $inputImage, 0, 0, 0, 0, $size, $size, $width, $height);
 
-        // 将源图像缩放到临时图像资源中
-        imagecopyresampled($tempResource, $imageResource, 0, 0, 0, 0, $size, $size, imagesx($imageResource), imagesy($imageResource));
+        // 保存ICO图片
+        $this->resizeIm = $ico;
+        // imagepng($ico, $outputIcoPath);
 
-        // 释放源图像资源内存
-        imagedestroy($imageResource);
-
-        // 创建ICO图像资源
-        $icoResource = imagecreatetruecolor($size, $size);
-
-        // 如果是PNG图像，则保留透明度
-        if ($imageType === IMAGETYPE_PNG) {
-            // 保存透明度信息
-            imagesavealpha($icoResource, true);
-            // 分配一个完全透明的颜色
-            $transparentColor = imagecolorallocatealpha($icoResource, 0, 0, 0, 127);
-            // 用透明颜色填充整个图像
-            imagefill($icoResource, 0, 0, $transparentColor);
-            // 禁用混色模式以保留透明度
-            imagealphablending($icoResource, false);
-        }
-
-        // 将临时图像复制到ICO图像资源中
-        imagecopy($icoResource, $tempResource, 0, 0, 0, 0, $size, $size);
-
-        $this->resizeIm = $icoResource;
-        // 释放临时图像资源内存
-        imagedestroy($tempResource);
+        // 释放内存
+        imagedestroy($ico);
+        imagedestroy($inputImage);
 
         return $this;
 
@@ -131,7 +102,7 @@ class ImgToIco
             return $savePath;
         } else {
             // // 下载到浏览器
-            // header('Content-Type: image/x-icon');
+            // header('Content-Type: image/png');
             // imagepng($this->resizeIm);
             // // 释放ICO图像资源内存
             // imagedestroy($this->resizeIm);

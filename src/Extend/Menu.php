@@ -6,6 +6,8 @@ namespace zxf\Extend;
  * 自动生成后台菜单或Tree树形结构
  *
  * 列表应该包含的字段：id(主键)、pid(父级id)、title(展示字段)、name(调整地址)、weigh(权重)、icon(字体小图标)
+ *
+ * 【针对顶部导航】如果数据项中包含了 path 字段，则会使用前缀拼接 path 作为 跳转链接，否则使用 前缀加id(主键) 字段作为 跳转链接【针对顶部导航】
  */
 // 推荐表结构
 //CREATE TABLE `你的表名` (
@@ -745,7 +747,7 @@ class Menu
         foreach ($arr as $item) {
             $hasChild = (isset($item[$this->childlist]) && !empty($item[$this->childlist])) ? true : false;
 
-            $currentHref = $hasChild ? 'javascript:;' : $this->domain . url($this->urlPrefix . '/' . $item[$this->pk]); // 当前url
+            $currentHref = $hasChild ? 'javascript:;' : $this->domain . url($this->urlPrefix . '/' . (isset($item['path']) ? $item['path'] : $item[$this->pk])); // 当前url
             $currentIcon = !empty($item[$this->icon]) ? $item[$this->icon] : '';                                                  // 当前icon
 
             $liClass          = $hasChild ? 'dropdown' : '';
@@ -778,7 +780,7 @@ class Menu
             $oneLiLinkClass      = $oneHasChild ? 'dropdown-toggle arrow-none' : '';
             $oneLiLinkChildClass = $oneHasChild ? ' role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ' : '';
 
-            $oneCurrentHref = $oneHasChild ? 'javascript:;' : $this->domain . url($this->urlPrefix . '/' . $childlistItem[$this->pk]); // 当前url
+            $oneCurrentHref = $oneHasChild ? 'javascript:;' : $this->domain . url($this->urlPrefix . '/' . (isset($childlistItem['path']) ? $childlistItem['path'] : $childlistItem[$this->pk])); // 当前url
 
             $str .= $oneHasChild ? '<div class="dropdown">' : '';
 
@@ -834,8 +836,7 @@ class Menu
 
             //有无子菜单
             $hasChild = (isset($value[$this->childlist]) && count($value[$this->childlist]) > 0) ? 1 : 0;
-            // $href     = $hasChild ? 'javascript:;' : url($this->urlPrefix . '/' . $value[$this->pk])->suffix('html')->domain(true);
-            $href = $hasChild ? 'javascript:;' : url($this->urlPrefix . '/' . $value[$this->pk]);
+            $href     = $hasChild ? 'javascript:;' : url($this->urlPrefix . '/' . (isset($value['path']) ? $value['path'] : $value[$this->pk]));
 
             if ($hasChild) {
                 $str .= ($level == 1)

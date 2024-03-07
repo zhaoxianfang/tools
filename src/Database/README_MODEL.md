@@ -34,13 +34,13 @@ return [
 ];
 ```
 
-并且可以通过 `config('tools_other.mysql.default')` 函数获取到上面的配置信息，如果你实在没有或者没有使用框架，那么可以使用下面的暴力方法读取mysql连接配置信息
+并且可以通过 `config('tools_database.mysql.default')` 函数获取到上面的配置信息，如果你实在没有或者没有使用框架，那么可以使用下面的暴力方法读取mysql连接配置信息
 
 ***这是一个无奈之举***
 
 ```
 if (!function_exists('config')) {
-   function config($key='tools_other.mysql.default')
+   function config($key='tools_database.mysql.default')
    {
        return [
            'host'     => '127.0.0.1',

@@ -2,6 +2,7 @@
 
 namespace zxf\Database\Driver;
 
+use Closure;
 use Exception;
 use PDO;
 use PDOException;
@@ -17,10 +18,15 @@ class PdoDriver extends DbDriverAbstract
      */
     protected string $driverName = 'mysql';
 
-    // 连接数据库的驱动扩展名称 eg: mysqli、pdo 等
-    protected string $extensionName = 'pdo';
+    /**
+     * 连接数据库的驱动扩展名称 eg: mysql、pgsql 等
+     * 默认使用mysql扩展
+     */
+    protected string $extensionName = 'mysql';
 
-    // 是否将绑定参数转换为问号参数
+    /**
+     * @var bool 是否将绑定参数转换为问号参数
+     */
     protected bool $convertBindParamsToQuestionMarks = false;
 
     /**
@@ -36,17 +42,17 @@ class PdoDriver extends DbDriverAbstract
         try {
             $this->getConfig($connectionName, $options);
             // PDO连接参数
-            $pdo        = new PDO("mysql:host={$this->config['hostname']};port={$this->config['port']};dbname={$this->config['database']};charset=utf8mb4");
-            $pdoIc      = new \ReflectionClass($pdo);
-            $this->conn = $pdoIc->newInstanceArgs($this->config);
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            // eg: $dsn = "mysql:host=localhost;port=3306;dbname=test;charset=utf8mb4";
+            // eg: $dsn = "pgsql:host=localhost;port=5432;dbname=test;user=postgres;password=123456";
+            $dsn        = "{$this->extensionName}:host={$this->config['hostname']};port={$this->config['port']};dbname={$this->config['database']};charset=utf8mb4";
+            $pdoIc      = new \ReflectionClass($this->extensionName);
+            $this->conn = $pdoIc->newInstanceArgs([$dsn, $this->config['username'], $this->config['password']]);
+            $this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION); // 设置错误模式
         } catch (PDOException $e) {
             // 连接失败
             throw new Exception('连接失败：' . $e->getCode() . ' => ' . $e->getMessage());
         }
-
         return $this;
-
     }
 
     /**
@@ -72,7 +78,12 @@ class PdoDriver extends DbDriverAbstract
             $this->error = '查询失败: ' . $this->conn->errorInfo()[2];
             throw new Exception($this->error);
         }
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // 检查查询是否成功
+        if ($stmt->rowCount() > 0) {
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            return [];
+        }
     }
 
     /**
@@ -88,30 +99,60 @@ class PdoDriver extends DbDriverAbstract
     {
         $sql        = empty($sql) ? $this->sqlBuildGenerator->buildQuery() : $sql;
         $bindParams = is_null($bindParams) ? $this->sqlBuildGenerator->getBindings() : $bindParams;
+        try {
+            $stmt = $this->conn->prepare($sql);
+            if ($stmt === false) {
+                $this->error = '预处理失败: ' . $this->conn->errorInfo()[2];
+                throw new Exception($this->error);
+            }
 
-        $stmt = $this->conn->prepare($sql);
-        if ($stmt === false) {
-            $this->error = '预处理失败: ' . $this->conn->errorInfo()[2];
-            throw new Exception($this->error);
-        }
+            // 绑定一个 PHP 变量到预处理语句的一个命名参数，并指定其数据类型。
+            // $stmt->bindParam(':paramName', $variable, PDO::PARAM_INT);
 
-        $result = $stmt->execute($bindParams);
-        if ($result === false) {
-            $this->error = '执行失败: ' . $stmt->errorInfo()[2];
-            throw new Exception($this->error);
+            // 传入绑定参数
+            $stmt->execute($bindParams);
+            return $stmt;
+        } catch (PDOException $e) {
+            // 执行失败
+            throw new Exception('执行失败：' . $e->getCode() . ' => ' . $e->getMessage());
         }
-        return $stmt;
     }
 
     /**
      * 各个驱动实现自己的数据处理
      *
-     * @param mixed $resource 资源
+     * @param mixed $resource $stmt 资源
      *
      * @return array
      */
     public function dataProcessing(mixed $resource): array
     {
+        // $stmt->fetchAll(PDO::FETCH_ASSOC); // 获取结果集中的所有记录，并返回一个关联数组的数组
+        // $stmt->fetch(PDO::FETCH_ASSOC); // 获取结果集中的下一条记录，并返回一个关联数组。如果没有更多记录，返回 false。
+
+        // $stmt->fetchAll(PDO::FETCH_NUM); // 返回索引数组
+        // $stmt->fetchAll(PDO::FETCH_COLUMN, 0); // 获取第一列的所有值
+        // $stmt->fetchColumn(); // 查询只返回单一值（例如 SELECT COUNT(*) FROM table）
+
+        // $stmt->getColumnMeta($columnIndex); // 获取指定列的元数据（如列名、数据类型等）。
+
+        // $stmt->rowCount(); // 获取受影响的行数，对于 SELECT 语句，这通常是结果集中的行数
+
+        // 设置默认的获取结果模式。这会影响后续的 fetch() 或 fetchAll() 调用
+        // $stmt->setFetchMode(PDO::FETCH_ASSOC); // 设置默认获取模式为关联数组
+
+        // $lastInsertId = $stmt->lastInsertId(); // 获取最近一次 INSERT 操作生成的 ID。
+
+
+        // $stmt->closeCursor(); // 关闭预处理语句的游标，释放与之关联的资源，使语句能再次被执行
+
+
+        // 使用 while 循环遍历结果集中的每一行记录。
+        // while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        //     // 在这里处理每一行数据
+        // }
+
+        // 检查 $stmt 是否是一个有效的 PDOStatement 对象。
         if ($resource instanceof PDOStatement) {
             return $resource->fetchAll(PDO::FETCH_ASSOC);
         }
@@ -119,27 +160,23 @@ class PdoDriver extends DbDriverAbstract
     }
 
     /**
-     * 判断是否存在
-     */
-    public function exists()
-    {
-        // TODO: Implement exists() method.
-    }
-
-    /**
-     * 判断是否 不存在
-     */
-    public function doesntExist()
-    {
-        // TODO: Implement doesntExist() method.
-    }
-
-    /**
      * 插入数据
      */
     public function insert(array $data)
     {
-        // TODO: Implement insert() method.
+        $this->sqlBuildGenerator->create($data);
+        $stmt = $this->runSql();
+        return $stmt->rowCount() ?? 0;
+    }
+
+    /**
+     * 插入数据, 返回插入的id
+     */
+    public function insertGetId(array $data)
+    {
+        $this->sqlBuildGenerator->create($data);
+        $this->runSql();
+        return $this->conn->lastInsertId();
     }
 
     /**
@@ -149,7 +186,7 @@ class PdoDriver extends DbDriverAbstract
      */
     public function getError()
     {
-        // TODO: Implement getError() method.
+        return $this->conn->errorCode() . ':' . $this->conn->errorInfo()[2];
     }
 
     /**
@@ -157,7 +194,9 @@ class PdoDriver extends DbDriverAbstract
      */
     public function update(array $data)
     {
-        // TODO: Implement update() method.
+        $this->sqlBuildGenerator->update($data);
+        $stmt = $this->runSql();
+        return $stmt->rowCount() ?? 0;
     }
 
     /**
@@ -181,17 +220,23 @@ class PdoDriver extends DbDriverAbstract
      */
     public function upsert(array $data = [], array $uniqueColumn = [], array $updateColumn = [])
     {
-        // TODO: Implement upsert() method.
+        $this->sqlBuildGenerator->upsert($data, $uniqueColumn, $updateColumn);
+        $stmt = $this->runSql();
+        return $stmt->rowCount() ?? 0;
     }
 
     public function increment(string $column, int $amount = 1)
     {
-        // TODO: Implement increment() method.
+        $this->sqlBuildGenerator->update([$column => "`{$column}` + $amount"]);
+        $stmt = $this->runSql();
+        return $stmt->rowCount() ?? 0;
     }
 
     public function decrement(string $column, int $amount = 1)
     {
-        // TODO: Implement decrement() method.
+        $this->sqlBuildGenerator->update([$column => "`{$column}` - $amount"]);
+        $stmt = $this->runSql();
+        return $stmt->rowCount() ?? 0;
     }
 
     /**
@@ -199,7 +244,9 @@ class PdoDriver extends DbDriverAbstract
      */
     public function delete()
     {
-        // TODO: Implement delete() method.
+        $this->sqlBuildGenerator->delete();
+        $stmt = $this->runSql();
+        return $stmt->rowCount() ?? 0;
     }
 
     /**
@@ -207,39 +254,75 @@ class PdoDriver extends DbDriverAbstract
      */
     public function reset()
     {
-        // TODO: Implement reset() method.
+        $this->sqlBuildGenerator->reset();
+        return $this;
     }
 
     public function each($callback)
     {
-        // TODO: Implement each() method.
+        if ($callback instanceof Closure && is_callable($callback)) {
+            $stmt = $this->runSql();
+
+            // 使用 while 循环遍历结果集中的每一行记录。
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $callback($row);
+            }
+            $stmt->closeCursor();
+            return $this;
+        }
+        throw new Exception("参数必须是闭包函数");
+    }
+
+
+    /**
+     * 聚合查询
+     */
+    public function aggregate(string $aggregate = 'count', string $column = 'id')
+    {
+        $function = strtolower($aggregate);
+        if (!in_array($function, ['count', 'max', 'min', 'avg', 'sum', 'exists', 'doesntExist'])) {
+            throw new Exception("不支持的聚合查询");
+        }
+        $this->sqlBuildGenerator->$function($column);
+        $stmt = $this->runSql();
+
+        // 获取结果集中的单行数据
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // 关闭语句和连接（可选，PHP 会在脚本结束时自动关闭）
+        $stmt->closeCursor();
+
+        // 返回$row中的第一个键的值
+        return array_values($row)[0];
     }
 
     /**
-     * 获取结果数量
+     * 开启事务
      */
-    public function count(string $column = 'id')
+    public function beginTransaction()
     {
-        // TODO: Implement count() method.
+        // 开始事务
+        $this->conn->beginTransaction();
+        return $this;
     }
 
-    public function max(string $column)
+    /**
+     * 提交事务
+     */
+    public function commit()
     {
-        // TODO: Implement max() method.
+        // 提交事务
+        $this->conn->commit();
+        return $this;
     }
 
-    public function min(string $column)
+    /**
+     * 回滚事务
+     */
+    public function rollback()
     {
-        // TODO: Implement min() method.
-    }
-
-    public function avg(string $column)
-    {
-        // TODO: Implement avg() method.
-    }
-
-    public function sum(string $column)
-    {
-        // TODO: Implement sum() method.
+        // 回滚事务
+        $this->conn->rollBack();
+        return $this;
     }
 }

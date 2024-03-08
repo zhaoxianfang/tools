@@ -217,7 +217,7 @@ class TestUser
     }
     
     public function test3(){
-        $user = User::query()->where('status',1)->first();
+        $user = User::query()->where('status',1)->find();
     }
     
     public function test4(){

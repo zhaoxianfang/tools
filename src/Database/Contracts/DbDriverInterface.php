@@ -73,24 +73,19 @@ interface DbDriverInterface
     public function get();
 
     /**
-     * 获取第一条结果
+     * 获取一条结果
      */
-    public function first();
-
-    /**
-     * 判断是否存在
-     */
-    public function exists();
-
-    /**
-     * 判断是否 不存在
-     */
-    public function doesntExist();
+    public function find();
 
     /**
      * 插入数据
      */
     public function insert(array $data);
+
+    /**
+     * 插入数据, 返回插入的id
+     */
+    public function insertGetId(array $data);
 
     /**
      * 获取错误信息
@@ -125,11 +120,14 @@ interface DbDriverInterface
      */
     public function upsert(array $data = [], array $uniqueColumn = [], array $updateColumn = []);
 
-
-    // 添加更新自增操作
+    /**
+     * 添加更新自增操作
+     */
     public function increment(string $column, int $amount = 1);
 
-    // 添加更新自减操作
+    /**
+     * 添加更新自减操作
+     */
     public function decrement(string $column, int $amount = 1);
 
     /**
@@ -142,23 +140,72 @@ interface DbDriverInterface
      */
     public function reset();
 
-    // 遍历查询结果的方法
+    /**
+     * 遍历查询结果
+     */
     public function each($callback);
 
     /**
-     * 获取结果数量
+     * 聚合查询
+     */
+    public function aggregate(string $aggregate = 'count', string $column = 'id');
+
+    /**
+     * 聚合查询 - 获取结果数量
      */
     public function count(string $column = 'id');
 
-    // 添加取最大值的方法
+    /**
+     * 聚合查询 - 最大值
+     */
     public function max(string $column);
 
-    // 添加取最小值的方法
+    /**
+     * 聚合查询 - 最小值
+     */
     public function min(string $column);
 
-    // 添加取平均值的方法
+    /**
+     * 聚合查询 - 平均值
+     */
     public function avg(string $column);
 
-    // 添加取和的方法
+    /**
+     * 聚合查询 - 求和
+     */
     public function sum(string $column);
+
+    /**
+     * 判断是否存在
+     */
+    public function exists();
+
+    /**
+     * 判断是否 不存在
+     */
+    public function doesntExist();
+
+    // ================================================
+    // 以下是事务操作
+    // ================================================
+
+    /**
+     * 开启事务
+     */
+    public function beginTransaction();
+
+    /**
+     * 提交事务
+     */
+    public function commit();
+
+    /**
+     * 回滚事务
+     */
+    public function rollback();
+
+    /**
+     * 执行事务
+     */
+    public function transaction($callback);
 }

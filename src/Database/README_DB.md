@@ -222,7 +222,7 @@ $db->fullJoin('table1 AS t',function($query){
 // 查询满足条件的全部数据
 $db->get()
 // 第一条数据
-$db->first()
+$db->find()
 // 是否存在
 $db->exists()
 // 是否不存在

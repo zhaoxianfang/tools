@@ -2,6 +2,7 @@
 
 namespace zxf\Database\Contracts;
 
+use Closure;
 use zxf\Database\Generator\SqlBuildGenerator;
 use Exception;
 
@@ -14,22 +15,34 @@ abstract class DbDriverAbstract implements DbDriverInterface
      */
     protected string $driverName = 'mysql';
 
-    // 连接数据库的驱动扩展名称 eg: mysqli、pdo 等
+    /**
+     * 连接数据库的驱动扩展名称 eg: mysqli、pdo 等
+     */
     protected string $extensionName = 'mysqli';
 
-    // 是否将绑定参数转换为问号参数
+    /**
+     * 是否将绑定参数转换为问号参数
+     */
     protected bool $convertBindParamsToQuestionMarks = true;
 
-    // sql 生成器
+    /**
+     * sql 生成器
+     */
     protected SqlBuildGenerator $sqlBuildGenerator;
 
-    // database 连接信息
+    /**
+     * database 连接信息
+     */
     protected $conn;
 
-    // 错误信息
+    /**
+     * 错误信息
+     */
     protected string $error = '';
 
-    // 连接配置信息
+    /**
+     * 连接配置信息
+     */
     protected array $config = [];
 
     /**
@@ -72,7 +85,7 @@ abstract class DbDriverAbstract implements DbDriverInterface
     protected function getConfig(string $connectionName = 'default', array $options = []): array
     {
 
-        if (empty($options) || empty($options['host']) || empty($options['dbname']) || empty($options['username']) || !isset($options['password'])) {
+        if (empty($options) || empty($options['host']) || !isset($options['dbname']) || !isset($options['username']) || !isset($options['password'])) {
             if (!function_exists('config') || empty($options = config('tools_database.' . $this->driverName . '.' . $connectionName))) {
                 throw new Exception('Database配置有误');
             }
@@ -124,12 +137,79 @@ abstract class DbDriverAbstract implements DbDriverInterface
     }
 
     /**
-     * 获取第一条结果
+     * 获取一条结果
      */
-    public function first()
+    public function find()
     {
         $this->sqlBuildGenerator->limit(1);
         $result = $this->runSql($this->sqlBuildGenerator->buildQuery(), $this->sqlBuildGenerator->getBindings());
         return $this->dataProcessing($result);
+    }
+
+    /**
+     * 判断是否存在
+     */
+    public function exists()
+    {
+        return (bool)$this->aggregate('exists', null);
+    }
+
+    /**
+     * 判断是否 不存在
+     */
+    public function doesntExist()
+    {
+        return (bool)$this->aggregate('doesntExist', null);
+    }
+
+    /**
+     * 获取结果数量
+     */
+    public function count(string $column = 'id')
+    {
+        return $this->aggregate('count', $column);
+    }
+
+    public function max(string $column)
+    {
+        return $this->aggregate('max', $column);
+    }
+
+    public function min(string $column)
+    {
+        return $this->aggregate('min', $column);
+    }
+
+    public function avg(string $column)
+    {
+        return $this->aggregate('avg', $column);
+    }
+
+    public function sum(string $column)
+    {
+        return $this->aggregate('sum', $column);
+    }
+
+    /**
+     * 执行事务
+     */
+    public function transaction($callback)
+    {
+        if ($callback instanceof Closure && is_callable($callback)) {
+            // 开始事务
+            $this->beginTransaction();
+            try {
+                // 执行事务
+                $callback($this);
+                // 提交事务
+                $this->commit();
+            } catch (Exception $e) {
+                // 回滚事务
+                $this->rollback();
+                throw $e;
+            }
+        } else {
+            throw new Exception("参数必须是闭包函数");
+        }
     }
 }

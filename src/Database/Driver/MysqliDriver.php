@@ -305,46 +305,34 @@ class MysqliDriver extends DbDriverAbstract
     }
 
     /**
-     * 判断是否存在
+     * 开启事务
      */
-    public function exists()
+    public function beginTransaction()
     {
-        return (bool)$this->aggregate('exists', null);
+        $this->conn->autocommit(false);
+        // return $this->conn->begin_transaction();
+        return $this;
     }
 
     /**
-     * 判断是否 不存在
+     * 提交事务
      */
-    public function doesntExist()
+    public function commit()
     {
-        return (bool)$this->aggregate('doesntExist', null);
+        $this->conn->commit();
+        // 恢复自动提交
+        $this->conn->autocommit(true);
+        return $this;
     }
 
     /**
-     * 获取结果数量
+     * 回滚事务
      */
-    public function count(string $column = 'id')
+    public function rollback()
     {
-        return $this->aggregate('count', $column);
-    }
-
-    public function max(string $column)
-    {
-        return $this->aggregate('max', $column);
-    }
-
-    public function min(string $column)
-    {
-        return $this->aggregate('min', $column);
-    }
-
-    public function avg(string $column)
-    {
-        return $this->aggregate('avg', $column);
-    }
-
-    public function sum(string $column)
-    {
-        return $this->aggregate('sum', $column);
+        $this->conn->rollback();
+        // 恢复自动提交
+        $this->conn->autocommit(true);
+        return $this;
     }
 }

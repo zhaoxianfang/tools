@@ -77,7 +77,7 @@ class SqlBuildGenerator
      *
      * @return $this
      */
-    public function select(array $fields): self
+    public function select(array $fields = ['*']): self
     {
         $this->selectFields = empty($this->selectFields) ? $fields : array_merge($this->selectFields, $fields);
         return $this;

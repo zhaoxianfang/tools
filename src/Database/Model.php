@@ -14,45 +14,30 @@ class Model
      *
      * @var Db
      */
-    private Db $db;
+    private static Db $db;
 
     /**
      * 表的主键id
      *
      * @var string
      */
-    protected $primaryKey = 'id';
+    protected string $primaryKey = 'id';
 
     /**
      * 表名称，如果不设置则默认为类名的下划线形式
      *
      * @var string
      */
-    protected $dbTable;
+    protected string $dbTable;
 
     /**
-     * 查询到的数据集合
+     * 'get', 'find', 'query' 等方法的返回数据
      */
-    protected DataArray $item;
+    protected mixed $resData = [];
 
-    /**
-     * 用户更新或者插入的数据
-     */
-    protected array $data = [];
-
-    /**
-     * 数据库连接名称，如果不设置则默认为default
-     *
-     * @var string
-     */
-    public $connectionName = 'default';
-
-    public function __construct($data = null)
+    public function __construct()
     {
-        $this->db = Db::newQuery()->connect($this->connectionName)->table($this->getTableName());
-        if ($data) {
-            $this->data = $data;
-        }
+        self::$db = Db::instance()->table($this->getTableName());
     }
 
     // 获取表名
@@ -65,7 +50,7 @@ class Model
     }
 
     // 获取模型类名(驼峰转下划线)
-    public function underlineConvert(string $str): string
+    private function underlineConvert(string $str): string
     {
         return strtolower(preg_replace('/(?<=[a-z])([A-Z])/', '_$1', $str));
     }
@@ -76,184 +61,54 @@ class Model
     }
 
     /**
-     * 填充数据
-     */
-    public function fill(array $data): static
-    {
-        $this->data = $data;
-        return $this;
-    }
-
-    // 刷新数据
-    public function refresh(): static
-    {
-        !empty($id = $this->getPrimaryKeyValue()) && $this->find($id);
-        return $this;
-    }
-
-    /**
-     * 更新或者插入 单行数据
-     */
-    public function save(array $data = []): static
-    {
-        $data && $this->fill($data);
-        if ($id = $this->getPrimaryKeyValue()) {
-            $this->db->update($this->data);
-        } else {
-            $id = $this->db->insertGetId($this->data);
-        }
-        $this->find($id);
-        $this->data = [];
-        return $this;
-    }
-
-    /**
-     * 获取主键字段对应的值
-     */
-    private function getPrimaryKeyValue()
-    {
-        return !empty($this->item->toArray()) ? $this->item[$this->primaryKey] : null;
-    }
-
-    /**
-     * 插入数据
-     */
-    public function create(array $data = []): static
-    {
-        $data && $this->fill($data);
-        $id = $this->db->insertGetId($this->data);
-        $this->find($id);
-        $this->data = [];
-        return $this;
-    }
-
-    /**
-     * 插入数据 ,失败则抛出异常
-     */
-    public function createOrFail(array $data = [])
-    {
-        $data && $this->fill($data);
-        $id = $this->db->insertGetId($this->data);
-        if ($id) {
-            $this->find($id);
-        } else {
-            throw new Exception('操作失败');
-        }
-        $this->data = [];
-        return $this;
-    }
-
-    /**
-     * 更新数据
-     */
-    public function update(array $data = [])
-    {
-        $data && $this->fill($data);
-        $this->db->update($this->data);
-        if ($id = $this->getPrimaryKeyValue()) {
-            $this->find($id);
-        }
-        $this->data = [];
-        return $this;
-    }
-
-    /**
-     * 查询一条数据
-     */
-    public function find($id)
-    {
-        $res = $this->db->where($this->primaryKey, $id)->first();
-        if ($res) {
-            $this->setData($res, false);
-        }
-        $this->data = [];
-        return $this;
-    }
-
-    public function first()
-    {
-        $res = $this->db->first();
-        if ($res) {
-            $this->setData($res, false);
-        }
-        $this->data = [];
-        return $this;
-    }
-
-    /**
-     * 查询一条数据 ,不存在则抛出异常
-     */
-    public function findOrFail($id)
-    {
-        $res = $this->db->where($this->primaryKey, $id)->first();
-        if ($res) {
-            $this->setData($res, false);
-        } else {
-            throw new Exception('数据不存在:' . $id);
-        }
-        $this->data = [];
-        return $this;
-    }
-
-    public function get()
-    {
-        $res        = $this->db->get();
-        $this->data = [];
-        if ($res) {
-            return $this->setData($res, true);
-        }
-        return null;
-    }
-
-    /**
      * 一对多关联
      *          例如：一个用户有多个文章
-     *          Model::hasMany('被关联的表名', '被关联表的外键', 'Model主键',  '查询字段')->...其他Db支持的查询条件;
+     *          Model::hasMany('被关联的表名', '被关联表用来关联本表的外键', '当前Model主键',  '查询字段')->...其他Db支持的查询条件;
      *          User::hasMany('articles', 'user_id', 'id',  'id,title,content')->get();
      *          User::hasMany(Article::class, 'user_id', 'id',  'id,title,content')->where(...)->get();
      *
-     * @param        $table
-     * @param string $foreignKey 被关联表的外键
-     * @param string $localKey   当前表的主键
-     * @param string $field
+     * @param Model|string $table
+     * @param string       $foreignKey 被关联表用来关联本表的外键
+     * @param string       $localKey   当前表的主键
+     * @param string       $field
      *
      * @return Db
-     * @throws Exception
      */
-    public function hasMany($table, $foreignKey, $localKey, $field): Db
+    public function hasMany(Model|string $table, string $foreignKey = 'target_id', string $localKey = 'id', string $field = '*'): Db
     {
-        $localTable = $this->getTableName();
-        $localKey   = !empty($localKey) ? $localKey : (Db::newQuery())->connect($this->connectionName)->table($localTable)->getPrimaryKey()[0];
-        $field      = empty($field) ? '*' : $field;
-
-        $tableName = is_string($table) ? $table : ($table instanceof Model ? $table->getTableName() : '');
-
-        return $this->db->table($tableName)->select($field)->where("`{$tableName}`.`{$foreignKey}` =  `{$localTable}`.`{$localKey}`");
+        $field = empty($field) ? '*' : $field;
+        // 被关联表的表名(目标表名)
+        $targetTableName = is_string($table) ? $table : ($table instanceof Model ? $table->getTableName() : '');
+        // 查找被关联表的数据
+        return self::$db->table($targetTableName)
+            ->select(explode(',', $field))
+            ->where("`{$targetTableName}`.`{$foreignKey}`", "`{$this->getTableName()}`.`{$localKey}`")
+            ->get();
     }
 
     /**
      * 一个模型从属于另一个模型，例如一个用户从属于一个国家
-     *          Model::hasMany('被关联的表名', '被关联表的外键', 'Model主键',  '查询字段');
+     *          Model::hasMany('被关联的表名', '被关联表的外键', '当前Model主键',  '查询字段');
      *          User::hasMany('country', 'country_id', 'id',  'id,name');
      *          User::hasMany(Country::class, 'country_id', 'id',  'id,name');
      *
-     * @param        $table
-     * @param        $foreignKey
-     * @param string $ownerKey
-     * @param string $field
+     * @param Model|string $table
+     * @param string       $foreignKey 本模型关联被关联表的外键
+     * @param string       $ownerKey   被关联表的主键
+     * @param string       $field
      *
      * @return Db
-     * @throws Exception
      */
-    public function belongsTo($table, $foreignKey, $ownerKey, $field)
+    public function belongsTo(Model|string $table, string $foreignKey = 'target_id', string $ownerKey = 'id', string $field = '*')
     {
-        $localTable = $this->getTableName();
-        $ownerKey   = !empty($ownerKey) ? $ownerKey : (Db::newQuery())->connect($this->connectionName)->table($localTable)->getPrimaryKey()[0];
-        $field      = empty($field) ? '*' : $field;
+        $field = empty($field) ? '*' : $field;
+        // 被关联表的表名(目标表名)
+        $targetTableName = is_string($table) ? $table : ($table instanceof Model ? $table->getTableName() : '');
 
-        $tableName = is_string($table) ? $table : ($table instanceof Model ? $table->getTableName() : '');
-
-        return $this->db->table($tableName)->select($field)->where("`{$localTable}`.`{$foreignKey}` =  `{$tableName}`.`{$ownerKey}`")->first();
+        return self::$db->table($targetTableName)
+            ->select(explode(',', $field))
+            ->where("`{$this->getTableName()}`.`{$foreignKey}`", "`{$targetTableName}`.`{$ownerKey}`")
+            ->find();
     }
 
     /**
@@ -262,92 +117,68 @@ class Model
      *       User::hasOne('id_card', 'user_id', 'id,name');
      *       User::hasOne(IdCard::class, 'user_id', 'id',  'id,name');
      *
-     * @param        $table
-     * @param        $foreignKey
-     * @param string $field
+     * @param Model|string $table
+     * @param string       $foreignKey 被关联表 用来关联本表的外键
+     * @param string       $localKey   当前表的主键
+     * @param string       $field
      *
      * @return mixed
      */
-    public function hasOne($table, $foreignKey, $field = '*')
+    public function hasOne(Model|string $table, string $foreignKey = 'target_id', string $localKey = 'id', string $field = '*')
     {
-        $tableName = is_string($table) ? $table : ($table instanceof Model ? $table->getTableName() : '');
-        return $this->db->table($tableName)->select($field)->where("{$tableName}.{$foreignKey}", $this->getPrimaryKeyValue())->first();
+        $field = empty($field) ? '*' : $field;
+        // 被关联表的表名(目标表名)
+        $targetTableName = is_string($table) ? $table : ($table instanceof Model ? $table->getTableName() : '');
+        return self::$db->table($targetTableName)
+            ->select(explode(',', $field))
+            ->where("{$targetTableName}.{$foreignKey}", "`{$this->getTableName()}`.`{$localKey}`")
+            ->find();
     }
 
     /**
      * 远程一对多关联,例如一个用户有多个文章，文章有多个评论，用户可以通过文章获取评论
      *
-     * @param mixed  $table             例如 评论表（目标表）
-     * @param mixed  $throughTable      例如 文章表（中间表）
-     * @param string $ownerForeignKey   例如 用户表在文章表的外键 user_id
-     * @param string $throughForeignKey 例如 文章表在评论表的外键 article_id
-     * @param string $ownerKey          例如 用户表的主键 id
-     * @param string $throughKey        例如 文章表的主键 id
-     * @param string $field             例如 要查询的评论表的字段
+     * @param Model|string $table            例如 评论表（目标表）
+     * @param Model|string $middleTable      例如 文章表（中间表）
+     * @param string       $middleForeignKey 例如 用户表在文章表的外键 user_id | 中间表关联当前表的外键
+     * @param string       $targetForeignKey 例如 文章表在评论表的外键 article_id | 目标表关联中间表的外键
+     * @param string       $ownerKey         例如 用户表的主键 id | 当前表的主键
+     * @param string       $middleKey        例如 文章表的主键 id | 中间表的主键
+     * @param string       $field            例如 要查询的评论表的字段
      *
      * @return mixed
      * @throws Exception
      */
-    public function belongsToMany($table, $throughTable, $ownerForeignKey, $throughForeignKey, $ownerKey = "id", $throughKey = "id", $field = '*')
+    public function belongsToMany(Model|string $table, Model|string $middleTable, string $middleForeignKey = 'user_id', string $targetForeignKey = 'article_id', string $ownerKey = "id", string $middleKey = "id", string $field = '*')
     {
-        $ownerTableName  = $this->getTableName();
-        $aimTableName    = is_string($table) ? $table : ($table instanceof Model ? $table->getTableName() : ''); // 查询的目标表名
-        $middleTableName = is_string($throughTable) ? $throughTable : ($throughTable instanceof Model ? $throughTable->getTableName() : ''); // 关联的中间表名
+        $field = empty($field) ? '*' : $field;
 
-        return $this->db->table($aimTableName)
-            ->select("{$aimTableName}.*")
-            ->join($middleTableName, "{$aimTableName}.{$throughForeignKey} = {$middleTableName}.{$throughKey}")
-            ->join($ownerTableName, "{$ownerTableName}.{$ownerKey} = {$middleTableName}.{$ownerForeignKey}")
-            ->where("{$middleTableName}.{$ownerForeignKey}", $this->getPrimaryKeyValue())
-            ;
-    }
+        // 最终查询的目标表名
+        $targetTableName = is_string($table) ? $table : ($table instanceof Model ? $table->getTableName() : ''); // 查询的目标表名
+        // 中间表名
+        $middleTableName = is_string($middleTable) ? $middleTable : ($middleTable instanceof Model ? $middleTable->getTableName() : ''); // 关联的中间表名
 
-    public function setData($data = [], $multi = false)
-    {
-        if ($multi) {
-            $models = [];
-            foreach ($data as $item) {
-                $model = self::query();
-                $model->setData($item, false);
-                $models[] = $model;
-            }
-            return $models;
-        } else {
-            $this->item = new DataArray($data);
-            return $this;
+        // $field 的每一项都加上表名$aimTableName
+        $fields = explode(',', $field);
+        foreach ($fields as $key => $value) {
+            $fields[$key] = "{$targetTableName}.{$value}";
         }
-    }
-
-    public function toArray()
-    {
-        return $this->item->toArray();
-    }
-
-    public function __get($name)
-    {
-        if (property_exists($this, 'hidden') && in_array($name, $this->hidden)) {
-            return null;
-        }
-
-        if (isset($this->item[$name])) {
-            return $this->item[$name];
-        }
-
-        return null;
+        return self::$db->table($targetTableName)
+            ->select($fields)
+            ->join($middleTableName, "{$targetTableName}.{$targetForeignKey} = {$middleTableName}.{$middleKey}")
+            ->join($this->getTableName(), "{$this->getTableName()}.{$ownerKey} = {$middleTableName}.{$middleForeignKey}")
+            ->where("{$middleTableName}.{$middleForeignKey}", $this->getPrimaryKeyValue())
+            ->get();
     }
 
     /**
-     * 修改值
+     * 获取当前查询出来的记录的主键对应的值
      */
-    public function __set($name, $value)
+    private function getPrimaryKeyValue()
     {
-        if (property_exists($this, 'hidden') && in_array($name, $this->hidden)) {
-            return $this;
-        }
 
-        $this->item[$name] = $value;
-        return $this;
     }
+
 
     /**
      * Catches calls to undefined methods.
@@ -359,13 +190,15 @@ class Model
      *
      * @return mixed
      */
-    public function __call($method, $arg)
+    public function __call(string $method, mixed $arg)
     {
-        if (method_exists($this, $method)) {
-            return call_user_func_array(array($this, $method), $arg);
+        $this->resData = call_user_func_array(array(self::$db, $method), ...$arg);
+        if (is_array($this->resData)) {
+            $this->resData = new DataArray($this->resData);
+            // 实现遍历 $this->resData 时返回的是 Model 对象
+            $this->resData->setModel($this);
         }
-
-        return call_user_func_array(array($this->db, $method), $arg);
+        return $this->resData;
     }
 
     /**
@@ -378,16 +211,11 @@ class Model
      *
      * @return mixed
      */
-    public static function __callStatic($method, $arg)
+    public static function __callStatic(string $method, mixed $arg)
     {
-        $class = self::class;
-        if (method_exists($class, $method)) {
-            return call_user_func_array(array($class, $method), ...$arg);
+        if (empty(self::$db)) {
+            self::$db = Db::instance()->table((new static())->getTableName());
         }
-
-        if (empty($class->db)) {
-            $class = self::query();
-        }
-        return call_user_func_array(array($class->db, $method), ...$arg);
+        return call_user_func_array(array(self::$db, $method), ...$arg);
     }
 }

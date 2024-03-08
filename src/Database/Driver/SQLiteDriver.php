@@ -6,17 +6,17 @@ use Exception;
 use PDO;
 use PDOException;
 
-class SqlServerDriver extends PdoDriver
+class SQLiteDriver extends PdoDriver
 {
     /**
      * 需要在 tools_database 中配置的数据库连接名称
      *
      * @var string 数据库驱动名称 支持: mysql、pgsql、sqlite、sqlserver、oracle
      */
-    protected string $driverName = 'sqlserver';
+    protected string $driverName = 'sqlite';
 
     // 连接数据库的驱动扩展名称 eg: mysqli、pdo 等
-    protected string $extensionName = 'sqlsrv';
+    protected string $extensionName = 'sqlite';
 
     /**
      * 配置 驱动连接数据库的实现
@@ -31,14 +31,15 @@ class SqlServerDriver extends PdoDriver
         try {
             $this->getConfig($connectionName, $options);
 
-            // 构建DSN字符串
-            $dsn = "sqlsrv:Server={$this->config['host']},{$this->config['port']};Database={$this->config['database']}";
+            // 其他连接参数
+            $connectionOptions = [
+                PDO::ATTR_TIMEOUT => 10, // 设置超时时间为10秒
+            ];
 
             // PDO连接参数
             // 连接SQLite数据库，传递连接参数
-            $this->conn = new PDO($dsn,$this->config['username'], $this->config['password']);
-            // 设置字符集
-            $this->conn->exec("SET NAMES utf8mb4");
+            $this->conn = new PDO("sqlite:{$this->config['host']}", null, null, $connectionOptions);
+            $this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION); // 设置错误模式
         } catch (PDOException $e) {
             // 连接失败
             throw new Exception('连接失败：' . $e->getCode() . ' => ' . $e->getMessage());

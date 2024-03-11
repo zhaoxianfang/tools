@@ -45,7 +45,7 @@ class PdoDriver extends DbDriverAbstract
             // eg: $dsn = "mysql:host=localhost;port=3306;dbname=test;charset=utf8mb4";
             // eg: $dsn = "pgsql:host=localhost;port=5432;dbname=test;user=postgres;password=123456";
             $dsn        = "{$this->extensionName}:host={$this->config['hostname']};port={$this->config['port']};dbname={$this->config['database']};charset=utf8mb4";
-            $pdoIc      = new \ReflectionClass($this->extensionName);
+            $pdoIc      = new \ReflectionClass('pdo');
             $this->conn = $pdoIc->newInstanceArgs([$dsn, $this->config['username'], $this->config['password']]);
             $this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION); // 设置错误模式
         } catch (PDOException $e) {

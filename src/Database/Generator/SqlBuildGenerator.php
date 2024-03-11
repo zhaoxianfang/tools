@@ -5,6 +5,7 @@ namespace zxf\Database\Generator;
 use Closure;
 use InvalidArgumentException;
 use JetBrains\PhpStorm\NoReturn;
+use zxf\Database\Contracts\DbDriverInterface;
 
 /**
  * 数据库查询构建器
@@ -54,6 +55,20 @@ class SqlBuildGenerator
     // sql 生成器 buildQuery() 操作之后的sql语句，如果存在，则不再重新构建
     private string $buildAfterSql = '';
 
+    private static DbDriverInterface $dbDriver;
+
+    /**
+     * 设置在调用不存在的类方法时去调用的类
+     *
+     * @param DbDriverInterface $dbDriver
+     *
+     * @return $this
+     */
+    public function setNotFoundCallClass(DbDriverInterface $dbDriver): self
+    {
+        self::$dbDriver = $dbDriver;
+        return $this;
+    }
 
     /**
      * 设置主查询表名和表别名
@@ -632,7 +647,7 @@ class SqlBuildGenerator
     private function buildSelectQuery(): string
     {
         // 构建 SELECT 查询语句
-        $query = "SELECT " . implode(', ', $this->selectFields) . " FROM $this->tableName" . (empty($this->tableAlias) ? '' : " AS $this->tableAlias");
+        $query = "SELECT " . implode(', ', (!empty($this->selectFields) ? $this->selectFields : ['*'])) . " FROM $this->tableName" . (empty($this->tableAlias) ? '' : " AS $this->tableAlias");
 
         // 构建 JOIN 子句
         if (!empty($this->joinClauses)) {
@@ -1094,6 +1109,15 @@ class SqlBuildGenerator
     // ==================================================================
 
     /**
+     * 填充数据
+     */
+    public function fill(array $data): self
+    {
+        $this->changeData = $data;
+        return $this;
+    }
+
+    /**
      * 设置插入表名和字段
      *
      * @param array $columns           插入的字段数组
@@ -1354,12 +1378,33 @@ class SqlBuildGenerator
     #[NoReturn]
     public function dd(): void
     {
+        echo '<pre>';
         var_dump([
             'sql'      => $this->toSql(),
             'building' => $this->buildQuery(),
             'bindings' => $this->getBindings(),
         ]);
         exit(1);
+    }
+
+    /**
+     * 调用一个方法
+     */
+    public function __call($method, $arg)
+    {
+        if (!empty(self::$dbDriver)) {
+            return call_user_func_array(array(self::$dbDriver, $method), $arg);
+        }
+    }
+
+    /**
+     * 调用静态方法
+     */
+    public static function __callStatic(string $method, $arg)
+    {
+        if (!empty(self::$dbDriver)) {
+            return call_user_func_array(array(self::$dbDriver, $method), $arg);
+        }
     }
 
 }

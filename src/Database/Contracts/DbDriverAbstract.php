@@ -5,9 +5,11 @@ namespace zxf\Database\Contracts;
 use Closure;
 use zxf\Database\Generator\SqlBuildGenerator;
 use Exception;
+use zxf\Database\Model;
 
 abstract class DbDriverAbstract implements DbDriverInterface
 {
+
     /**
      * 需要在 tools_database 中配置的数据库连接名称
      *
@@ -45,6 +47,8 @@ abstract class DbDriverAbstract implements DbDriverInterface
      */
     protected array $config = [];
 
+    private static Model $model;
+
     /**
      * @param string $connectionName 连接名称
      * @param array  $options        连接参数, 包含 host、dbname、username、password 等
@@ -53,14 +57,19 @@ abstract class DbDriverAbstract implements DbDriverInterface
      */
     public function __construct(string $connectionName = 'default', array $options = [])
     {
-        if (empty($this->extensionName) || !extension_loaded($this->extensionName)) {
-            throw new Exception('不支持的扩展:' . ($this->extensionName ?: '未知扩展'));
+        // 检查扩展是否加载 mysql 使用的是 pdo 扩展实现
+        $extensionName = $this->extensionName == 'mysql' ? 'pdo' : $this->extensionName;
+        if (empty($this->extensionName) || !extension_loaded($extensionName)) {
+            throw new Exception('不支持的扩展:' . ($extensionName ?: '未知扩展'));
         }
 
         $this->sqlBuildGenerator = new SqlBuildGenerator();
         $this->sqlBuildGenerator->setConvertBindParamsToQuestionMarks($this->convertBindParamsToQuestionMarks);
 
         $this->connect($connectionName, $options);
+
+        $this->sqlBuildGenerator->setNotFoundCallClass($this);
+
     }
 
     /**
@@ -71,6 +80,19 @@ abstract class DbDriverAbstract implements DbDriverInterface
     public static function newQuery()
     {
         return new static();
+    }
+
+    /**
+     * 设置调用的模型，仅用于 模型调用
+     *
+     * @param Model $model
+     *
+     * @return $this
+     */
+    public function setModal(Model $model): self
+    {
+        self::$model = $model;
+        return $this;
     }
 
     /**
@@ -109,16 +131,16 @@ abstract class DbDriverAbstract implements DbDriverInterface
     public function __call($method, $arg)
     {
         if (method_exists($this, $method)) {
-            return call_user_func_array(array($this, $method), ...$arg);
+            return call_user_func_array(array($this, $method), $arg);
         }
 
-        return call_user_func_array(array($this->sqlBuildGenerator, $method), ...$arg);
+        return call_user_func_array(array($this->sqlBuildGenerator, $method), $arg);
     }
 
     /**
      * 调用静态方法
      */
-    public static function __callStatic(string $method, ...$arg)
+    public static function __callStatic(string $method, $arg)
     {
         throw new Exception('不支持的静态方法:' . $method);
     }
@@ -128,12 +150,26 @@ abstract class DbDriverAbstract implements DbDriverInterface
     // ================================================
 
     /**
+     * 填充插入和普通更新的数据
+     */
+    public function fill(array $data)
+    {
+        $this->sqlBuildGenerator->fill($data);
+        return $this;
+    }
+
+    /**
      * 获取所有结果
      */
     public function get()
     {
         $result = $this->runSql($this->sqlBuildGenerator->buildQuery(), $this->sqlBuildGenerator->getBindings());
-        return $this->dataProcessing($result);
+        $data   = $this->dataProcessing($result);
+        if (isset(self::$model) && !empty(self::$model)) {
+            return self::$model->collection($data);
+        }
+        return $data;
+
     }
 
     /**
@@ -143,7 +179,11 @@ abstract class DbDriverAbstract implements DbDriverInterface
     {
         $this->sqlBuildGenerator->limit(1);
         $result = $this->runSql($this->sqlBuildGenerator->buildQuery(), $this->sqlBuildGenerator->getBindings());
-        return $this->dataProcessing($result);
+        $data   = $this->dataProcessing($result);
+        if (isset(self::$model) && !empty(self::$model)) {
+            return self::$model->collection($data);
+        }
+        return $data;
     }
 
     /**

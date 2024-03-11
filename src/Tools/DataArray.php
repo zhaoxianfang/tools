@@ -3,9 +3,9 @@
 namespace zxf\Tools;
 
 use ArrayAccess;
-use ArrayIterator;
 use Countable;
 use Generator;
+use ArrayIterator;
 use IteratorAggregate;
 use JsonSerializable;
 
@@ -84,35 +84,6 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
     public function offsetUnset(mixed $offset): void
     {
         unset($this->data[$offset]);
-    }
-
-
-    /**
-     * 弹出并返回数组的第一个元素
-     *
-     * @return mixed 返回数组的第一个元素，如果数组为空则返回 null
-     */
-    public function offsetShift(): mixed
-    {
-        if ($this->offsetExists(0)) {
-            return array_shift($this->data);
-        }
-        return null;
-    }
-
-    /**
-     * 弹出并返回数组的最后一个元素
-     *
-     * @return mixed 返回数组的最后一个元素，如果数组为空则返回 null
-     */
-    public function offsetPop(): mixed
-    {
-        return array_pop($this->data);
-    }
-
-    public function getIterator(): ArrayIterator
-    {
-        return new ArrayIterator($this->data);
     }
 
     /**
@@ -303,4 +274,11 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
             $this->offsetSet($key, $value);
         }
     }
+
+    // 实现 IteratorAggregate 接口,IteratorAggregate和Iterator接口只能选择一个
+    public function getIterator(): ArrayIterator
+    {
+        return new ArrayIterator($this->data);
+    }
+
 }

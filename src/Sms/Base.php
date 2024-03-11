@@ -93,7 +93,7 @@ abstract class Base
      */
     public static function instance(?string $key, ?string $secret)
     {
-        if (is_null(self::$instance)) {
+        if (!isset(self::$instance) || is_null(self::$instance)) {
             self::$instance = new static($key, $secret);
         }
 

@@ -33,7 +33,7 @@ class Cache
      */
     public static function instance(array $config = []): ?Cache
     {
-        if (is_null(self::$instance)) {
+        if (!isset(self::$instance) || is_null(self::$instance)) {
             self::$instance = new static($config);
         }
         return self::$instance;

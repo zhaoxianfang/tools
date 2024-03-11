@@ -4,11 +4,11 @@
 namespace zxf\Database;
 
 use Exception;
-use zxf\Tools\DataArray;
+use ArrayAccess;
+use zxf\Tools\Collection;
 
-class Model
+class Model implements ArrayAccess
 {
-
     /**
      * Db 对象
      *
@@ -31,13 +31,19 @@ class Model
     protected string $dbTable;
 
     /**
-     * 'get', 'find', 'query' 等方法的返回数据
+     * 模型中带字段名称的数据
+     *
+     * @var array
      */
-    protected mixed $resData = [];
+    protected array $items = [];
 
-    public function __construct()
+    public function __construct(array $data = [])
     {
-        self::$db = Db::instance()->table($this->getTableName());
+        self::$db = Db::instance();
+        self::$db->table($this->getTableName());
+        if (!empty($data)) {
+            $this->fill($data);
+        }
     }
 
     // 获取表名
@@ -55,9 +61,9 @@ class Model
         return strtolower(preg_replace('/(?<=[a-z])([A-Z])/', '_$1', $str));
     }
 
-    public static function query(): static
+    public static function query(array $items = []): static
     {
-        return new static();
+        return new static($items);
     }
 
     /**
@@ -174,48 +180,134 @@ class Model
     /**
      * 获取当前查询出来的记录的主键对应的值
      */
-    private function getPrimaryKeyValue()
+    public function getPrimaryKeyValue()
     {
-
+        return $this->items[$this->primaryKey] ?? null;
     }
 
+    /**
+     * 填充数据
+     *
+     * @param array $data
+     *
+     * @return Model
+     */
+    public function fill(array $data)
+    {
+        foreach ($data as $key => $value) {
+            $this->items[$key] = $value;
+        }
+        return $this;
+    }
+
+    public function toArray(): array
+    {
+        return (array)$this->items;
+    }
 
     /**
-     * Catches calls to undefined methods.
+     * 把数组转换为模型集合对象
      *
-     * Provides magic access to private functions of the class and native public Db functions
+     * @param array $items 数组
      *
-     * @param string $method
-     * @param mixed  $arg
+     * @return Collection 返回一个集合
+     * @throws Exception
+     */
+    public function collection(array $items)
+    {
+        if (!in_array($dimension = Collection::getArrayDimension($items), [1, 2])) {
+            throw new Exception('数组异常，无法转换为集合对象：仅支持一维或二维数组');
+        }
+
+        $instances = [];
+        if ($dimension === 1) {
+            $model = self::query();
+            $model->fill($items);
+            $instances[] = $model;
+        } else {
+            foreach ($items as $item) {
+                $model = self::query();
+                $model->fill($item);
+                $instances[] = $model;
+            }
+        }
+
+        return new Collection($instances);
+    }
+
+    public function __get(string $name): mixed
+    {
+        return $this->items[$name] ?? null;
+    }
+
+    public function __set(string $name, mixed $value): void
+    {
+        $this->items[$name] = $value;
+    }
+
+    /**
+     * 调用不存在的方法时，调用Db类的方法
+     *
+     * @param string $method 调用的方法名
+     * @param mixed  $arg    参数
      *
      * @return mixed
      */
     public function __call(string $method, mixed $arg)
     {
-        $this->resData = call_user_func_array(array(self::$db, $method), ...$arg);
-        if (is_array($this->resData)) {
-            $this->resData = new DataArray($this->resData);
-            // 实现遍历 $this->resData 时返回的是 Model 对象
-            $this->resData->setModel($this);
+        if (!empty($this->items)) {
+            // 如果模型中有数据则填充到Db对象中
+            self::$db->fill($this->items);
         }
-        return $this->resData;
+        self::$db->setModal($this);
+        return call_user_func_array(array(self::$db, $method), $arg);
     }
 
     /**
-     * Catches calls to undefined static methods.
+     * 调用不存在的静态方法时，调用Db类的方法
      *
-     * Transparently creating Model class to provide smooth API like name::get() name::orderBy()->get()
-     *
-     * @param string $method
-     * @param mixed  $arg
+     * @param string $method 调用的方法名
+     * @param mixed  $arg    参数
      *
      * @return mixed
      */
     public static function __callStatic(string $method, mixed $arg)
     {
-        if (empty(self::$db)) {
-            self::$db = Db::instance()->table((new static())->getTableName());
+        $model = self::query();
+        if (isset(self::$db) || empty(self::$db)) {
+            self::$db = Db::instance();
+            self::$db->table($model->getTableName());
         }
-        return call_user_func_array(array(self::$db, $method), ...$arg);
+        self::$db->setModal($model);
+        return call_user_func_array(array(self::$db, $method), $arg);
     }
+
+    // ================================================
+    // 以下是 ArrayAccess 接口的方法 用于数组式访问 开始
+    // ================================================
+
+    public function offsetExists($offset)
+    {
+        return isset($this->items[$offset]);
+    }
+
+    public function offsetGet($offset)
+    {
+        return $this->items[$offset] ?? null;
+    }
+
+    public function offsetSet($offset, $value)
+    {
+        $this->items[$offset] = $value;
+    }
+
+    public function offsetUnset($offset)
+    {
+        unset($this->items[$offset]);
+    }
+
+    // ================================================
+    // 以上是 ArrayAccess 接口的方法 用于数组式访问 结束
+    // ================================================
+
 }

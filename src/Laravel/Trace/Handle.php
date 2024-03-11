@@ -121,10 +121,15 @@ class Handle
                 $parameters[] = $param;
             }
         }
+        $middleware = $route->middleware();
+        if (!empty($middleware) && in_array('tools_middleware', $middleware)) {
+            $middlewareIndex = array_search('tools_middleware', $middleware);
+            unset($middleware[$middlewareIndex]);
+        }
         return [
             'uri'        => request()->method() . ' ' . $route->uri(),
             'parameters' => $parameters,
-            'middleware' => $route->middleware(),
+            'middleware' => $middleware,
             'controller' => $route->getControllerClass(),
             'action'     => $route->getActionMethod(),
             'where'      => $action['where'] ?? [],
@@ -168,8 +173,8 @@ class Handle
     {
         $viewFiles = [];
         // 获取当前路由的其他视图文件
-        foreach (app('view')->getFinder()->getViews() as $view) {
-            $viewFiles[] = '/' . trim(str_replace(base_path(), '', $view), '/');
+        foreach (app('view')->getFinder()->getViews() as $alias => $view) {
+            $viewFiles[] = $alias . ' (' . trim(str_replace(base_path(), '', $view), '/') . ')';
         }
         return $viewFiles;
     }

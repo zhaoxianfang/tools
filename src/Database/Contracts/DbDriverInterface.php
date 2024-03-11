@@ -66,6 +66,10 @@ interface DbDriverInterface
     // 以下是查询构造器的方法
     // ================================================
 
+    /**
+     * 填充数据
+     */
+    public function fill(array $data);
 
     /**
      * 获取所有结果

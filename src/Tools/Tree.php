@@ -78,7 +78,7 @@ class Tree
      */
     public static function instance(array $data = [])
     {
-        if (is_null(self::$instance)) {
+        if (!isset(self::$instance) || is_null(self::$instance)) {
             self::$instance = new static($data);
         }
         return self::$instance;

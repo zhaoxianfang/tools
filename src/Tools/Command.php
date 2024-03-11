@@ -75,7 +75,7 @@ class Command
      */
     public static function instance($options = [])
     {
-        if (is_null(self::$instance)) {
+        if (!isset(self::$instance) || is_null(self::$instance)) {
             self::$instance = new static($options);
         }
 

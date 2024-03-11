@@ -66,15 +66,10 @@ class Db
 
     public static function instance(string $driverName = '', $connectionName = '', array $args = [])
     {
-        if (is_null(self::$instance)) {
+        if (!isset(self::$instance) || empty(self::$instance)) {
             self::$instance = new static($driverName, $connectionName, $args);
         }
         return self::$instance;
-    }
-
-    public function getInstance()
-    {
-        return self::instance();
     }
 
     /**
@@ -83,10 +78,10 @@ class Db
     public function __call(string $method, mixed $arg)
     {
         if (method_exists($this, $method)) {
-            return call_user_func_array(array($this, $method), ...$arg);
+            return call_user_func_array(array($this, $method), $arg);
         }
 
-        return call_user_func_array(array(self::$driver, $method), ...$arg);
+        return call_user_func_array(array(self::$driver, $method), $arg);
     }
 
     /**
@@ -96,9 +91,9 @@ class Db
     {
         $class = self::class;
         if (method_exists($class, $method)) {
-            return call_user_func_array(array($class, $method), ...$arg);
+            return call_user_func_array(array($class, $method), $arg);
         }
 
-        return call_user_func_array(array(self::$driver, $method), ...$arg);
+        return call_user_func_array(array(self::$driver, $method), $arg);
     }
 }

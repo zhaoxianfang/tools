@@ -19,6 +19,28 @@ class ExtendMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
+        // ================================================
+        // 为的控制器添加周期函数 initialize 方法
+        // 说明：此周期函数在控制器中定义实现，它是在控制器的构造函数之后调用的。
+        // 演示：public function initialize(Request $request) { dump('Test initialize'); }
+        // ================================================
+
+        // 获取当前控制器
+        $controller = $request->route()->getController();
+
+        // 判断$controller存在且不是闭包函数
+        if (!empty($controller) && !$controller instanceof Closure) {
+            // 判断$controller中是否存在 initialize 方法
+            if (method_exists($controller, 'initialize')) {
+                // 直接调用 控制器中的 initialize 方法, 并传入$request参数，而不需要重新实例化控制器
+                $controller->callAction('initialize', [$request]);
+            }
+        }
+
+        // ================================================
+        // 为所有的控制器添加周期函数 initialize 方法
+        // ================================================
+
         $traceHandle = '';
         $listenTrace = !app()->runningInConsole() && $request->isMethod('get') && config('modules.trace');
         if ($listenTrace) {
@@ -33,10 +55,14 @@ class ExtendMiddleware
 
             // $pageContent = get_protected_value($response, 'content');
             $pageContent = $response->getContent();
-            $position    = strripos($pageContent, "</body>");
-            $pageContent = substr_replace($pageContent, $traceContent . PHP_EOL, $position, 0);
-            // set_protected_value($response, 'content', $pageContent);
-
+            $position    = strripos($pageContent, "</html>");
+            if (false !== $position) {
+                // $pageContent = substr_replace($pageContent, $traceContent . PHP_EOL, $position, 0);
+                $pageContent = substr($pageContent, 0, $position) . PHP_EOL . $traceContent . PHP_EOL . substr($pageContent, $position);
+                // set_protected_value($response, 'content', $pageContent);
+            } else {
+                $pageContent = $pageContent . PHP_EOL . $traceContent;
+            }
             $response->setContent($pageContent);
         }
 

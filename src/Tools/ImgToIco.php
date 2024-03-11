@@ -35,7 +35,7 @@ class ImgToIco
      */
     public static function instance()
     {
-        if (is_null(self::$instance)) {
+        if (!isset(self::$instance) || is_null(self::$instance)) {
             self::$instance = new static();
         }
         return self::$instance;

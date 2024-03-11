@@ -27,7 +27,7 @@ class Response
 
     public static function instance($refresh = false)
     {
-        if (is_null(self::$instance) || $refresh) {
+        if (!isset(self::$instance) || is_null(self::$instance) || $refresh) {
             self::$instance = new static();
         }
         return self::$instance;

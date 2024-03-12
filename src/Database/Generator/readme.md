@@ -10,7 +10,7 @@ if (!function_exists('dd')) {
 }
 $config = [
     'host'     => '127.0.0.1',
-    'dbname'   => 'test',
+    'db_name'   => 'test',
     'username' => 'root',
     'password' => '',
 ];

@@ -32,15 +32,15 @@ class PdoDriver extends DbDriverAbstract
     /**
      * 配置 驱动连接数据库的实现
      *
-     * @param string $connectionName 连接名称
-     * @param array  $options        连接参数, 包含 host、dbname、username、password 等
+     * @param array  $options        连接参数, 包含 host、db_name、username、password 等
+     * @param string $connectionName 连接名称, 主要针对框架
      *
      * @throws Exception
      */
-    public function connect(string $connectionName = 'default', array $options = [])
+    public function connect(array $options = [], string $connectionName = 'default')
     {
         try {
-            $this->getConfig($connectionName, $options);
+            $this->getConfig($options, $connectionName);
             // PDO连接参数
             // eg: $dsn = "mysql:host=localhost;port=3306;dbname=test;charset=utf8mb4";
             // eg: $dsn = "pgsql:host=localhost;port=5432;dbname=test;user=postgres;password=123456";
@@ -162,7 +162,7 @@ class PdoDriver extends DbDriverAbstract
     /**
      * 插入数据
      */
-    public function insert(array $data)
+    public function insert(array $data = [])
     {
         $this->sqlBuildGenerator->create($data);
         $stmt = $this->runSql();
@@ -172,7 +172,7 @@ class PdoDriver extends DbDriverAbstract
     /**
      * 插入数据, 返回插入的id
      */
-    public function insertGetId(array $data)
+    public function insertGetId(array $data = [])
     {
         $this->sqlBuildGenerator->create($data);
         $this->runSql();
@@ -192,7 +192,7 @@ class PdoDriver extends DbDriverAbstract
     /**
      * 更新数据
      */
-    public function update(array $data)
+    public function update(array $data = [])
     {
         $this->sqlBuildGenerator->update($data);
         $stmt = $this->runSql();

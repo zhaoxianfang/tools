@@ -2,7 +2,7 @@
 
 namespace zxf\Database;
 
-use \Exception;
+use Exception;
 
 use zxf\Database\Contracts\DbDriverInterface;
 use zxf\Database\Driver\MysqliDriver;
@@ -50,8 +50,12 @@ class Db
 
     /**
      * 构造函数，初始化数据库连接
+     *
+     * @param string $driverName     驱动器名称 支持: mysql、mysqli、pgsql、sqlite、sqlsrv
+     * @param array  $args           数据库连接参数
+     * @param string $connectionName 数据库连接名称 例如: default
      */
-    public function __construct(string $driverName = '', $connectionName = '', array $args = [])
+    public function __construct(string $driverName = '', array $args = [], string $connectionName = '')
     {
         $defaultConfig        = config('tools_database.default');
         self::$driverName     = !empty($driverName) ? $driverName : $defaultConfig['driver'];
@@ -64,11 +68,22 @@ class Db
         }
     }
 
-    public static function instance(string $driverName = '', $connectionName = '', array $args = [])
+    /**
+     * 重新示例化
+     *
+     * @param string $driverName     驱动器名称 支持: mysql、mysqli、pgsql、sqlite、sqlsrv
+     * @param array  $args           数据库连接参数
+     * @param string $connectionName 数据库连接名称 例如: default
+     *
+     * @return Db|static
+     * @throws Exception
+     */
+    public static function instance(string $driverName = '', array $args = [], string $connectionName = '')
     {
-        if (!isset(self::$instance) || empty(self::$instance)) {
-            self::$instance = new static($driverName, $connectionName, $args);
-        }
+        // 不做缓存单例、每次都重新实例化
+        // if (!isset(self::$instance) || empty(self::$instance)) {
+        self::$instance = new static($driverName, $args, $connectionName);
+        //}
         return self::$instance;
     }
 

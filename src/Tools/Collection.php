@@ -42,7 +42,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable, JsonSeria
      */
     public static function getArrayDimension(mixed $data): int
     {
-        return is_array($data) ? (1 + max(array_map([self::class, 'getArrayDimension'], $data))) : 0;
+        return (is_array($data) && !empty($data)) ? (1 + max(array_map([self::class, 'getArrayDimension'], $data))) : 0;
     }
 
     //实现 IteratorAggregate 接口,IteratorAggregate和Iterator接口只能选择一个

@@ -27,13 +27,13 @@ class MysqliDriver extends DbDriverAbstract
      * 配置 驱动连接数据库的实现
      *
      * @param string $connectionName 连接名称
-     * @param array  $options        连接参数, 包含 host、dbname、username、password 等
+     * @param array  $options        连接参数, 包含 host、db_name、username、password 等
      *
      * @throws Exception
      */
-    public function connect(string $connectionName = 'default', array $options = [])
+    public function connect(array $options = [], string $connectionName = 'default')
     {
-        $params = $this->getConfig($connectionName, $options);
+        $params = $this->getConfig($options, $connectionName);
 
         try {
             $mysqlIc    = new ReflectionClass($this->extensionName);

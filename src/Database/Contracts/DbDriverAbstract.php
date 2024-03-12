@@ -6,6 +6,7 @@ use Closure;
 use zxf\Database\Generator\SqlBuildGenerator;
 use Exception;
 use zxf\Database\Model;
+use zxf\Tools\Collection;
 
 abstract class DbDriverAbstract implements DbDriverInterface
 {
@@ -51,7 +52,7 @@ abstract class DbDriverAbstract implements DbDriverInterface
 
     /**
      * @param string $connectionName 连接名称
-     * @param array  $options        连接参数, 包含 host、dbname、username、password 等
+     * @param array  $options        连接参数, 包含 host、db_name、username、password 等
      *
      * @throws Exception
      */
@@ -66,7 +67,7 @@ abstract class DbDriverAbstract implements DbDriverInterface
         $this->sqlBuildGenerator = new SqlBuildGenerator();
         $this->sqlBuildGenerator->setConvertBindParamsToQuestionMarks($this->convertBindParamsToQuestionMarks);
 
-        $this->connect($connectionName, $options);
+        $this->connect($options, $connectionName);
 
         $this->sqlBuildGenerator->setNotFoundCallClass($this);
 
@@ -98,16 +99,16 @@ abstract class DbDriverAbstract implements DbDriverInterface
     /**
      * 获取配置信息
      *
-     * @param string $connectionName 连接名称
-     * @param array  $options        连接参数, 包含 host、dbname、username、password 等
+     * @param array  $options        连接参数, 包含 host、db_name、username、password 等
+     * @param string $connectionName 连接名称,针对框架
      *
      * @return array
      * @throws Exception
      */
-    protected function getConfig(string $connectionName = 'default', array $options = []): array
+    protected function getConfig(array $options = [], string $connectionName = 'default'): array
     {
 
-        if (empty($options) || empty($options['host']) || !isset($options['dbname']) || !isset($options['username']) || !isset($options['password'])) {
+        if (empty($options) || empty($options['host']) || !isset($options['db_name']) || !isset($options['username']) || !isset($options['password'])) {
             if (!function_exists('config') || empty($options = config('tools_database.' . $this->driverName . '.' . $connectionName))) {
                 throw new Exception('Database配置有误');
             }
@@ -117,7 +118,7 @@ abstract class DbDriverAbstract implements DbDriverInterface
             'hostname' => $options['host'],
             'username' => $options['username'] ?? 'root',
             'password' => $options['password'] ?? '',
-            'database' => $options['dbname'] ?? '',
+            'database' => $options['db_name'] ?? '',
             'port'     => $options['port'] ?? 3306,
             'socket'   => $options['socket'] ?? null,
             // 'charset'  => $config['charset'] ?? 'utf8mb4', // mysqli 中单独设置charset
@@ -152,8 +153,12 @@ abstract class DbDriverAbstract implements DbDriverInterface
     /**
      * 填充插入和普通更新的数据
      */
-    public function fill(array $data)
+    public function fill(array|Collection $data)
     {
+        // 判断 $data 是否是 Collection
+        if ($data instanceof Collection) {
+            $data = $data->toArray();
+        }
         $this->sqlBuildGenerator->fill($data);
         return $this;
     }
@@ -181,9 +186,9 @@ abstract class DbDriverAbstract implements DbDriverInterface
         $result = $this->runSql($this->sqlBuildGenerator->buildQuery(), $this->sqlBuildGenerator->getBindings());
         $data   = $this->dataProcessing($result);
         if (isset(self::$model) && !empty(self::$model)) {
-            return self::$model->collection($data);
+            return self::$model->collection($data)->first();
         }
-        return $data;
+        return !empty($data) ? $data[0] : [];
     }
 
     /**

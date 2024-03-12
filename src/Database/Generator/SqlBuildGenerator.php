@@ -268,16 +268,16 @@ class SqlBuildGenerator
      * @param mixed                $operator        操作符
      * @param mixed                $value           值
      * @param string               $logicalOperator 逻辑运算符（AND 或 OR）
+     * @param bool                 $isRow           是否为原生查询  是原生查询的，不需要 调用 addBinding() 方法，因为 $value 是一个字段名
      *
      * @return $this
      * @throws InvalidArgumentException
      */
-    public function where(Closure|string|array $column, mixed $operator = null, mixed $value = null, string $logicalOperator = 'AND'): self
+    public function where(Closure|string|array $column, mixed $operator = null, mixed $value = null, string $logicalOperator = 'AND', bool $isRow = false): self
     {
         if ($column instanceof Closure && is_null($operator)) {
             return $this->whereClosure($column, 'AND');
         }
-        $this->validateOperator($operator);
 
         if (in_array($operator, ['IN', 'NOT IN'])) {
             $operator = $operator . ' (';
@@ -292,17 +292,57 @@ class SqlBuildGenerator
                 $operator = '=';
             }
         }
+        $this->validateOperator($operator);
 
-        $placeholder             = $this->generatePlaceholder();
+        $isJoinField = false;
+        // 判断 $value 是否包含 ` 或 . 符号，如果是，则表示是一个「关联字段查询」
+        // 是关联字段查询的，不需要 调用 addBinding() 方法，因为 $value 是一个字段名
+        if ($isRow || is_string($value) && (strpos($value, '`') !== false || strpos($value, '.') !== false)) {
+            $placeholder = $value;
+            $isJoinField = true;
+        } else {
+            $placeholder = $this->generatePlaceholder();
+        }
+
         $this->whereConditions[] = [
             'field'           => $column,
             'operator'        => $operator,
             'value'           => $placeholder,
             'logicalOperator' => $logicalOperator,
         ];
-        $this->addBinding($placeholder, $value);
+        if (!$isJoinField) {
+            $this->addBinding($placeholder, $value);
+        }
 
         return $this;
+    }
+
+    /**
+     * 原生字段查询，不需要解析绑定参数
+     *
+     * @param Closure|string|array $column
+     * @param mixed|null           $operator
+     * @param mixed|null           $value
+     *
+     * @return $this
+     */
+    public function whereRow(Closure|string|array $column, mixed $operator = null, mixed $value = null): self
+    {
+        return $this->where($column, $operator, $value, 'AND', true);
+    }
+
+    /**
+     * Or 原生字段查询，不需要解析绑定参数
+     *
+     * @param Closure|string|array $column
+     * @param mixed|null           $operator
+     * @param mixed|null           $value
+     *
+     * @return $this
+     */
+    public function orWhereRow(Closure|string|array $column, mixed $operator = null, mixed $value = null): self
+    {
+        return $this->where($column, $operator, $value, 'OR', true);
     }
 
     /**
@@ -1132,9 +1172,9 @@ class SqlBuildGenerator
      *
      * @return $this
      */
-    public function create(array $columns): self
+    public function create(array $columns = []): self
     {
-        $this->changeData = $columns;
+        $this->changeData = !empty($columns) ? $columns : $this->changeData;
         $this->buildType  = 'insert';
         return $this;
     }
@@ -1146,9 +1186,9 @@ class SqlBuildGenerator
      *
      * @return $this
      */
-    public function update(array $columns): self
+    public function update(array $columns = []): self
     {
-        $this->changeData = $columns;
+        $this->changeData = !empty($columns) ? $columns : $this->changeData;
         $this->buildType  = 'update';
         return $this;
     }
@@ -1290,6 +1330,29 @@ class SqlBuildGenerator
     // ==================================================================
     // 集合查询 操作结束
     // ==================================================================
+
+    /**
+     * 满足条件时执行$callback，否则执行$failCallback
+     *
+     * @param          $field
+     * @param callable $callback
+     * @param          $failCallback
+     *
+     * @return $this
+     */
+    public function when($field, callable $callback, $failCallback): self
+    {
+        if ($field) {
+            if ($callback instanceof Closure && is_callable($callback)) {
+                $callback($this);
+            }
+        } else {
+            if ($failCallback instanceof Closure && is_callable($failCallback)) {
+                $failCallback($this);
+            }
+        }
+        return $this;
+    }
 
     // 为参数生成唯一的绑定标识符
     private function generatePlaceholder(): string

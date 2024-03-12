@@ -11,32 +11,59 @@ composer require zxf/tools
 
 ## 配置
 
-> 需要在`config`目录下创建`tools_other.php`文件，内容如下
+> 需要在`config`目录下创建`tools_database.php`文件，内容如下
 
 ```
 <?php
+<?php
+// ====================================================
 // 数据库相关的配置，mysql、redis、elastic 等
+// ====================================================
 return [
-    //  mysql
-    'mysql' => [
+    'default' => [
+        'driver'     => 'mysql', // 默认数据库驱动名称，和下面default同级的键名对应，支持: mysql、pgsql、sqlite、sqlserver、oracle
+        'connection' => 'default', // 默认连接名称
+    ],
+    'redis'   => [
         'default' => [
-            'host'     => env('TOOLS_MYSQL_HOST', '127.0.0.1'),
-            'username' => env('TOOLS_MYSQL_HOST', 'root'),
-            'password' => env('TOOLS_MYSQL_HOST', ''),
-            'db'       => env('TOOLS_MYSQL_HOST', 'test'),
-            'port'     => env('TOOLS_MYSQL_HOST', 3306),
-            // 'prefix'   => env('TOOLS_MYSQL_HOST', ''),
-            'charset'  => env('TOOLS_MYSQL_HOST', 'utf8mb4'),
-            'socket'   => env('TOOLS_MYSQL_SOCKET', null),
+            'host'    => env('REDIS_HOST', ''),
+            'port'    => env('REDIS_PORT', '6379'),
+            'timeout' => env('TOOLS_REDIS_TIME_OUT', '5'),
+            'auth'    => env('REDIS_PASSWORD', ''),
         ],
     ],
-    //  redis 等其他配置
+    //  mysql
+    'mysql'   => [
+        'default' => [
+            'host'     => env('DB_HOST', '127.0.0.1'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
+            'db_name'   => env('DB_DATABASE', 'test'),
+            'port'     => env('DB_PORT', 3306),
+            // 'prefix'   => env('DB_PREFIX', ''),
+            'charset'  => env('DB_CHARSET', 'utf8mb4'),
+            'socket'   => env('DB_SOCKET', null),
+        ],
+    ],
+    //  sqlite
+    'sqlite'  => [
+        'default' => [
+            // SQLite数据库文件路径
+            'host'     => '',
+            'username' => '',
+            'password' => '',
+            'db_name'   => '',
+            'port'     => '',
+            'charset'  => '',
+            'socket'   => '',
+        ],
+    ],
 ];
 ```
 
 并且可以通过 `config('tools_database.mysql.default')` 函数获取到上面的配置信息，如果你实在没有或者没有使用框架，那么可以使用下面的暴力方法读取mysql连接配置信息
 
-***这是一个无奈之举***
+***下面这种做法这是一个无奈之举***
 
 ```
 if (!function_exists('config')) {
@@ -44,7 +71,7 @@ if (!function_exists('config')) {
    {
        return [
            'host'     => '127.0.0.1',
-           'dbname'   => 'test',
+           'db_name'   => 'test',
            'username' => 'root',
            'password' => '',
        ];
@@ -80,7 +107,7 @@ class User extends Model
      *
      * @var string
      */
-    protected $dbTable = 'users';
+    protected $tables = 'users';
     
     /**
      * 定义一个用户有多个关联地址 (一对多关系)
@@ -130,6 +157,7 @@ class TestUser
     public function getUserList(){
         $user = new User();
         $res = $user->where('status',1)->get();
+        
         foreach($res as $key => $item){
 
             // 打印获取到的每个用户数据
@@ -148,9 +176,14 @@ class TestUser
             if($item->country_id == 0){
                 $item->delete();
             }
+            // 获取用户所属国家信息
+            $country = $item->country;
             
-            // TODO: 其他操作
+            // 根据用户所属国家关联进行其他操作查询
+            $country = $item->country()->...->get(); 
         }
+
+        dd($res,$res->toArray());
     }
     
     // ...
@@ -178,11 +211,10 @@ class TestUser
 {
     public function test1(){
         $user = new User();
-        $user->fill([
+        $user->insert([ // insert 方法返回的是插入的行数
             'name' => '...',
             ...
         ]);
-        $user->save();
     }
     
     public function test2(){
@@ -190,12 +222,12 @@ class TestUser
             'name' => '...',
             ...
         ]);
-        $user->save();
+        $user->create(); // insert 方法返回的是插入的行数
     }
     
     public function test3(){
         $user = new User();
-        $user->create([
+        $user->insertGetId([ // insertGetId 方法返回的是插入的id
             'name' => '...',
             ...
         ]);
@@ -221,14 +253,6 @@ class TestUser
     }
     
     public function test4(){
-        $user = User::query()->where('status',1)->firstOrFail();
-    }
-    
-    public function test5(){
-        $user = User::query()->where('status',1)->get();
-    }
-    
-    public function test6(){
         $user = User::query()
           ->where(function($query){
              $query->where('age','>',21);
@@ -247,15 +271,19 @@ class TestUser
 {
     public function test1(){
         $user = User::query()->find(1);
-        $user->roles();
-    }
-    
-    public function test2(){
-        $user = User::query()->find(1);
         $user->update([
             'name' => '...',
             ...
         ]);
+    }
+    
+    public function test2(){
+        $user = User::query()
+            ->where('id',1)
+            ->update([
+                'name' => '...',
+                ...
+            ]);
     }
 }
 ```
@@ -274,7 +302,7 @@ class TestUser
     
     public function test2(){
         $user = User::query()->find(1);
-        $idcard = $user->idCard();
+        $idcard = $user->idCard;
     }
 }
 ```

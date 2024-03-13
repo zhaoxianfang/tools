@@ -24,9 +24,9 @@ trait HasRelationships
      * @param string       $localKey   当前表的主键
      * @param string       $field
      *
-     * @return Db
+     * @return SqlBuildGenerator
      */
-    public function hasMany(Model|string $table, string $foreignKey = 'target_id', string $localKey = 'id', string $field = '*'): Db
+    public function hasMany(Model|string $table, string $foreignKey = 'target_id', string $localKey = 'id', string $field = '*'): SqlBuildGenerator
     {
         $field = empty($field) ? '*' : $field;
         // 被关联表的表名(目标表名)
@@ -49,9 +49,10 @@ trait HasRelationships
      * @param string       $ownerKey   被关联表的主键
      * @param string       $field
      *
-     * @return Db
+     * @return SqlBuildGenerator
+     * @throws Exception
      */
-    public function belongsTo(Model|string $table, string $foreignKey = 'target_id', string $ownerKey = 'id', string $field = '*')
+    public function belongsTo(Model|string $table, string $foreignKey = 'target_id', string $ownerKey = 'id', string $field = '*'): SqlBuildGenerator
     {
         // 判断字符串类$table是否继承Model类
         if (is_string($table) && !is_subclass_of($table, Model::class)) {
@@ -62,7 +63,8 @@ trait HasRelationships
         }
         $field = empty($field) ? '*' : $field;
 
-        return self::query()->getDb()
+        // return self::query()->getDb()
+        return $this->getDb()
             ->table($targetTableName)
             ->select(explode(',', $field))
             ->join($this->getTableName(), "`{$this->getTableName()}`.`{$foreignKey}` = `{$targetTableName}`.`{$ownerKey}`")
@@ -81,9 +83,10 @@ trait HasRelationships
      * @param string       $localKey   当前表的主键
      * @param string       $field
      *
-     * @return mixed
+     * @return SqlBuildGenerator
+     * @throws Exception
      */
-    public function hasOne(Model|string $table, string $foreignKey = 'target_id', string $localKey = 'id', string $field = '*')
+    public function hasOne(Model|string $table, string $foreignKey = 'target_id', string $localKey = 'id', string $field = '*'): SqlBuildGenerator
     {
         $field = empty($field) ? '*' : $field;
         // 被关联表的表名(目标表名)
@@ -114,10 +117,10 @@ trait HasRelationships
      * @param string       $middleKey        例如 文章表的主键 id | 中间表的主键
      * @param string       $field            例如 要查询的评论表的字段
      *
-     * @return mixed
+     * @return SqlBuildGenerator
      * @throws Exception
      */
-    public function belongsToMany(Model|string $table, Model|string $middleTable, string $middleForeignKey = 'user_id', string $targetForeignKey = 'article_id', string $ownerKey = "id", string $middleKey = "id", string $field = '*')
+    public function belongsToMany(Model|string $table, Model|string $middleTable, string $middleForeignKey = 'user_id', string $targetForeignKey = 'article_id', string $ownerKey = "id", string $middleKey = "id", string $field = '*'): SqlBuildGenerator
     {
         $field = empty($field) ? '*' : $field;
 
@@ -156,11 +159,18 @@ trait HasRelationships
      *
      * @param string $name
      *
-     * @return bool
+     * @return mixed
      */
-    private function hasRelation($name): bool
+    private function hasRelationAndGet($name): mixed
     {
-        return method_exists($this, $name) && $this->$name() instanceof SqlBuildGenerator;
+        if (method_exists($this, $name)) {
+            $fun = $this->$name();
+            if ($fun instanceof SqlBuildGenerator) {
+                return $fun->get();
+            }
+            return false;
+        }
+        return false;
     }
 
     /**
@@ -170,7 +180,7 @@ trait HasRelationships
      *
      * @return mixed
      */
-    public function getRelation(string $name)
+    public function getRelation(string $name): mixed
     {
         return $this->$name()->get();
     }

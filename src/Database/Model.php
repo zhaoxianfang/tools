@@ -125,27 +125,36 @@ class Model implements ArrayAccess
         }
 
         $instances = [];
-        self::$db->fill([]);
+
         if ($dimension === 1) {
-            $model        = self::query();
-            $model->items = $items;
-            $instances[]  = $model;
+            $this->items = $items;
+            $this->getDb()->fill($items);
+            $instances[] = clone $this;
         } else {
             foreach ($items as $item) {
-                $model        = self::query();
-                $model->items = $item;
-                $instances[]  = $model;
+                $this->items = $item;
+                $this->getDb()->fill($item);
+                // $instances[]  = $this; 会导致所有的 $instances 都是最后一个 $this，所以需要使用 clone
+                $instances[] = clone $this;
             }
         }
 
         return new Collection($instances);
     }
 
+    public function reset()
+    {
+        $this->items = [];
+        $this->getDb()->fill([]);
+        self::$db->setModal($this);
+        return $this;
+    }
+
     public function __get(string $name): mixed
     {
         // 判断是否是关联关系
-        if ($this->hasRelation($name)) {
-            return $this->getRelation($name);
+        if (($res = $this->hasRelationAndGet($name)) !== false) {
+            return $res;
         }
         return $this->items[$name] ?? null;
     }
@@ -186,8 +195,8 @@ class Model implements ArrayAccess
         $model = self::query();
         if (!isset(self::$db) || empty(self::$db)) {
             self::$db = Db::instance();
-            self::$db->table($model->getTableName());
         }
+        self::$db->table($model->getTableName());
         self::$db->setModal($model);
         return call_user_func_array(array(self::$db, $method), $arg);
     }

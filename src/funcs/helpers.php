@@ -429,7 +429,7 @@ if (!function_exists('num_to_cn')) {
      * 数字转换为中文
      *      支持金额转换和小数转换
      *
-     * @param float|int|string $number 目标数字
+     * @param float|int|string $number 需要转换的数字
      * @param bool             $mode   模式[true:金额（默认）,false:普通数字表示]
      * @param bool             $sim    使用小写（默认）
      *
@@ -516,6 +516,41 @@ if (!function_exists('num_to_cn')) {
     }
 }
 
+if (!function_exists('num_to_word')) {
+    /**
+     * 数字转换为英文
+     *
+     * @param float|int|string $number 需要转换的数字
+     *
+     * @return string
+     * @throws Exception
+     */
+    function num_to_word(float|int|string $number): string
+    {
+        $formatter = new \NumberFormatter('en', \NumberFormatter::SPELLOUT);
+        // 数字转换
+        return $formatter->format($number);
+    }
+}
+
+if (!function_exists('num_to_zhCN')) {
+    /**
+     * 数字转换为英文
+     *
+     * @param float|int|string $number 需要转换的数字
+     *
+     * @return string
+     * @throws Exception
+     */
+    function num_to_zhCN(float|int|string $number): string
+    {
+        $formatter = new \NumberFormatter('zh_cn', \NumberFormatter::SPELLOUT);
+        // 数字转换
+        $str = $formatter->format($number);
+        // 把〇替换成零
+        return str_replace('〇', '零', $str);
+    }
+}
 
 if (!function_exists('arr2tree')) {
     /**

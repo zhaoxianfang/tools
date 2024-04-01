@@ -1549,3 +1549,113 @@ if (!function_exists('zxf_substr')) {
         return $newstr;
     }
 }
+
+
+if (!function_exists('before_calling_methods')) {
+    /**
+     * 核心功能
+     *  class 类在调用方法之前，先执行指定的初始化方法$method,并解析和传入$method方法中的依赖关系参数
+     *
+     * 适用场景：
+     *   在路由调用控制器方法之前，先执行 initialize 方法，并传入依赖关系参数，需要在构造函数中调用本方法
+     *      eg:
+     *          class WebBaseController
+     *              public function __construct(Request $request)
+     *              {
+     *                  parent::__construct($request);
+     *                  // 路由执行被调用方法之前，先执行 initialize 方法
+     *                  before_calling_methods($this, 'initialize');
+     *                  // 路由执行被调用方法之前，先执行 test 方法
+     *                  before_calling_methods($this, 'test');
+     *                  before_calling_methods($this, 'test',[传入参数1, 传入参数2, ...]);
+     *               }
+     *
+     *               public function initialize(Request $request,...其他的自定义依赖注入)
+     *
+     *               public function test(...自定义依赖注入或者不传入参数)
+     *          }
+     *
+     * @param object $class   类对象 eg: $this、MyClass、MyController
+     * @param string $method  方法名称 默认为 initialize
+     * @param array  ...$args 可以给被调用函数传参； eg:[ $name='张三',$age = 18], 数组中参数下标N对应被调用函数的第N个参数
+     *
+     * @return void
+     * @throws Exception
+     */
+    function before_calling_methods(object $class, string $method = 'initialize', array ...$args): void
+    {
+        try {
+            // 判断 $class 是不是一个class 或者 $method 是不是一个方法
+            if (!is_object($class) || !method_exists($class, $method)) {
+                return;
+            }
+            // 1、获取 $class 中 $method 方法的依赖关系(参数列表)
+
+            // 使用反射获取方法信息
+            $reflectionMethod = new \ReflectionMethod($class, $method);
+            // 获取参数类型名，形成数组返回
+            // $dependencies = array_map(fn($parameter) => $parameter->getType()->getName(), $reflectionMethod->getParameters());
+
+
+            // 获取$args的第一个参数
+            $paramsArgs = !empty($args) ? reset($args) : [];
+
+            $index        = -1;
+            $dependencies = array_map(function ($parameter) use (&$index, $paramsArgs) {
+                $index++;
+                $type      = $parameter->getType();
+                $paramName = $type?->getName(); // 参数类型名, eg: int、string、array
+                // 类 或者 函数
+                if (!empty($paramName) && (class_exists($paramName) || is_callable($paramName))) {
+                    return $paramName;
+                }
+                // 有传入值就使用传入值
+                if (!empty($paramsArgs[$index])) {
+                    if (empty($paramName)) {
+                        // 没有定义类型
+                        return $paramsArgs[$index];
+                    }
+                    // 判断参数类型
+                    // 判断 $paramsArgs[$index]的类型是否为 $paramName
+                    $check_fun = 'is_' . $paramName; // eg: is_string、is_array、is_int
+                    if (function_exists($check_fun)) {
+                        if ($check_fun($paramsArgs[$index])) {
+                            return $paramsArgs[$index];
+                        }
+                        throw new \Exception("参数类型不匹配");
+                    }
+                    $argIndex = $index + 1;
+                    throw new \Exception("第{$argIndex}个参数的类型不是「{$paramName}」类型");
+                }
+                // 检查是否有默认值
+                if ($parameter->isDefaultValueAvailable()) {
+                    // 有默认值直接是哟默认值
+                    return $parameter->getDefaultValue();
+                }
+                // 没有默认参数的普通参数
+                throw new \Exception("参数「{$parameter->getName()}」不能为空");
+            }, $reflectionMethod->getParameters());
+
+
+            // 2、 解析依赖关系
+
+            // 使用 Laravel 的 app 函数解析依赖关系
+            // $resolvedDependencies = array_map(fn($dependency) => app($dependency), $dependencies);
+            $resolvedDependencies = array_map(function ($parameter) {
+                // 如果参数是类名，则尝试解析依赖注入
+                if (is_string($parameter) && class_exists($parameter)) {
+                    // 如果是 Laravel 则使用 app 函数实例化，否则直接 new 一个类
+                    return (function_exists('is_laravel') && is_laravel()) ? app($parameter) : new $parameter();
+                }
+                return $parameter;
+            }, $dependencies);
+
+            // 3、 调用 $method 方法并传入解析后的依赖
+
+            // 通过反射调用了 $method 方法，并传入依赖关系参数
+            $reflectionMethod->invokeArgs($class, $resolvedDependencies);
+        } catch (\ReflectionException $e) {
+            return;
+        }
+    }
+}

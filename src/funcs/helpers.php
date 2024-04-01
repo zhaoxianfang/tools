@@ -427,63 +427,95 @@ if (!function_exists('response_and_continue')) {
 if (!function_exists('num_to_cn')) {
     /**
      * 数字转换为中文
+     *      支持金额转换和小数转换
      *
-     *
-     *
-     * @param float|int|string $num  目标数字
-     * @param bool             $mode 模式[true:金额（默认）,false:普通数字表示]
-     * @param bool             $sim  使用小写（默认）
+     * @param float|int|string $number 目标数字
+     * @param bool             $mode   模式[true:金额（默认）,false:普通数字表示]
+     * @param bool             $sim    使用小写（默认）
      *
      * @return string
+     * @throws Exception
      */
-    function num_to_cn(float|int|string $num, bool $mode = true, bool $sim = true): string
+    function num_to_cn(float|int|string $number, bool $mode = true, bool $sim = true): string
     {
-        if (!is_numeric($num)) {
-            return '含有非数字非小数点字符！';
+        if (!is_numeric($number)) {
+            throw new \Exception('传入参数不是一个数字！');
         }
-        $char = $sim ? array('零', '一', '二', '三', '四', '五', '六', '七', '八', '九')
-            : array('零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖');
-        $unit = $sim ? array('', '十', '百', '千', '', '万', '亿', '兆')
-            : array('', '拾', '佰', '仟', '', '萬', '億', '兆');
-        // $retStr = $mode ? '元' : '点';
-        $retStr = $mode ? '' : '点';
+        // 数字大小写
+        $char = $sim ? ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'] : ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'];
+        // 每一个数级的 四个位置
+        $twoUnit = $sim ? ['', '十', '百', '千'] : ['', '拾', '佰', '仟'];
+        // 每一个数级的 单位
+        $twoChat = ['', '万', '亿', '兆', '京', '垓', '秭', '穰', '沟', '涧', '正', '载', '极', '恒河沙', '阿僧祇', '那由他', '不可思议', '无量', '大数'];
+
         //小数部分
-        if (strpos($num, '.')) {
-            list($num, $dec) = explode('.', $num);
-            $dec = strval(round($dec, 2));
-            if ($mode) {
-                $retStr .= "{$char[$dec['0']]}角{$char[$dec['1']]}分";
-            } else {
-                for ($i = 0, $c = strlen($dec); $i < $c; $i++) {
-                    $retStr .= $char[$dec[$i]];
-                }
-            }
-        }
+        $decNumStr = '';
         //整数部分
-        $out = [];
-        $str = $mode ? strrev(intval($num)) : strrev($num);
+        $roundNum = [];
+
+        // 查找小数点位置
+        if ($pos = strpos($number, '.')) {
+            // 分割整数部分和小数部分
+            $num = substr($number, 0, $pos);
+            $dec = substr($number, $pos + 1);
+
+            $decNum = [];
+
+            $moneyUnit = ['角', '分', '厘'];
+            for ($j = 0, $d = strlen($dec); $j < $d; $j++) {
+                $decNum[$j] = $char[$dec[$j]];
+                if ($mode) {
+                    if ($j < 3) {
+                        $decNumStr .= $decNum[$j] . $moneyUnit[$j];
+                    }
+                } else {
+                    $decNumStr .= $decNum[$j];
+                }
+            }
+        } else {
+            $num = $number;
+        }
+
+        // 反转字符串
+        $str = $mode ? strrev((int)($num)) : strrev($num);
+
+        $hasZero = false; // 数级上是否有零
         for ($i = 0, $c = strlen($str); $i < $c; $i++) {
-            $out[$i] = $char[$str[$i]];
-            if ($mode) {
-                $out[$i] .= $str[$i] != '0' ? $unit[$i % 4] : '';
-                if ($i > 1 and $str[$i] + $str[$i - 1] == 0) {
-                    $out[$i] = '';
+            // $str[$i] 小写数字 eg: 2
+            $roundNum[$i] = $char[$str[$i]]; // 单个大写数字 eg : 贰
+
+            if ($i % 4 == 0) {
+                $hasZero = false;
+                // 一个数级的单位，处理每一级的个位
+                if (empty($str[$i])) { // 零万 零亿 等 处理成 万 亿
+                    $roundNum[$i] = $twoChat[floor($i / 4)]; // xx万 xx亿
+                } else {
+                    $roundNum[$i] .= $twoChat[floor($i / 4)]; // xx万 xx亿
                 }
-                if ($i % 4 == 0) {
-                    $out[$i] .= $unit[4 + floor($i / 4)];
+            } else {
+                if (!empty($str[$i])) {
+                    $roundNum[$i] .= $twoUnit[$i % 4]; // 加单位 十百千
+                    if ($str[$i] == 1 && $i % 4 == 1 && empty($str[$i + 1])) { // 一十 处理成 十
+                        $roundNum[$i] = $twoUnit[$i % 4];
+                    }
+                } else {
+                    if ($hasZero) {
+                        $roundNum[$i] = '';
+                    }
+                    // 判断低一位数
+                    if (isset($str[$i - 1])) {
+                        $hasZero      = true;
+                        $roundNum[$i] = !empty($str[$i - 1]) ? '零' : '';
+                    }
                 }
             }
         }
-        if (count($out) == 2 && $out['1'] == '一十') {
-            $out['1'] = '十';
-            if ($out['0'] == '零') {
-                unset($out['0']);
-            }
-        }
-        $num_val = array_reverse($out);
-        return join('', $num_val) . $retStr;
+
+        $roundNumStr = join('', array_reverse($roundNum)); // 整数
+        return $roundNumStr . ($mode ? '元' : '') . ((!empty($decNumStr) && !$mode) ? '点' : '') . $decNumStr;
     }
 }
+
 
 if (!function_exists('arr2tree')) {
     /**

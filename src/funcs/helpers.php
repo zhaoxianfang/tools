@@ -1550,7 +1550,6 @@ if (!function_exists('zxf_substr')) {
     }
 }
 
-
 if (!function_exists('before_calling_methods')) {
     /**
      * 核心功能
@@ -1565,9 +1564,8 @@ if (!function_exists('before_calling_methods')) {
      *                  parent::__construct($request);
      *                  // 路由执行被调用方法之前，先执行 initialize 方法
      *                  before_calling_methods($this, 'initialize');
-     *                  // 路由执行被调用方法之前，先执行 test 方法
-     *                  before_calling_methods($this, 'test');
-     *                  before_calling_methods($this, 'test',[传入参数1, 传入参数2, ...]);
+     *                  // 路由执行被调用方法之前，先执行 test 方法 ,且传入参数
+     *                  before_calling_methods($this, 'test',[ $name='张三',$age = 18]);
      *               }
      *
      *               public function initialize(Request $request,...其他的自定义依赖注入)
@@ -1593,54 +1591,38 @@ if (!function_exists('before_calling_methods')) {
 
             // 使用反射获取方法信息
             $reflectionMethod = new \ReflectionMethod($class, $method);
-            // 获取参数类型名，形成数组返回
-            // $dependencies = array_map(fn($parameter) => $parameter->getType()->getName(), $reflectionMethod->getParameters());
 
-
-            // 获取$args的第一个参数
+            // 获取$args的参数
             $paramsArgs = !empty($args) ? reset($args) : [];
+            $index      = -1;
 
-            $index        = -1;
+            // 获取参数类型名，形成数组返回
             $dependencies = array_map(function ($parameter) use (&$index, $paramsArgs) {
                 $index++;
-                $type      = $parameter->getType();
-                $paramName = $type?->getName(); // 参数类型名, eg: int、string、array
+                $paramName = $parameter->getType()?->getName(); // 参数类型名, eg: int、string、array
                 // 类 或者 函数
                 if (!empty($paramName) && (class_exists($paramName) || is_callable($paramName))) {
                     return $paramName;
                 }
+                $argIndex = $index + 1;
                 // 有传入值就使用传入值
                 if (!empty($paramsArgs[$index])) {
-                    if (empty($paramName)) {
-                        // 没有定义类型
+                    // 没有定义参数类型 || 参数类型不匹配
+                    if (empty($paramName) || (call_user_func('is_' . $paramName, $paramsArgs[$index]))) {
                         return $paramsArgs[$index];
                     }
-                    // 判断参数类型
-                    // 判断 $paramsArgs[$index]的类型是否为 $paramName
-                    $check_fun = 'is_' . $paramName; // eg: is_string、is_array、is_int
-                    if (function_exists($check_fun)) {
-                        if ($check_fun($paramsArgs[$index])) {
-                            return $paramsArgs[$index];
-                        }
-                        throw new \Exception("参数类型不匹配");
-                    }
-                    $argIndex = $index + 1;
-                    throw new \Exception("第{$argIndex}个参数的类型不是「{$paramName}」类型");
+                    throw new \Exception("第{$argIndex}个参数的类型不是指定的「{$paramName}」类型");
                 }
                 // 检查是否有默认值
                 if ($parameter->isDefaultValueAvailable()) {
-                    // 有默认值直接是哟默认值
+                    // 有默认值直接返回默认值
                     return $parameter->getDefaultValue();
                 }
                 // 没有默认参数的普通参数
-                throw new \Exception("参数「{$parameter->getName()}」不能为空");
+                throw new \Exception("第{$argIndex}个参数「\${$parameter->getName()}」不能为空");
             }, $reflectionMethod->getParameters());
 
-
-            // 2、 解析依赖关系
-
-            // 使用 Laravel 的 app 函数解析依赖关系
-            // $resolvedDependencies = array_map(fn($dependency) => app($dependency), $dependencies);
+            // 2、 解析依赖注入对象
             $resolvedDependencies = array_map(function ($parameter) {
                 // 如果参数是类名，则尝试解析依赖注入
                 if (is_string($parameter) && class_exists($parameter)) {
@@ -1650,9 +1632,7 @@ if (!function_exists('before_calling_methods')) {
                 return $parameter;
             }, $dependencies);
 
-            // 3、 调用 $method 方法并传入解析后的依赖
-
-            // 通过反射调用了 $method 方法，并传入依赖关系参数
+            // 3、 通过反射 $method 方法并传入解析后的依赖注入对象或普通参数
             $reflectionMethod->invokeArgs($class, $resolvedDependencies);
         } catch (\ReflectionException $e) {
             return;

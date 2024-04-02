@@ -446,41 +446,28 @@ if (!function_exists('num_to_cn')) {
         // 每一个数级的 四个位置
         $twoUnit = $sim ? ['', '十', '百', '千'] : ['', '拾', '佰', '仟'];
         // 每一个数级的 单位
-        $twoChat = [
+        $twoChat   = [
             '', '万', '亿', '兆', '京', '垓', '秭', '穰', '沟', '涧', '正', '载', '极', '恒河沙', '阿僧祇', '那由他', '不可思议', '无量',
             '大数', '不可说', '不可道', '无边', '无极', '无尽', '无界', '无涯', '无量无边', '不可思议无量', '无尽无界', '无涯无垠', '无量无涯',
             '无始无终', '无边无际无量', '无穷无尽', '终极无极', '无上无下', '无量终极',
         ];
+        $moneyUnit = ['角', '分', '厘'];
+
+        // 将整数部分和小数部分分开
+        [$num, $dec] = (str_contains($number, '.')) ? [substr($number, 0, strpos($number, '.')), substr($number, strpos($number, '.') + 1)] : [$number, ''];
 
         //小数部分
         $decNumStr = '';
         //整数部分
         $roundNum = [];
 
-        // 查找小数点位置
-        if ($pos = strpos($number, '.')) {
-            // 分割整数部分和小数部分
-            $num = substr($number, 0, $pos);
-            $dec = substr($number, $pos + 1);
-
-            $decNum = [];
-
-            $moneyUnit = ['角', '分', '厘'];
-            for ($j = 0, $d = strlen($dec); $j < $d; $j++) {
-                $decNum[$j] = $char[$dec[$j]];
-                if ($mode) {
-                    if ($j < 3) {
-                        $decNumStr .= $decNum[$j] . $moneyUnit[$j];
-                    }
-                } else {
-                    $decNumStr .= $decNum[$j];
-                }
-            }
-        } else {
-            $num = $number;
+        // 将小数部分转换为中文
+        for ($j = 0; $j < strlen($dec); $j++) {
+            $decNum[$j] = $char[$dec[$j]];
+            $decNumStr  .= ($mode && $j < 3) ? ($decNum[$j] . $moneyUnit[$j]) : (!$mode ? $decNum[$j] : '');
         }
 
-        // 反转字符串
+        // 反转字符串 处理整数部分
         $str = $mode ? strrev((int)($num)) : strrev($num);
 
         $hasZero = false; // 数级上是否有零
@@ -488,13 +475,26 @@ if (!function_exists('num_to_cn')) {
             // $str[$i] 小写数字 eg: 2
             $roundNum[$i] = $char[$str[$i]]; // 单个大写数字 eg : 贰
 
+            // 每四位一组，处理中文单位
             if ($i % 4 == 0) {
-                $hasZero = false;
-                // 一个数级的单位，处理每一级的个位
-                if (empty($str[$i])) { // 零万 零亿 等 处理成 万 亿
-                    $roundNum[$i] = $twoChat[floor($i / 4)]; // xx万 xx亿
+                $hasZero  = false;
+                $hasValue = false; // 数级上是否有值
+                // 判断数级上是否有值
+                for ($k = 0; $k < 4; $k++) {
+                    if (!empty($str[$i + $k])) {
+                        $hasValue = true;
+                        break;
+                    }
+                }
+                if (!$hasValue) {
+                    $roundNum[$i] = '';
                 } else {
-                    $roundNum[$i] .= $twoChat[floor($i / 4)]; // xx万 xx亿
+                    // 一个数级的单位，处理每一级的个位
+                    if (empty($str[$i])) { // 零万 零亿 等 处理成 万 亿
+                        $roundNum[$i] = $twoChat[floor($i / 4)]; // xx万 xx亿
+                    } else {
+                        $roundNum[$i] .= $twoChat[floor($i / 4)]; // xx万 xx亿
+                    }
                 }
             } else {
                 if (!empty($str[$i])) {
@@ -514,7 +514,7 @@ if (!function_exists('num_to_cn')) {
                 }
             }
         }
-
+        // 拼接整数部分和小数部分
         $roundNumStr = join('', array_reverse($roundNum)); // 整数
         return $roundNumStr . ($mode ? '元' : '') . ((!empty($decNumStr) && !$mode) ? '点' : '') . $decNumStr;
     }

@@ -8,23 +8,27 @@ use Exception;
 
 /**
  * 时区转换器
- *      1. convertToTimeZone: 计算 A 时区的在某个时间时 B 时区的当地时间
- *      2. timeZoneDiff: 计算 A 时区和 B 时区的时差
- *      3. getTimeZoneOfUTC: 计算 A 时区和 UTC 时区(0时区)的时差
- *      4. setTimeZone: 计算默认时区
- *      5. format: 格式化时间
+ *      1. toTimeZone: 计算 A 时区的在某个时间时 B 时区的当地时间（返回指定时间格式字符串）「支持使用数组方式同时处理多个时间」
+ *      2. toTimeZoneTimestamp: 计算 A 时区的在某个时间时 B 时区的当地时间（返回时间戳）「支持使用数组方式同时处理多个时间」
+ *      3. timeZoneDiff: 计算 A 时区和 B 时区的时差
+ *      4. getTimeZoneOfUTC: 计算 A 时区和 UTC 时区(0时区)的时差
+ *      5. setTimeZone: 计算默认时区
+ *      6. format: 格式化时间「支持使用数组方式同时处理多个时间」
  *
  * eg:
  *      $converter = TimeZone::instance();
- *      // 1、当上海时间是 2024-04-08 12:00:00 时，计算出纽约的当地时间
- *      $converter->convertToTimeZone('2024-04-08 12:00:00','Asia/Shanghai', 'America/New_York');
- *      // 2、计算上海和纽约的时差
+ *      // 1、当上海时间是 2024-04-08 12:00:00 时，计算出纽约的当地时间（返回指定时间格式字符串）
+ *      $converter->toTimeZone('2024-04-08 12:00:00','Asia/Shanghai', 'America/New_York','Y-m-d H:i:s');
+ *      $converter->toTimeZone(['2024-04-08 12:00:00','1712632337'],'Asia/Shanghai', 'America/New_York','Y-m-d H:i:s');
+ *      // 2、当上海时间是 2024-04-08 12:00:00 时，计算出纽约的当地时间（返回时间戳）
+ *      $converter->toTimeZoneTimestamp('2024-04-08 12:00:00','Asia/Shanghai', 'America/New_York');
+ *      // 3、计算上海和纽约的时差
  *      $converter->timeZoneDiff('Asia/Shanghai', 'America/New_York',$useAbs = true);
- *      // 3、计算上海和UTC 时区(0时区)的时差
+ *      // 4、计算上海和UTC 时区(0时区)的时差
  *      $converter->getTimeZoneOfUTC('Asia/Shanghai');
- *      // 4、设置默认时区
+ *      // 5、设置默认时区
  *      TimeZoneConverter::setTimeZone('PRC');
- *      // 5、格式化时间
+ *      // 6、格式化时间
  *      $converter->format('1712632337', 'Y-m-d H:i:s');
  */
 class TimeZone
@@ -59,17 +63,67 @@ class TimeZone
     }
 
     /**
-     * 计算 $fromTimeZone 时区的 $datetime 时间在 $toTimeZone 时区的当地时间
+     * 计算 $fromTimeZone 时区的 $datetime 时间在 $toTimeZone 时区的当地时间,并返回指定时间字符串格式
      *
-     * @param string|int $datetime     $fromTimeZone时区 时间字符串或者时间戳,默认为当前时间now; eg: '2024-04-08 12:00:00'
-     * @param string     $fromTimeZone $datetime的时区 eg: 'Asia/Shanghai'
-     * @param string     $toTimeZone   目标时区 eg: 'America/New_York'
-     * @param string     $format       返回时间格式 eg: 'Y-m-d H:i:s'
+     * @param string|int|array $datetime     $fromTimeZone时区 时间字符串或者时间戳,默认为当前时间now; 支持使用数组方式同时处理多个时间
+     *                                       eg: '2024-04-08 12:00:00'、'1712632337'、['2024-04-08 12:00:00','1712632337']
+     * @param string           $fromTimeZone $datetime的时区 eg: 'Asia/Shanghai'
+     * @param string           $toTimeZone   目标时区 eg: 'America/New_York'
+     * @param string           $format       返回时间格式 eg: 'Y-m-d H:i:s'
      *
-     * @return string
+     * @return string|array
      * @throws Exception
      */
-    public function convertToTimeZone(string|int $datetime, string $fromTimeZone, string $toTimeZone, string $format = 'Y-m-d H:i:s'): string
+    public function toTimeZone(string|int|array $datetime, string $fromTimeZone, string $toTimeZone, string $format = 'Y-m-d H:i:s'): string|array
+    {
+        if (is_array($datetime)) {
+            $result = [];
+            foreach ($datetime as $key => $item) {
+                $result[$key] = $this->toTimeZone($item, $fromTimeZone, $toTimeZone, $format);
+            }
+            return $result;
+        }
+        $dateTimeObj = $this->convertToTimeZoneDateTime($datetime, $fromTimeZone, $toTimeZone);
+        // 返回目标时区的时间
+        return $dateTimeObj->format($format ?? 'Y-m-d H:i:s');
+    }
+
+    /**
+     * 计算 $fromTimeZone 时区的 $datetime 时间在 $toTimeZone 时区的当地时间的 时间戳
+     *
+     * @param string|int|array $datetime     $fromTimeZone时区 时间字符串或者时间戳,默认为当前时间now; 支持使用数组方式同时处理多个时间
+     *                                       eg: '2024-04-08 12:00:00'、'1712632337'、['2024-04-08 12:00:00','1712632337']
+     * @param string           $fromTimeZone
+     * @param string           $toTimeZone
+     *
+     * @return int|array
+     * @throws Exception
+     */
+    public function toTimeZoneTimestamp(string|int|array $datetime, string $fromTimeZone, string $toTimeZone): int|array
+    {
+        if (is_array($datetime)) {
+            $result = [];
+            foreach ($datetime as $key => $item) {
+                $result[$key] = $this->toTimeZoneTimestamp($item, $fromTimeZone, $toTimeZone);
+            }
+            return $result;
+        }
+        $dateTimeObj = $this->convertToTimeZoneDateTime($datetime, $fromTimeZone, $toTimeZone);
+        // 返回目标时区的时间的时间戳
+        return $dateTimeObj->getTimestamp();
+    }
+
+    /**
+     * 计算 $fromTimeZone 时区的 $datetime 时间在 $toTimeZone 时区的当地时间
+     *
+     * @param string|int $datetime
+     * @param string     $fromTimeZone
+     * @param string     $toTimeZone
+     *
+     * @return DateTime
+     * @throws Exception
+     */
+    private function convertToTimeZoneDateTime(string|int $datetime, string $fromTimeZone, string $toTimeZone): DateTime
     {
         if (empty($datetime)) {
             // 默认为当前时间
@@ -94,8 +148,7 @@ class TimeZone
         // 添加时间差
         $dateTimeObj->modify("$timeDifference hours");
 
-        // 返回目标时区的时间
-        return $dateTimeObj->format($format ?? 'Y-m-d H:i:s');
+        return $dateTimeObj;
     }
 
     /**
@@ -122,7 +175,7 @@ class TimeZone
     }
 
     /**
-     * 获取两个时区的差值(小时)
+     * 获取两个时区的时差(小时)
      *
      * @param string $timeZoneA eg: 'Asia/Shanghai'
      * @param string $timeZoneB eg: 'America/New_York'
@@ -153,14 +206,21 @@ class TimeZone
     /**
      * 格式化时间
      *
-     * @param string|int|DateTime $datetime 时间字符串或者时间戳,默认为当前时间now; eg: '2024-04-08 12:00:00'
-     * @param string              $format   返回时间格式 eg: 'Y-m-d H:i:s'
+     * @param string|int|DateTime|array $datetime 时间字符串或者时间戳,默认为当前时间now; 支持使用数组方式同时处理多个时间 eg: '2024-04-08 12:00:00'
+     * @param string                    $format   返回时间格式 eg: 'Y-m-d H:i:s'
      *
-     * @return string
+     * @return string|array
      * @throws Exception
      */
-    public function format(string|int|DateTime $datetime, string $format = 'Y-m-d H:i:s'): string
+    public function format(string|int|DateTime|array $datetime, string $format = 'Y-m-d H:i:s'): string|array
     {
+        if (is_array($datetime)) {
+            $result = [];
+            foreach ($datetime as $key => $item) {
+                $result[$key] = $this->format($item, $format);
+            }
+            return $result;
+        }
         if ($datetime instanceof DateTime) {
             $dateTimeObj = $datetime;
         } else {

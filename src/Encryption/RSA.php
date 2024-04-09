@@ -103,6 +103,12 @@ class RSA
             "private_key_type" => OPENSSL_KEYTYPE_RSA, // 选择在创建 CSR 时应该使用哪些扩展,此类为Rsa类，所以此处固定为OPENSSL_KEYTYPE_RSA
         );
 
+        // 设置随机种子
+        openssl_random_pseudo_bytes(32, $crypto_strong);
+        if (!$crypto_strong) {
+            self::handleError("Could not generate a strong key. Please try again.");
+        }
+
         // 创建密钥对
         $result = openssl_pkey_new($config);
         if ($result === false) {

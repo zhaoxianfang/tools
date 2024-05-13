@@ -15,38 +15,38 @@ composer require zxf/tools
 
 ## 涵盖模块
 
-| 模块            | 需要包含的文件夹/说明                                                                                     |
-|---------------|-------------------------------------------------------------------------------------------------|
-| QQ登录          | Qqlogin                                                                                         |
-| 微信            | WeChat                                                                                          |
-| 支付            | Pay/WechatPayFactory                                                                            |
-| 截图            | ScreenShot                                                                                      |
-| 微博登录          | sina                                                                                            |
-| zxf\Min\JsMin | js 压缩工具                                                                                         |
-| zxf\Min\JS    | js 压缩工具(推荐)                                                                                     |
-| zxf\Min\CSS   | css 压缩工具(推荐)                                                                                    |
-| QrCode        | 生成二维码                                                                                           |
-| BarCode       | 生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
-| Compressor    | 图片压缩类                                                                                           |
-| Cache         | 文件缓存                                                                                            |
-| TextToPNG     | 文字转图片                                                                                           |
-| TextToImg     | 文字转图片                                                                                           |
-| PHPMailer     | 发送邮件                                                                                            |
-| Curl          | http 网络请求                                                                                       |
-| Sms           | 发送短信: ali(阿里云)[默认] 或者 tencent（腾讯云）                                                              |
-| MysqlTool     | 创建mysql数据库字典                                                                                    |
-| Img           | 修改图片尺寸、给图片上添加文字等                                                                                |
-| Pinyin        | 中文转拼音                                                                                           |
-| Menu          | 生成目录菜单(adminlte、layuiadmin、nazox、inspinia)                                                      |
-| Random        | 生成随机数                                                                                           |
-| ImgToIco      | 图片转ico 格式                                                                                       |
-| Modules       | laravel 多模块应用                                                                                   |
-| Command       | 命令行解析工具                                                                                         |
-| Tree          | 树形结构化                                                                                           |
-| dom           | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                      |
-| Db/Model      | Mysql 的基础操作类Db;封装调用类Model                                                                       |
-| 其他            | 还有一些没有写在此处的工具类                                                                                  |
-
+| 模块             | 需要包含的文件夹/说明                                                                                     |
+|----------------|-------------------------------------------------------------------------------------------------|
+| QQ登录           | Qqlogin                                                                                         |
+| 微信             | WeChat                                                                                          |
+| 支付             | 支付                                                                                              |
+| 截图             | ScreenShot                                                                                      |
+| 微博登录           | sina                                                                                            |
+| zxf\Min\JsMin  | js 压缩工具                                                                                         |
+| zxf\Min\JS     | js 压缩工具(推荐)                                                                                     |
+| zxf\Min\CSS    | css 压缩工具(推荐)                                                                                    |
+| QrCode         | 生成二维码                                                                                           |
+| BarCode        | 生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
+| Compressor     | 图片压缩类                                                                                           |
+| Cache          | 文件缓存                                                                                            |
+| TextToPNG      | 文字转图片                                                                                           |
+| TextToImg      | 文字转图片                                                                                           |
+| PHPMailer      | 发送邮件                                                                                            |
+| Curl           | http 网络请求                                                                                       |
+| Sms            | 发送短信: ali(阿里云)[默认] 或者 tencent（腾讯云）                                                              |
+| MysqlTool      | 创建mysql数据库字典                                                                                    |
+| Database       | 数据库模型                                                                                           |
+| Img            | 修改图片尺寸、给图片上添加文字等                                                                                |
+| Pinyin         | 中文转拼音                                                                                           |
+| Menu           | 生成目录菜单(adminlte、layuiadmin、nazox、inspinia)                                                      |
+| Random         | 生成随机数                                                                                           |
+| ImgToIco       | 图片转ico 格式                                                                                       |
+| Modules        | laravel 多模块应用                                                                                   |
+| Command        | 命令行解析工具                                                                                         |
+| Tree           | 树形结构化                                                                                           |
+| Dom            | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                      |
+| Encryption     | AES、RSA加密解密                                                                                     |
+| 其他             | Collection、Tree、Command、图片处理、文件操作等工具类                                                           |
 
 ### 微信
 
@@ -229,11 +229,14 @@ $minifiedCode = JsMin::minify($jsString);
 ```
 
 ### js压缩
+
 ```
 $minifier   = new \zxf\Min\JS('var a = "hello";',$jsFilePath,...); // 实例化 并混合自动引入 任意个 需要压缩的 js 文件路径 和 代码段
 $res = $minifier->minify();
 ```
+
 ### css压缩
+
 ```
 $minifier   = new \zxf\Min\CSS('body { color: #000000; }',$cssFilePath,...); // 实例化 并混合自动引入 任意个 需要压缩的 css 文件路径 和 代码段
 $res = $minifier->minify();
@@ -422,6 +425,7 @@ $font = 'pmzdxx'; // 使用的字体
 
 TextToPNG::instance()->setFontStyle($font)->setText($text)->setSize('900', '500')->setColor($color)->setBackgroundColor($bgcolor)->setTransparent(false)->setRotate($rotate)->draw();
 ```
+
 ### TextToImage 文字转图片
 
 ``` php
@@ -635,6 +639,6 @@ $cmd->getArgVal('test');
  */
 ```
 
-
 ## 更多
+
 <a href="http://0l0.net/docs/2" target="_blank" >查看更多</a>

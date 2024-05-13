@@ -14,6 +14,7 @@
 namespace zxf\Http;
 
 use Exception;
+use zxf\Tools\Collection;
 
 class Curl
 {
@@ -61,7 +62,7 @@ class Curl
      * @return Curl
      * @throws Exception
      */
-    public static function instance($options = [])
+    public static function instance(array $options = [])
     {
         if (!isset(self::$instance) || is_null(self::$instance)) {
             self::$instance = new static($options);
@@ -226,14 +227,15 @@ class Curl
     /**
      * 设置http请求的参数,get或post
      *
-     * @param array $params
+     * @param array  $params
+     * @param string $data_type 数据类型 array|json|string
      *
      * @return $this
      * setParams( array('abc'=>'123', 'file1'=>'@/data/1.jpg'));
      * setParams( {'a'=>'str_a'});
      * @throws Exception
      */
-    public function setParams($params, $data_type = 'array')
+    public function setParams(array $params, string $data_type = 'array')
     {
         $this->initCurl();
         //支持json数据数据提交
@@ -241,7 +243,7 @@ class Curl
             $params = json_encode($params);
         } elseif ($data_type == 'array') {
             $params = obj2Arr($params);
-        } elseif (is_array($params)) {
+        } else {
             $params = http_build_query($params, '', '&');
         }
         $this->httpParams = $params;
@@ -285,7 +287,7 @@ class Curl
      * 模拟GET请求
      *
      * @param string $url
-     * @param string $data_type
+     * @param string $data_type 返回数据类型
      *
      * @return mixed
      *
@@ -481,7 +483,12 @@ class Curl
         return $found;
     }
 
-    protected function run($data_type = 'json')
+    /**
+     * @param string $data_type 返回数据类型 json|string|collection
+     *
+     * @return array|mixed
+     */
+    protected function run(string $data_type = 'json')
     {
         $content = curl_exec($this->ch);
         $errInfo = curl_error($this->ch);
@@ -492,7 +499,7 @@ class Curl
         if (empty($content) && !empty($errInfo)) {
             $content = $errInfo;
         }
-        if (substr($content, 0, 9) === 'callback(') {
+        if (str_starts_with($content, 'callback(')) {
             $result = [];
             preg_match_all("/(?:\{)(.*)(?:\})/i", $content, $result);
             $content = $result[0][0];
@@ -508,8 +515,17 @@ class Curl
         if (is_string($content) && $this->isJson($content) && $data_type == 'json') {
             $content = json_decode($content, true);
         }
+        $jsonArr = $this->objectArray($content);
+        if ($data_type == 'string') {
+            return json_array_to_string($jsonArr);
+        }
+        // 集合
+        if ($data_type == 'collection') {
+            return new Collection();
+        }
+        // 默认返回json 数组
+        return $jsonArr;
 
-        return $this->objectArray($content);
     }
 
     //PHP stdClass Object转array
@@ -532,7 +548,7 @@ class Curl
      *
      * @param string $string Json 字符串
      *
-     * @return array|bool|object 成功返回true，失败返回 false
+     * @return bool 成功返回true，失败返回 false
      */
     protected function isJson(string $string = ''): bool
     {

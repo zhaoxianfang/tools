@@ -1523,7 +1523,7 @@ if (!function_exists('is_qq_browser')) {
     {
         // 获取所有的header信息
         $headers         = getallheaders();
-        $http_user_agent = $_SERVER['HTTP_USER_AGENT'];
+        $http_user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
         return str_contains($http_user_agent, 'MQQBrowser') || str_contains($http_user_agent, 'QQ') || isset($headers['X-QQ-From']);
     }
 }
@@ -1538,7 +1538,7 @@ if (!function_exists('is_wechat_browser')) {
     {
         // 获取所有的header信息
         $headers         = getallheaders();
-        $http_user_agent = $_SERVER['HTTP_USER_AGENT'];
+        $http_user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
         return str_contains($http_user_agent, 'MicroMessenger') || str_contains($http_user_agent, 'WeChat') || isset($headers['X-Weixin-From']);
     }
 }
@@ -1553,7 +1553,7 @@ if (!function_exists('is_weibo_browser')) {
     {
         // 获取所有的header信息
         $headers         = getallheaders();
-        $http_user_agent = $_SERVER['HTTP_USER_AGENT'];
+        $http_user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
         return str_contains($http_user_agent, 'Weibo') || isset($headers['X-Weibo-From']);
     }
 }
@@ -1568,7 +1568,7 @@ if (!function_exists('is_alipay_browser')) {
     {
         // 获取所有的header信息
         $headers         = getallheaders();
-        $http_user_agent = $_SERVER['HTTP_USER_AGENT'];
+        $http_user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
         return str_contains($http_user_agent, 'AlipayClient') || str_contains($http_user_agent, 'Alipay') || isset($headers['X-Weibo-From']);
     }
 }

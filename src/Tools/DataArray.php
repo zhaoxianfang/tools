@@ -21,7 +21,6 @@ use JsonSerializable;
  * 2、使用对象的方式调用
  * var_dump($data->get('a'));
  *
- * @package zxf\Tools
  */
 class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAggregate
 {

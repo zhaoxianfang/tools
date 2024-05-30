@@ -14,7 +14,7 @@ $minifiedCode = JsMin::minify($jsOrCssString);
 
 修改自 `https://github.com/matthiasmullie/minify` 仓库
 update_at:2024-05-13
-version:1.7.13
+version:1.3.73
 
 ``` php
 use zxf\Min;

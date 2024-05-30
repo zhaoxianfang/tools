@@ -448,7 +448,7 @@ class Curl
      * @return array|mixed
      * @throws Exception
      */
-    public function download($url = '', $filePath = '')
+    public function download(string $url = '', string $filePath = '')
     {
         set_time_limit(0);
         $this->initCurl();
@@ -521,7 +521,7 @@ class Curl
         }
         // 集合
         if ($data_type == 'collection') {
-            return new Collection();
+            return new Collection($jsonArr);
         }
         // 默认返回json 数组
         return $jsonArr;

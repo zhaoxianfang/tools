@@ -2,7 +2,8 @@
 
 > https://github.com/PHPMailer/PHPMailer/
 
-update_at:2024-01-11
+update_at:2024-05-30
+version:5.5
 
 ## 最小安装
 

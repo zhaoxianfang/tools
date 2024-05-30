@@ -493,7 +493,7 @@ class Tools
     /**
      * 删除文件夹及其文件夹下所有文件
      */
-    public function deldir($dir)
+    public function delDir($dir)
     {
         //先删除目录下的文件：
         $dh = opendir($dir);
@@ -503,7 +503,7 @@ class Tools
                 if (!is_dir($fullpath)) {
                     unlink($fullpath);
                 } else {
-                    self::deldir($fullpath);
+                    self::delDir($fullpath);
                 }
             }
         }

@@ -197,7 +197,7 @@ class Cache
         $res = is_file($file) && unlink($file);
         $dir = dirname($file);
         if (dir_is_empty($dir)) {
-            deldir($dir);
+            del_dir($dir);
         }
         return $res;
     }
@@ -348,7 +348,7 @@ class Cache
     public function flush(): bool
     {
         try {
-            deldir($this->config['cache_path'], false);
+            del_dir($this->config['cache_path'], false);
             return true;
         } catch (Exception $e) {
             return false;

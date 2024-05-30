@@ -23,12 +23,12 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
     public function __construct($app)
     {
-        is_laravel() && parent::__construct($app);
+        is_laravel() && !empty(config('modules.enable')) && parent::__construct($app);
     }
 
     public function boot()
     {
-        if (!is_laravel()) {
+        if (!is_laravel() || empty(config('modules.enable'))) {
             return;
         }
         $this->bootPublishes();
@@ -44,7 +44,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
     public function register()
     {
-        if (!is_laravel()) {
+        if (!is_laravel() || empty(config('modules.enable'))) {
             return;
         }
         // 注册modules 模块服务

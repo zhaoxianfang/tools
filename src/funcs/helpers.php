@@ -271,11 +271,11 @@ if (!function_exists('del_dirs')) {
         return true;
     }
 }
-if (!function_exists('deldir')) {
+if (!function_exists('del_dir')) {
     /**
      * 删除文件夹及其文件夹下所有文件
      */
-    function deldir($dir)
+    function del_dir($dir)
     {
         //先删除目录下的文件：
         $dh = opendir($dir);
@@ -285,7 +285,7 @@ if (!function_exists('deldir')) {
                 if (!is_dir($fullpath)) {
                     unlink($fullpath);
                 } else {
-                    deldir($fullpath);
+                    del_dir($fullpath);
                 }
             }
         }

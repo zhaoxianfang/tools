@@ -23,23 +23,16 @@ class Array2XML
     /**
      * Convert an Array to XML.
      *
-     * @param array  $arr       - array to be converted
      * @param string $node_name - name of the root node to be converted
-     * @param array  $attr      - xml attributes - optional array   - ex: [
-     *                          'version' => '1.0',
-     *                          'encoding' => 'UTF-8',
-     *                          'standalone' => true,
-     *                          'formatOutput' => true
-     *                          ]
-     * @param array  $docType   - optional docType
+     * @param array|null $arr - array to be converted
+     * @param array $docType - optional docType
      *
-     * @return false|string
-     * @throws \DOMException
+     * @return DomDocument
+     * @throws Exception
      */
-    public static function createXML(array $arr = [], string $node_name = 'root', array $attr = [], array $docType = [])
+    public static function createXML(string $node_name, $arr = [], array $docType = [])
     {
-        self::$xml = null; // 先进行重置，防止上次的数据影响
-        $xml       = self::getXMLRoot($attr);
+        $xml = self::getXMLRoot();
 
         // BUG 008 - Support <!DOCTYPE>
         if ($docType) {
@@ -52,11 +45,11 @@ class Array2XML
                     )
             );
         }
-        $node_name = !empty($node_name) ? $node_name : 'root';
+
         $xml->appendChild(self::convert($node_name, $arr));
         self::$xml = null;    // clear the xml node in the class for 2nd time use.
 
-        return $xml->saveXML();
+        return $xml;
     }
 
     /**
@@ -72,23 +65,23 @@ class Array2XML
         $v = $v === true ? 'true' : $v;
         $v = $v === false ? 'false' : $v;
 
-        return $v;
+        return $v ?? '';
     }
 
     /**
      * Convert an Array to XML.
      *
      * @param string $node_name - name of the root node to be converted
-     * @param array  $arr       - array to be converted
+     * @param array|string|null $arr - array to be converted
      *
      * @return DOMNode
      *
      * @throws Exception
      */
-    private static function convert($node_name, $arr = [])
+    private static function convert(string $node_name, $arr = [])
     {
         //print_arr($node_name);
-        $xml  = self::getXMLRoot();
+        $xml = self::getXMLRoot();
         $node = $xml->createElement($node_name);
 
         if (is_array($arr)) {
@@ -96,7 +89,7 @@ class Array2XML
             if (array_key_exists(self::$labelAttributes, $arr) && is_array($arr[self::$labelAttributes])) {
                 foreach ($arr[self::$labelAttributes] as $key => $value) {
                     if (!self::isValidTagName($key)) {
-                        throw new Exception('[Array2XML] Illegal character in attribute name. attribute: ' . $key . ' in node: ' . $node_name);
+                        throw new Exception('[Array2XML] Illegal character in attribute name. attribute: '.$key.' in node: '.$node_name);
                     }
                     $node->setAttribute($key, self::bool2str($value));
                 }
@@ -106,11 +99,17 @@ class Array2XML
             // check if it has a value stored in @value, if yes store the value and return
             // else check if its directly stored as string
             if (array_key_exists(self::$labelValue, $arr)) {
+                if (!self::isValidValue($arr[self::$labelValue])) {
+                    throw new Exception('[Array2XML] Illegal character in value : '.$arr[self::$labelValue].' in node: '.$node_name);
+                }
                 $node->appendChild($xml->createTextNode(self::bool2str($arr[self::$labelValue])));
                 unset($arr[self::$labelValue]);    //remove the key from the array once done.
                 //return from recursion, as a note with value cannot have child nodes.
                 return $node;
             } elseif (array_key_exists(self::$labelCData, $arr)) {
+                if (!self::isValidValue($arr[self::$labelCData])) {
+                    throw new Exception('[Array2XML] Illegal character in CData : '.$arr[self::$labelCData].' in node: '.$node_name);
+                }
                 $node->appendChild($xml->createCDATASection(self::bool2str($arr[self::$labelCData])));
                 unset($arr[self::$labelCData]);    //remove the key from the array once done.
                 //return from recursion, as a note with cdata cannot have child nodes.
@@ -123,7 +122,7 @@ class Array2XML
             // recurse to get the node for that key
             foreach ($arr as $key => $value) {
                 if (!self::isValidTagName($key)) {
-                    throw new Exception('[Array2XML] Illegal character in tag name. tag: ' . $key . ' in node: ' . $node_name);
+                    throw new Exception('[Array2XML] Illegal character in tag name. tag: '.$key.' in node: '.$node_name);
                 }
                 if (is_array($value) && is_numeric(key($value))) {
                     // MORE THAN ONE NODE OF ITS KIND;
@@ -143,6 +142,9 @@ class Array2XML
         // after we are done with all the keys in the array (if it is one)
         // we check if it has any text value, if yes, append it.
         if (!is_array($arr)) {
+            if (!self::isValidValue($arr)) {
+                throw new Exception('[Array2XML] Illegal character : '.$arr.' in node: '.$node_name);
+            }
             $node->appendChild($xml->createTextNode(self::bool2str($arr)));
         }
 
@@ -154,10 +156,10 @@ class Array2XML
      *
      * @return DomDocument|null
      */
-    private static function getXMLRoot($attr = [])
+    private static function getXMLRoot()
     {
         if (empty(self::$xml)) {
-            self::init(!empty($attr['version']) ? $attr['version'] : null, !empty($attr['encoding']) ? $attr['encoding'] : null, !empty($attr['standalone']) ? $attr['standalone'] : null, !empty($attr['formatOutput']) ? $attr['formatOutput'] : null);
+            self::init();
         }
 
         return self::$xml;
@@ -166,15 +168,22 @@ class Array2XML
     /**
      * Check if the tag name or attribute name contains illegal characters
      * Ref: http://www.w3.org/TR/xml/#sec-common-syn.
-     *
-     * @param string $tag
-     *
-     * @return bool
      */
-    private static function isValidTagName($tag)
+    private static function isValidTagName(string $tag): bool
     {
-        $pattern = '/^[a-z_]+[a-z0-9\:\-\.\_]*[^:]*$/i';
+        $pattern = '/^[a-z_][a-z0-9:._-]*[a-z0-9._-]$/i';
 
-        return preg_match($pattern, $tag, $matches) && $matches[0] == $tag;
+        return preg_match($pattern, $tag, $matches) && $matches[0] === $tag;
+    }
+
+    /**
+     * Check if the value contains illegal characters
+     * Ref: https://www.w3.org/TR/xml/#NT-Char
+     */
+    private static function isValidValue(string $value = null): bool
+    {
+        $pattern = '/^[\x09\x0A\x0D\x20-\x7E\x85\xA0-\x{D7FF}\x{E000}-\x{FFFD}]*$/u';
+
+        return is_null($value) || (preg_match($pattern, $value, $matches) && $matches[0] === $value);
     }
 }

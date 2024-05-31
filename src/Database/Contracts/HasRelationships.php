@@ -155,13 +155,69 @@ trait HasRelationships
     }
 
     /**
+     * 远程一对一关联，
+     *      例如：一个点赞属于一条评论，一条评论属于一篇文章， 就可以通过这个点赞找到远程关联的唯一文章（ 点赞->评论->文章 ）
+     *
+     * @param Model|string $targetTable        目标表 例：文章表 articles
+     * @param Model|string $throughTable       中间表 例：评论表 comments
+     * @param string       $throughToLocalKey  中间表关联当前表的外键 例：点赞表关联评论表的外键 comment_id
+     * @param string       $targetToThroughKey 目标表关联中间表的外键 例：评论表关联文章表的外键 article_id
+     * @param string       $throughKey         中间表的主键 例：评论表的主键id
+     * @param string       $targetKey          目标表的主键 例：文章表的主键id
+     *
+     * @return mixed
+     */
+    public function hasOneThrough(Model|string $targetTable, Model|string $throughTable, string $throughToLocalKey, string $targetToThroughKey, string $throughKey = 'id', string $targetKey = 'id', string $field = '*')
+    {
+        $targetTableName  = is_string($targetTable) ? $targetTable : ($targetTable instanceof Model ? $targetTable->getTableName() : '');
+        $throughTableName = is_string($throughTable) ? $throughTable : ($throughTable instanceof Model ? $throughTable->getTableName() : '');
+        $field            = empty($field) ? '*' : $field;
+
+        return self::query()->getDb()
+            ->table($targetTableName)
+            ->select(explode(',', $field))
+            ->join($throughTableName, "{$throughTableName}.{$targetToThroughKey} = {$targetTableName}.{$targetKey}")
+            ->join($this->getTableName(), "{$this->getTableName()}.{$targetToThroughKey} = {$throughTableName}.{$throughKey}")
+            ->where("{$throughTableName}.{$throughToLocalKey}", $this->getPrimaryKeyValue())
+            ->limit(1);
+    }
+
+    /**
+     * 远程一对多关联，
+     *      例如：一个文章有多条评论，一条评论有多个点赞， 就可以通过某个文章找到这个文章所有评论里的点赞 （文章->n个评论->n个点赞）
+     *
+     * @param Model|string $targetTable        目标表 例：点赞表 zan
+     * @param Model|string $throughTable       中间表 例：评论表 comment
+     * @param string       $throughToLocalKey  中间表关联当前表的外键 例：评论表关联文章表的外键 article_id
+     * @param string       $targetToThroughKey 目标表关联中间表的外键 例：评论表关联文章表的外键 comment_id
+     * @param string       $targetKey          当前表的主键 例：文章表的主键id
+     * @param string       $throughKey         中间表的主键 例：评论表的主键id
+     * @param string       $field
+     *
+     * @return void
+     */
+    public function hasManyThrough(Model|string $targetTable, Model|string $throughTable, string $throughToLocalKey, string $targetToThroughKey, string $targetKey = 'id', string $throughKey = 'id', string $field = '*')
+    {
+        $targetTableName  = is_string($targetTable) ? $targetTable : ($targetTable instanceof Model ? $targetTable->getTableName() : '');
+        $throughTableName = is_string($throughTable) ? $throughTable : ($throughTable instanceof Model ? $throughTable->getTableName() : '');
+        $field            = empty($field) ? '*' : $field;
+
+        return self::query()->getDb()
+            ->table($targetTableName)
+            ->select(explode(',', $field))
+            ->join($throughTableName, "{$targetTableName}.{$targetToThroughKey} = {$throughTableName}.{$throughKey}")
+            ->join($this->getTableName(), "{$throughTableName}.{$throughToLocalKey} = {$this->getTableName()}.{$targetKey} ")
+            ->where("{$throughTableName}.{$throughToLocalKey}", $this->getPrimaryKeyValue());
+    }
+
+    /**
      * 判断是否是关联关系
      *
      * @param string $name
      *
      * @return mixed
      */
-    private function hasRelationAndGet($name): mixed
+    private function hasRelationAndGet(string $name): mixed
     {
         if (method_exists($this, $name)) {
             $fun = $this->$name();

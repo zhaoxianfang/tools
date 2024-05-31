@@ -85,6 +85,11 @@ class SqlBuildGenerator
         return $this;
     }
 
+    public function from(string $name, string $dynamicAlias = null)
+    {
+        return $this->table($name, $dynamicAlias);
+    }
+
     /**
      * 设置查询字段
      *
@@ -326,7 +331,7 @@ class SqlBuildGenerator
      *
      * @return $this
      */
-    public function whereRow(Closure|string|array $column, mixed $operator = null, mixed $value = null): self
+    public function whereRaw(Closure|string|array $column, mixed $operator = null, mixed $value = null): self
     {
         return $this->where($column, $operator, $value, 'AND', true);
     }
@@ -340,7 +345,7 @@ class SqlBuildGenerator
      *
      * @return $this
      */
-    public function orWhereRow(Closure|string|array $column, mixed $operator = null, mixed $value = null): self
+    public function orWhereRaw(Closure|string|array $column, mixed $operator = null, mixed $value = null): self
     {
         return $this->where($column, $operator, $value, 'OR', true);
     }
@@ -358,6 +363,40 @@ class SqlBuildGenerator
     public function orWhere(Closure|string|array $column, mixed $operator = null, mixed $value = null): self
     {
         return $this->where($column, $operator, $value, 'OR');
+    }
+
+    /**
+     * 字段列比较
+     *  eg: ->whereColumn('id', '=', 'uid')
+     *      ->whereColumn('id', '!=', 'uid')
+     *      ->whereColumn('id', 'uid') // 等价于 ->whereColumn('id', '=', 'uid')
+     *
+     * @param string      $columnFirst     第一个字段
+     * @param string      $operator        操作符号
+     * @param string|null $columnSecond    第二个字段
+     * @param string      $logicalOperator 连接逻辑运算符
+     *
+     * @return $this
+     */
+    public function whereColumn(string $columnFirst, string $operator, string $columnSecond = null, string $logicalOperator = 'AND')
+    {
+        if (empty($columnSecond)) {
+            $columnSecond = $operator;
+            $operator     = '=';
+        }
+        $this->validateOperator($operator);
+        $this->whereConditions[] = [
+            'field'           => $columnFirst,
+            'operator'        => $operator,
+            'value'           => $columnSecond,
+            'logicalOperator' => $logicalOperator,
+        ];
+        return $this;
+    }
+
+    public function orWhereColumn(string $columnFirst, string $operator, string $columnSecond = null)
+    {
+        return $this->whereColumn($columnFirst, $operator, $columnSecond, 'OR');
     }
 
     /**
@@ -1430,6 +1469,11 @@ class SqlBuildGenerator
         return $query;
     }
 
+    public function clone()
+    {
+        return clone $this;
+    }
+
     public function __destruct()
     {
         $this->reset();
@@ -1441,13 +1485,21 @@ class SqlBuildGenerator
     #[NoReturn]
     public function dd(): void
     {
+        $this->dump();
+        exit(1);
+    }
+
+    /**
+     * 调试SQL：获取构建后的 SQL 语句和绑定参数
+     */
+    public function dump()
+    {
         echo '<pre>';
         var_dump([
             'sql'      => $this->toSql(),
             'building' => $this->buildQuery(),
             'bindings' => $this->getBindings(),
         ]);
-        exit(1);
     }
 
     /**

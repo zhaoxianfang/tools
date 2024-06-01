@@ -61,6 +61,11 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
         return $result;
     }
 
+    public function getItems(): array
+    {
+        return $this->items;
+    }
+
     /**
      * 实现 ArrayAccess 接口的 offsetExists 方法
      *
@@ -142,7 +147,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     {
         $array = [];
         foreach ($items as $key => $value) {
-            if ($value instanceof Collection) {
+            if ($value instanceof self) {
                 $array[$key] = $value->toArray();
             } else {
                 $array[$key] = $value;
@@ -168,7 +173,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     }
 
     /**
-     * 自定义方法，直接返回JSON字符串
+     * 转换为带缩进格式的JSON字符串
      *
      * @return string JSON格式的字符串表示
      */
@@ -180,7 +185,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     /* 实现__toString接口，用于直接输出JSON格式的字符串 */
     public function __toString(): string
     {
-        return $this->toJson();
+        return json_encode($this);
     }
 
     /**
@@ -224,6 +229,36 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     // ===================================
 
     /**
+     * 查找数据
+     *
+     * @param string     $column  键名 eg: user, user.name, 0.name,0.name.name
+     * @param mixed|null $default 默认值
+     *
+     * @return array|mixed|void|null
+     */
+    public function get(string $column, mixed $default = null)
+    {
+        // 把$key 根据 . 分割为数组
+        $keys = explode('.', $column);
+
+        while (count($keys) > 0) {
+            $key = array_shift($keys);
+            if ($this->offsetExists($key)) {
+                $find = $this->offsetGet($key);
+                if ($keys) {
+                    $this->items = (new static($find))->getItems();
+                } else {
+                    // return !empty($find) ? ($find instanceof self ? $find->toArray() : $find) : $default;
+                    return !empty($find) ? $find : $default;
+                }
+            } else {
+                $keys = [];
+                return $default;
+            }
+        }
+    }
+
+    /**
      * 检查集合是否为空
      *
      * @return bool
@@ -233,6 +268,11 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
         return empty($this->toArray());
     }
 
+    public function isNotEmpty(): bool
+    {
+        return !empty($this->toArray());
+    }
+
     /**
      * 过滤集合，根据回调函数返回符合条件的元素组成新的集合
      *
@@ -240,7 +280,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      *
      * @return static 返回一个新的Collection实例
      */
-    public function filter(callable $callback): static
+    protected function filter(callable $callback): static
     {
         $filteredItems = array_filter($this->toArray(), $callback, ARRAY_FILTER_USE_BOTH);
         return new static($filteredItems);
@@ -254,7 +294,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      */
     public function filterNull(): static
     {
-        return new static(array_filter($this->toArray(), function ($value) {
+        return new static(array_filter($this->items, function ($value) {
             return !empty($value);
         }));
     }
@@ -341,38 +381,31 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
         } elseif (is_array($columnOrCallback)) {
             return $this->whereNested($columnOrCallback);
         } else {
-            $operator = empty($value) ? '=' : $operatorOrValue;
-            $value    = $value ?? $operatorOrValue;
-            return new static($this->filter(function ($item) use ($columnOrCallback, $operator, $value) {
+            if (is_callable($operatorOrValue)) {
+                $operator = $operatorOrValue;
+            } else {
+                $operator = !empty($value) ? $operatorOrValue : (
+                in_array($operatorOrValue, ['=', '==', '!=', '<>', '>', '<', '>=', '<=', 'like', 'LIKE', 'null', 'not_null']) ? $operatorOrValue : '='
+                );
+            }
+            $value = $value ?? $operatorOrValue;
+            return new static($this->filter(function ($item, $itemIndex) use ($columnOrCallback, $operator, $value) {
                 $itemValue = $this->getData($item, $columnOrCallback);
                 if (is_callable($operator)) {
-                    return $operator($itemValue);
+                    return $operator($itemValue, $itemIndex);
                 }
-                switch ($operator) {
-                    case '=':
-                    case '==':
-                        return $itemValue == $value;
-                    case '!=':
-                    case '<>':
-                        return $itemValue != $value;
-                    case '>':
-                        return $itemValue > $value;
-                    case '<':
-                        return $itemValue < $value;
-                    case '>=':
-                        return $itemValue >= $value;
-                    case '<=':
-                        return $itemValue <= $value;
-                    case 'like':
-                    case 'LIKE':
-                        return $this->stringLike($itemValue, $value);
-                    case 'null':
-                        return $itemValue === null;
-                    case 'not_null':
-                        return $itemValue !== null;
-                    default:
-                        throw new InvalidArgumentException("Unsupported operator '$operator'.");
-                }
+                return match ($operator) {
+                    '=', '=='      => $itemValue == $value,
+                    '!=', '<>'     => $itemValue != $value,
+                    '>'            => $itemValue > $value,
+                    '<'            => $itemValue < $value,
+                    '>='           => $itemValue >= $value,
+                    '<='           => $itemValue <= $value,
+                    'like', 'LIKE' => $this->stringLike($itemValue, $value),
+                    'null'         => empty($itemValue),
+                    'not_null'     => !empty($itemValue),
+                    default        => throw new InvalidArgumentException("Unsupported operator '$operator'."),
+                };
             }));
 
         }
@@ -438,13 +471,17 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      * 查询指定键值在某个区间内的元素
      *
      * @param string $column 键名
-     * @param mixed  $min    最小值
-     * @param mixed  $max    最大值
+     * @param array  $value  查询区间 eg:[1, 10]
      *
      * @return static 返回符合筛选条件的新集合实例
      */
-    public function whereBetween(string $column, $min, $max): static
+    public function whereBetween(string $column, array $value): static
     {
+        if (count($value) != 2) {
+            return $this;
+        }
+        $min = $value[0];
+        $max = $value[1];
         return $this->where($column, function ($itemValue) use ($min, $max) {
             return $itemValue >= $min && $itemValue <= $max;
         });
@@ -453,18 +490,23 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     /**
      * 向集合中添加元素
      *
-     * @param mixed $element 要添加的元素，可以是单个值或另一个Collection
+     * @param Collection|array $element 要添加的元素，可以是单个值或另一个Collection
      *
      * @return $this 返回当前集合，便于链式调用
      */
-    public function add(mixed $element): self
+    public function add(Collection|array $element): self
     {
+        $arrayDepth   = $this->getArrayDimension();
+        $elementDepth = $this->getArrayDimension($element);
+
         if (is_array($element)) {
-            $this->items = array_merge($this->items, $element);
-        } elseif ($element instanceof Collection) {
-            $this->items = array_merge($this->items, $element->toArray());
-        } else {
-            $this->items[] = $element;
+            if ($arrayDepth > $elementDepth) {
+                $this->items = $this->convertToCollections(array_merge($this->toArray(), [$element]));
+            } else {
+                $this->items = $this->convertToCollections(array_merge($this->toArray(), $element));
+            }
+        } elseif ($element instanceof self) {
+            $this->items = $this->convertToCollections(array_merge($this->toArray(), $element->toArray()));
         }
         return $this;
     }
@@ -472,81 +514,42 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     /**
      * 从集合中移除指定的元素
      *
-     * @param mixed $element 要移除的元素，可以是值或键
+     * @param array $columns 要移除的元素 eg:['id' => 1,'name' => 'John']
      *
-     * @return bool 是否成功移除
+     * @return self
      */
-    public function remove(mixed $element): bool
+    public function remove(array $columns = []): self
     {
-        $key = array_search($element, $this->items, true);
-        if ($key !== false) {
-            unset($this->items[$key]);
+        $items       = $this->filter(function ($item) use ($columns) {
+            foreach ($columns as $column => $value) {
+                if ($item[$column] == $value) {
+                    return false;
+                }
+            }
             return true;
-        }
-        return false;
-    }
-
-    /**
-     * 合并两个集合
-     *
-     * @param array|Collection $other 另一个集合或数组
-     *
-     * @return $this 返回当前集合，便于链式调用
-     */
-    public function merge(array|Collection $other): self
-    {
-        if ($other instanceof Collection) {
-            $other = $other->toArray();
-        }
-        $this->items = array_merge($this->items, $other);
+        });
+        $this->items = $this->convertToCollections($items->toArray());
         return $this;
     }
 
     /**
-     * 对集合进行排序
+     * 根据指定键或闭包对集合进行排序
      *
-     * @param callable|null $callback 排序比较函数，默认按自然顺序排序
+     * @param callable|int|string $keyOrClosure 排序依据的键名或排序闭包
+     * @param int                 $direction    排序方向，SORT_ASC 升序，SORT_DESC 降序，默认升序
      *
-     * @return $this 返回当前集合，便于链式调用
+     * @return static 返回一个新的排序后的Collection实例
      */
-    public function sort(?callable $callback = null): self
+    public function sortBy(callable|int|string $keyOrClosure, int $direction = SORT_ASC): static
     {
-        if ($callback === null) {
-            sort($this->items);
+        if (is_callable($keyOrClosure)) {
+            usort($this->items, $keyOrClosure);
         } else {
-            usort($this->items, $callback);
-        }
-        return $this;
-    }
-
-    /**
-     * 按键对关联数组进行排序
-     *
-     * @param int $order SORT_ASC 升序，SORT_DESC 降序
-     *
-     * @return static 返回排序后的Collection实例
-     */
-    public function sortKeys(int $order = SORT_ASC): static
-    {
-        if ($this->isAssoc()) {
-            ksort($this->items, $order);
-        } else {
-            sort($this->items, $order);
+            usort($this->items, function ($a, $b) use ($keyOrClosure, $direction) {
+                return ($a[$keyOrClosure] <=> $b[$keyOrClosure]) * ($direction == SORT_DESC ? -1 : 1);
+            });
         }
         return new static($this->items);
-    }
-
-    /**
-     * 判断数组是否为关联数组
-     *
-     * @return bool 如果集合代表的是关联数组返回true，否则返回false
-     */
-    protected function isAssoc(): bool
-    {
-        if (empty($this->items)) {
-            return false;
-        }
-        return array_keys($this->items) !== range(0, count($this->items) - 1);
     }
 
     /**
@@ -559,27 +562,6 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     public function sortByDesc(callable|int|string $keyOrClosure): static
     {
         return $this->sortBy($keyOrClosure, SORT_DESC);
-    }
-
-    /**
-     * 根据多个键或闭包对集合进行排序
-     *
-     * @param array $criteria 多个排序条件，每个条件为键名或闭包及其排序顺序
-     *
-     * @return static 返回排序后的Collection实例
-     */
-    public function sortByMulti(array $criteria): static
-    {
-        usort($this->items, function ($a, $b) use ($criteria) {
-            foreach ($criteria as $keyOrClosure => $order) {
-                $comparison = is_callable($keyOrClosure) ? $keyOrClosure($a, $b) : ($a[$keyOrClosure] <=> $b[$keyOrClosure]);
-                if ($comparison !== 0) {
-                    return ($order === 'desc' || $order === SORT_DESC) ? -$comparison : $comparison;
-                }
-            }
-            return 0;
-        });
-        return new static($this->items);
     }
 
     /**
@@ -616,20 +598,6 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     }
 
     /**
-     * 对集合中的元素应用累积函数
-     * eg:->reduce(fn($carry, $item) => $carry + $item, 0) // 计算总和
-     *
-     * @param callable   $callback 累积函数，接受上一次的结果和当前元素作为参数
-     * @param mixed|null $initial  初始值
-     *
-     * @return mixed 函数累积处理后的结果
-     */
-    public function reduce(callable $callback, mixed $initial = null): mixed
-    {
-        return array_reduce($this->items, $callback, $initial);
-    }
-
-    /**
      * 从集合中的每个元素提取指定键的值，可选地使用另一键作为新集合的键
      * eg:->pluck('name'); // 提取每个元素的name属性
      * ->pluck('name', 'id'); // 提取每个元素的name属性，作为新集合的键
@@ -655,19 +623,6 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     }
 
     /**
-     * 过滤掉满足给定条件的元素
-     * eg:->reject(fn($n) => $n % 2 == 0); // 过滤偶数
-     *
-     * @param callable $callback 条件函数，返回true则元素被过滤
-     *
-     * @return static 返回一个新的Collection实例，不含满足条件的元素
-     */
-    public function reject(callable $callback): static
-    {
-        return $this->filter(fn($value, $key) => !$callback($value, $key));
-    }
-
-    /**
      * 将集合分割成多个小集合，每个小集合包含固定数量的元素，并对每个小集合应用回调函数
      * eg: $collection->chunk(3, function ($items, $index) {
      * })
@@ -682,46 +637,9 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
         $chunks       = [];
         $currentIndex = 0;
         foreach (array_chunk($this->items, $size) as $items) {
-            $chunks[] = $callback($items, $currentIndex++);
+            $chunks[] = $callback(new static($items), $currentIndex++);
         }
         return $chunks;
-    }
-
-    /**
-     * 根据条件连续分块集合
-     *
-     * @param callable $callback 判断是否开始新块的闭包函数
-     *
-     * @return static 返回连续分块后的Collection实例，每个元素是一个子集合
-     */
-    public function chunkBy(callable $callback): static
-    {
-        $chunks       = [];
-        $currentChunk = [];
-        foreach ($this->items as $item) {
-            if ($callback($item, $currentChunk)) {
-                if (!empty($currentChunk)) {
-                    $chunks[]     = new static($currentChunk);
-                    $currentChunk = [];
-                }
-            }
-            $currentChunk[] = $item;
-        }
-        if (!empty($currentChunk)) {
-            $chunks[] = new static($currentChunk);
-        }
-        return new static($chunks);
-    }
-
-    /**
-     * 反转集合中的元素顺序
-     *
-     * @return $this 返回当前集合，元素顺序已反转
-     */
-    public function reverse(): self
-    {
-        $this->items = array_reverse($this->items);
-        return $this;
     }
 
     /**
@@ -759,18 +677,6 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     }
 
     /**
-     * 检查集合是否包含某个值
-     *
-     * @param mixed $value 要检查的值
-     *
-     * @return bool 如果集合包含该值则返回true，否则返回false
-     */
-    public function contains(mixed $value): bool
-    {
-        return in_array($value, $this->items, true);
-    }
-
-    /**
      * 根据指定键将集合中的元素分组
      *
      * @param int|string $key 分组依据的键
@@ -788,22 +694,6 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     }
 
     /**
-     * 将多维集合扁平化为一维
-     *
-     * @param int $depth 可选，递归深度，默认为INF
-     *
-     * @return static 返回一个新的Collection实例，包含扁平化的元素
-     */
-    public function flatten(int $depth = INF): static
-    {
-        $flattened = [];
-        array_walk_recursive($this->items, function ($item) use (&$flattened) {
-            $flattened[] = $item;
-        }, $depth);
-        return new static($flattened);
-    }
-
-    /**
      * 计算集合内数值型元素的平均值，针对多维数组中的特定列
      *
      * @param int|string $column 要计算平均值的列名或键
@@ -812,7 +702,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      */
     public function avg(int|string $column): ?float
     {
-        $values        = array_column($this->items, $column);
+        $values        = array_column($this->toArray(), $column);
         $numericValues = array_filter($values, function ($value) {
             return is_numeric($value);
         });
@@ -833,7 +723,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      */
     public function sum(int|string $column): float
     {
-        $values        = array_column($this->items, $column);
+        $values        = array_column($this->toArray(), $column);
         $numericValues = array_filter($values, function ($value) {
             return is_numeric($value);
         });
@@ -850,7 +740,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      */
     public function max(int|string $column): float|int|null
     {
-        $values        = array_column($this->items, $column);
+        $values        = array_column($this->toArray(), $column);
         $numericValues = array_filter($values, function ($value) {
             return is_numeric($value);
         });
@@ -871,7 +761,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      */
     public function min(int|string $column): float|int|null
     {
-        $values        = array_column($this->items, $column);
+        $values        = array_column($this->toArray(), $column);
         $numericValues = array_filter($values, function ($value) {
             return is_numeric($value);
         });
@@ -884,34 +774,15 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     }
 
     /**
-     * 根据指定键或闭包对集合进行排序
-     *
-     * @param callable|int|string $keyOrClosure 排序依据的键名或排序闭包
-     * @param int                 $direction    排序方向，SORT_ASC 升序，SORT_DESC 降序，默认升序
-     *
-     * @return static 返回一个新的排序后的Collection实例
-     */
-    public function sortBy(callable|int|string $keyOrClosure, int $direction = SORT_ASC): static
-    {
-        if (is_callable($keyOrClosure)) {
-            usort($this->items, $keyOrClosure);
-        } else {
-            usort($this->items, function ($a, $b) use ($keyOrClosure, $direction) {
-                return ($a[$keyOrClosure] <=> $b[$keyOrClosure]) * ($direction == SORT_DESC ? -1 : 1);
-            });
-        }
-        return new static($this->items);
-    }
-
-    /**
      * 随机打乱集合中元素的顺序
      *
      * @return static 返回一个新的随机排序后的Collection实例
      */
     public function shuffle(): static
     {
-        shuffle($this->items);
-        return new static($this->items);
+        $arr = $this->toArray();
+        shuffle($arr);
+        return new static($arr);
     }
 
     /**
@@ -921,10 +792,25 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      *
      * @return static 返回一个新的包含合并结果的Collection实例
      */
-    public function zip(iterable ...$collections): static
+    public function merge(iterable ...$collections): static
     {
-        $zipped = array_map(null, ...array_map(fn($col) => $col instanceof Collection ? $col->toArray() : $col->toArray(), array_merge([$this], $collections)));
-        return new static(array_filter($zipped, fn($row) => !in_array(null, $row, true)));
+        $arrays         = array_map(fn($col) => $col instanceof self ? $col->toArray() : $col, $collections);
+        $combinedArrays = $this->toArray();
+        // 合并所有输入的数组
+        foreach ($arrays as $array) {
+            $combinedArrays = array_merge($combinedArrays, $array);
+        }
+        // 序列化每个子数组以进行比较
+        $serializedArrays = array_map('serialize', $combinedArrays);
+
+        // 使用序列化后的数组去重
+        $uniqueSerializedArrays = array_unique($serializedArrays);
+
+        // 还原去重后的数组
+        $uniqueArrays = array_map('unserialize', $uniqueSerializedArrays);
+        // 重置数组的索引
+        $this->items = $this->convertToCollections(array_values($uniqueArrays));
+        return $this;
     }
 
     /**
@@ -937,42 +823,54 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     public function diff(self|array $target): static
     {
         $targetArray = is_array($target) ? $target : $target->toArray();
-        $diffItems   = array_diff_assoc($this->items, $targetArray);
-        return new static($diffItems);
+        $selfArray   = $this->toArray();
+        $diff        = [];
+        foreach ($selfArray as $subArray1) {
+            $isInArray2 = false;
+            foreach ($targetArray as $subArray2) {
+                // 序列化两个数组 进行比较
+                if (serialize($subArray1) == serialize($subArray2)) {
+                    $isInArray2 = true;
+                    break;
+                }
+            }
+            if (!$isInArray2) {
+                $diff[] = $subArray1;
+            }
+        }
+        return new static($diff);
     }
 
     /**
-     * 检查集合中的所有元素是否都满足给定条件
+     * 根据指定的比较函数找出两个集合的交集
      *
-     * @param callable $callback 条件闭包
+     * @param array|self $other 另一个集合
      *
-     * @return bool 所有元素都满足条件则返回true，否则返回false
+     * @return static 返回交集的Collection实例
      */
-    public function every(callable $callback): bool
+    public function intersect(self|array $other): static
     {
-        foreach ($this->items as $key => $value) {
-            if (!$callback($value, $key)) {
-                return false;
-            }
-        }
-        return true;
-    }
+        $targetArray = is_array($other) ? $other : $other->toArray();
+        $selfArray   = $this->toArray();
 
-    /**
-     * 检查集合中是否存在至少一个元素满足给定条件
-     *
-     * @param callable $callback 条件闭包
-     *
-     * @return bool 至少有一个元素满足条件则返回true，否则返回false
-     */
-    public function some(callable $callback): bool
-    {
-        foreach ($this->items as $key => $value) {
-            if ($callback($value, $key)) {
-                return true;
-            }
-        }
-        return false;
+        // 自定义比较函数，用于比较两个子数组是否相等
+        $compareFunction = function ($a, $b) {
+            return $a == $b ? 0 : ($a < $b ? -1 : 1);
+        };
+
+        // 使用array_uintersect计算交集
+        // 首先对所有子数组进行序列化，以便比较
+        $serializedArray1 = array_map('serialize', $selfArray);
+        $serializedArray2 = array_map('serialize', $targetArray);
+
+        // 计算交集
+        $intersectionSerialized = array_uintersect($serializedArray1, $serializedArray2, $compareFunction);
+
+        // 将序列化的结果反序列化回原始数组格式
+        $intersection = array_map('unserialize', $intersectionSerialized);
+
+        // 返回去重后的交集数组
+        return new static(array_values(array_unique($intersection, SORT_REGULAR)));
     }
 
     /**
@@ -1007,31 +905,6 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
         }
         return $counts;
     }
-
-    /**
-     * 返回一个新的集合，排除指定的元素或满足条件的元素
-     *
-     * @param mixed ...$values 要排除的具体值
-     *
-     * @return static 返回一个新的排除指定元素后的Collection实例
-     */
-    public function without(...$values): static
-    {
-        $callback = null;
-        if (count($values) > 0 && is_callable(end($values))) {
-            $callback = array_pop($values);
-        }
-
-        $filteredItems = array_filter($this->items, function ($item) use ($values, $callback) {
-            if ($callback) {
-                return !$callback($item);
-            }
-            return !in_array($item, $values, true);
-        });
-
-        return new static($filteredItems);
-    }
-
 
     /**
      * 返回集合中所有键的集合
@@ -1079,7 +952,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     }
 
     /**
-     * 在集合的开始或结束处填充指定数量的值
+     * 在集合的开始或结束处填充指定数量个指定值
      *
      * @param int    $size  填充的长度
      * @param mixed  $value 填充的值
@@ -1101,48 +974,28 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     }
 
     /**
-     * 根据指定的比较函数找出两个集合的交集
-     *
-     * @param array|Collection $other      另一个集合
-     * @param callable         $comparator 比较函数，接受两个元素并返回它们是否相等的布尔值
-     *
-     * @return static 返回交集的Collection实例
-     */
-    public function intersectBy(self|array $other, callable $comparator): static
-    {
-        $otherArray   = is_array($other) ? $other : $other->toArray();
-        $intersection = array_uintersect($this->items, $otherArray, $comparator);
-        return new static($intersection);
-    }
-
-    /**
-     * 根据指定的比较函数找出两个集合的差异
-     *
-     * @param array|Collection $other      另一个集合
-     * @param callable         $comparator 比较函数，接受两个元素并返回它们是否相等的布尔值
-     *
-     * @return static 返回差异的Collection实例
-     */
-    public function differenceBy(self|array $other, callable $comparator): static
-    {
-        $otherArray = is_array($other) ? $other : $other->toArray();
-        $difference = array_udiff($this->items, $otherArray, $comparator);
-        return new static($difference);
-    }
-
-    /**
      * 获取数组的 维度/深度
      *
-     * @param mixed $data 数组
+     * @param array|Collection $data 数组
      *
      * @return int 数组的维度
      */
-    public function getArrayDimension(mixed $data): int
+    public function getArrayDimension(array|Collection $data = []): int
     {
-        if (empty($data)) {
+        if (!empty($data)) {
+            $data = $data instanceof self ? $data->toArray() : $data;
+        } else {
             $data = $this->toArray();
         }
 
-        return (is_array($data) && !empty($data)) ? (1 + max(array_map([$this, 'getArrayDimension'], $data))) : 0;
+        $maxDepth = 1; // 初始化深度为1，因为即使是空数组也至少有1层
+        foreach ($data as $value) {
+            if (is_array($value)) {
+                // 对子数组递归调用该函数，增加深度计数
+                $depth    = $this->getArrayDimension($value) + 1;
+                $maxDepth = max($maxDepth, $depth);
+            }
+        }
+        return $maxDepth;
     }
 }

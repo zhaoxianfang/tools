@@ -230,7 +230,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      */
     public function isEmpty(): bool
     {
-        return empty($this->items);
+        return empty($this->toArray());
     }
 
     /**
@@ -242,7 +242,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      */
     public function filter(callable $callback): static
     {
-        $filteredItems = array_filter($this->items, $callback, ARRAY_FILTER_USE_BOTH);
+        $filteredItems = array_filter($this->toArray(), $callback, ARRAY_FILTER_USE_BOTH);
         return new static($filteredItems);
     }
 
@@ -254,28 +254,199 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      */
     public function filterNull(): static
     {
-        return new static(array_filter($this->items, function ($value) {
+        return new static(array_filter($this->toArray(), function ($value) {
             return !empty($value);
         }));
     }
 
     /**
-     * 根据一组键值对查询集合中的元素，返回所有满足条件的元素组成的新集合
-     * eg: ->where(['age' => 30, 'city' => 'Wonderland'])
+     * 递归获取对象或数组中的值
      *
-     * @param array $conditions 多个键值对条件
+     * @param mixed             $target  目标对象或数组
+     * @param array|string|null $keyPath 键路径，可以是单个键或键的数组表示路径
+     * @param mixed|null        $default 默认值，当路径不存在时返回
      *
-     * @return static 返回一个新的Collection实例
+     * @return mixed 返回找到的值或默认值
      */
-    public function where(array $conditions): static
+    protected function getData(mixed $target, array|string|null $keyPath, mixed $default = null): mixed
     {
-        return $this->filter(function ($item, $key) use ($conditions) {
-            foreach ($conditions as $condKey => $condValue) {
-                if (!isset($item[$condKey]) || $item[$condKey] !== $condValue) {
-                    return false;
+        if (is_null($keyPath)) {
+            return $target;
+        }
+
+        if (is_array($keyPath)) {
+            foreach ($keyPath as $key) {
+                if (is_array($target) && array_key_exists($key, $target)) {
+                    $target = $target[$key];
+                } elseif (is_object($target) && property_exists($target, $key)) {
+                    $target = $target->$key;
+                } else {
+                    return $default;
                 }
             }
-            return true;
+            return $target;
+        } else {
+            if (is_array($target) && array_key_exists($keyPath, $target)) {
+                return $target[$keyPath];
+            } elseif (is_object($target) && property_exists($target, $keyPath)) {
+                return $target->$keyPath;
+            }
+            return $default;
+        }
+    }
+
+    /**
+     * 判断字符串是否匹配like模式
+     *
+     * @param int|string|null $string  $string  数字或字符串
+     * @param string          $pattern 匹配模式字符串，支持%符, 例如：
+     *                                 'A%'：表示以A开头的字符串，
+     *                                 'A%B'：表示以A开头并以B结尾的字符串，
+     *                                 '%B'：表示以B结尾的字符串，
+     *                                 '%A%'：表示以包含A的字符串，
+     *                                 'ABC'：表示以匹配ABC字符串，
+     *
+     * @return bool
+     */
+    protected function stringLike(int|string|null $string, string $pattern): bool
+    {
+        if (empty($string)) {
+            return false;
+        }
+        $pattern = str_replace('%', '.*', preg_quote($pattern, '/'));
+        return (bool)preg_match("/^$pattern$/", $string);
+    }
+
+    /**
+     * 基于条件筛选集合中的元素
+     *      eg:where('id', 3)
+     *          where('id','>', 3)
+     *          where('name', 'like', 'A%')
+     *          where('name', 'like', '%A%')
+     *          where([
+     *              ['id', '>', 1],
+     *              ['name', '=', 'Bob']
+     *          ])
+     *
+     * @param callable|array|string $columnOrCallback 查询的键、闭包或条件数组
+     * @param mixed|null            $operatorOrValue  操作符或值，对于键查询是操作符，对于闭包查询忽略此参数
+     * @param mixed|null            $value            查询的值，对于键查询使用
+     *
+     * @return static 返回符合筛选条件的新集合实例
+     */
+    public function where(callable|array|string $columnOrCallback, mixed $operatorOrValue = null, mixed $value = null): static
+    {
+        if (is_callable($columnOrCallback)) {
+            return $this->filter($columnOrCallback);
+        } elseif (is_array($columnOrCallback)) {
+            return $this->whereNested($columnOrCallback);
+        } else {
+            $operator = empty($value) ? '=' : $operatorOrValue;
+            $value    = $value ?? $operatorOrValue;
+            return new static($this->filter(function ($item) use ($columnOrCallback, $operator, $value) {
+                $itemValue = $this->getData($item, $columnOrCallback);
+                if (is_callable($operator)) {
+                    return $operator($itemValue);
+                }
+                switch ($operator) {
+                    case '=':
+                    case '==':
+                        return $itemValue == $value;
+                    case '!=':
+                    case '<>':
+                        return $itemValue != $value;
+                    case '>':
+                        return $itemValue > $value;
+                    case '<':
+                        return $itemValue < $value;
+                    case '>=':
+                        return $itemValue >= $value;
+                    case '<=':
+                        return $itemValue <= $value;
+                    case 'like':
+                    case 'LIKE':
+                        return $this->stringLike($itemValue, $value);
+                    case 'null':
+                        return $itemValue === null;
+                    case 'not_null':
+                        return $itemValue !== null;
+                    default:
+                        throw new InvalidArgumentException("Unsupported operator '$operator'.");
+                }
+            }));
+
+        }
+    }
+
+    /**
+     * 支持多个条件的嵌套查询
+     *
+     * @param array $conditions 条件数组
+     *
+     * @return static 返回符合筛选条件的新集合实例
+     */
+    protected function whereNested(array $conditions): static
+    {
+        $filteredItems = $this->items;
+        foreach ($conditions as $condition) {
+            list($key, $operator, $value) = $condition;
+            $filteredItems = $this->where($key, $operator, $value)->toArray();
+        }
+        return new static($filteredItems);
+    }
+
+    /**
+     * 查询指定键值存在于给定数组中的元素
+     *
+     * @param string $column 键名
+     * @param array  $values 值数组
+     *
+     * @return static 返回符合筛选条件的新集合实例
+     */
+    public function whereIn(string $column, array $values): static
+    {
+        return $this->where($column, function ($itemValue) use ($values) {
+            return in_array($itemValue, $values);
+        });
+    }
+
+    /**
+     * 查询指定键值为空的元素
+     *
+     * @param string $column 键名
+     *
+     * @return static 返回符合筛选条件的新集合实例
+     */
+    public function whereNull(string $column): static
+    {
+        return $this->where($column, 'null');
+    }
+
+    /**
+     * 查询指定键值非空的元素
+     *
+     * @param string $column 键名
+     *
+     * @return static 返回符合筛选条件的新集合实例
+     */
+    public function whereNotNull(string $column): static
+    {
+        return $this->where($column, 'not_null');
+    }
+
+    /**
+     * 查询指定键值在某个区间内的元素
+     *
+     * @param string $column 键名
+     * @param mixed  $min    最小值
+     * @param mixed  $max    最大值
+     *
+     * @return static 返回符合筛选条件的新集合实例
+     */
+    public function whereBetween(string $column, $min, $max): static
+    {
+        return $this->where($column, function ($itemValue) use ($min, $max) {
+            return $itemValue >= $min && $itemValue <= $max;
         });
     }
 

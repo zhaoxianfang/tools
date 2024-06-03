@@ -1077,23 +1077,10 @@ if (!function_exists('uuid')) {
      */
     function uuid(bool $useUpper = false): string
     {
-        $timeArr = explode(' ', microtime());
-        $decimal = $timeArr[1] . str_pad(substr($timeArr[0], 2, 6), 6, '0', STR_PAD_RIGHT);
-        $decimal .= $useUpper ? '' : sprintf("%03d", random_int(0, 999));
-        // 转35进制(不包含大写字母O) 或者 转62进制
-        $characters = $useUpper ? '0123456789ABCDEFGHIJKLMNPQRSTUVWXYZ' : '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $base       = strlen($characters);
-        $result     = '';
-
-        while ($decimal > 0) {
-            $remainder = $decimal % $base;
-            $result    = $characters[$remainder] . $result;
-            $decimal   = intdiv($decimal, $base);
-        }
-
-        return (string)($result === '' ? 'A000000000' : $result);
+        \zxf\Tools\Str::uuid($useUpper);
     }
 }
+
 if (!function_exists('dict_convert_ten')) {
     /**
      * 把其他进制的字符串转换为10进制（注：针对使用自定义字典的字符串转换，普通的进制转换可以使用 base_convert_any 函数）

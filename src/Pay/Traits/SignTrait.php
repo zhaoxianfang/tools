@@ -147,13 +147,13 @@ trait SignTrait
     // 获取商户公钥证书内容
     private function getPublicCert(string $key): string
     {
-        return Str::endsWith($key, ['cer', 'crt', 'pem']) ? file_get_contents($key) : $key;
+        return Str::endsWithArr($key, ['cer', 'crt', 'pem']) ? file_get_contents($key) : $key;
     }
 
     // 获取商户私钥证书内容
     private function getPrivateCert(string $key): string
     {
-        if (Str::endsWith($key, ['crt', 'pem'])) {
+        if (Str::endsWithArr($key, ['crt', 'pem'])) {
             return file_get_contents($key);
         }
 

@@ -182,6 +182,11 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
         return json_encode($this, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 
+    public function toString(): string
+    {
+        return json_encode($this->toArray());
+    }
+
     /* 实现__toString接口，用于直接输出JSON格式的字符串 */
     public function __toString(): string
     {
@@ -982,7 +987,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      */
     public static function getArrayDimension(array|Collection $data = []): int
     {
-       $data = $data instanceof self ? $data->toArray() : $data;
+        $data = $data instanceof self ? $data->toArray() : $data;
 
         $maxDepth = 1; // 初始化深度为1，因为即使是空数组也至少有1层
         foreach ($data as $value) {

@@ -501,7 +501,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      */
     public function add(Collection|array $element): self
     {
-        $arrayDepth   = self::getArrayDimension();
+        $arrayDepth   = self::getArrayDimension($this);
         $elementDepth = self::getArrayDimension($element);
 
         if (is_array($element)) {

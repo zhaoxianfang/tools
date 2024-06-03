@@ -496,8 +496,8 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      */
     public function add(Collection|array $element): self
     {
-        $arrayDepth   = $this->getArrayDimension();
-        $elementDepth = $this->getArrayDimension($element);
+        $arrayDepth   = self::getArrayDimension();
+        $elementDepth = self::getArrayDimension($element);
 
         if (is_array($element)) {
             if ($arrayDepth > $elementDepth) {
@@ -980,19 +980,15 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      *
      * @return int 数组的维度
      */
-    public function getArrayDimension(array|Collection $data = []): int
+    public static function getArrayDimension(array|Collection $data = []): int
     {
-        if (!empty($data)) {
-            $data = $data instanceof self ? $data->toArray() : $data;
-        } else {
-            $data = $this->toArray();
-        }
+       $data = $data instanceof self ? $data->toArray() : $data;
 
         $maxDepth = 1; // 初始化深度为1，因为即使是空数组也至少有1层
         foreach ($data as $value) {
             if (is_array($value)) {
                 // 对子数组递归调用该函数，增加深度计数
-                $depth    = $this->getArrayDimension($value) + 1;
+                $depth    = self::getArrayDimension($value) + 1;
                 $maxDepth = max($maxDepth, $depth);
             }
         }

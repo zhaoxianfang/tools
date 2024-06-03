@@ -4,6 +4,8 @@
  * 常用的一些函数归纳
  */
 
+use zxf\Tools\Collection;
+
 if (!function_exists('session')) {
     /**
      * 简易 session 助手函数
@@ -37,6 +39,20 @@ if (!function_exists('cache')) {
             $val = $handle->get($name);
             return is_json($val) ? json_decode_plus($val, true) : $val;
         }
+    }
+}
+
+if (!function_exists('collection')) {
+    /**
+     * 集合对象操作
+     *
+     * @param iterable $items
+     *
+     * @return Collection
+     */
+    function collection(iterable $items = []): Collection
+    {
+        return new Collection($items);
     }
 }
 

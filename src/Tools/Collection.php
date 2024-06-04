@@ -147,7 +147,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     {
         $array = [];
         foreach ($items as $key => $value) {
-            if ($value instanceof self) {
+            if ($value instanceof self || (is_object($value) && method_exists($value, 'toArray'))) {
                 $array[$key] = $value->toArray();
             } else {
                 $array[$key] = $value;
@@ -179,7 +179,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      */
     public function toJson(): string
     {
-        return json_encode($this, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        return json_encode($this->toArray(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 
     public function toString(): string
@@ -190,7 +190,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
     /* 实现__toString接口，用于直接输出JSON格式的字符串 */
     public function __toString(): string
     {
-        return json_encode($this);
+        return json_encode($this->toArray());
     }
 
     /**

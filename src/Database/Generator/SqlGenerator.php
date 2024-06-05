@@ -55,11 +55,16 @@ class SqlGenerator
     // sql 生成器 buildQuery() 操作之后的sql语句，如果存在，则不再重新构建
     private string $buildAfterSql = '';
 
-    private object|null $callbackClass = null;
+    /**
+     * 设置返回类对象
+     *
+     * @var object|null
+     */
+    private object|null $base = null;
 
-    public function __construct($callbackClass = null)
+    public function __construct($base = null)
     {
-        $this->callbackClass = !empty($callbackClass) ? $callbackClass : $this;
+        $this->base = !empty($base) && is_object($base) ? $base : $this;
     }
 
     /**
@@ -68,7 +73,7 @@ class SqlGenerator
      * @param string      $name         主表名
      * @param string|null $dynamicAlias 动态生成的表别名（可选）
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function table(string $name, string $dynamicAlias = null)
     {
@@ -76,7 +81,7 @@ class SqlGenerator
         $this->buildType  = 'select';
         $this->tableName  = $name;
         $this->tableAlias = is_null($dynamicAlias) ? '' : $dynamicAlias;
-        return $this->callbackClass;
+        return $this->base;
     }
 
     public function from(string $name, string $dynamicAlias = null)
@@ -89,13 +94,13 @@ class SqlGenerator
      *
      * @param array $fields 查询字段数组
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function select(array $fields = ['*'])
     {
         $this->buildType    = 'select';
         $this->selectFields = empty($this->selectFields) ? $fields : array_merge($this->selectFields, $fields);
-        return $this->callbackClass;
+        return $this->base;
     }
 
     // ==================================================================
@@ -111,13 +116,13 @@ class SqlGenerator
      * @param string $joinType    JOIN 类型（INNER、LEFT、RIGHT 等）
      * @param string $alias       表别名（可选）
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function join(string $table, string $onCondition, string $joinType = 'INNER', string $alias = '')
     {
         $this->validateJoinType($joinType);
         $this->joinClauses[] = "$joinType JOIN $table" . ($alias ? " AS $alias" : '') . " ON $onCondition";
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -127,7 +132,7 @@ class SqlGenerator
      * @param string $onCondition 关联条件
      * @param string $alias       表别名（可选）
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function leftJoin(string $table, string $onCondition, string $alias = '')
     {
@@ -141,7 +146,7 @@ class SqlGenerator
      * @param string $onCondition 关联条件
      * @param string $alias       表别名（可选）
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function rightJoin(string $table, string $onCondition, string $alias = '')
     {
@@ -156,7 +161,7 @@ class SqlGenerator
      * @param callable          $callback 回调函数，用于构建 JOIN 子查询条件
      * @param string            $joinType JOIN 类型（INNER、LEFT、RIGHT 等）
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function joinSub(self $query, $as, callable $callback, string $joinType = 'INNER')
     {
@@ -175,7 +180,7 @@ class SqlGenerator
         $this->whereConditions = array_merge($this->whereConditions, $subQueryBuilder->getWhereConditions());
         $this->bindings        = array_merge($this->bindings, $subQueryBuilder->getBindings());
 
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -183,7 +188,7 @@ class SqlGenerator
      * @param                   $as
      * @param callable          $callback
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function leftJoinSub(self $query, $as, callable $callback)
     {
@@ -193,7 +198,7 @@ class SqlGenerator
         $this->joinClauses[] = 'LEFT JOIN (' . $query->buildQuery() . ') AS ' . $as . $query->getJoinOnClauses();
         $this->bindings      = array_merge($this->bindings, $query->getBindings());
 
-        return $this->callbackClass;
+        return $this->base;
     }
 
     public function rightJoinSub(self $query, $as, callable $callback)
@@ -204,7 +209,7 @@ class SqlGenerator
         $this->joinClauses[] = 'RIGHT JOIN (' . $query->buildQuery() . ') AS ' . $as . $query->getJoinOnClauses();
         $this->bindings      = array_merge($this->bindings, $query->getBindings());
 
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -212,12 +217,12 @@ class SqlGenerator
      *
      * @param string $joinCondition JOIN ON 条件
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function on(string $joinCondition)
     {
         $this->joinOnClauses[] = $joinCondition;
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -270,7 +275,7 @@ class SqlGenerator
      * @param string               $logicalOperator 逻辑运算符（AND 或 OR）
      * @param bool                 $isRow           是否为原生查询  是原生查询的，不需要 调用 addBinding() 方法，因为 $value 是一个字段名
      *
-     * @return $this->callbackClass
+     * @return $this->base
      * @throws InvalidArgumentException
      */
     public function where(Closure|string|array $column, mixed $operator = null, mixed $value = null, string $logicalOperator = 'AND', bool $isRow = false)
@@ -314,7 +319,7 @@ class SqlGenerator
             $this->addBinding($placeholder, $value);
         }
 
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -324,7 +329,7 @@ class SqlGenerator
      * @param mixed|null           $operator
      * @param mixed|null           $value
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function whereRaw(Closure|string|array $column, mixed $operator = null, mixed $value = null)
     {
@@ -338,7 +343,7 @@ class SqlGenerator
      * @param mixed|null           $operator
      * @param mixed|null           $value
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function orWhereRaw(Closure|string|array $column, mixed $operator = null, mixed $value = null)
     {
@@ -352,7 +357,7 @@ class SqlGenerator
      * @param mixed                $operator 操作符
      * @param mixed                $value    值
      *
-     * @return $this->callbackClass
+     * @return $this->base
      * @throws InvalidArgumentException
      */
     public function orWhere(Closure|string|array $column, mixed $operator = null, mixed $value = null)
@@ -371,7 +376,7 @@ class SqlGenerator
      * @param string|null $columnSecond    第二个字段
      * @param string      $logicalOperator 连接逻辑运算符
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function whereColumn(string $columnFirst, string $operator, string $columnSecond = null, string $logicalOperator = 'AND')
     {
@@ -386,7 +391,7 @@ class SqlGenerator
             'value'           => $columnSecond,
             'logicalOperator' => $logicalOperator,
         ];
-        return $this->callbackClass;
+        return $this->base;
     }
 
     public function orWhereColumn(string $columnFirst, string $operator, string $columnSecond = null)
@@ -401,7 +406,7 @@ class SqlGenerator
      * @param string   $logicalOperator 逻辑运算符（AND 或 OR）
      * @param string   $extend          延伸操作，一般操作置空，若需要 EXISTS 等操作，可传入，形成子查询，eg: (...) 或者 EXISTS (...)
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     private function whereClosure(callable $callback, string $logicalOperator = 'AND', string $extend = '')
     {
@@ -435,19 +440,19 @@ class SqlGenerator
             'logicalOperator' => '',
         ];
 
-        return $this->callbackClass;
+        return $this->base;
     }
 
     public function whereExists(Closure $callback, string $logicalOperator = 'AND')
     {
         $this->whereClosure($callback, $logicalOperator, 'EXISTS');
-        return $this->callbackClass;
+        return $this->base;
     }
 
     public function whereNotExists(Closure $callback, string $logicalOperator = 'AND')
     {
         $this->whereClosure($callback, $logicalOperator, 'NOT EXISTS');
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -456,7 +461,7 @@ class SqlGenerator
      * @param string               $operator
      * @param string               $logicalOperator
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function whereIn(Closure|string|array $column, array $value = [], string $operator = 'IN', string $logicalOperator = 'AND')
     {
@@ -468,14 +473,14 @@ class SqlGenerator
             'logicalOperator' => '',
         ];
 
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
      * @param Closure|string|array $column
      * @param array                $value
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function whereNotIn(Closure|string|array $column, array $value = [])
     {
@@ -486,7 +491,7 @@ class SqlGenerator
      * @param Closure|string|array $column
      * @param array                $value
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function orWhereIn(Closure|string|array $column, array $value = [])
     {
@@ -542,7 +547,7 @@ class SqlGenerator
      * @param string $value   搜索的值 eg: 'weisifang'
      * @param string $mode    搜索模式BOOLEAN、NATURAL、QUERY（可选，默认为 boolean 模式）
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function whereFullText(array $columns = [], string $value = '', string $mode = 'BOOLEAN', string $logicalOperator = 'AND')
     {
@@ -585,12 +590,12 @@ class SqlGenerator
      *
      * @param mixed ...$fields GROUP BY 字段 eg: ->groupBy('id', 'name')、 ->groupBy('id')
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function groupBy(mixed ...$fields)
     {
         $this->groupByFields = empty($this->groupByFields) ? $fields : array_merge($this->groupByFields, $fields);
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -601,7 +606,7 @@ class SqlGenerator
      * @param mixed  $value
      * @param string $logicalOperator
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function having(string $field, string $operator, mixed $value = '', string $logicalOperator = 'AND')
     {
@@ -612,7 +617,7 @@ class SqlGenerator
             'value'           => $value,
             'logicalOperator' => $logicalOperator,
         ];
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -622,7 +627,7 @@ class SqlGenerator
      * @param string $operator 聚合操作符
      * @param mixed  $value
      *
-     * @return $this->callbackClass
+     * @return $this->base
      * @throws InvalidArgumentException
      */
     public function orHaving(string $field, string $operator, mixed $value = '')
@@ -638,7 +643,7 @@ class SqlGenerator
      * @param array|string $column
      * @param string       $orderType
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function orderBy(array|string $column, string $orderType = 'ASC')
     {
@@ -647,7 +652,7 @@ class SqlGenerator
         } else {
             $this->orderByFields[] = $column . ' ' . $orderType;
         }
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -656,7 +661,7 @@ class SqlGenerator
      * @param int      $offset 偏移量
      * @param int|null $count  结果数量
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function limit(int $offset = 0, int|null $count = null)
     {
@@ -665,7 +670,7 @@ class SqlGenerator
         } else {
             $this->limit = "LIMIT $offset, $count";
         }
-        return $this->callbackClass;
+        return $this->base;
     }
 
 
@@ -678,15 +683,15 @@ class SqlGenerator
     {
         if (empty($this->buildAfterSql)) {
             $query               = match ($this->buildType) {
-                'insert'             => $this->buildInsertQuery(),
-                'update'             => $this->buildUpdateQuery(),
-                'upsert'             => $this->buildUpsertQuery(),
-                'delete'             => $this->buildDeleteQuery(),
-                'truncate'           => $this->buildTruncateQuery(),
+                'insert' => $this->buildInsertQuery(),
+                'update' => $this->buildUpdateQuery(),
+                'upsert' => $this->buildUpsertQuery(),
+                'delete' => $this->buildDeleteQuery(),
+                'truncate' => $this->buildTruncateQuery(),
                 'min_auto_increment' => $this->buildSetTableMinAutoIncrementQuery(),
-                'exists'             => $this->buildExistsQuery(),
-                'not_exists'         => $this->buildDoesntExistsQuery(),
-                default              => $this->buildSelectQuery(),
+                'exists' => $this->buildExistsQuery(),
+                'not_exists' => $this->buildDoesntExistsQuery(),
+                default => $this->buildSelectQuery(),
             };
             $this->buildAfterSql = $this->convertBindParamsToQuestionMarks ? $this->paramsToQuestionMarks($query) : $query;
         }
@@ -844,12 +849,12 @@ class SqlGenerator
         $columns = array_keys($this->changeData[0]);
 
         return match ($this->driver) {
-            'mysql'     => $this->buildMysqlUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
-            'pgsql'     => $this->buildPgsqlUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
-            'sqlite'    => $this->buildSQLiteUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
+            'mysql' => $this->buildMysqlUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
+            'pgsql' => $this->buildPgsqlUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
+            'sqlite' => $this->buildSQLiteUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
             'sqlserver' => $this->buildSQLServerUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
-            'oracle'    => $this->buildOracleUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
-            default     => throw new InvalidArgumentException('The driver is not supported'),
+            'oracle' => $this->buildOracleUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
+            default => throw new InvalidArgumentException('The driver is not supported'),
         };
     }
 
@@ -1125,7 +1130,7 @@ class SqlGenerator
     /**
      * 重置所有查询参数和绑定参数
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function reset()
     {
@@ -1150,7 +1155,7 @@ class SqlGenerator
 
         $this->buildType = 'select';
 
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -1158,12 +1163,12 @@ class SqlGenerator
      *
      * @param bool $status
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function setConvertBindParamsToQuestionMarks(bool $status = true)
     {
         $this->convertBindParamsToQuestionMarks = $status;
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -1212,7 +1217,7 @@ class SqlGenerator
     public function fill(array $data)
     {
         $this->changeData = $data;
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -1228,14 +1233,14 @@ class SqlGenerator
      *                                 ['column1'=>'val_1_1', 'column2'=>'val_2_1'],
      *                                 ]
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function create(array $columns = [])
     {
         $this->reset();
         $this->changeData = !empty($columns) ? $columns : $this->changeData;
         $this->buildType  = 'insert';
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -1243,13 +1248,13 @@ class SqlGenerator
      *
      * @param array $columns
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function update(array $columns = [])
     {
         $this->changeData = !empty($columns) ? $columns : $this->changeData;
         $this->buildType  = 'update';
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -1270,25 +1275,25 @@ class SqlGenerator
      *                            或 ['column1', 'column2']
      * @param array $updateColumn 需要更新的字段 eg: ['column1', 'column2'] 或 ['column2']
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function upsert(array $data = [], array $uniqueColumn = [], array $updateColumn = [])
     {
         $this->changeData    = $data;
         $this->upsertColumns = ['unique_column' => $uniqueColumn, 'update_column' => $updateColumn];
         $this->buildType     = 'upsert';
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
      * 删除操作
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function delete()
     {
         $this->buildType = 'delete';
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -1298,7 +1303,7 @@ class SqlGenerator
     {
         $this->buildType = 'truncate';
         $this->bindings  = [];
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -1308,7 +1313,7 @@ class SqlGenerator
     {
         $this->buildType = 'min_auto_increment';
         $this->bindings  = [];
-        return $this->callbackClass;
+        return $this->base;
     }
 
     // ==================================================================
@@ -1324,13 +1329,13 @@ class SqlGenerator
      *
      * @param string $field 字段名 eg: 'id' 或 '*'
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function count(string $field = 'id')
     {
         $this->buildType    = 'select';
         $this->selectFields = ["COUNT($field) AS count"];
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -1338,13 +1343,13 @@ class SqlGenerator
      *
      * @param string $field
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function max(string $field = '*')
     {
         $this->buildType    = 'select';
         $this->selectFields = ["MAX($field) AS max"];
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -1352,13 +1357,13 @@ class SqlGenerator
      *
      * @param string $field
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function min(string $field = '*')
     {
         $this->buildType    = 'select';
         $this->selectFields = ["MIN($field) AS min"];
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -1366,13 +1371,13 @@ class SqlGenerator
      *
      * @param string $field
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function sum(string $field = '*')
     {
         $this->buildType    = 'select';
         $this->selectFields = ["SUM($field) AS sum"];
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
@@ -1380,35 +1385,35 @@ class SqlGenerator
      *
      * @param string $field
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function avg(string $field = '*')
     {
         $this->buildType    = 'select';
         $this->selectFields = ["AVG($field) AS avg"];
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
      * EXISTS 聚合查询 判断是否存在
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function exists()
     {
         $this->buildType = 'exists';
-        return $this->callbackClass;
+        return $this->base;
     }
 
     /**
      * EXISTS 聚合查询 判断是否不存在
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function doesntExist()
     {
         $this->buildType = 'not_exists';
-        return $this->callbackClass;
+        return $this->base;
     }
 
     // ==================================================================
@@ -1422,7 +1427,7 @@ class SqlGenerator
      * @param callable $callback
      * @param          $failCallback
      *
-     * @return $this->callbackClass
+     * @return $this->base
      */
     public function when($field, callable $callback, $failCallback)
     {
@@ -1435,7 +1440,7 @@ class SqlGenerator
                 $failCallback($this);
             }
         }
-        return $this->callbackClass;
+        return $this->base;
     }
 
     // 为参数生成唯一的绑定标识符

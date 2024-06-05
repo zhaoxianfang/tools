@@ -3,7 +3,7 @@
 namespace zxf\Database\Contracts;
 
 use Closure;
-use zxf\Database\Generator\SqlBuildGenerator;
+use zxf\Database\Generator\SqlGenerator;
 use Exception;
 use zxf\Database\Model;
 use zxf\Tools\Collection;
@@ -31,7 +31,7 @@ abstract class DbDriverAbstract implements DbDriverInterface
     /**
      * sql 生成器
      */
-    protected SqlBuildGenerator $sqlBuildGenerator;
+    protected SqlGenerator $sqlGenerator;
 
     /**
      * database 连接信息
@@ -47,6 +47,11 @@ abstract class DbDriverAbstract implements DbDriverInterface
      * 连接配置信息
      */
     protected array $config = [];
+
+    /**
+     * 运行的sql 和绑定参数
+     */
+    protected array $runSqlList = [];
 
     private static Model $model;
 
@@ -64,13 +69,10 @@ abstract class DbDriverAbstract implements DbDriverInterface
             throw new Exception('不支持的扩展:' . ($extensionName ?: '未知扩展'));
         }
 
-        $this->sqlBuildGenerator = new SqlBuildGenerator();
-        $this->sqlBuildGenerator->setConvertBindParamsToQuestionMarks($this->convertBindParamsToQuestionMarks);
+        $this->sqlGenerator = new SqlGenerator($this);
+        $this->sqlGenerator->setConvertBindParamsToQuestionMarks($this->convertBindParamsToQuestionMarks);
 
         $this->connect($options, $connectionName);
-
-        $this->sqlBuildGenerator->setNotFoundCallClass($this);
-
     }
 
     /**
@@ -78,7 +80,7 @@ abstract class DbDriverAbstract implements DbDriverInterface
      *
      * @return $this
      */
-    public static function newQuery()
+    public static function newQuery(): static
     {
         return new static();
     }
@@ -135,7 +137,7 @@ abstract class DbDriverAbstract implements DbDriverInterface
             return call_user_func_array(array($this, $method), $arg);
         }
 
-        return call_user_func_array(array($this->sqlBuildGenerator, $method), $arg);
+        return call_user_func_array(array($this->sqlGenerator, $method), $arg);
     }
 
     /**
@@ -159,7 +161,7 @@ abstract class DbDriverAbstract implements DbDriverInterface
         if ($data instanceof Collection) {
             $data = $data->toArray();
         }
-        $this->sqlBuildGenerator->fill($data);
+        $this->sqlGenerator->fill($data);
         return $this;
     }
 
@@ -168,13 +170,27 @@ abstract class DbDriverAbstract implements DbDriverInterface
      */
     public function get()
     {
-        $result = $this->runSql($this->sqlBuildGenerator->buildQuery(), $this->sqlBuildGenerator->getBindings());
+        $result = $this->runSql($this->sqlGenerator->buildQuery(), $this->sqlGenerator->getBindings());
         $data   = $this->dataProcessing($result);
         if (isset(self::$model) && !empty(self::$model)) {
-            return self::$model->collection($data);
+            return self::$model->collect($data);
         }
         return $data;
+    }
 
+    /**
+     * 如果有主键数据就更新，否则插入
+     */
+    public function save()
+    {
+        if (empty(self::$model) || empty($data = self::$model->getChangeData())) {
+            return false; // 没有修改数据
+        }
+
+        if ($where = self::$model->getKeyValue()) {
+            return $this->reset()->where($where['column'], $where['value'])->update($data);
+        }
+        return $this->reset()->insert($data);
     }
 
     /**
@@ -182,11 +198,11 @@ abstract class DbDriverAbstract implements DbDriverInterface
      */
     public function find()
     {
-        $this->sqlBuildGenerator->limit(1);
-        $result = $this->runSql($this->sqlBuildGenerator->buildQuery(), $this->sqlBuildGenerator->getBindings());
+        $this->sqlGenerator->limit(1);
+        $result = $this->runSql($this->sqlGenerator->buildQuery(), $this->sqlGenerator->getBindings());
         $data   = $this->dataProcessing($result);
         if (isset(self::$model) && !empty(self::$model)) {
-            return self::$model->collection($data)->first();
+            return self::$model->collect($data)->first();
         }
         return !empty($data) ? $data[0] : [];
     }
@@ -256,5 +272,59 @@ abstract class DbDriverAbstract implements DbDriverInterface
         } else {
             throw new Exception("参数必须是闭包函数");
         }
+    }
+
+    /**
+     * 添加运行SQL语句和绑定参数
+     *
+     * @param string $query
+     * @param array  $bindings
+     *
+     * @return $this
+     */
+    public function writeRunSql(string $query = '', array $bindings = []): static
+    {
+        $this->runSqlList[] = [
+            'run_time' => date('Y-m-d H:i:s'),
+            'query'    => $query,
+            'bindings' => $bindings,
+        ];
+        return $this;
+    }
+
+    /**
+     * 获取最后一次运行的SQL语句和绑定参数
+     *
+     * @return array
+     */
+    public function getLastSql(): mixed
+    {
+        return end($this->runSqlList);
+    }
+
+    /**
+     * 清空运行的SQL语句和绑定参数
+     *
+     * @return $this
+     */
+    public function clearRunSql(): static
+    {
+        $this->runSqlList = [];
+        return $this;
+    }
+
+    /**
+     * 执行原生SQL语句
+     *
+     * @param string $sqlString
+     * @param array  $bindings
+     *
+     * @return mixed
+     * @throws Exception
+     */
+    public function execute(string $sqlString, array $bindings = [])
+    {
+        $stmt = $this->runSql($sqlString, $bindings);
+        return $stmt->rowCount() ?? 0;
     }
 }

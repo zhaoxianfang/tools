@@ -37,7 +37,7 @@ class PdoDriver extends DbDriverAbstract
      *
      * @throws Exception
      */
-    public function connect(array $options = [], string $connectionName = 'default')
+    public function connect(array $options = [], string $connectionName = 'default'): static
     {
         try {
             $this->getConfig($options, $connectionName);
@@ -58,7 +58,7 @@ class PdoDriver extends DbDriverAbstract
     /**
      * 关闭连接
      */
-    public function close()
+    public function close(): void
     {
         $this->conn = null;
     }
@@ -71,7 +71,7 @@ class PdoDriver extends DbDriverAbstract
      * @return array
      * @throws Exception
      */
-    public function query(string $sql)
+    public function query(string $sql): array
     {
         $stmt = $this->conn->query($sql);
         if ($stmt === false) {
@@ -97,9 +97,10 @@ class PdoDriver extends DbDriverAbstract
      */
     public function runSql(string $sql = '', ?array $bindParams = null): mixed
     {
-        $sql        = empty($sql) ? $this->sqlBuildGenerator->buildQuery() : $sql;
-        $bindParams = is_null($bindParams) ? $this->sqlBuildGenerator->getBindings() : $bindParams;
+        $sql        = empty($sql) ? $this->sqlGenerator->buildQuery() : $sql;
+        $bindParams = is_null($bindParams) ? $this->sqlGenerator->getBindings() : $bindParams;
         try {
+            $this->writeRunSql($sql, $bindParams);
             $stmt = $this->conn->prepare($sql);
             if ($stmt === false) {
                 $this->error = '预处理失败: ' . $this->conn->errorInfo()[2];
@@ -162,9 +163,9 @@ class PdoDriver extends DbDriverAbstract
     /**
      * 插入数据
      */
-    public function insert(array $data = [])
+    public function insert(array $data = []): int
     {
-        $this->sqlBuildGenerator->create($data);
+        $this->sqlGenerator->create($data);
         $stmt = $this->runSql();
         return $stmt->rowCount() ?? 0;
     }
@@ -174,7 +175,7 @@ class PdoDriver extends DbDriverAbstract
      */
     public function insertGetId(array $data = [])
     {
-        $this->sqlBuildGenerator->create($data);
+        $this->sqlGenerator->create($data);
         $this->runSql();
         return $this->conn->lastInsertId();
     }
@@ -184,7 +185,7 @@ class PdoDriver extends DbDriverAbstract
      *
      * @return string
      */
-    public function getError()
+    public function getError(): string
     {
         return $this->conn->errorCode() . ':' . $this->conn->errorInfo()[2];
     }
@@ -192,9 +193,9 @@ class PdoDriver extends DbDriverAbstract
     /**
      * 更新数据
      */
-    public function update(array $data = [])
+    public function update(array $data = []): int
     {
-        $this->sqlBuildGenerator->update($data);
+        $this->sqlGenerator->update($data);
         $stmt = $this->runSql();
         return $stmt->rowCount() ?? 0;
     }
@@ -217,24 +218,27 @@ class PdoDriver extends DbDriverAbstract
      *                            或 ['column1', 'column2']
      * @param array $updateColumn 需要更新的字段 eg: ['column1', 'column2'] 或 ['column2']
      *
+     * @return int
+     * @throws Exception
      */
-    public function upsert(array $data = [], array $uniqueColumn = [], array $updateColumn = [])
+    public function upsert(array $data = [], array $uniqueColumn = [], array $updateColumn = []): int
     {
-        $this->sqlBuildGenerator->upsert($data, $uniqueColumn, $updateColumn);
+        $this->sqlGenerator->upsert($data, $uniqueColumn, $updateColumn);
         $stmt = $this->runSql();
         return $stmt->rowCount() ?? 0;
     }
 
-    public function increment(string $column, int $amount = 1)
+    public function increment(string $column, int $amount = 1): int
     {
-        $this->sqlBuildGenerator->update([$column => "`{$column}` + $amount"]);
+        $this->sqlGenerator->update([$column => "`{$column}` + $amount"]);
         $stmt = $this->runSql();
         return $stmt->rowCount() ?? 0;
     }
 
-    public function decrement(string $column, int $amount = 1)
+    // 减少
+    public function decrement(string $column, int $amount = 1): int
     {
-        $this->sqlBuildGenerator->update([$column => "`{$column}` - $amount"]);
+        $this->sqlGenerator->update([$column => "`{$column}` - $amount"]);
         $stmt = $this->runSql();
         return $stmt->rowCount() ?? 0;
     }
@@ -242,9 +246,9 @@ class PdoDriver extends DbDriverAbstract
     /**
      * 删除数据
      */
-    public function delete()
+    public function delete(): int
     {
-        $this->sqlBuildGenerator->delete();
+        $this->sqlGenerator->delete();
         $stmt = $this->runSql();
         return $stmt->rowCount() ?? 0;
     }
@@ -252,13 +256,13 @@ class PdoDriver extends DbDriverAbstract
     /**
      * 清除查询条件和参数
      */
-    public function reset()
+    public function reset(): static
     {
-        $this->sqlBuildGenerator->reset();
+        $this->sqlGenerator->reset();
         return $this;
     }
 
-    public function each($callback)
+    public function each($callback): static
     {
         if ($callback instanceof Closure && is_callable($callback)) {
             $stmt = $this->runSql();
@@ -283,7 +287,7 @@ class PdoDriver extends DbDriverAbstract
         if (!in_array($function, ['count', 'max', 'min', 'avg', 'sum', 'exists', 'doesntExist'])) {
             throw new Exception("不支持的聚合查询");
         }
-        $this->sqlBuildGenerator->$function($column);
+        $this->sqlGenerator->$function($column);
         $stmt = $this->runSql();
 
         // 获取结果集中的单行数据
@@ -299,7 +303,7 @@ class PdoDriver extends DbDriverAbstract
     /**
      * 开启事务
      */
-    public function beginTransaction()
+    public function beginTransaction(): static
     {
         // 开始事务
         $this->conn->beginTransaction();
@@ -309,7 +313,7 @@ class PdoDriver extends DbDriverAbstract
     /**
      * 提交事务
      */
-    public function commit()
+    public function commit(): static
     {
         // 提交事务
         $this->conn->commit();
@@ -319,7 +323,7 @@ class PdoDriver extends DbDriverAbstract
     /**
      * 回滚事务
      */
-    public function rollback()
+    public function rollback(): static
     {
         // 回滚事务
         $this->conn->rollBack();

@@ -1077,7 +1077,7 @@ if (!function_exists('uuid')) {
      */
     function uuid(bool $useUpper = false): string
     {
-        \zxf\Tools\Str::uuid($useUpper);
+        return \zxf\Tools\Str::uuid($useUpper);
     }
 }
 
@@ -1718,5 +1718,22 @@ if (!function_exists('before_calling_methods')) {
         } catch (\ReflectionException $e) {
             return;
         }
+    }
+}
+
+if (!function_exists('class_basename')) {
+    /**
+     * 获取类名
+     *
+     * @param string $className 类名 eg: \Test\Abc, get_class($this) 等
+     *
+     * @return string
+     */
+    function class_basename(string $className): string
+    {
+        // 使用 DIRECTORY_SEPARATOR 确保跨平台兼容性
+        $fullClassName = str_replace('/', '\\', $className); // 确保类名中的分隔符统一为反斜线
+        // 使用 basename 函数提取路径的最后一部分，相当于提取类名
+        return basename($fullClassName, '.php'); // 如果类名字符串以 ".php" 结尾，这会移除它
     }
 }

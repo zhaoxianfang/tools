@@ -101,9 +101,9 @@ class MysqliDriver extends DbDriverAbstract
      */
     public function runSql(string $sql = '', array|null $bindParams = null): mixed
     {
-        $sql        = empty($sql) ? $this->sqlBuildGenerator->buildQuery() : $sql;
-        $bindParams = is_null($bindParams) ? $this->sqlBuildGenerator->getBindings() : $bindParams;
-
+        $sql        = empty($sql) ? $this->sqlGenerator->buildQuery() : $sql;
+        $bindParams = is_null($bindParams) ? $this->sqlGenerator->getBindings() : $bindParams;
+        $this->writeRunSql($sql, $bindParams);
         // 准备 SQL 语句
         $stmt = $this->conn->prepare($sql);
 
@@ -173,7 +173,7 @@ class MysqliDriver extends DbDriverAbstract
      */
     public function insert(array $data)
     {
-        $this->sqlBuildGenerator->create($data);
+        $this->sqlGenerator->create($data);
         $stmt = $this->runSql();
         return $stmt->affected_rows ?? 0;
     }
@@ -183,7 +183,7 @@ class MysqliDriver extends DbDriverAbstract
      */
     public function insertGetId(array $data)
     {
-        $this->sqlBuildGenerator->create($data);
+        $this->sqlGenerator->create($data);
         $stmt = $this->runSql();
         return $stmt->insert_id ?? 0;
     }
@@ -203,7 +203,7 @@ class MysqliDriver extends DbDriverAbstract
      */
     public function update(array $data)
     {
-        $this->sqlBuildGenerator->update($data);
+        $this->sqlGenerator->update($data);
         $stmt = $this->runSql();
         return $stmt->affected_rows ?? 0;
     }
@@ -229,21 +229,21 @@ class MysqliDriver extends DbDriverAbstract
      */
     public function upsert(array $data = [], array $uniqueColumn = [], array $updateColumn = [])
     {
-        $this->sqlBuildGenerator->upsert($data, $uniqueColumn, $updateColumn);
+        $this->sqlGenerator->upsert($data, $uniqueColumn, $updateColumn);
         $stmt = $this->runSql();
         return $stmt->affected_rows ?? 0;
     }
 
     public function increment(string $column, int $amount = 1)
     {
-        $this->sqlBuildGenerator->update([$column => "`{$column}` + $amount"]);
+        $this->sqlGenerator->update([$column => "`{$column}` + $amount"]);
         $stmt = $this->runSql();
         return $stmt->affected_rows ?? 0;
     }
 
     public function decrement(string $column, int $amount = 1)
     {
-        $this->sqlBuildGenerator->update([$column => "`{$column}` - $amount"]);
+        $this->sqlGenerator->update([$column => "`{$column}` - $amount"]);
         $stmt = $this->runSql();
         return $stmt->affected_rows ?? 0;
     }
@@ -253,7 +253,7 @@ class MysqliDriver extends DbDriverAbstract
      */
     public function delete()
     {
-        $this->sqlBuildGenerator->delete();
+        $this->sqlGenerator->delete();
         $stmt = $this->runSql();
         return $stmt->affected_rows ?? 0;
     }
@@ -263,7 +263,7 @@ class MysqliDriver extends DbDriverAbstract
      */
     public function reset()
     {
-        $this->sqlBuildGenerator->reset();
+        $this->sqlGenerator->reset();
         return $this;
     }
 
@@ -290,7 +290,7 @@ class MysqliDriver extends DbDriverAbstract
         if (!in_array($function, ['count', 'max', 'min', 'avg', 'sum', 'exists', 'doesntExist'])) {
             throw new Exception("不支持的聚合查询");
         }
-        $this->sqlBuildGenerator->$function($column);
+        $this->sqlGenerator->$function($column);
         $stmt = $this->runSql();
         // 获取结果集
         $result = $stmt->get_result();

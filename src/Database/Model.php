@@ -8,7 +8,7 @@ use ArrayAccess;
 use zxf\Database\Contracts\HasRelationships;
 use zxf\Tools\Collection;
 
-class Model implements ArrayAccess
+abstract class Model implements ArrayAccess
 {
     use HasRelationships;
 
@@ -31,7 +31,14 @@ class Model implements ArrayAccess
      *
      * @var string
      */
-    protected string $tables;
+    protected string $table;
+
+    /**
+     * 设置当前模型使用的数据库连接名。
+     *
+     * @var string
+     */
+    protected string $connection = 'default';
 
     /**
      * 模型中带字段名称的数据
@@ -40,46 +47,51 @@ class Model implements ArrayAccess
      */
     protected array $items = [];
 
-    public function __construct(array $data = [])
+    /**
+     * 模型中的修改数据
+     *
+     * @var array
+     */
+    protected array $changeData = [];
+
+    public function __construct(array $attributes = [])
     {
-        self::$db = Db::instance();
-        self::$db->table($this->getTableName());
-        if (!empty($data)) {
-            $this->fill($data);
-        }
+        $this->fill($attributes);
+
+        $this->initDb();
     }
 
-    // 获取表名
+    /**
+     * 初始化Db对象
+     *
+     * @return void
+     * @throws Exception
+     */
+    private function initDb(): void
+    {
+        self::$db = Db::instance('', [], $this->connection);
+        self::$db->table($this->getTableName());
+
+        self::$db->setModal($this);
+    }
+
+    public function getDb(): Db
+    {
+        return self::$db;
+    }
+
+    // 获取模型表名
     public function getTableName(): string
     {
-        if (empty ($this->tables)) {
-            $this->tables = $this->underlineConvert(get_class($this));
+        if (empty ($this->table)) {
+            $this->table = underline_convert(class_basename(get_class($this)));
         }
-        return $this->tables;
-    }
-
-    // 获取模型类名(驼峰转下划线)
-    private function underlineConvert(string $str): string
-    {
-        return strtolower(preg_replace('/(?<=[a-z])([A-Z])/', '_$1', $str));
+        return $this->table;
     }
 
     public static function query(array $items = []): static
     {
         return new static($items);
-    }
-
-    /**
-     * 获取当前查询出来的记录的主键对应的值
-     */
-    public function getPrimaryKeyValue()
-    {
-        return $this->items[$this->primaryKey] ?? null;
-    }
-
-    public function getDb()
-    {
-        return self::$db;
     }
 
     /**
@@ -89,12 +101,30 @@ class Model implements ArrayAccess
      *
      * @return Model
      */
-    public function fill(array $data)
+    public function fill(array $data): static
     {
+        $this->changeData = [];
+        $this->items      = [];
         foreach ($data as $key => $value) {
-            $this->items[$key] = $value;
+            $this->items[$key]      = $value;
+            $this->changeData[$key] = $value;
         }
         return $this;
+    }
+
+    /**
+     * 获取模型数据
+     *
+     * @param string|null $key
+     *
+     * @return array|mixed|null
+     */
+    public function getItems(string $key = null): mixed
+    {
+        if ($key) {
+            return $this->items[$key] ?? null;
+        }
+        return $this->items;
     }
 
     /**
@@ -102,9 +132,27 @@ class Model implements ArrayAccess
      *
      * @return array
      */
-    public function toArray(bool $depth = false): array
+    public function toArray(): array
     {
-        return (array)$this->items;
+        return $this->items;
+    }
+
+    public function toJson(): bool|string
+    {
+        return json_encode($this->items);
+    }
+
+    public function reset(): static
+    {
+        $this->items      = [];
+        $this->changeData = [];
+        $this->initDb();
+        return $this;
+    }
+
+    public function clone(): static
+    {
+        return clone $this;
     }
 
     /**
@@ -115,7 +163,7 @@ class Model implements ArrayAccess
      * @return Collection 返回一个集合
      * @throws Exception
      */
-    public function collection(array $items)
+    public function collect(array $items): Collection
     {
         if (empty($items)) {
             return new Collection();
@@ -142,13 +190,6 @@ class Model implements ArrayAccess
         return new Collection($instances);
     }
 
-    public function reset()
-    {
-        $this->items = [];
-        $this->getDb()->fill([]);
-        self::$db->setModal($this);
-        return $this;
-    }
 
     public function __get(string $name): mixed
     {
@@ -156,12 +197,20 @@ class Model implements ArrayAccess
         if (($res = $this->hasRelationAndGet($name)) !== false) {
             return $res;
         }
+        if (isset($this->changeData[$name])) {
+            return $this->changeData[$name];
+        }
         return $this->items[$name] ?? null;
     }
 
     public function __set(string $name, mixed $value): void
     {
-        $this->items[$name] = $value;
+        if (!empty($this->primaryKey) && $name == $this->primaryKey) {
+            // 不允许 修改/设置 主键
+            return;
+        }
+        $this->items[$name]      = $value;
+        $this->changeData[$name] = $value;
     }
 
     /**
@@ -189,6 +238,7 @@ class Model implements ArrayAccess
      * @param mixed  $arg    参数
      *
      * @return mixed
+     * @throws Exception
      */
     public static function __callStatic(string $method, mixed $arg)
     {
@@ -203,24 +253,50 @@ class Model implements ArrayAccess
 
     // ================================================
     // 以下是 ArrayAccess 接口的方法 用于数组式访问 开始
+    // 作用 ： 它允许对象像数组一样被访问
     // ================================================
 
-    public function offsetExists($offset)
+    /**
+     * 实现 ArrayAccess 接口的 offsetExists 方法
+     *
+     * @param mixed $offset 偏移量
+     *
+     * @return bool 是否存在该偏移量
+     */
+    public function offsetExists(mixed $offset): bool
     {
         return isset($this->items[$offset]);
     }
 
-    public function offsetGet($offset)
+    /**
+     * 实现 ArrayAccess 接口的 offsetGet 方法
+     *
+     * @param mixed $offset 偏移量
+     *
+     * @return mixed 偏移量对应的值
+     */
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->items[$offset] ?? null;
     }
 
-    public function offsetSet($offset, $value)
+    /**
+     * 实现 ArrayAccess 接口的 offsetSet 方法
+     *
+     * @param mixed $offset 偏移量
+     * @param mixed $value  对应的值
+     */
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->items[$offset] = $value;
     }
 
-    public function offsetUnset($offset)
+    /**
+     * 实现 ArrayAccess 接口的 offsetUnset 方法
+     *
+     * @param mixed $offset 偏移量
+     */
+    public function offsetUnset(mixed $offset): void
     {
         unset($this->items[$offset]);
     }
@@ -228,5 +304,37 @@ class Model implements ArrayAccess
     // ================================================
     // 以上是 ArrayAccess 接口的方法 用于数组式访问 结束
     // ================================================
+
+
+    /**
+     * 获取当前查询出来的记录的主键对应的值
+     */
+    public function getPrimaryKeyData()
+    {
+        return $this->items[$this->primaryKey] ?? null;
+    }
+
+    /**
+     * 获取当前模型中修改的数据
+     *
+     * @return array
+     */
+    public function getChangeData(): array
+    {
+        return $this->changeData;
+    }
+
+    /**
+     * 获取当前模型中的主键数据
+     *
+     * @return array
+     */
+    public function getKeyValue(): array
+    {
+        if ($keyValue = $this->getPrimaryKeyData()) {
+            return ['column' => $this->primaryKey, 'value' => $keyValue];
+        }
+        return [];
+    }
 
 }

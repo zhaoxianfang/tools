@@ -4,7 +4,7 @@ namespace zxf\Database\Contracts;
 
 use Exception;
 use zxf\Database\Db;
-use zxf\Database\Generator\SqlBuildGenerator;
+use zxf\Database\Generator\SqlGenerator;
 use zxf\Database\Model;
 
 /**
@@ -24,9 +24,9 @@ trait HasRelationships
      * @param string       $localKey   当前表的主键
      * @param string       $field
      *
-     * @return SqlBuildGenerator
+     * @return SqlGenerator
      */
-    public function hasMany(Model|string $table, string $foreignKey = 'target_id', string $localKey = 'id', string $field = '*'): SqlBuildGenerator
+    public function hasMany(Model|string $table, string $foreignKey = 'target_id', string $localKey = 'id', string $field = '*'): SqlGenerator
     {
         $field = empty($field) ? '*' : $field;
         // 被关联表的表名(目标表名)
@@ -49,10 +49,10 @@ trait HasRelationships
      * @param string       $ownerKey   被关联表的主键
      * @param string       $field
      *
-     * @return SqlBuildGenerator
+     * @return SqlGenerator
      * @throws Exception
      */
-    public function belongsTo(Model|string $table, string $foreignKey = 'target_id', string $ownerKey = 'id', string $field = '*'): SqlBuildGenerator
+    public function belongsTo(Model|string $table, string $foreignKey = 'target_id', string $ownerKey = 'id', string $field = '*'): SqlGenerator
     {
         // 判断字符串类$table是否继承Model类
         if (is_string($table) && !is_subclass_of($table, Model::class)) {
@@ -68,7 +68,7 @@ trait HasRelationships
             ->table($targetTableName)
             ->select(explode(',', $field))
             ->join($this->getTableName(), "`{$this->getTableName()}`.`{$foreignKey}` = `{$targetTableName}`.`{$ownerKey}`")
-            ->where("`{$this->getTableName()}`.`{$this->primaryKey}`", $this->getPrimaryKeyValue())
+            ->where("`{$this->getTableName()}`.`{$this->primaryKey}`", $this->getPrimaryKeyData())
             ->limit(1);
     }
 
@@ -83,10 +83,10 @@ trait HasRelationships
      * @param string       $localKey   当前表的主键
      * @param string       $field
      *
-     * @return SqlBuildGenerator
+     * @return SqlGenerator
      * @throws Exception
      */
-    public function hasOne(Model|string $table, string $foreignKey = 'target_id', string $localKey = 'id', string $field = '*'): SqlBuildGenerator
+    public function hasOne(Model|string $table, string $foreignKey = 'target_id', string $localKey = 'id', string $field = '*'): SqlGenerator
     {
         $field = empty($field) ? '*' : $field;
         // 被关联表的表名(目标表名)
@@ -102,7 +102,7 @@ trait HasRelationships
             ->table($targetTableName)
             ->select(explode(',', $field))
             ->join($this->getTableName(), "{$targetTableName}.{$foreignKey} = {$this->getTableName()}.{$localKey}")
-            ->where("`{$this->getTableName()}`.`{$this->primaryKey}`", $this->getPrimaryKeyValue())
+            ->where("`{$this->getTableName()}`.`{$this->primaryKey}`", $this->getPrimaryKeyData())
             ->limit(1);
     }
 
@@ -117,10 +117,10 @@ trait HasRelationships
      * @param string       $middleKey        例如 文章表的主键 id | 中间表的主键
      * @param string       $field            例如 要查询的评论表的字段
      *
-     * @return SqlBuildGenerator
+     * @return SqlGenerator
      * @throws Exception
      */
-    public function belongsToMany(Model|string $table, Model|string $middleTable, string $middleForeignKey = 'user_id', string $targetForeignKey = 'article_id', string $ownerKey = "id", string $middleKey = "id", string $field = '*'): SqlBuildGenerator
+    public function belongsToMany(Model|string $table, Model|string $middleTable, string $middleForeignKey = 'user_id', string $targetForeignKey = 'article_id', string $ownerKey = "id", string $middleKey = "id", string $field = '*'): SqlGenerator
     {
         $field = empty($field) ? '*' : $field;
 
@@ -151,7 +151,7 @@ trait HasRelationships
             ->select($fields)
             ->join($middleTableName, "{$targetTableName}.{$targetForeignKey} = {$middleTableName}.{$middleKey}")
             ->join($this->getTableName(), "{$this->getTableName()}.{$ownerKey} = {$middleTableName}.{$middleForeignKey}")
-            ->where("{$middleTableName}.{$middleForeignKey}", $this->getPrimaryKeyValue());
+            ->where("{$middleTableName}.{$middleForeignKey}", $this->getPrimaryKeyData());
     }
 
     /**
@@ -178,7 +178,7 @@ trait HasRelationships
             ->select(explode(',', $field))
             ->join($throughTableName, "{$throughTableName}.{$targetToThroughKey} = {$targetTableName}.{$targetKey}")
             ->join($this->getTableName(), "{$this->getTableName()}.{$targetToThroughKey} = {$throughTableName}.{$throughKey}")
-            ->where("{$throughTableName}.{$throughToLocalKey}", $this->getPrimaryKeyValue())
+            ->where("{$throughTableName}.{$throughToLocalKey}", $this->getPrimaryKeyData())
             ->limit(1);
     }
 
@@ -207,7 +207,7 @@ trait HasRelationships
             ->select(explode(',', $field))
             ->join($throughTableName, "{$targetTableName}.{$targetToThroughKey} = {$throughTableName}.{$throughKey}")
             ->join($this->getTableName(), "{$throughTableName}.{$throughToLocalKey} = {$this->getTableName()}.{$targetKey} ")
-            ->where("{$throughTableName}.{$throughToLocalKey}", $this->getPrimaryKeyValue());
+            ->where("{$throughTableName}.{$throughToLocalKey}", $this->getPrimaryKeyData());
     }
 
     /**
@@ -221,7 +221,7 @@ trait HasRelationships
     {
         if (method_exists($this, $name)) {
             $fun = $this->$name();
-            if ($fun instanceof SqlBuildGenerator) {
+            if ($fun instanceof SqlGenerator) {
                 return $fun->get();
             }
             return false;

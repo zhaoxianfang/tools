@@ -26,7 +26,7 @@ class SQLiteDriver extends PdoDriver
      *
      * @throws Exception
      */
-    public function connect(array $options = [],string $connectionName = 'default')
+    public function connect(array $options = [],string $connectionName = 'default'): static
     {
         try {
             $this->getConfig($options, $connectionName);

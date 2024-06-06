@@ -180,21 +180,6 @@ abstract class DbDriverAbstract implements DbDriverInterface
     }
 
     /**
-     * 如果有主键数据就更新，否则插入
-     */
-    public function save()
-    {
-        if (empty(self::$model) || empty($data = self::$model->getChangeData())) {
-            return false; // 没有修改数据
-        }
-
-        if ($where = self::$model->getKeyValue()) {
-            return $this->reset()->where($where['column'], $where['value'])->update($data);
-        }
-        return $this->reset()->insert($data);
-    }
-
-    /**
      * 获取一条结果
      */
     public function find()

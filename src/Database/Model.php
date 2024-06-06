@@ -337,4 +337,31 @@ abstract class Model implements ArrayAccess
         return [];
     }
 
+    /**
+     * 创建数据
+     *
+     * @param array $data
+     *
+     * @return mixed
+     */
+    public function create(array $data)
+    {
+        return $this->getDb()->insert($data);
+    }
+
+    /**
+     * 如果有主键数据就更新，否则插入
+     */
+    public function save()
+    {
+        if (empty($data = $this->getChangeData())) {
+            return false; // 没有修改数据
+        }
+
+        if ($where = $this->getKeyValue()) {
+            return $this->getDb()->reset()->where($where['column'], $where['value'])->update($data);
+        }
+        return $this->getDb()->reset()->insert($data);
+    }
+
 }

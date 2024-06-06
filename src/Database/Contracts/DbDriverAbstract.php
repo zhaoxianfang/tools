@@ -5,6 +5,7 @@ namespace zxf\Database\Contracts;
 use Closure;
 use zxf\Database\Generator\SqlGenerator;
 use Exception;
+use PDO;
 use zxf\Database\Model;
 use zxf\Tools\Collection;
 
@@ -322,9 +323,50 @@ abstract class DbDriverAbstract implements DbDriverInterface
      * @return mixed
      * @throws Exception
      */
-    public function execute(string $sqlString, array $bindings = [])
+    public function execute(string $sqlString, array $bindings = []): mixed
     {
         $stmt = $this->runSql($sqlString, $bindings);
         return $stmt->rowCount() ?? 0;
+    }
+
+    /**
+     * 添加索引【MySQL 版】
+     *
+     * @param string|array $column    索引列 eg: 'id', ['id', 'name']
+     * @param string       $indexName 索引名称 eg: 'index_id'
+     * @param string       $comment   索引注释 eg: '索引注释'
+     * @param string       $indexType 索引类型 eg: 'FULLTEXT','NORMAL','SPATIAL','UNIQUE' 等 @see
+     *                                https://dev.mysql.com/doc/refman/8.0/en/create-index.html
+     * @param string       $indexFun  索引函数 eg: 'HASH','BTREE' @see
+     *                                https://dev.mysql.com/doc/refman/8.0/en/create-index.html
+     *
+     * @return int|string
+     * @throws Exception
+     */
+    public function addIndex(string|array $column, string $indexName = '', string $comment = '', string $indexType = '', string $indexFun = ''): int|string
+    {
+        $sql  = $this->sqlGenerator->buildAddIndexQuery($column, $indexName, $comment, $indexType);
+        $stmt = $this->runSql($sql);
+        return $stmt->rowCount() ?? 0;
+    }
+
+    /**
+     * 删除 带顺序的字段组成的索引【MySQL 版】
+     *
+     * @param string|array $column 索引列 eg: 'title', ['title', 'status']
+     *
+     * @throws Exception
+     */
+    public function dropIndex(string|array $column): bool
+    {
+        $sql       = $this->sqlGenerator->buildIndexComposedOfQueryFieldsSQL($column);
+        $tableName = $this->sqlGenerator->getTableName();
+        $this->each(function ($item) use ($tableName) {
+            if (!empty($item['INDEX_NAME'])) {
+                $dropSql = "ALTER TABLE {$tableName} DROP INDEX " . $item['INDEX_NAME'];
+                $this->runSql($dropSql, []);
+            }
+        }, $sql, []);
+        return true;
     }
 }

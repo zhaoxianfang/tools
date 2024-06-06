@@ -683,15 +683,15 @@ class SqlGenerator
     {
         if (empty($this->buildAfterSql)) {
             $query               = match ($this->buildType) {
-                'insert' => $this->buildInsertQuery(),
-                'update' => $this->buildUpdateQuery(),
-                'upsert' => $this->buildUpsertQuery(),
-                'delete' => $this->buildDeleteQuery(),
-                'truncate' => $this->buildTruncateQuery(),
+                'insert'             => $this->buildInsertQuery(),
+                'update'             => $this->buildUpdateQuery(),
+                'upsert'             => $this->buildUpsertQuery(),
+                'delete'             => $this->buildDeleteQuery(),
+                'truncate'           => $this->buildTruncateQuery(),
                 'min_auto_increment' => $this->buildSetTableMinAutoIncrementQuery(),
-                'exists' => $this->buildExistsQuery(),
-                'not_exists' => $this->buildDoesntExistsQuery(),
-                default => $this->buildSelectQuery(),
+                'exists'             => $this->buildExistsQuery(),
+                'not_exists'         => $this->buildDoesntExistsQuery(),
+                default              => $this->buildSelectQuery(),
             };
             $this->buildAfterSql = $this->convertBindParamsToQuestionMarks ? $this->paramsToQuestionMarks($query) : $query;
         }
@@ -849,12 +849,12 @@ class SqlGenerator
         $columns = array_keys($this->changeData[0]);
 
         return match ($this->driver) {
-            'mysql' => $this->buildMysqlUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
-            'pgsql' => $this->buildPgsqlUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
-            'sqlite' => $this->buildSQLiteUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
+            'mysql'     => $this->buildMysqlUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
+            'pgsql'     => $this->buildPgsqlUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
+            'sqlite'    => $this->buildSQLiteUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
             'sqlserver' => $this->buildSQLServerUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
-            'oracle' => $this->buildOracleUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
-            default => throw new InvalidArgumentException('The driver is not supported'),
+            'oracle'    => $this->buildOracleUpsertQuery($this->changeData, $columns, $this->upsertColumns['unique_column'], $this->upsertColumns['update_column']),
+            default     => throw new InvalidArgumentException('The driver is not supported'),
         };
     }
 
@@ -1102,6 +1102,46 @@ class SqlGenerator
         $this->selectFields = [1];
         $query              = $this->buildSelectQuery();
         return 'SELECT NOT EXISTS ( ' . $query . ' ) AS record_exists';
+    }
+
+    /**
+     * 构建添加索引语句
+     *
+     * @param string|array $column    索引列 eg: 'id', ['id', 'name']
+     * @param string       $indexName 索引名称 eg: 'index_id'
+     * @param string       $comment   索引注释 eg: '索引注释'
+     * @param string       $indexType 索引类型 eg: 'FULLTEXT','NORMAL','SPATIAL','UNIQUE' 等 @see
+     *                                https://dev.mysql.com/doc/refman/8.0/en/create-index.html
+     * @param string       $indexFun  索引函数 eg: 'HASH','BTREE' @see
+     *                                https://dev.mysql.com/doc/refman/8.0/en/create-index.html
+     *
+     * @return string
+     */
+    public function buildAddIndexQuery(string|array $column, string $indexName = '', string $comment = '', string $indexType = '', string $indexFun = ''): string
+    {
+        $columnString   = is_string($column) ? $column : implode(',', $column);
+        $indexFunString = !empty($indexFun) ? "USING {$indexFun}" : '';
+        $commentString  = !empty($comment) ? "COMMENT '{$comment}'" : '';
+        $this->bindings = [];
+        return " ALTER TABLE `{$this->tableName}` ADD {$indexType} INDEX {$indexName}({$columnString}) {$indexFunString} {$commentString}";
+    }
+
+    /**
+     * 构建由指定顺序的字段组成的复合索引列表 语句
+     *
+     * @param string|array $column 索引列 eg: 'id', ['id', 'name']
+     *
+     * @return string
+     */
+    public function buildIndexComposedOfQueryFieldsSQL(string|array $column): string
+    {
+        $columnString = is_string($column) ? $column : implode(',', $column);
+
+        $selectIndexSql = 'SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() ';
+        $selectIndexSql .= " AND TABLE_NAME = '{$this->tableName}' AND INDEX_NAME NOT IN ('PRIMARY') GROUP BY INDEX_NAME";
+        $selectIndexSql .= " HAVING GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX) = '" . $columnString . "'";
+        $this->bindings = [];
+        return $selectIndexSql;
     }
 
     /**
@@ -1494,6 +1534,11 @@ class SqlGenerator
     public function getBindings(): array
     {
         return $this->bindings;
+    }
+
+    public function getTableName(): string
+    {
+        return $this->tableName;
     }
 
     /**

@@ -73,18 +73,16 @@ class Db
     /**
      * 重新示例化
      *
-     * @param string $driverName 驱动器名称 支持: mysql、mysqli、pgsql、sqlite、sqlsrv
-     * @param array  $args       数据库连接参数
      * @param string $connection 数据库连接名称 例如: default
      *
      * @return Db|static
      * @throws Exception
      */
-    public static function instance(string $driverName = '', array $args = [], string $connection = '')
+    public static function connection(string $connection = ''): Db|static
     {
         // 不做缓存单例、每次都重新实例化
         // if (!isset(self::$instance) || empty(self::$instance)) {
-        self::$instance = new static($driverName, $args, $connection);
+        self::$instance = new static('', [], $connection);
         //}
         return self::$instance;
     }

@@ -262,10 +262,10 @@ class PdoDriver extends DbDriverAbstract
         return $this;
     }
 
-    public function each($callback): static
+    public function each($callback, string $sql = '', ?array $bindParams = null): static
     {
         if ($callback instanceof Closure && is_callable($callback)) {
-            $stmt = $this->runSql();
+            $stmt = $this->runSql($sql, $bindParams);
 
             // 使用 while 循环遍历结果集中的每一行记录。
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {

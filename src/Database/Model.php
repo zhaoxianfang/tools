@@ -69,7 +69,7 @@ abstract class Model implements ArrayAccess
      */
     private function initDb(): void
     {
-        self::$db = Db::instance('', [], $this->connection);
+        self::$db = Db::connection($this->connection);
         self::$db->table($this->getTableName());
 
         self::$db->setModal($this);
@@ -244,7 +244,7 @@ abstract class Model implements ArrayAccess
     {
         $model = self::query();
         if (!isset(self::$db) || empty(self::$db)) {
-            self::$db = Db::instance();
+            self::$db = Db::connection();
         }
         self::$db->table($model->getTableName());
         self::$db->setModal($model);

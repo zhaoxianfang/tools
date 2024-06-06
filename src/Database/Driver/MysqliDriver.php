@@ -267,10 +267,10 @@ class MysqliDriver extends DbDriverAbstract
         return $this;
     }
 
-    public function each($callback)
+    public function each($callback, string $sql = '', ?array $bindParams = null)
     {
         if ($callback instanceof Closure && is_callable($callback)) {
-            $stmt   = $this->runSql();
+            $stmt   = $this->runSql($sql, $bindParams);
             $result = $stmt->get_result();
             while ($row = $result->fetch_assoc()) {
                 $callback($row);

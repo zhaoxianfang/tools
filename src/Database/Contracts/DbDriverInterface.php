@@ -26,7 +26,7 @@ interface DbDriverInterface
      *
      * @throws Exception
      */
-    public function connect(array $options = [],string $connectionName = 'default');
+    public function connect(array $options = [], string $connectionName = 'default');
 
     /**
      * 关闭连接
@@ -147,7 +147,7 @@ interface DbDriverInterface
     /**
      * 遍历查询结果
      */
-    public function each($callback);
+    public function each($callback, string $sql = '', ?array $bindParams = null);
 
     /**
      * 聚合查询

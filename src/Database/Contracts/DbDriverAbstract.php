@@ -289,6 +289,16 @@ abstract class DbDriverAbstract implements DbDriverInterface
     }
 
     /**
+     * 获取运行过的SQL语句和绑定参数
+     *
+     * @return mixed
+     */
+    public function getRunSql(): array
+    {
+        return $this->runSqlList;
+    }
+
+    /**
      * 清空运行的SQL语句和绑定参数
      *
      * @return $this

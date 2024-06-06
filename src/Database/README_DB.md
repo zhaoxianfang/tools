@@ -522,3 +522,22 @@ $db->fill([
     'age' => 18,
 ])
 ```
+
+## 数据库表索引
+
+### 创建索引
+
+```
+// 参数1：按照字段顺序创建索引，eg: 'title' 或 ['title','updated_at']
+// 参数2：索引名称
+// 参数3：索引注释
+$db->addIndex(['title','updated_at'], 'test_index','comment');
+```
+
+### 删除索引
+
+```
+// 删除索引字段是有序的，['title','created_at'] 和 ['created_at','title'] 因为顺序不同，操作的结果也不同
+$db->dropIndex(['title','created_at']);
+```
+

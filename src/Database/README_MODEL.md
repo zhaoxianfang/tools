@@ -285,6 +285,45 @@ class TestUser
                 ...
             ]);
     }
+
+    public function test3(){
+        $user = User::query()->get();
+        foreach ($user as $item) {
+            $item->name = 'name ' . $item->id;
+            $item->save();
+        }
+    }
+
+    // 批量更新数据
+    public function test3(){
+        // 参数1：需要更新或插入的数据
+        // 参数2：需要更新或插入的数据的主键或能识别此行数据的唯一值【来自第一个字段】
+        // 参数3：需要更新那个字段【来自第一个字段】
+        $res = User::query()->upsert([
+            [
+                'id'    => 1,
+                "title" => "title upsert 1 " . time(),
+            ], [
+                'id'    => 2,
+                "title" => "title upsert 2 " . time(),
+            ],
+        ], [
+            'id',
+        ], [
+            'title',
+        ]);
+    }
+}
+```
+
+### 删除数据
+
+```
+class TestUser
+{
+    public function test1(){
+        User::query()->where('id',1)->delete();
+    }
 }
 ```
 
@@ -293,13 +332,15 @@ class TestUser
 ```
 class TestUser
 {
+    // 关联数据查询
     public function test1(){
         $user = User::query()->find(1);
         $user->roles()->get();
         // OR
         $user->roles()->where(...)->get();
     }
-    
+
+    // 关联数据查询 idCard 是一个已定义的关联函数
     public function test2(){
         $user = User::query()->find(1);
         $idcard = $user->idCard;

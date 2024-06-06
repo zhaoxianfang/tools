@@ -340,21 +340,26 @@ abstract class Model implements ArrayAccess
     /**
      * 创建数据
      *
-     * @param array $data
+     * @param array|null $data
      *
      * @return mixed
      */
-    public function create(array $data)
+    public function create(?array $data = []): mixed
     {
+        $data = !empty($data) ? $data : $this->getChangeData();
+        if (empty($data)) {
+            return false; // 没有修改数据
+        }
         return $this->getDb()->insert($data);
     }
 
     /**
      * 如果有主键数据就更新，否则插入
      */
-    public function save()
+    public function save(?array $data = [])
     {
-        if (empty($data = $this->getChangeData())) {
+        $data = !empty($data) ? $data : $this->getChangeData();
+        if (empty($data)) {
             return false; // 没有修改数据
         }
 

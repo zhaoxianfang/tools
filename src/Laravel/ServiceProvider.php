@@ -36,6 +36,9 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         // 加载模块boot
         $this->mapModuleBoot();
 
+        // 加载debug路由
+        $this->loadRoutesFrom(__DIR__ . '/Trace/routes/debugger.php');
+
         // 设置数据分页模板
         $this->setPaginationView();
         // 使用提示

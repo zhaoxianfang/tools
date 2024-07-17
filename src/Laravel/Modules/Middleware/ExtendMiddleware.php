@@ -4,10 +4,13 @@ namespace zxf\Laravel\Modules\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use zxf\Laravel\Trace\Handle;
 
 class ExtendMiddleware
 {
+    protected $handle;
+
     /**
      * 模块扩展中间件
      *
@@ -19,6 +22,10 @@ class ExtendMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
+        $this->handle = new Handle($request);
+
+        $this->handle->listenModelEvent();
+
 //        // ================================================
 //        // 为的控制器添加周期函数 initialize 方法
 //        // 说明：此周期函数在控制器中定义实现，它是在控制器的构造函数之后调用的。  但是中间件还没加载结束
@@ -41,29 +48,56 @@ class ExtendMiddleware
 //        // 为所有的控制器添加周期函数 initialize 方法
 //        // ================================================
 
-        $traceHandle = '';
-        $listenTrace = !app()->runningInConsole() && $request->isMethod('get') && config('modules.trace');
-        if ($listenTrace) {
-            $traceHandle = (new Handle($request))->handle();
-        }
-
         $response = $next($request);
 
         // 在响应发送到浏览器前处理任务。
-        if ($listenTrace && !empty($traceHandle)) {
-            $traceContent = $traceHandle->output();
+        $this->attachStyleAndScript($request, $response);
 
-            // $pageContent = get_protected_value($response, 'content');
-            $pageContent = $response->getContent();
-            $position    = strripos($pageContent, "</html>");
-            if (false !== $position) {
-                // $pageContent = substr_replace($pageContent, $traceContent . PHP_EOL, $position, 0);
-                $pageContent = substr($pageContent, 0, $position) . PHP_EOL . $traceContent . PHP_EOL . substr($pageContent, $position);
-                // set_protected_value($response, 'content', $pageContent);
-            } else {
-                $pageContent = $pageContent . PHP_EOL . $traceContent;
-            }
-            $response->setContent($pageContent);
+        return $response;
+    }
+
+    private function attachStyleAndScript(Request $request, Response $response): Response
+    {
+        $openTrace = !app()->runningInConsole() && !app()->environment('testing') && $request->isMethod('get') && config('modules.trace');
+
+        if (!$openTrace) {
+            return $response;
+        }
+
+        $traceHandle  = $this->handle->handle();
+        $traceContent = $traceHandle->output();
+        if (empty($traceContent)) {
+            return $response;
+        }
+
+        $content = $response->getContent();
+
+        $cssRoute = preg_replace('/\Ahttps?:/', '', route('debugger.assets.css'));
+        $jsRoute  = preg_replace('/\Ahttps?:/', '', route('debugger.assets.js'));
+
+        $style  = "<link rel='stylesheet' type='text/css' property='stylesheet' href='{$cssRoute}'  data-turbolinks-eval='false' data-turbo-eval='false'>";
+        $script = "<script src='{$jsRoute}' type='text/javascript'  data-turbolinks-eval='false' data-turbo-eval='false' ></script>";
+
+        $posCss = strripos($content, '</head>');
+        if (false !== $posCss) {
+            $content = substr($content, 0, $posCss) . PHP_EOL . $style . PHP_EOL . substr($content, $posCss);
+        } else {
+            $content = $style . PHP_EOL . $content;
+        }
+
+        $posJs = strripos($content, '</body>');
+        if (false !== $posJs) {
+            $content = substr($content, 0, $posJs) . PHP_EOL . $traceContent . PHP_EOL . $script . substr($content, $posJs);
+            // set_protected_value($response, 'content', $traceContent);
+        } else {
+            $content = $content . PHP_EOL . $traceContent . PHP_EOL . $script;
+        }
+
+        $response->setContent($content);
+        $response->headers->remove('Content-Length');
+
+        if ($original = $response->getOriginalContent()) {
+            $response->original = $original;
         }
 
         return $response;

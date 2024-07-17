@@ -17,7 +17,7 @@ composer require zxf/tools
 
 | 模块                     | 需要包含的文件夹/说明                                                                                     |
 |------------------------|-------------------------------------------------------------------------------------------------|
-| zxf\Tools\Collection   | <a href="//www.0l0.net/docs/doc/2_129" target="_blank">[Collection]</a> 数据集合操作                  |
+| zxf\Tools\Collection   | <a href="http://www.0l0.net/docs/doc/2_129" target="_blank">[Collection]</a> 数据集合操作             |
 | QQ登录                   | Qqlogin                                                                                         |
 | 微信                     | WeChat                                                                                          |
 | 支付                     | 支付                                                                                              |

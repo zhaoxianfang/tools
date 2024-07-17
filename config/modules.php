@@ -72,7 +72,7 @@ return [
     | 默认关闭
     |
     */
-    'trace'                          => (bool)env('APP_TRACE', false),
+    'trace'                          => (bool)env('APP_DEBUG', false),
 
     /*
     |--------------------------------------------------------------------------

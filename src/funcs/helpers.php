@@ -384,7 +384,7 @@ if (!function_exists('byteFormat')) {
             $size /= 1024;
             $pos++;
         }
-        return round($size, $dec) . " " . $units[$pos];
+        return round($size, $dec) . $units[$pos];
     }
 }
 

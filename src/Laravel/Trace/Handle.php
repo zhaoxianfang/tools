@@ -19,8 +19,8 @@ class Handle
             'view'    => 'View',
             'models'  => 'Models',
             'sql'     => 'SQL',
-            'session' => 'SESSION',
-            'request' => 'REQUEST',
+            'session' => 'Session',
+            'request' => 'Request',
         ],
     ];
 
@@ -32,18 +32,20 @@ class Handle
     // 实例化并传入参数
     public function __construct(Request $request, array $config = [])
     {
-        $this->request = $request;
-        $this->config  = array_merge($this->config, $config);
-        DB::enableQueryLog();
+        $this->startTime = constant('LARAVEL_START') ?? microtime(true);
+        if (is_enable_trace()) {
+            $this->request = $request;
+            $this->config  = array_merge($this->config, $config);
+            DB::enableQueryLog();
+        }
     }
 
     public function handle()
     {
-        if (app()->runningInConsole()) {
+        if (is_enable_trace()) {
             // 运行在命令行下
             return $this;
         }
-        $this->startTime   = constant('LARAVEL_START') ?? microtime(true);
         $this->startMemory = memory_get_usage();
 
         return $this;
@@ -54,62 +56,12 @@ class Handle
      */
     public function listenModelEvent()
     {
-        // 监听调度事件
-        Event::listen('eloquent.retrieved:*', function ($listenString, $model) {
-            $this->logModelEvent($listenString, $model, 'retrieved');
-        });
-
-        // 监听创建事件
-        Event::listen('eloquent.creating:*', function ($listenString, $model) {
-            $this->logModelEvent($listenString, $model, 'creating');
-        });
-
-        // 监听创建完成事件
-        Event::listen('eloquent.created:*', function ($listenString, $model) {
-            $this->logModelEvent($listenString, $model, 'created');
-        });
-
-        // 监听更新事件
-        Event::listen('eloquent.updating:*', function ($listenString, $model) {
-            $this->logModelEvent($listenString, $model, 'updating');
-        });
-
-        // 监听更新完成事件
-        Event::listen('eloquent.updated:*', function ($listenString, $model) {
-            $this->logModelEvent($listenString, $model, 'updated');
-        });
-
-        // 监听更新事件
-        Event::listen('eloquent.saving:*', function ($listenString, $model) {
-            $this->logModelEvent($listenString, $model, 'saving');
-        });
-
-        // 监听更新完成事件
-        Event::listen('eloquent.saved:*', function ($listenString, $model) {
-            $this->logModelEvent($listenString, $model, 'saved');
-        });
-
-        // 监听删除事件
-        Event::listen('eloquent.deleting:*', function ($listenString, $model) {
-            $this->logModelEvent($listenString, $model, 'deleting');
-        });
-
-        // 监听删除完成事件
-        Event::listen('eloquent.deleted:*', function ($listenString, $model) {
-            $this->logModelEvent($listenString, $model, 'deleted');
-        });
-
-        Event::listen('eloquent.restoring:*', function ($listenString, $model) {
-            $this->logModelEvent($listenString, $model, 'restoring');
-        });
-
-        Event::listen('eloquent.restored:*', function ($listenString, $model) {
-            $this->logModelEvent($listenString, $model, 'restored');
-        });
-
-        Event::listen('eloquent.replicating:*', function ($listenString, $model) {
-            $this->logModelEvent($listenString, $model, 'replicating');
-        });
+        $events = ['retrieved', 'creating', 'created', 'updating', 'updated', 'saving', 'saved', 'deleting', 'deleted', 'restoring', 'restored', 'replicating'];
+        foreach ($events as $event) {
+            Event::listen('eloquent.' . $event . ':*', function ($listenString, $model) use ($event) {
+                $this->logModelEvent($listenString, $model, $event);
+            });
+        }
     }
 
     protected function logModelEvent($listenString, $model, $event)
@@ -158,35 +110,98 @@ class Handle
             return $this->randerPage($trace);
         }
         // return $this->randerConsole($trace);
-        return '';
+        unset($trace['REQUEST']['header']['cookie']);
+        unset($trace['REQUEST']['body']);
+        return $trace;
     }
 
     private function getModelList()
     {
         $data = [];
         foreach (self::$modelList as $model) {
-            $data[] = '「' . $model['event'] . '」' . $model['model'] . ':' . $model['id'];
+            if (empty($data[$model['model'] . ':' . $model['id']])) {
+                $data[$model['model'] . ':' . $model['id']] = 1;
+            } else {
+                $data[$model['model'] . ':' . $model['id']] += 1;
+            }
         }
-        return $data;
+        $list = [];
+        foreach ($data as $model => $num) {
+            $list[] = $model . ' 「' . $num . '次」';
+        }
+        return $list;
     }
 
     private function getBaseInfo($sqlTimes = 0)
     {
         // 获取基本信息
-        $runtime = round(microtime(true) - $this->startTime, 3);
+        $runtime = bcsub(microtime(true), $this->startTime, 3);
         $reqs    = $runtime > 0 ? number_format(1 / $runtime, 2) : '∞';
         $base    = [
             '请求信息' => $this->request->method() . ' ' . $this->request->fullUrl(),
-            '运行时间' => round(microtime(true) - $this->startTime, 3) . '秒',
+            '运行时间' => $runtime . '秒',
             '吞吐率'   => $reqs . 'req/s',
-            '内存消耗' => '内存消耗：' . number_format((memory_get_usage() - $this->startMemory) / 1024, 2) . 'kb',
-            '查询信息' => $sqlTimes . '秒',
+            '内存消耗' => byteFormat(memory_get_usage() - $this->startMemory),
+            '查询时间' => $sqlTimes . '秒',
         ];
 
         if ($this->request->session()) {
             $base['会话信息'] = 'SESSION_ID=' . $this->request->session()->getId();
         }
+        $base['PHP']     = phpversion();
+        $base['Laravel'] = app()->version();
+
+        // DB 数据库连接信息
+        $dbConfig = DB::connection()->getConfig();
+        $username = $dbConfig['username'] ?? '-';
+
+        $base['DB Driver']  = ($dbConfig['driver'] ?? '-') . '(' . $this->maskIP($dbConfig['host'] ?? '-') . ') ' . ($dbConfig['charset'] ?? '-');
+        $base['DB Connect'] = ($dbConfig['database'] ?? '-') . '(' . substr($username, 0, 2) . '***' . substr($username, -2) . ')';
+
+        // 操作系统名称
+        $osName = php_uname('s');
+        // 根据需要，你可以将系统名称转换为更友好的格式
+        $friendlyOsName = match (strtoupper($osName)) {
+            'DARWIN'     => 'macOS',
+            'LINUX'      => 'Linux',
+            'WINDOWS NT' => 'Windows',
+            default      => $osName,
+        };
+        // 系统信息
+        $base['OS'] = $friendlyOsName . ' v' . php_uname('r') . ' ' . php_uname('m');
+        if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+            $directoryPath      = '/'; // 根目录
+            $totalSpace         = disk_total_space($directoryPath);// 磁盘总空间
+            $freeSpace          = disk_free_space($directoryPath);// 磁盘可用空间
+            $useSpace           = bcsub($totalSpace, $freeSpace, 0);// 磁盘已用空间
+            $usageRate          = bcmul(bcdiv($useSpace, $totalSpace, 5), 100, 2) . '%';// 磁盘使用率
+            $base['Disk Space'] = 'total:' . byteFormat($totalSpace) . '; used:' . byteFormat($useSpace) . '; free:' . byteFormat($freeSpace) . '; usage-rate:' . $usageRate;
+        }
         return $base;
+    }
+
+    private function maskIP($ip)
+    {
+        // 检查是否是空或特殊的地址
+        if (empty($ip) || strlen($ip) < 5 || $ip === 'localhost' || $ip === '127.0.0.1') {
+            return $ip;
+        }
+
+        // 验证是否为有效的IPv4地址
+        if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            return $ip; // 如果不是有效的IPv4，直接返回原值
+        }
+
+        // 将 IP 地址分割成数组
+        $parts = explode('.', $ip);
+
+        // 检查是否是标准的IPv4地址（4个部分）
+        if (count($parts) !== 4) {
+            return $ip; // 如果不是4个部分，直接返回原值
+        }
+
+        // 只保留第一个和最后一个部分，中间用 ***.*** 替换
+        return $parts[0] . '.***.***.' . $parts[3];
     }
 
     private function getRouteInfo()
@@ -211,6 +226,7 @@ class Handle
         if (!empty($middleware) && in_array('tools_middleware', $middleware)) {
             $middlewareIndex = array_search('tools_middleware', $middleware);
             unset($middleware[$middlewareIndex]);
+            $middleware = array_values($middleware);
         }
         return [
             'uri'        => request()->method() . ' ' . $route->uri(),
@@ -230,9 +246,15 @@ class Handle
         $sqlArr        = [];
         $sqlTimes      = 0;
         foreach ($this->sqlList as $sqlItem) {
-            $sqlArr[] = 'time:' . $sqlItem['time'] . 'ms || sql: ' . $sqlItem['query'] . ' || args: ' . json_encode($sqlItem['bindings']);
+            $sqlArr[] = [
+                'time'     => $sqlItem['time'] . 'ms',
+                'query'    => $sqlItem['query'],
+                'bindings' => json_encode($sqlItem['bindings']),
+            ];
             $sqlTimes = bcadd($sqlTimes, $sqlItem['time'], 3);
         }
+        // 毫秒转秒
+        $sqlTimes = $sqlTimes > 0 ? bcdiv($sqlTimes, 1000, 3) : 0;
         return [$sqlArr, $sqlTimes];
     }
 
@@ -250,8 +272,9 @@ class Handle
         $request = request();
         return [
             'path'   => $request->path(),
-            'header' => $request->header(),
+            'host'   => $request->host(),
             'ip'     => $request->ip(),
+            'header' => $request->header(),
             'body'   => $request->all(),
         ];
     }
@@ -287,7 +310,6 @@ EOT;
 EOT;
             if (is_array($tabs)) {
                 foreach ($tabs as $k => $item) {
-                    // 判断$k是否为奇数
                     if (is_string($item)) {
                         if (is_numeric($k)) {
                             $str .= '<li class="tools_trace_li" >' . $item . '</li>';
@@ -295,7 +317,11 @@ EOT;
                             $str .= '<li class="tools_trace_li">' . '<div class="tools_trace_li_key">' . $k . '</div><pre class="tools_trace_li_pre">' . $item . '</pre></li>';
                         }
                     } else {
-                        $str .= '<li class="tools_trace_li">' . '<div class="tools_trace_li_key">' . $k . '</div><pre class="tools_trace_li_pre">' . json_encode($item, JSON_PRETTY_PRINT) . '</pre></li>';
+                        if (is_numeric($k)) {
+                            $str .= '<li class="tools_trace_li">' . '<pre class="tools_trace_li_only_pre">' . json_encode($item, JSON_PRETTY_PRINT) . '</pre></li>';
+                        } else {
+                            $str .= '<li class="tools_trace_li">' . '<div class="tools_trace_li_key">' . $k . '</div><pre class="tools_trace_li_pre">' . json_encode($item, JSON_PRETTY_PRINT) . '</pre></li>';
+                        }
                     }
                 }
             }
@@ -306,7 +332,7 @@ EOT;
         }
         $str .= <<<EOT
         </div>
-<div id="tools_trace_page_trace_close"><img style="vertical-align:top;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAQhJREFUOE+t1L0yxUAYBuDnXI9CpaJAQ2WYQUNFQ0VDpVCg8DPjp0CBhoabcBNchKsweybFZk822XC+mTRJ9tlvd99kYMw1GLMnBo/xhY+ek4Rxn9VVA9fwjvUe6BmWqjHfoZF0yX3QSyzGWBMY7pWgt5hPsRzYhT5gpglrA3PoC6ZyWBeYosuYbMNKwBgNkQoJGJ5mrkqC/VZ1NoEjnP4HjPdsBSc4xMVfOnzEdLLMA5xjHzdNaG7Jd5jL7NkerrGLEKFaNYFXWOg4gB3cYxvPsZiCI99mywFs4QmbCAc3rPRvs1oSjWiSDbxW2xP+ODVwFj9dOWvoOIwLNQK2xav4WUmwi7Hw4i+FuToVxfikpwAAAABJRU5ErkJggg==" /></div>
+<div id="tools_trace_page_trace_close">×</div>
 </div>
 <div id="tools_trace_page_trace_open">
     <div style="background:#232323;color:#FFF;padding:0 6px;float:right;line-height:30px;font-size:14px">调试跟踪</div>

@@ -211,3 +211,17 @@ if (!function_exists('copy_model')) {
         return $res;
     }
 }
+
+if (!function_exists('is_enable_trace')) {
+    /**
+     * 判断是否开启 trace 调试
+     *
+     * @return bool
+     */
+    function is_enable_trace(): bool
+    {
+        // return !app()->runningInConsole() && !app()->environment('testing') && request()->isMethod('get') && config('modules.trace');
+        return !app()->runningInConsole() && config('modules.trace');
+    }
+}
+

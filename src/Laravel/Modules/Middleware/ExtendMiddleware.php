@@ -22,9 +22,11 @@ class ExtendMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        $this->handle = new Handle($request);
+        if (is_enable_trace()) {
+            $this->handle = new Handle($request);
 
-        $this->handle->listenModelEvent();
+            $this->handle->listenModelEvent();
+        }
 
 //        // ================================================
 //        // 为的控制器添加周期函数 initialize 方法
@@ -50,17 +52,17 @@ class ExtendMiddleware
 
         $response = $next($request);
 
-        // 在响应发送到浏览器前处理任务。
-        $this->attachStyleAndScript($request, $response);
+        if (is_enable_trace()) {
+            // 在响应发送到浏览器前处理任务。
+            $this->attachStyleAndScript($request, $response);
+        }
 
         return $response;
     }
 
-    private function attachStyleAndScript(Request $request, Response $response): Response
+    private function attachStyleAndScript(Request $request, $response)
     {
-        $openTrace = !app()->runningInConsole() && !app()->environment('testing') && $request->isMethod('get') && config('modules.trace');
-
-        if (!$openTrace) {
+        if (!is_enable_trace()) {
             return $response;
         }
 
@@ -71,6 +73,17 @@ class ExtendMiddleware
         }
 
         $content = $response->getContent();
+        if (!$request->isMethod('get')) {
+            try {
+                $content = json_decode($content, true);
+            } catch (\Exception $e) {
+            }
+            $content['_debugger'] = $traceContent;
+            $content              = json_encode($content, JSON_UNESCAPED_UNICODE);
+            $response->setContent($content);
+            $response->headers->remove('Content-Length');
+            return $response;
+        }
 
         $cssRoute = preg_replace('/\Ahttps?:/', '', route('debugger.assets.css'));
         $jsRoute  = preg_replace('/\Ahttps?:/', '', route('debugger.assets.js'));

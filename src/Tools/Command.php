@@ -51,7 +51,12 @@ use InvalidArgumentException;
  *    -opts参数名称 加 空格 加 opts参数值 例如：-c 100 表示 c 的值为 100                 ; 返回到 opts 中
  *    -opts参数简称「单字母」 不加空格 接opts参数值 例如：-hlocal 表示 h 的值为 local      ; 返回到 opts 中
  *    -opts参数简称「单字母」 例如：-g 表示 传入了参数 g                                 ; 返回到 opts 中
- *    参数名称 例如：test 表示 传入了参数 test                                          ; 返回到 args 中
+ *    参数名称 例如：test 表示 传入了参数 test                                         ; 返回到 args 中
+ *
+ *
+ * 扩展方法
+ * $cmd->info('打印一个info');
+ * $name = $cmd->input('请输入您的名字');
  *
  */
 class Command

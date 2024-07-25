@@ -313,7 +313,7 @@ class TextToPNG
 
     public function setFontStyle($style = 'pmzdxx')
     {
-        $this->font = dirname(dirname(__FILE__)) . '/resource/font/' . $style . '.ttf';
+        $this->font = dirname(__FILE__, 2) . '/resource/font/' . $style . '.ttf';
         if (!is_file($this->font)) {
             throw new \Exception('不支持的字体:' . $style);
         }

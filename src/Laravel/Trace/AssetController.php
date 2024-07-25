@@ -6,13 +6,19 @@ use Illuminate\Http\Response;
 
 class AssetController
 {
-    protected array $jsFiles = [
-        __DIR__ . '/Asset/debug.js',
-    ];
+    protected array $jsFiles = [];
 
-    protected array $cssFiles = [
-        __DIR__ . '/Asset/debug.css',
-    ];
+    protected array $cssFiles = [];
+
+    public function __construct()
+    {
+        $this->jsFiles  = [
+            dirname(__DIR__, 2) . '/resource/js/debug.js',
+        ];
+        $this->cssFiles = [
+            dirname(__DIR__, 2) . '/resource/css/debug.css',
+        ];
+    }
 
     /**
      * 获取调试js

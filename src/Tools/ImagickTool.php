@@ -207,7 +207,7 @@ class ImagickTool
             // 创建 ImagickDraw 对象
             $draw = new \ImagickDraw();
 
-            $fontPath = dirname(dirname(__FILE__)) . '/resource/font/' . $fontName . '.ttf';
+            $fontPath = dirname(__FILE__, 2) . '/resource/font/' . $fontName . '.ttf';
             if (!is_file($fontPath)) {
                 throw new \Exception('不支持的字体:' . $fontName);
             }

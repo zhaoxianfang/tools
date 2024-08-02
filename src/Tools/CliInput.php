@@ -34,7 +34,7 @@ class CliInput
      *
      * @return string
      */
-    public function choice(string $tips = '请选择一项', array $options = [])
+    public function choice(string $tips = '请从下列选项中选择其中一项', array $options = [])
     {
         echo "{$tips}\n";
         // 显示选项列表
@@ -43,7 +43,7 @@ class CliInput
         }
         // 获取用户的选项
         do {
-            echo "输入你的选择 (a/b/c): ";
+            echo "请选择: ";
             $choice = trim(fgets(STDIN));
         } while (!array_key_exists($choice, $options));
         return $choice;

@@ -111,7 +111,7 @@ class CliOutput
      * @param string $color     颜色代码，默认为绿色。
      * @param string $style     样式代码，默认为重置样式。
      */
-    public function printProgress($current, $total, $barLength = 20, $color = self::ANSI_GREEN, $style = self::ANSI_RESET): void
+    public function printProgress(int $current, int $total, int $barLength = 20, string $color = self::ANSI_GREEN, string $style = self::ANSI_RESET): void
     {
         $progress     = round(($current / $total) * 100);
         $filledLength = floor($barLength * $current / $total);

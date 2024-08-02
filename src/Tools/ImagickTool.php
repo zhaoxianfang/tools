@@ -160,7 +160,7 @@ class ImagickTool
             $res = true;
             // 保存合并后的图片到指定路径或返回base64图片
             if (!empty($outputPath)) {
-                $this->imagick->writeImages($outputPath,true);
+                $this->imagick->writeImages($outputPath, true);
             } else {
                 $res = 'data:image/' . $this->imagick->getImageFormat() . ';base64,' . base64_encode($this->imagick->getImageBlob());
             }
@@ -189,23 +189,24 @@ class ImagickTool
     /**
      * 添加文字水印
      *
-     * @param string   $text     要添加的水印文字
-     * @param string   $fontName 字体名称，例如：pmzdxx
-     * @param int      $fontSize 字体大小
-     * @param string   $color    文字颜色，例如：#FF0000
-     * @param int|null $position 水印位置，使用类的常量
-     * @param int      $angle    旋转角度
+     * @param string      $text     要添加的水印文字
+     * @param string|null $fontName 字体名称，例如：pmzdxx
+     * @param int         $fontSize 字体大小
+     * @param string      $color    文字颜色，例如：#FF0000
+     * @param int|null    $position 水印位置，使用类的常量
+     * @param int         $angle    旋转角度
      *
      * @return ImagickTool
      * @throws ImagickException
      * @throws \ImagickDrawException
      * @throws \ImagickPixelException
      */
-    public function addTextWatermark(string $text, string $fontName = 'pmzdxx', int $fontSize, string $color, ?int $position = self::WATERMARK_BOTTOM_RIGHT, int $angle = 0)
+    public function addTextWatermark(string $text, ?string $fontName, int $fontSize, string $color, ?int $position = self::WATERMARK_BOTTOM_RIGHT, int $angle = 0)
     {
         try {
             // 创建 ImagickDraw 对象
-            $draw = new \ImagickDraw();
+            $draw     = new \ImagickDraw();
+            $fontName = empty($fontName) ? 'pmzdxx' : $fontName;
 
             $fontPath = dirname(__FILE__, 2) . '/resource/font/' . $fontName . '.ttf';
             if (!is_file($fontPath)) {
@@ -234,7 +235,6 @@ class ImagickTool
      * @param int          $position 水印位置
      * @param \ImagickDraw $draw     ImagickDraw 对象
      *
-     * @throws ImagickException
      */
     private function setWatermarkPosition(int $position, \ImagickDraw $draw)
     {
@@ -308,7 +308,7 @@ class ImagickTool
             $res = true;
             // 保存合并后的图片到指定路径或返回base64图片
             if (!empty($outputPath)) {
-                $imagick->writeImages($outputPath,true);
+                $imagick->writeImages($outputPath, true);
             } else {
                 $res = 'data:image/' . $imagick->getImageFormat() . ';base64,' . base64_encode($imagick->getImageBlob());
             }

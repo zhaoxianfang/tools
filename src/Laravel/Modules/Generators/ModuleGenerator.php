@@ -78,11 +78,13 @@ class ModuleGenerator extends Generator
 
     /**
      * The constructor.
-     * @param $name
-     * @param FileRepository $module
-     * @param Config $config
-     * @param Filesystem $filesystem
-     * @param Console $console
+     *
+     * @param                         $name
+     * @param FileRepository|null     $module
+     * @param Config|null             $config
+     * @param Filesystem|null         $filesystem
+     * @param Console|null            $console
+     * @param ActivatorInterface|null $activator
      */
     public function __construct(
         $name,

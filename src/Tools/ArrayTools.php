@@ -105,11 +105,13 @@ class ArrayTools
      * @desc 将二维数组以元素的某个值作为键 并归类数组
      * array( array('name'=>'aa','type'=>'pay'), array('name'=>'cc','type'=>'pay') )
      * array('pay'=>array( array('name'=>'aa','type'=>'pay') , array('name'=>'cc','type'=>'pay') ))
-     * @param $arr 数组
-     * @param $key 分组值的key
+     *
+     * @param array  $arr 数组
+     * @param string $key 分组值的key
+     *
      * @return array
      */
-    public function groupSameKey($arr, $key)
+    public function groupSameKey(array $arr, string $key)
     {
         $new_arr = array();
         foreach ($arr as $k => $v) {

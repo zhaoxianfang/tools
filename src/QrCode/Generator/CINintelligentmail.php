@@ -622,13 +622,17 @@ class CINintelligentmail extends CINBarcode1D
         switch (strlen($zipcode)) {
             case 11:
                 $number = bcadd($number, '1000000000', 0);
+                break;
             case 9:
                 $number = bcadd($number, '100000', 0);
+                break;
             case 5:
                 $number = bcadd($number, '1', 0);
+                break;
             default:
                 return $number;
         }
+        return $number;
     }
 
     /**
@@ -662,7 +666,8 @@ class CINintelligentmail extends CINBarcode1D
      * Transforms a BCNumber into unsigned char*.
      *
      * @param string $dec BCNumber
-     * @param string
+     *
+     * @return string
      */
     private static function bcdecuc($dec)
     {

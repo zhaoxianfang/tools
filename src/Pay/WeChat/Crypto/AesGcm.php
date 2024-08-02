@@ -42,6 +42,7 @@ class AesGcm implements AesInterface
      * @param string $aad       - The additional authenticated data, maybe empty string.
      *
      * @return string - The base64-encoded ciphertext.
+     * @throws Exception
      */
     public static function encrypt(string $plaintext, string $key, string $iv = '', string $aad = ''): string
     {
@@ -65,6 +66,7 @@ class AesGcm implements AesInterface
      * @param string $aad        - The additional authenticated data, maybe empty string.
      *
      * @return string - The utf-8 plaintext.
+     * @throws Exception
      */
     public static function decrypt(string $ciphertext, string $key, string $iv = '', string $aad = ''): string
     {

@@ -456,7 +456,6 @@ abstract class Node
      * @return static
      *
      * @throws InvalidArgumentException if passed argument is not a string
-     * @throws InvalidSelectorException
      */
     public function setInnerHtml(string $html): self
     {
@@ -471,7 +470,6 @@ abstract class Node
      * @return static
      *
      * @throws InvalidArgumentException if passed argument is not a string
-     * @throws InvalidSelectorException
      */
     public function setInnerXml(string $xml): self
     {

@@ -20,26 +20,14 @@ class DateTools
      */
     public static function getSomeZeroTimeStamp(string $str = 'today')
     {
-        switch ($str) {
-            case 'today':   // 今天凌晨零点的时间戳
-                return strtotime(date("Y-m-d"), time());
-                break;
-            case 'yesterday':   // 昨天 即 今天凌晨零点的时间戳 减去 一天的秒数
-                return strtotime(date("Y-m-d"), time()) - 3600 * 24;
-                break;
-            case 'tomorrow':    // 明天 即 今天凌晨零点的时间戳 加上 一天的秒数
-                return strtotime(date("Y-m-d"), time()) + 3600 * 24;
-                break;
-            case 'month_first': // 这个月第一天凌晨零点的时间戳
-                return strtotime(date("Y-m"), time());
-                break;
-            case 'year_first':  // 这一年第一天凌晨零点的时间戳
-                return strtotime(date("Y-01"), time());
-                break;
-            default:   // 指定时间字符串，eg:2017-01-01、2017-01-01 09:10:40、-1days、+1days、+1month、+1year
-                return strtotime(date("Y-m-d"), strtotime($str));
-                break;
-        }
+        return match ($str) {
+            'today'       => strtotime(date("Y-m-d"), time()),
+            'yesterday'   => strtotime(date("Y-m-d"), time()) - 3600 * 24,
+            'tomorrow'    => strtotime(date("Y-m-d"), time()) + 3600 * 24,
+            'month_first' => strtotime(date("Y-m"), time()),
+            'year_first'  => strtotime(date("Y-01"), time()),
+            default       => strtotime(date("Y-m-d"), strtotime($str)),
+        };
     }
 
     /**

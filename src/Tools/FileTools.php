@@ -68,7 +68,7 @@ class FileTools
      *
      * @return string
      */
-    public function checkPath($path)
+    public static function checkPath($path): string
     {
         return (preg_match('/\/$/', $path)) ? $path : $path . '/';
     }

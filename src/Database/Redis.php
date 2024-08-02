@@ -409,6 +409,9 @@ class Redis
      * @param  $key
      * @param  $start
      * @param  $end
+     *
+     * @return false|int|PhpRedis
+     * @throws \RedisException
      */
     public function zCount($key, $start, $end)
     {

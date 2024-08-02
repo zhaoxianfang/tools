@@ -276,7 +276,6 @@ class TextToPNG
                 break;
             default:
                 throw new \Exception(($isBackground ? '背景' : '前景') . '色有误');
-                break;
         }
         return $this;
     }

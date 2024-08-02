@@ -6,13 +6,13 @@ use Exception;
 
 class AES
 {
-    private $key;
-    private $iv;
-    private $algorithm;
-    private $padding;
+    private string $key;
+    private string $iv;
+    private mixed $algorithm;
+    private mixed $padding;
 
     // 此类中限制 支持的几种加密算法
-    private $algorithmMap = [
+    private array $algorithmMap = [
         'aes-128-cbc',
         'aes-192-cbc',
         'aes-256-cbc',

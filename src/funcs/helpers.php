@@ -222,7 +222,6 @@ if (!function_exists('img_to_gray')) {
                 break;
             default:
                 return false;
-                break;
         }
         $color = imagecolorallocatealpha($block, 0, 0, 0, 127); //拾取一个完全透明的颜色
         imagealphablending($block, false);                      //关闭混合模式，以便透明颜色能覆盖原画布
@@ -1178,7 +1177,7 @@ if (!function_exists('str_en_code')) {
         // 动态密匙长度，相同的明文会生成不同密文就是依靠动态密匙
         $ckey_length = 4;
         // 密匙
-        $key = md5(!empty($key) ? $key : 'http://www.0l0.net');
+        $key = md5(!empty($key) ? $key : 'wei_si_fang');
         // 密匙a会参与加解密
         $keya = md5(substr($key, 0, 16));
         // 密匙b会用来做数据完整性验证

@@ -115,3 +115,34 @@ $sheetData = [
 ];
 return \zxf\Office\Excel\SheetsExport::download($sheetData, $filename = '多sheet表.xlsx');
 ```
+
+### 导入EXCEL为数组
+
+```
+$file = $request->file('file');
+
+// $file 参数可以是$request->file('xxx'),也可以是文件路径 /path/to/file.xlsx
+$export = \zxf\Office\Excel\Import::init($file);
+
+$export->validate(function () {
+    $rule     = [
+        'file' => 'required|file|max:2048|mimes:xlsx,xls,csv', // 文件最大2MB，仅限 xlsx, xls,csv 格式
+    ];
+    $messages = [
+        'file.required' => '文件不能为空',
+        'file.max'      => '文件最大1MB',
+    ];
+    return [$rule, $messages];
+});
+
+// 是否使用Excel列名作为数组的键名,默认为false，如果调用了setColumnMapping()方法，会自动设置为true
+$export->useExcelColumnName(true);
+
+// 使用列名映射 把A列映射为name，B列映射为email, 使用字段映射时没有设置映射的列会被忽略
+$export->setColumnMapping([
+    'A' => 'name', 
+    'B' => 'email'
+]);
+
+return response()->json(['data' => $export->toArray()]);
+```

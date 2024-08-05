@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\Office\Excel;
+namespace zxf\Office\Excel\Handle;
 
 use Exception;
 use Maatwebsite\Excel\Concerns\FromArray;
@@ -10,8 +10,8 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Facades\Excel;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
  * Excel 导出

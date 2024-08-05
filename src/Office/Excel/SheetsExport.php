@@ -3,6 +3,7 @@
 namespace zxf\Office\Excel;
 
 use Maatwebsite\Excel\Facades\Excel;
+use zxf\Office\Excel\Handle\MultiSheetsExportHandle;
 
 /**
  * 导出多表

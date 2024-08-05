@@ -1,11 +1,10 @@
 <?php
 
-namespace zxf\Office\Excel;
+namespace zxf\Office\Excel\Handle;
 
-use Exception;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
-use Maatwebsite\Excel\Facades\Excel;
+use zxf\Office\Excel\Export;
 
 /**
  * Excel 多表 sheets 导出

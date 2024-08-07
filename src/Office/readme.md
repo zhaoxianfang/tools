@@ -146,3 +146,188 @@ $export->setColumnMapping([
 
 return response()->json(['data' => $export->toArray()]);
 ```
+
+## Word
+
+### 文档
+
+```
+文档：https://phpoffice.github.io/PHPWord/
+github：https://github.com/PHPOffice/PHPWord
+```
+
+### 安装
+
+```
+composer require phpoffice/phpword
+```
+
+### 使用
+
+```
+use zxf\Office\Word\Word;
+
+
+$imgPath  = '/Users/linian/Pictures/1.jpeg';
+$savePath = '/Users/linian/Desktop/document_write.docx';
+// 创建文档并添加内容
+
+$filePath = '/Users/linian/Desktop/document1.docx';
+// 创建 Write 类的实例,传入$filePath就会加载$filePath文件，不传就新建一个对象
+$write = new Word($filePath);
+
+// 添加标题
+$write->setTitle('文档标题', [
+    'name'  => 'Arial',
+    'size'  => 16,
+    'bold'  => true,
+    'color' => '0000FF',
+]);
+
+$write->addText('加粗文字：', ['bold' => true]);
+
+// 添加文本
+$write->addText('这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本。', [
+    'name'  => 'Arial',
+    'size'  => 12,
+    'color' => '000000',
+], [
+    'align'       => 'left',
+    'spaceBefore' => 10,
+    'spaceAfter'  => 10,
+]);
+
+// 添加带下划线的文本
+$write->addTextWithUnderline('这是带下划线的文本。', [
+    'name'  => 'Arial',
+    'size'  => 12,
+    'color' => 'FF0000',
+]);
+$write->addText('这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本这是普通文本。', [
+    'name'  => 'Arial',
+    'size'  => 12,
+    'color' => '000000',
+]);
+
+// 替换文本
+$write->replaceText('普通文本', '替换后的文本');
+
+// 添加有序列表
+$write->addOrderedList([
+    '第一项',
+    '第二项',
+    '第三项',
+]);
+
+// 添加无序列表
+$write->addUnorderedList([
+    '第一项',
+    '第二项',
+    '第三项',
+]);
+
+// 添加表格
+$write->addTable('center', function ($table) use ($imgPath) {
+    $table->addRow(400)
+        ->addColSpanCell(2000, '跨两列的单元格', 2) // 添加跨两列的单元格
+        ->addCell(1000, '右侧单元格')  // 普通单元格
+        ->addRow()
+        ->addCell(1000, '单元格 1')  // 普通单元格
+        ->addCell(1000, '单元格 2')  // 普通单元格
+        ->addCell(1000, '单元格 3')  // 普通单元格
+        ->addRow()
+        ->addRowSpanCell(1000, '跨两行', 2) // 添加跨两行的单元格
+        ->addImageCell(1000, $imgPath, [
+            'width'     => 50,
+            'height'    => 50,
+            'alignment' => 'center',
+        ])
+        ->addRowSpanCell(1000, '单元格 4', 2)
+        ->addRow()
+        ->addCell(1000, '单元格 5')
+        ->addRow()
+        ->addCell(1000, '单元格 6')
+        ->addCell(1000, '单元格 x')
+        ->addCell(1000, '单元格 x-1')
+        ->addRow()
+        ->addCell(1000, '单元格 7')
+        ->addColSpanCell(2000, '单元格 8', 2) // 跨列单元格
+    ;
+});
+
+
+// 添加页眉
+$write->addHeader('这是页眉内容');
+
+// 添加页脚
+$write->addFooter('这是页脚内容');
+
+// 插入页码
+$write->addPageNumber('center');
+
+// 设置文本背景色
+$write->setTextBackgroundColor('#FFFF00');
+
+$write->addText('这是文本这是文本这是文本这是文本');
+$write->addBr(3);
+$write->addText('这是文本这是文本这是文本这是文本');
+
+
+// 统一本页段落间距
+$write->setParagraphSpacing(90, 90, 40);
+
+$write->addPaper();
+$write->addText('这是文本这是文本这是文本这是文本');
+
+$write->addLink('http://0l0.net', '测试链接');
+
+// 添加图片
+$write->addImage($imgPath, [
+    'width'  => 200,
+    'height' => 150,
+    'align'  => 'center',
+]);
+
+// 统一本页段落间距
+$write->setParagraphSpacing(90, 90, 40);
+
+// 保存文档到文件
+$write->save($savePath);
+
+// 直接下载文档
+$write->download('example_download.docx');
+```
+
+### 模板替换
+
+```
+use zxf\Office\Word\Template;
+
+$docPath = '/Users/linian/Desktop/document.docx';
+
+// 创建 Template 类的实例
+$template = new Template($docPath);
+
+// 替换的内容在模板中是使用${}括起来的,在调用替换时${}是可以省略的，eg: ${name}、name 都可以
+$template->replaceText([
+    '${name}'    => '张三',
+    '${content}' => '欢迎光临',
+    'by_author'  => '威四方',
+]);
+
+$template->replaceImage('logo', [
+    'path'   => '/Users/linian/Pictures/1.jpeg',
+    'width'  => 100, // 设置图片宽度
+    'height' => 100, // 设置图片高度
+    'ratio'  => true,  // 保持图片比例
+]);
+
+// 方式一：保存
+$template->save('/path/example_download.docx');
+
+// 方式二：直接下载文档
+$template->download('example_download.docx');
+
+// 方式三：保存并下载文档
+$template->saveAndDownload('/Users/linian/Desktop/document_download.docx');
+```

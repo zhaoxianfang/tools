@@ -11,6 +11,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use zxf\Office\Excel\Imports\ExcelToArray;
 use zxf\Office\Excel\Imports\ExcelToCollection;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use zxf\Tools\Collection;
 
 /**
  * Excel 导入
@@ -226,8 +227,12 @@ class Import
     }
 
 
+    /**
+     * 导入数据转换为集合
+     * @return Collection
+     */
     public function toCollect()
     {
-        return collect($this->toArray());
+        return new Collection($this->toArray());
     }
 }

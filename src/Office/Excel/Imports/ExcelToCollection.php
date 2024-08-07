@@ -2,6 +2,7 @@
 
 namespace zxf\Office\Excel\Imports;
 
+use Maatwebsite\Excel\Concerns\WithHeadingRow; // 跳过表头（不读取第一行）
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;

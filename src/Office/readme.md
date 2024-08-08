@@ -339,18 +339,6 @@ $write->customCall(function ($phpWord, $section, $word) {
         'size'    => 22,
     ], []);
 
-    // 添加备注
-    $comment = new \PhpOffice\PhpWord\Element\Comment('加粗文字', new \DateTime(), 'my_initials');
-    $comment->addText('点击跳转', array('bold' => true));
-
-    // add it to the document
-    $phpWord->addComment($comment);
-
-    $textrun = $section->addTextRun();
-    $textrun->addText('This ');
-    $text = $textrun->addText('is');
-    // link the comment to the text you just created
-    $text->setCommentStart($comment);
 });
 
 // 统一本页段落间距

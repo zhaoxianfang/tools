@@ -113,19 +113,19 @@ class Import
     /**
      * 校验文件
      *
-     * @param callable $callback     回调函数
-     *                               eg:->validate(function () {
-     *                                  // 不论传入的文件表单名称是什么，都会被重命名为file
-     *                                  $rule = [
-     *                                      'file' => 'required|file|max:1024|mimes:xlsx,xls,csv', // 文件最大1MB，仅限 xlsx, xls,csv 格式
-     *                                  ];
-     *                                  $messages = [
-     *                                      'file.required' => '文件不能为空',
-     *                                      'file.max'      => '文件最大1MB',
-     *                                      'file.mimes'    => '不支持的文件格式',
-     *                                  ];
-     *                                  return [$rule,$messages]
-     *                               })
+     * @param callable $callback  回调函数
+     *                            eg:->validate(function () {
+     *                                // 不论传入的文件表单名称是什么，都会被重命名为file
+     *                                $rule = [
+     *                                    'file' => 'required|file|max:1024|mimes:xlsx,xls,csv', // 文件最大1MB，仅限 xlsx,xls,csv 格式
+     *                                ];
+     *                                $messages = [
+     *                                    'file.required' => '文件不能为空',
+     *                                    'file.max'      => '文件最大1MB',
+     *                                    'file.mimes'    => '不支持的文件格式',
+     *                                ];
+     *                                return [$rule,$messages]
+     *                            })
      *
      * @return $this
      * @throws ValidationException
@@ -192,30 +192,30 @@ class Import
         $sheetNames = $this->getSheetNames();
 
         // 支持读多表
-        $import = new ExcelToCollection();
+        $import = new ExcelToArray();
 
-        $results    = Excel::toCollection($import, $this->file);
+        $results    = Excel::toArray($import, $this->file);
         $mergedData = [];
         foreach ($results as $index => $sheetData) {
             $sheetTableData = []; // 每个工作表的数据
             foreach ($sheetData as $row) {
+                $items = [];
                 if ($this->useExcelColumnName) {
-                    $items = $row->mapWithKeys(function ($item, $key) {
+                    foreach ($row as $key => $item) {
                         $columnName = $this->getExcelColumnName($key); // 列名
                         if (!empty($this->columnMapping)) {
                             if (isset($this->columnMapping[$columnName])) {
-                                $columnName = $this->columnMapping[$columnName];
-                                return [$columnName => $item];
+                                $columnName         = $this->columnMapping[$columnName];
+                                $items[$columnName] = $item;
                             }
                         } else {
-                            return [$columnName => $item];
+                            $items[$columnName] = $item;
                         }
-                        return [];
-                    });
+                    }
                 } else {
                     $items = $row;
                 }
-                $sheetTableData[] = $items->toArray();
+                $sheetTableData[] = $items;
             }
             $mergedData[] = [
                 'sheet_index' => $index,
@@ -229,6 +229,7 @@ class Import
 
     /**
      * 导入数据转换为集合
+     *
      * @return Collection
      */
     public function toCollect()

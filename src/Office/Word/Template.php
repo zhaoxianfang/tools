@@ -18,16 +18,59 @@ class Template
         $this->template = new TemplateProcessor($filePath);
     }
 
-    public function replaceText($array = [])
+    /**
+     * 单个替换
+     *
+     * @param $filed
+     * @param $value
+     *
+     * @return $this
+     */
+    public function setValue($filed, $value)
     {
-        foreach ($array as $field => $content) {
-            // Replace placeholders with actual values
-            $this->template->setValue($field, $content);
-        }
+
+        $this->template->setValue($filed, $value);
         return $this;
     }
 
-    public function replaceImage($filed = '', $image)
+    /**
+     * 批量替换
+     *
+     * @param array $array eg:['name'=>'张三', 'age'=>'18']
+     *
+     * @return $this
+     */
+    public function replaceText($array = [])
+    {
+        $this->template->setValues($array);
+        return $this;
+    }
+
+    /**
+     * 设置复选框  模板 ${checkbox}
+     *
+     * @param string $filed   模板中的字段名
+     * @param bool   $checked 是否选中
+     *
+     * @return $this
+     */
+    public function setCheckbox(string $filed, bool $checked = true)
+    {
+        $this->template->setCheckbox($filed, $checked);
+        return $this;
+    }
+
+    /**
+     * 设置图片
+     *
+     * @param string       $filed 模板中的字段名
+     * @param array|string $image 图片信息 eg:
+     *                            'path/to/your/image.jpg'
+     *                            ['path' => 'path/to/your/image.jpg', 'width' => 100, 'height' => 100, 'ratio' => true]
+     *
+     * @return $this
+     */
+    public function replaceImage(string $filed = '', array|string $image = [])
     {
         //   $image=[
         //        'path' => 'path/to/your/image.jpg',
@@ -42,6 +85,52 @@ class Template
         return $this;
     }
 
+    /**
+     * 替换块
+     *      模板：
+     *          ${block_name}
+     *          This block content will be replaced
+     *          ${/block_name}
+     *
+     * @param string $filed
+     * @param string $content
+     *
+     * @return Template
+     */
+    public function replaceBlock(string $filed = '', string $content = '')
+    {
+        $this->template->replaceBlock($filed, $content);
+        return $this;
+    }
+
+    /**
+     * 删除块
+     *
+     * @param string $filed
+     *
+     * @return $this
+     */
+    public function deleteBlock(string $filed = '')
+    {
+        $this->template->deleteBlock($filed);
+        return $this;
+    }
+
+    /**
+     * 自定义闭包回调操作
+     *
+     * @param callable $callback
+     *
+     * @return $this
+     */
+    public function customCall(callable $callback)
+    {
+        // 回调参数
+        // $this->template: 当前加载的模板
+        // $this: 当前类
+        $callback($this->template, $this);
+        return $this;
+    }
 
     /**
      * 保存编辑后的文档

@@ -3,11 +3,14 @@
 namespace zxf\Office\Word;
 
 
+use Exception;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\Style\Paragraph as ParagraphStyle;
 use PhpOffice\PhpWord\SimpleType\VerticalJc;
 use PhpOffice\PhpWord\SimpleType\Jc;
+use PhpOffice\PhpWord\Shared\Converter;
+use PhpOffice\PhpWord\Settings;
 
 /**
  * 读写Word 文档
@@ -22,7 +25,19 @@ class Word
     public  $rowSpans; // 记录跨行的单元格
     public  $currentRowSpanCells; // 当前行跨行单元格的信息
 
-    public function __construct($file = null)
+    // 默认纸张样式
+    protected array $defaultPaperOptions = [
+        'paperSize'   => 'A4',                           // 设置纸张大小为A4
+        'orientation' => 'portrait',                  // 设置页面方向：landscape横向、portrait纵向
+        // 'pageSizeW' => \PhpOffice\PhpWord\Shared\Converter::cmToTwip(14.85),     // 设置页面宽度
+        // 'pageSizeH' => Converter::cmToTwip(21),        // 设置页面高度
+    ];
+
+    /**
+     * @param string|null $file         需要加载的Word文档文件路径（默认为空）
+     * @param array       $paperOptions 设置默认纸张样式
+     */
+    public function __construct(string|null $file = null, array $paperOptions = [])
     {
         if (!empty($file) && is_file($file)) {
             // 加载现有的 Word 文档
@@ -34,13 +49,21 @@ class Word
             $this->phpWord = new PhpWord();
         }
 
+        // 传入页面的宽和高（单位:cm）
+        if (!empty($paperOptions)) {
+            if (!empty($paperOptions['page_width'])) {
+                $paperOptions['pageSizeW'] = Converter::cmToTwip($paperOptions['page_width']);
+            }
+            if (!empty($paperOptions['page_height'])) {
+                $paperOptions['pageSizeH'] = Converter::cmToTwip($paperOptions['page_height']);
+            }
+        }
 
-        $this->section  = $this->phpWord->addSection();
+        $this->section  = $this->phpWord->addSection($paperOptions ?? $this->defaultPaperOptions);
         $this->table    = null; // 初始化为 null
         $this->header   = null;
         $this->footer   = null;
         $this->rowSpans = [];
-
 
     }
 
@@ -54,6 +77,7 @@ class Word
     public function addText($text, $fontOptions = [], $paragraphOptions = [])
     {
         $this->section->addText($text, $fontOptions, $paragraphOptions);
+        return $this;
     }
 
     /**
@@ -75,6 +99,7 @@ class Word
         $imageOptions = $this->calculateImageSize($width, $height, $options);
 
         $this->section->addImage($imagePath, $imageOptions);
+        return $this;
     }
 
     /**
@@ -95,6 +120,7 @@ class Word
     public function setRowSpans($rowSpans)
     {
         $this->rowSpans = $rowSpans;
+        return $this;
     }
 
     /**
@@ -326,23 +352,70 @@ class Word
      * 添加换行
      *
      * @param int $line
-     *
-     * @return void
      */
     public function addBr(int $line = 1)
     {
         $this->section->addTextBreak($line); // 添加$line个换行
+        return $this;
     }
 
     /**
      * 添加一页纸张
-     *
-     * @return void
      */
-    public function addPaper()
+    public function addPaper(string $defaultPaper = 'A4')
     {
         // 添加页面
-        $this->section = $this->phpWord->addSection();
+        $this->section = $this->phpWord->addSection($paperOptions ?? $this->defaultPaperOptions);
+        return $this;
+    }
+
+    /**
+     * 设置默认纸张
+     *
+     * @param string $defaultPaper 设置默认纸张 eg: A4 A5 Letter 等
+     *
+     * @return $this
+     */
+    public function setDefaultPaper(string $defaultPaper = 'A4')
+    {
+        // 设置默认纸张
+        Settings::setDefaultPaper($defaultPaper);
+        return $this;
+    }
+
+    /**
+     * 设置缩放
+     *
+     * @param int $zoom 缩放，默认100%
+     */
+    public function setZoom(int $zoom = 75)
+    {
+        $this->phpWord->getSettings()->setZoom($zoom);
+        return $this;
+    }
+
+    /**
+     * 设置小数点分隔符
+     *
+     * @return $this
+     */
+    public function setDecimalSymbol(string $symbol = ',')
+    {
+        $this->phpWord->getSettings()->setDecimalSymbol($symbol);
+        return $this;
+    }
+
+    /**
+     * 设置语言
+     *
+     * @param string $language 语言 zh-CN、 en-US 等
+     *
+     * @return $this
+     */
+    public function setLanguage(string $language = 'zh-CN')
+    {
+        $this->phpWord->getSettings()->setThemeFontLang(new \PhpOffice\PhpWord\Style\Language($language));
+        return $this;
     }
 
     /**
@@ -351,6 +424,134 @@ class Word
     public function addPageBreak()
     {
         $this->section->addPageBreak(); // 添加分页符
+        return $this;
+    }
+
+    /**
+     * 设置文档信息
+     *
+     * @param array $options
+     *
+     * @return $this
+     */
+    public function setDocInfo(array $options = [])
+    {
+        $properties = $this->phpWord->getDocInfo();
+        !empty($options['creator']) && $properties->setCreator($options['creator']); // 创建者
+        !empty($options['company']) && $properties->setCompany($options['company']); // 公司
+        !empty($options['title']) && $properties->setTitle($options['company']); // 标题
+        !empty($options['description']) && $properties->setDescription($options['description']); // 描述
+        !empty($options['category']) && $properties->setCategory($options['category']); // 分类
+        !empty($options['modified_by']) && $properties->setLastModifiedBy($options['modified_by']); // 最后修改者
+        // !empty($options['creator']) && $properties->setCreated(mktime(0, 0, 0, 3, 12, 2014)); // 创建时间
+        // !empty($options['creator']) && $properties->setModified(mktime(0, 0, 0, 3, 14, 2014)); // 修改时间
+        !empty($options['subject']) && $properties->setSubject($options['subject']); // 主题
+        !empty($options['keywords']) && $properties->setKeywords($options['keywords']); // 关键词 eg: my, key, word
+        return $this;
+    }
+
+    /**
+     * 设置密码
+     *
+     * @param string $password
+     *
+     * @return $this
+     */
+    public function setPassword(string $password = '')
+    {
+        $documentProtection = $this->phpWord->getSettings()->getDocumentProtection();
+        $documentProtection->setEditing('readOnly');
+        $documentProtection->setPassword($password);
+        return $this;
+    }
+
+    /**
+     * 给文档设置为多列
+     *
+     * @param int $colsNum 列数
+     */
+    public function setColsNum(int $colsNum = 2)
+    {
+        $this->section->getStyle()->setBreakType('continuous');
+        $this->section->getStyle()->setColsNum($colsNum);
+        return $this;
+    }
+
+    /**
+     * 自定义闭包回调操作
+     *
+     * @param callable $callback
+     *
+     * @return Word
+     */
+    public function customCall(callable $callback)
+    {
+        // 回调参数
+        // $this->phpWord: 当前文档对象
+        // $this->section: 当前页文档
+        // $this: 当前类
+        $callback($this->phpWord, $this->section, $this);
+        return $this;
+    }
+
+    /**
+     * 把厘米长度转换为像素长度
+     *
+     * @param float|int $cm
+     *
+     * @return mixed
+     */
+    public function cmToPx(float|int $cm)
+    {
+        return Converter::cmToPixel($cm);
+    }
+
+    /**
+     * 把厘米长度转换为Emu
+     *
+     * @param float|int $cm
+     *
+     * @return mixed
+     */
+    public function cmToEmu(float|int $cm)
+    {
+        return Converter::cmToEmu($cm);
+    }
+
+    /**
+     * 把厘米长度转换为Inch
+     *
+     * @param float|int $cm
+     *
+     * @return mixed
+     */
+    public function cmToInch(float|int $cm)
+    {
+        return Converter::cmToInch($cm);
+    }
+
+    /**
+     * 把厘米长度转换为Point
+     *
+     * @param float|int $cm
+     *
+     * @return mixed
+     */
+    public function cmToPoint(float|int $cm)
+    {
+        return Converter::cmToPoint($cm);
+    }
+
+    /**
+     * 把厘米长度转换为Twip
+     *
+     * @param float|int $cm
+     *
+     * @return mixed
+     */
+    public function cmToTwip(float|int $cm)
+    {
+        return Converter::cmToTwip($cm);
     }
 
     /**
@@ -389,6 +590,7 @@ class Word
     {
         $fontOptions['underline'] = 'single'; // 设置下划线样式
         $this->section->addText($text, $fontOptions, $paragraphOptions);
+        return $this;
     }
 
     /**
@@ -399,6 +601,7 @@ class Word
     public function setParagraphStyle($paragraphOptions = [])
     {
         $this->section->addText('', null, $paragraphOptions);
+        return $this;
     }
 
     /**
@@ -411,6 +614,7 @@ class Word
     {
         $this->phpWord->addTitleStyle(1, $style);
         $this->section->addTitle($title, 1);
+        return $this;
     }
 
     /**
@@ -425,6 +629,7 @@ class Word
         $style  = array('alignment' => $align); // 设置页眉内容居中对齐
         $header->addText($headerText, null, $style);
         $this->header = $header;
+        return $this;
     }
 
     /**
@@ -439,6 +644,7 @@ class Word
         $style  = array('alignment' => $align); // 设置页眉内容居中对齐
         $footer->addText($footerText, null, $style);
         $this->footer = $footer;
+        return $this;
     }
 
     /**
@@ -451,6 +657,7 @@ class Word
     {
         $textRun = $this->section->addTextRun();
         $textRun->addLink($url, $text, ['color' => '0000FF', 'underline' => 'single']);
+        return $this;
     }
 
     /**
@@ -470,6 +677,7 @@ class Word
             // 9:数字（左边有缩进）
             $this->section->addListItem($item, 0, null, ['listType' => 7]);
         }
+        return $this;
     }
 
     /**
@@ -489,6 +697,7 @@ class Word
             // 9:数字（左边有缩进）
             $this->section->addListItem($item, 0, null, ['listType' => 5]);
         }
+        return $this;
     }
 
     /**
@@ -517,6 +726,7 @@ class Word
                 $element->setParagraphStyle($paragraphStyle);
             }
         }
+        return $this;
     }
 
     /**
@@ -528,6 +738,7 @@ class Word
     {
         $fontStyle = ['bgColor' => $color];
         $this->section->addText('', $fontStyle);
+        return $this;
     }
 
     /**
@@ -542,6 +753,7 @@ class Word
         // 设置页码格式和对齐方式
         // $footer->addPreserveText('第 {PAGE} 页',['size' => 12], ['align' => $position]);
         $footer->addPreserveText('第 {PAGE} 页,共 {NUMPAGES} 页', null, ['align' => $position]);
+        return $this;
     }
 
     /**
@@ -566,6 +778,7 @@ class Word
                 }
             }
         }
+        return $this;
     }
 
     /**
@@ -588,6 +801,7 @@ class Word
                 $this->replaceTextInElements($element->getElements(), $search, $replace);
             }
         }
+        return $this;
     }
 
     /**
@@ -605,6 +819,7 @@ class Word
         } catch (Exception $e) {
             throw new Exception("保存文档失败: " . $e->getMessage());
         }
+        return $this;
     }
 
     /**

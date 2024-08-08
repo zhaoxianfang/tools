@@ -255,16 +255,35 @@ $write->addTable('center', function ($table) use ($imgPath) {
     ;
 });
 
-
-// 添加页眉
+// 添加统一的页眉
 $write->addHeader('这是页眉内容');
 
-// 添加页脚
+// 添加统一的页脚
 $write->addFooter('这是页脚内容');
+
+// 或者调用自定义闭包回调操作 奇偶页页眉
+$write->customCall(function ($phpWord, $section) {
+    // 开启设置 奇偶不同的页眉
+    $phpWord->getSettings()->setEvenAndOddHeaders(true);
+
+    $style = array('alignment' => 'center'); // 设置页眉内容居中对齐
+
+    // 默认页和奇数页
+    $headerOdd = $section->addHeader();
+    $headerOdd->addText('这是奇数页页眉', null, $style);
+    // 偶数页页眉
+    $headerEven = $section->addHeader('even');
+    $headerEven->addText('这是偶数页页眉', null, $style);
+
+    // 页脚和页眉设置相同
+});
 
 // 插入页码
 $write->addPageNumber('center');
 
+// 本页设置为两列
+$write->setColsNum(2);
+        
 // 设置文本背景色
 $write->setTextBackgroundColor('#FFFF00');
 
@@ -287,6 +306,52 @@ $write->addImage($imgPath, [
     'height' => 150,
     'align'  => 'center',
 ]);
+
+// 调用PHPWord的其他操作
+// 回调参数
+// $phpWord: 当前文档对象
+// $section: 当前页文档
+// $word: 当前Word类
+$write->customCall(function ($phpWord, $section, $word) {
+    // 添加折线图
+    $categories = array('A', 'B', 'C', 'D', 'E');
+    $series     = array(1, 3, 2, 5, 4);
+    // https://phpoffice.github.io/PHPWord/usage/styles/chart.html
+    $section->addChart('line', $categories, $series, [
+            'width'             => $word->cmToEmu(8), // 8 cm,只能使用EMU 单位
+            'height'            => $word->cmToEmu(6), // 6 cm,只能使用EMU 单位
+            '3d'                => false,
+            'title'             => '折线图',
+            'showLegend'        => false,
+            'gridX'             => true, // 显示Y网格
+            'gridY'             => true, // 显示Y网格
+            'showAxisLabels'    => true,
+            'categoryAxisTitle' => 'xxx', // X 轴标题
+            'valueAxisTitle'    => 'yyy', // Y 轴标题
+        ]
+    );
+
+    // 添加CheckBox
+    $section->addCheckBox('CheckBox Name', 'CheckBox Text', [
+        'color'   => 'FF0000',
+        'bgColor' => '00FF00',
+        'bold'    => false,
+        'size'    => 22,
+    ], []);
+
+    // 添加备注
+    $comment = new \PhpOffice\PhpWord\Element\Comment('加粗文字', new \DateTime(), 'my_initials');
+    $comment->addText('点击跳转', array('bold' => true));
+
+    // add it to the document
+    $phpWord->addComment($comment);
+
+    $textrun = $section->addTextRun();
+    $textrun->addText('This ');
+    $text = $textrun->addText('is');
+    // link the comment to the text you just created
+    $text->setCommentStart($comment);
+});
 
 // 统一本页段落间距
 $write->setParagraphSpacing(90, 90, 40);

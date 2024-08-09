@@ -41,7 +41,8 @@
     },
     "files": [
       "src/funcs/helpers.php",
-      "src/funcs/module_helpers.php"
+      "src/funcs/module_helpers.php",
+      "src/Laravel/Modules/helpers.php"
     ]
   },
   "config": {
@@ -50,7 +51,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "zxf\\Laravel\\ServiceProvider"
+        "zxf\\Laravel\\LaravelModulesServiceProvider"
       ],
       "aliases": {
         "Module": "zxf\\Facades\\Module"

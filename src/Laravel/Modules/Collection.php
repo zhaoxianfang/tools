@@ -4,6 +4,7 @@ namespace zxf\Laravel\Modules;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection as BaseCollection;
+use zxf\Laravel\Module;
 
 class Collection extends BaseCollection
 {

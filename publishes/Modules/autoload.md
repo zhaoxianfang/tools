@@ -3,13 +3,13 @@
 ## Modules模块
 
 ```
-Resources/lang/
-Config/config.php
-Console/xxx.php
-Resources/views/
-Database/Migrations/
-Routes/
-Providers/ 里面继承了 \Illuminate\Support\ServiceProvider::class 类的所有服务提供者类
+Resources/lang/         // 多语言文件
+Config/config.php       // 每个模块的配置文件
+Console/xxx.php         // 控制台命令 只要继承了 Illuminate\Console\Command 类就会自动注册
+Resources/views/        // 视图文件
+Database/Migrations/    // 迁移文件
+Routes/                 // 路由文件 xxx.php
+Providers/              // 里面继承了 \Illuminate\Support\ServiceProvider::class 类的所有服务提供者类
 ```
 
 ## resource 模块

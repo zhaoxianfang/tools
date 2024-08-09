@@ -17,13 +17,6 @@ if (!is_laravel()) {
     return false;
 }
 
-if (!function_exists('module_path')) {
-    function module_path($name, $path = ''): string
-    {
-        $modulePath = base_path(config('modules.namespace') . DIRECTORY_SEPARATOR . $name);
-        return $modulePath . ($path ? DIRECTORY_SEPARATOR . $path : $path);
-    }
-}
 
 if (!function_exists('modules_name')) {
     /**

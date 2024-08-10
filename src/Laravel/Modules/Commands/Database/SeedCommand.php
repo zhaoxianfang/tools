@@ -7,7 +7,7 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Str;
 use zxf\Laravel\Modules\Commands\BaseCommand;
 use zxf\Laravel\Modules\Contracts\RepositoryInterface;
-use zxf\Laravel\Module;
+use zxf\Laravel\Modules\Module;
 use zxf\Laravel\Modules\Support\Config\GenerateConfigReader;
 use zxf\Laravel\Modules\Traits\ModuleCommandTrait;
 use RuntimeException;

@@ -8,7 +8,7 @@ use Illuminate\Container\Container;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
 use zxf\Laravel\Modules\Contracts\ActivatorInterface;
-use zxf\Laravel\Module;
+use zxf\Laravel\Modules\Module;
 
 class FileActivator implements ActivatorInterface
 {
@@ -109,11 +109,12 @@ class FileActivator implements ActivatorInterface
      */
     public function hasStatus(Module $module, bool $status): bool
     {
-        if (! isset($this->modulesStatuses[$module->getName()])) {
-            return $status === false;
-        }
-
-        return $this->modulesStatuses[$module->getName()] === $status;
+        return $status;
+//        if (! isset($this->modulesStatuses[$module->getName()])) {
+//            return $status === false;
+//        }
+//
+//        return $this->modulesStatuses[$module->getName()] === $status;
     }
 
     /**
@@ -152,7 +153,7 @@ class FileActivator implements ActivatorInterface
      */
     private function writeJson(): void
     {
-        $this->files->put($this->statusesFile, json_encode($this->modulesStatuses, JSON_PRETTY_PRINT));
+        // $this->files->put($this->statusesFile, json_encode($this->modulesStatuses, JSON_PRETTY_PRINT));
     }
 
     /**

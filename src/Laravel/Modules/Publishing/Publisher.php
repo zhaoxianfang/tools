@@ -5,7 +5,7 @@ namespace zxf\Laravel\Modules\Publishing;
 use Illuminate\Console\Command;
 use zxf\Laravel\Modules\Contracts\PublisherInterface;
 use zxf\Laravel\Modules\Contracts\RepositoryInterface;
-use zxf\Laravel\Module;
+use zxf\Laravel\Modules\Module;
 
 abstract class Publisher implements PublisherInterface
 {
@@ -86,7 +86,7 @@ abstract class Publisher implements PublisherInterface
     /**
      * Get module instance.
      *
-     * @return \zxf\Laravel\Module
+     * @return \zxf\Laravel\Modules\Module
      */
     public function getModule()
     {

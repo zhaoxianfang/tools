@@ -566,6 +566,7 @@ class ModuleGenerator extends Generator
      */
     private function generateModuleJsonFile()
     {
+        return false;
         $path = $this->module->getModulePath($this->getName()).'module.json';
 
         $this->component->task("Generating file $path", function () use ($path) {

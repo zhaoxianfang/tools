@@ -5,7 +5,7 @@ namespace zxf\Laravel\Modules\Migrations;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use zxf\Laravel\Module;
+use zxf\Laravel\Modules\Module;
 use zxf\Laravel\Modules\Support\Config\GenerateConfigReader;
 
 class Migrator
@@ -240,7 +240,8 @@ class Migrator
      */
     public function table()
     {
-        return $this->laravel['db']->connection($this->database ?: null)->table(config('database.migrations.table'));
+        $migrationTable = is_array(config('database.migrations'))?config('database.migrations.table'):config('database.migrations'); // 兼容lv10 和 lv11
+        return $this->laravel['db']->connection($this->database ?: null)->table($migrationTable);
     }
 
     /**

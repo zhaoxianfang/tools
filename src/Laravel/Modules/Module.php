@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\Laravel;
+namespace zxf\Laravel\Modules;
 
 use Illuminate\Cache\CacheManager;
 use Illuminate\Container\Container;
@@ -216,15 +216,16 @@ abstract class Module
      *
      * @param  string  $file
      */
-    public function json($file = null): Json
+    public function json($file = null): Collection
     {
-        if ($file === null) {
-            $file = 'module.json';
-        }
-
-        return Arr::get($this->moduleJson, $file, function () use ($file) {
-            return $this->moduleJson[$file] = new Json($this->getPath().'/'.$file, $this->files);
-        });
+        return Collection::make([]);
+//        if ($file === null) {
+//            $file = 'module.json';
+//        }
+//
+//        return Arr::get($this->moduleJson, $file, function () use ($file) {
+//            return $this->moduleJson[$file] = new Json($this->getPath().'/'.$file, $this->files);
+//        });
     }
 
     /**
@@ -321,7 +322,8 @@ abstract class Module
      */
     public function isEnabled(): bool
     {
-        return $this->activator->hasStatus($this, true);
+        // return $this->activator->hasStatus($this, true);
+        return true;
     }
 
     /**

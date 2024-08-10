@@ -4,7 +4,7 @@ namespace zxf\Laravel\Modules\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
-use Illuminate\Console\Prohibitable;
+// use Illuminate\Console\Prohibitable;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use zxf\Laravel\Modules\Contracts\ConfirmableCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -17,7 +17,7 @@ use function Laravel\Prompts\multiselect;
 abstract class BaseCommand extends Command implements PromptsForMissingInput
 {
     use ConfirmableTrait;
-    use Prohibitable;
+    // use Prohibitable;
 
     public const ALL = 'All';
 
@@ -65,7 +65,8 @@ abstract class BaseCommand extends Command implements PromptsForMissingInput
     public function handle()
     {
         if ($this instanceof ConfirmableCommand) {
-            if ($this->isProhibited() ||
+            if (
+                // $this->isProhibited() ||
                 ! $this->confirmToProceed($this->getConfirmableLabel(), fn () => true)) {
                 return 1;
             }
@@ -117,7 +118,7 @@ abstract class BaseCommand extends Command implements PromptsForMissingInput
 
     protected function getModuleModel($name)
     {
-        return $name instanceof \zxf\Laravel\Module
+        return $name instanceof \zxf\Laravel\Modules\Module
             ? $name
             : $this->laravel['modules']->findOrFail($name);
     }

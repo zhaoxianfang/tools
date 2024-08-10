@@ -68,17 +68,12 @@ class ConsoleServiceProvider extends ServiceProvider
         return collect([
             // Actions Commands
             Commands\Actions\CheckLangCommand::class,
-            Commands\Actions\DisableCommand::class,
             Commands\Actions\DumpCommand::class,
-            Commands\Actions\EnableCommand::class,
             Commands\Actions\InstallCommand::class,
             Commands\Actions\ListCommand::class,
             Commands\Actions\ModelPruneCommand::class,
             Commands\Actions\ModelShowCommand::class,
             Commands\Actions\ModuleDeleteCommand::class,
-            Commands\Actions\UnUseCommand::class,
-            Commands\Actions\UpdateCommand::class,
-            Commands\Actions\UseCommand::class,
 
             // Database Commands
             Commands\Database\MigrateCommand::class,

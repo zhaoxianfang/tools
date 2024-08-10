@@ -2,7 +2,7 @@
 
 namespace zxf\Laravel\Modules\Process;
 
-use zxf\Laravel\Module;
+use zxf\Laravel\Modules\Module;
 
 class Updater extends Runner
 {

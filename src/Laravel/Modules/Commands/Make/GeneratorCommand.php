@@ -5,7 +5,7 @@ namespace zxf\Laravel\Modules\Commands\Make;
 use Illuminate\Console\Command;
 use zxf\Laravel\Modules\Exceptions\FileAlreadyExistException;
 use zxf\Laravel\Modules\Generators\FileGenerator;
-use zxf\Laravel\Module;
+use zxf\Laravel\Modules\Module;
 use zxf\Laravel\Modules\Traits\PathNamespace;
 
 abstract class GeneratorCommand extends Command

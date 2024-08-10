@@ -24,7 +24,5 @@ class ModuleEvent
 
     const DELETED = 'deleted';
 
-    const USED = 'used';
-
     const UNUSED = 'unused';
 }

@@ -3,7 +3,7 @@
 namespace zxf\Laravel\Modules\Contracts;
 
 use zxf\Laravel\Modules\Exceptions\ModuleNotFoundException;
-use zxf\Laravel\Module;
+use zxf\Laravel\Modules\Module;
 
 interface RepositoryInterface
 {

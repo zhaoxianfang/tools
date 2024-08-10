@@ -41,8 +41,7 @@
     },
     "files": [
       "src/funcs/helpers.php",
-      "src/funcs/module_helpers.php",
-      "src/Laravel/Modules/helpers.php"
+      "src/funcs/module_helpers.php"
     ]
   },
   "config": {

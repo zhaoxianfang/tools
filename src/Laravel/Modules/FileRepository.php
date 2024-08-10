@@ -10,7 +10,7 @@ use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
-use zxf\Laravel\Module;
+use zxf\Laravel\Modules\Module;
 use zxf\Laravel\Modules\Constants\ModuleEvent;
 use zxf\Laravel\Modules\Contracts\RepositoryInterface;
 use zxf\Laravel\Modules\Exceptions\InvalidAssetPath;
@@ -119,7 +119,7 @@ abstract class FileRepository implements Countable, RepositoryInterface
      * @param  string  $args
      * @param  string  $path
      *
-     * @return \zxf\Laravel\Module
+     * @return \zxf\Laravel\Modules\Module
      */
     abstract protected function createModule(...$args);
 
@@ -384,31 +384,6 @@ abstract class FileRepository implements Countable, RepositoryInterface
     }
 
     /**
-     * Set module used for cli session.
-     *
-     *
-     * @throws ModuleNotFoundException
-     */
-    public function setUsed($name)
-    {
-        $module = $this->findOrFail($name);
-
-        $this->getFiles()->put($this->getUsedStoragePath(), $module);
-
-        $module->fireEvent(ModuleEvent::USED);
-    }
-
-    /**
-     * Forget the module used for cli session.
-     */
-    public function forgetUsed()
-    {
-        if ($this->getFiles()->exists($this->getUsedStoragePath())) {
-            $this->getFiles()->delete($this->getUsedStoragePath());
-        }
-    }
-
-    /**
      * Get module used for cli session.
      *
      * @throws \zxf\Laravel\Modules\Exceptions\ModuleNotFoundException
@@ -533,19 +508,12 @@ abstract class FileRepository implements Countable, RepositoryInterface
 
     /**
      * Get stub path.
+     * @deprecated
      *
      * @return string|null
      */
     public function getStubPath()
     {
-        if ($this->stubPath !== null) {
-            return $this->stubPath;
-        }
-
-        if ($this->config('stubs.enabled') === true) {
-            return $this->config('stubs.path');
-        }
-
         return $this->stubPath;
     }
 

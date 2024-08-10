@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use $MODULE_NAMESPACE$\$STUDLY_NAME$\$CONTROLLER_NAMESPACE$\$STUDLY_NAME$Controller;
+
+use $MODULE_NAMESPACE$\$STUDLY_NAME$\$CONTROLLER_NAMESPACE$;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +15,6 @@ use $MODULE_NAMESPACE$\$STUDLY_NAME$\$CONTROLLER_NAMESPACE$\$STUDLY_NAME$Control
 |
 */
 
-Route::group([], function () {
-    Route::resource('$LOWER_NAME$', $STUDLY_NAME$Controller::class)->names('$LOWER_NAME$');
+Route::prefix('$LOWER_NAME$')->name('$LOWER_NAME$')->group(function() {
+    Route::get('', [Web\$STUDLY_NAME$Controller::class,'index'])->names('$LOWER_NAME$');
 });

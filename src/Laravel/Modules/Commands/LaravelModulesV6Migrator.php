@@ -6,7 +6,7 @@ namespace zxf\Laravel\Modules\Commands;
 
 use Illuminate\Console\Command;
 use zxf\Laravel\Modules\Contracts\RepositoryInterface;
-use zxf\Laravel\Module;
+use zxf\Laravel\Modules\Module;
 
 class LaravelModulesV6Migrator extends Command
 {

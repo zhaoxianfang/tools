@@ -2,7 +2,7 @@
 
 namespace zxf\Laravel\Modules\Contracts;
 
-use zxf\Laravel\Modules\Module;
+use zxf\Laravel\Module;
 
 interface ActivatorInterface
 {

@@ -8,7 +8,7 @@ use Illuminate\Container\Container;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
 use zxf\Laravel\Modules\Contracts\ActivatorInterface;
-use zxf\Laravel\Modules\Module;
+use zxf\Laravel\Module;
 
 class FileActivator implements ActivatorInterface
 {

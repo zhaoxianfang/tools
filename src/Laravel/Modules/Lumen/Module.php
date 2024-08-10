@@ -3,7 +3,7 @@
 namespace zxf\Laravel\Modules\Lumen;
 
 use Illuminate\Support\Str;
-use zxf\Laravel\Modules\Module as BaseModule;
+use zxf\Laravel\Module as BaseModule;
 
 class Module extends BaseModule
 {

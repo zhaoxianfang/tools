@@ -5,7 +5,7 @@ namespace zxf\Laravel\Modules\Migrations;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use zxf\Laravel\Modules\Module;
+use zxf\Laravel\Module;
 use zxf\Laravel\Modules\Support\Config\GenerateConfigReader;
 
 class Migrator

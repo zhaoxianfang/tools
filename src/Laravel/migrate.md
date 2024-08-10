@@ -38,3 +38,9 @@ LaravelModulesServiceProvider.php
 module_path()
 ```
 
+7、核心文件改造
+```
+src/Laravel/Modules/FileRepository.php
+src/Laravel/Modules/Facades/Module.php
+```
+

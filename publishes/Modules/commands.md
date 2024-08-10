@@ -1,5 +1,29 @@
 # 多模块可用的命令
 
+生成新模块
+```
+php artisan module:make Blog
+一次生成多个模块
+php artisan module:make Blog User Auth
+```
+
+使用给定的模块。这允许您不在需要模块名称作为参数的其他命令上指定模块名称
+```
+php artisan module:use Blog
+```
+
+取消设置使用该命令设置的指定模块module:use。
+```
+php artisan module:unuse
+```
+
+列出所有可用的模块。
+```
+php artisan module:list
+```
+
+
+
 ```
 php artisan module:make 支持的命令：
 php artisan module:make Blog 创建模块

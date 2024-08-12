@@ -41,9 +41,8 @@ return [
         // ...
     ],
     'work'         => [
-        'corp_id' => '', // 企业ID
-        'secret'  => '',
-        'token'   => '',
-        'aes_key' => '',
+        'corp_id' =>  env('TOOLS_WECHAT_WORK_CORP_ID', ''), // 企业ID
+        'secret'  =>  env('TOOLS_WECHAT_WORK_SECRET', ''),  // 企业secret
+        'token'   =>  env('TOOLS_WECHAT_WORK_TOKEN', ''),
     ],
 ];

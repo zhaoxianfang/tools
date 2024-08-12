@@ -420,12 +420,12 @@ abstract class WeChatBase extends WechatCode
      *
      * @param string       $url
      * @param array|string $data
-     * @param string       $urlParams 拼接在url中的参数
+     * @param array        $urlParams 拼接在url中的参数
      *
      * @return mixed
      * @throws Exception
      */
-    public function get(string $url = "", array|string $data = [], $urlParams = [])
+    public function get(string $url = "", array|string $data = [], array $urlParams = [])
     {
         $this->url = $this->parseUrl($url, $urlParams);
         $result    = $this->http->setParams($data, 'string')->get($this->url);
@@ -445,7 +445,7 @@ abstract class WeChatBase extends WechatCode
      * @return mixed
      * @throws Exception
      */
-    private function getCurlResult($curlResult, string $funcStr, string $url = "", array|string $data = [], $urlParams = [], ...$args)
+    private function getCurlResult($curlResult, string $funcStr, string $url = "", array|string $data = [],array $urlParams = [], ...$args)
     {
         if (isset($curlResult["errcode"]) && $curlResult["errcode"] > 0) {
             if (in_array($curlResult["errcode"], $this->tryAgainCode)) {
@@ -571,7 +571,7 @@ abstract class WeChatBase extends WechatCode
         return $result;
     }
 
-    public function download($url = "", $savePath = "", array $params = [])
+    public function download(string $url = "",string $savePath = "", array $params = [])
     {
         $this->url = $this->parseUrl($url, $params);
         $this->setApiUrl($url);

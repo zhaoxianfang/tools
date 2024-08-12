@@ -40,4 +40,10 @@ return [
     'mini_program' => [
         // ...
     ],
+    'work'         => [
+        'corp_id' => '', // 企业ID
+        'secret'  => '',
+        'token'   => '',
+        'aes_key' => '',
+    ],
 ];

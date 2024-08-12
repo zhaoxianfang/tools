@@ -174,18 +174,7 @@ class SeedCommand extends BaseCommand
      */
     public function getSeederNames($name)
     {
-        $name = Str::studly($name);
-
-        $seederPath = GenerateConfigReader::read('seeder');
-        $seederPath = str_replace('/', '\\', $seederPath->getPath());
-
-        $foundModules = [];
-        foreach ($this->laravel['modules']->config('scan.paths') as $path) {
-            $namespace = array_slice(explode('/', $path), -1)[0];
-            $foundModules[] = $namespace.'\\'.$name.'\\'.$seederPath.'\\'.$name.'DatabaseSeeder';
-        }
-
-        return $foundModules;
+        return [];
     }
 
     /**

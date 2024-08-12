@@ -14,7 +14,8 @@ class ConsoleServiceProvider extends ServiceProvider
             // 加载 Modules 模块内的 command
             $this->customAddCommands();
             // 运行在命令行下
-            $this->commands(config('modules.commands', self::defaultCommands()->toArray()));
+            // $this->commands(config('modules.commands', self::defaultCommands()->toArray()));
+            $this->commands(self::defaultCommands()->toArray());
         }
     }
 

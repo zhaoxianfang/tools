@@ -30,9 +30,8 @@ class WeChatWorkBase extends WeChatBase
     {
         $this->useToken = false;
         $url            = $this->parseUrl("cgi-bin/gettoken", [
-            "grant_type" => "client_credential",
-            "appid"      => $this->config["appid"],
-            "secret"     => $this->config["secret"],
+            "corpid"     => $this->config["corp_id"],
+            "corpsecret" => $this->config["secret"],
         ]);
         $this->useToken = true;
 

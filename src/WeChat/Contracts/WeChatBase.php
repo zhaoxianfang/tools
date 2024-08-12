@@ -39,7 +39,7 @@ abstract class WeChatBase extends WechatCode
     public $request;
 
     // 需要重新获取token请求的状态码
-    private $tryAgainCode = ["40014", "40001", "41001", "42001"];
+    private array $tryAgainCode = ["40014", "40001", "41001", "42001"];
 
     // 当前重请求次数
     private int $tryAgainNum = 0;
@@ -59,9 +59,11 @@ abstract class WeChatBase extends WechatCode
         'cache_path' => '',
     ];
 
-    public function __construct(string $key = 'default')
+    public function __construct(string $driver = 'default')
     {
-        return $this->init($key);
+        if (get_called_class() != 'zxf\WeChat\WechatFactory') {
+            return $this->init($driver);
+        }
     }
 
     /**
@@ -97,8 +99,9 @@ abstract class WeChatBase extends WechatCode
 
         $this->config = new DataArray($config + $this->config);
 
-        if (empty($this->config["appid"])) {
-            $this->error("Missing Config -- [appid]");
+        // 企业微信使用 corp_id，其他的使用 appid
+        if (empty($this->config["appid"]) && empty($this->config["corp_id"])) {
+            $this->error("Missing Config -- [appid/corpid]");
         }
         if (empty($this->config["secret"])) {
             $this->error("Missing Config -- [secret]");
@@ -115,6 +118,21 @@ abstract class WeChatBase extends WechatCode
         // 缓存最近一次的配置
         $this->cache->set('lately_wechat_config', $this->config->toArray());
 
+        return $this;
+    }
+
+    /**
+     * 添加需要重新获取token请求的状态码
+     *
+     * @param array $code 状态码 eg:[40014]
+     *
+     * @return $this
+     */
+    public function addTryAgainCode(array $code = [])
+    {
+        if (!empty($code)) {
+            $this->tryAgainCode = array_unique(array_merge($this->tryAgainCode, $code));
+        }
         return $this;
     }
 
@@ -291,7 +309,7 @@ abstract class WeChatBase extends WechatCode
         if ($refreshToken) {
             $this->requestToken();
         }
-        if (!empty($this->accessToken) || !empty($this->accessToken = $this->cache->get($this->config["appid"] . "_access_token"))) {
+        if (!empty($this->accessToken) || !empty($this->accessToken = $this->cache->get($this->setCacheTokenKey()))) {
             return $this->accessToken;
         }
         $this->requestToken();
@@ -313,7 +331,7 @@ abstract class WeChatBase extends WechatCode
             return $this->error("Invalid AccessToken type, need string.");
         }
         // 缓存token
-        $this->cache->set($this->config["appid"] . "_access_token", $accessToken, $expiresIn);
+        $this->cache->set($this->setCacheTokenKey(), $accessToken, $expiresIn);
         $this->accessToken = $accessToken;
         return $this;
     }
@@ -326,7 +344,16 @@ abstract class WeChatBase extends WechatCode
     public function delAccessToken(): bool
     {
         $this->accessToken = "";
-        return $this->cache->delete($this->config["appid"] . "_access_token");
+        return $this->cache->delete($this->setCacheTokenKey());
+    }
+
+    private function setCacheTokenKey(): string
+    {
+        $keyPrefix = $this->config["appid"];
+        if (!empty($this->config["corp_id"])) {
+            $keyPrefix = $this->config["corp_id"];
+        }
+        return $keyPrefix . "_access_token";
     }
 
     /**
@@ -571,5 +598,18 @@ abstract class WeChatBase extends WechatCode
         $this->url = $this->parseUrl($url, $params);
         $this->setApiUrl($url);
         return $this->http->upload($this->url, $filePath, $data);
+    }
+
+    /**
+     * 自定义操作回调
+     *
+     * @param callable $callback
+     *
+     * @return $this
+     */
+    public function customCallback(callable $callback)
+    {
+        $callback($this);
+        return $this;
     }
 }

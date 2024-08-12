@@ -49,11 +49,14 @@ class Cache
     public function __construct(array $config = [])
     {
         if (empty($config['cache_path'])) {
-            $defaultPath = function_exists('config') ? config('tools_other.cache_path') : '';
-            $path        = !empty($defaultPath) ? $defaultPath : sys_get_temp_dir();
+            if (is_laravel()) {
+                $path = config('cache.stores.file.path');
+            } else {
+                $defaultPath = function_exists('config') ? config('tools_other.cache_path') : '';
+                $path        = !empty($defaultPath) ? $defaultPath : sys_get_temp_dir();
+            }
             create_dir($path);
             $config['cache_path'] = realpath($path);
-
         }
         if (!empty($config)) {
             $this->config = array_merge($this->config, $config);

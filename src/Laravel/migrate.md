@@ -34,13 +34,97 @@ LaravelModulesServiceProvider.php
 ```
 
 6、改造`helpers.php`里面的几个方法
+
 ```
 module_path()
 ```
 
 7、核心文件改造
+
 ```
-src/Laravel/Modules/FileRepository.php
-src/Laravel/Modules/Facades/Module.php
+把 src/Laravel/Modules/Module.php 的 isEnabled() 方法直接改为 return true;
+把 src/Laravel/Modules/Module.php 的 
+public function json($file = null): Json
+{
+    ...
+}
+方法直接改为
+public function json($file = null): Collection
+{
+    return Collection::make([]);
+}
+
+把 src/Laravel/Modules/Activators/FileActivator.php 的 hasStatus() 方法直接改为 return $status;
+把 src/Laravel/Modules/Generators/ModuleGenerator.php 的 generateModuleJsonFile() 方法直接改为 return false;
+把 src/Laravel/Modules/Commands/Database/SeedCommand.php 的 getSeederNames() 方法直接改为 return [];
+把 src/Laravel/Modules/Providers/ConsoleServiceProvider.php 的 register() 方法中的`$this->commands(config('modules.commands', self::defaultCommands()->toArray()));`改为 `$this->commands(self::defaultCommands()->toArray());`;
+把 src/Laravel/Modules/Process/Updater.php 的 isComposerSilenced() 方法直接改为 return ' --quiet';
+
+```
+
+8、`config/modules.php` 文件改造
+
+```
+`generator` 里面的 `app/` 前缀都去掉
+`replacements.scaffold/config` 里面添加  `, 'LOWER_NAME'`
+`generator.lang.path` 设置为  `resources/lang`
+`stubs.files` 里面新增
+            // 自定义本地化
+            'lang/en/messages' => 'resources/lang/en/messages.php',
+            'lang/en/validation' => 'resources/lang/en/validation.php',
+删除 `stubs.files.composer`、`stubs.files.assets/js/app`、`stubs.files.assets/sass/app`、`stubs.files.vite`、`stubs.files.package`
+删除 `stubs.path`
+删除 `stubs.enabled`
+删除 `activators.file.statuses-file`
+删除整个 `scan`
+删除整个 `commands`
+删除整个 `auto-discover`
+删除整个 `composer`
+
+`modules.php` 配置模块里面对应的一级文件夹名称尽量改成首字母大写， 例如 Resources、Config、Migrations、Resources、Routes、Database、Tests、Http、Services、Providers等
+
+```
+
+9、删除无用的 Console 和 对应的方法
+
+```
+php artisan module:use 命令
+删除 src/Laravel/Modules/Commands/Actions/UseCommand.php
+对应 src/Laravel/Modules/FileRepository.php 的 setUsed 方法连同删除
+对应 src/Laravel/Modules/Constants/ModuleEvent.php 的 const USED = 'used';
+对应 src/Laravel/Modules/Providers/ConsoleServiceProvider.php 的 Commands\Actions\UnUseCommand::class,
+```
+
+```
+php artisan module:unuse 命令
+删除 src/Laravel/Modules/Commands/Actions/UnUseCommand.php
+对应 src/Laravel/Modules/FileRepository.php 的 forgetUsed 方法连同删除
+对应 src/Laravel/Modules/Providers/ConsoleServiceProvider.php 的 Commands\Actions\UseCommand::class,
+```
+
+```
+php artisan module:enable 命令
+删除 src/Laravel/Modules/Commands/Actions/EnableCommand.php
+对应 src/Laravel/Modules/Providers/ConsoleServiceProvider.php 的 Commands\Actions\EnableCommand::class,
+```
+
+```
+php artisan module:disable 命令
+删除 src/Laravel/Modules/Commands/Actions/DisableCommand.php
+对应 src/Laravel/Modules/Providers/ConsoleServiceProvider.php 的 Commands\Actions\DisableCommand::class,
+```
+
+```
+php artisan module:update 命令(更新模块下的composer等)
+删除 src/Laravel/Modules/Commands/Actions/UpdateCommand.php
+对应 src/Laravel/Modules/Providers/ConsoleServiceProvider.php 的 Commands\Actions\UpdateCommand::class,
+```
+
+10、新增本地化文件夹 `Commands/stubs/lang/` 
+
+11、
+```
+在 src/Laravel/Modules/FileRepository.php 里面的 getStubPath 方法上标记废弃 @deprecated 或者直接删除此方法
+把 src/Laravel/Modules/Activators/FileActivator.php 里面的 内容全部注释
 ```
 

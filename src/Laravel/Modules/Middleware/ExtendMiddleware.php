@@ -5,7 +5,9 @@ namespace zxf\Laravel\Modules\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Http\JsonResponse;
 use zxf\Laravel\Trace\Handle;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExtendMiddleware
 {
@@ -51,8 +53,19 @@ class ExtendMiddleware
 
         $response = $next($request);
 
+        // 检查响应是否为 BinaryFileResponse 类型（表示文件下载）
+        if ($response instanceof BinaryFileResponse) {
+            return $response;
+        }
+
+        // 检查响应是否为 JsonResponse 类型（Json 响应）
+        if ($response instanceof JsonResponse) {
+            return $response;
+        }
+
+        // 视图响应
         if (is_enable_trace()) {
-            // 在响应发送到浏览器前处理任务。
+            // 在响应发送到浏览器前处理任务
             $this->attachStyleAndScript($request, $response);
         }
 

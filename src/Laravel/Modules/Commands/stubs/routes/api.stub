@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use $MODULE_NAMESPACE$\$STUDLY_NAME$\$CONTROLLER_NAMESPACE$;
 
 /*
  *--------------------------------------------------------------------------
@@ -14,9 +15,10 @@ use Illuminate\Http\Request;
  *
 */
 
-// Route::middleware(['auth:api'])->prefix('$LOWER_NAME$')->name('api.$LOWER_NAME$.')->group(function (Request $request) {
-Route::prefix('$LOWER_NAME$')->name('api.$LOWER_NAME$.')->group(function (Request $request) {
-    Route::get('', function () {
-        return '$LOWER_NAME$ Api';
-    });
+Route::prefix('$LOWER_NAME$')->name('api.$LOWER_NAME$.')->group(function () {
+    // Route::get('user', function (Request $request) {
+    //     return '$LOWER_NAME$ Api';
+    //     return $request->user();
+    // });
+    Route::apiResource('', Web\$STUDLY_NAME$Controller::class)->names('');
 });

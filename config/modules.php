@@ -1,7 +1,5 @@
 <?php
 
-use zxf\Laravel\Modules\Activators\FileActivator;
-
 return [
 
     /*
@@ -41,7 +39,7 @@ return [
     | 加载模块 Modules 模块路由时候 xxx.php 文件里面的路由需要自动添加上同名 `xxx`前缀和 `xxx.` 路由命名 的路由文件
     |--------------------------------------------------------------------------
     |
-    | 默认['api'] 表示 api.php 里面的路由全部加上`api`前缀和 `api.` 路由命名
+    | 默认['api'] 表示 api.php 里面的路由全部加上`api`前缀和 `api.` 路由命名, 不需要就设置为 []
     |
     */
     'route_need_add_prefix_and_name' => ['api'],
@@ -74,7 +72,7 @@ return [
     | 默认关闭
     |
     */
-    'trace'                          => (bool)env('APP_TRACE', false),
+    'trace'                          => (bool)env('APP_DEBUG', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -98,26 +96,14 @@ return [
         'replacements' => [
             'routes/web'      => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
             'routes/api'      => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
-            'vite'            => ['LOWER_NAME', 'STUDLY_NAME'],
-            'json'            => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE', 'PROVIDER_NAMESPACE'],
             'views/index'     => ['LOWER_NAME'],
             'views/master'    => ['LOWER_NAME', 'STUDLY_NAME'],
             'scaffold/config' => ['STUDLY_NAME', 'LOWER_NAME'],
-            'composer'        => [
-                'LOWER_NAME',
-                'STUDLY_NAME',
-                'VENDOR',
-                'AUTHOR_NAME',
-                'AUTHOR_EMAIL',
-                'MODULE_NAMESPACE',
-                'PROVIDER_NAMESPACE',
-                'APP_FOLDER_NAME',
-            ],
         ],
         'gitkeep'      => true,
     ],
 
-    'paths'      => [
+    'paths' => [
         /*
         |--------------------------------------------------------------------------
         | Modules path
@@ -191,7 +177,6 @@ return [
             'provider'        => ['path' => 'Providers', 'generate' => true],
             'repository'      => ['path' => 'Repositories', 'generate' => false],
             'resource'        => ['path' => 'Transformers', 'generate' => false],
-            'route-provider'  => ['path' => 'Providers', 'generate' => false],
             'rules'           => ['path' => 'Rules', 'generate' => false],
             'services'        => ['path' => 'Services', 'generate' => false],
             'scopes'          => ['path' => 'Models/Scopes', 'generate' => false],
@@ -235,28 +220,11 @@ return [
     | Here is the config for setting up caching feature.
     |
     */
-    'cache'      => [
+    'cache' => [
         'enabled'  => env('MODULES_CACHE_ENABLED', false),
         'driver'   => env('MODULES_CACHE_DRIVER', 'file'),
         'key'      => env('MODULES_CACHE_KEY', 'laravel-modules'),
         'lifetime' => env('MODULES_CACHE_LIFETIME', 60),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Activators
-    |--------------------------------------------------------------------------
-    |
-    | You can define new types of activators here, file, database, etc. The only
-    | required parameter is 'class'.
-    | The file activator will store the activation status in storage/installed_modules
-    */
-    'activators' => [
-        'file' => [
-            'class'          => FileActivator::class,
-            'cache-key'      => 'activator.installed',
-            'cache-lifetime' => 604800,
-        ],
     ],
 
     'activator' => 'file',

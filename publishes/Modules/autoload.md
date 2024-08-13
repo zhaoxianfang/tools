@@ -25,6 +25,7 @@ views/modules/模块名小写/
 
 ```
 模块名小写.php
+eg:Demo/config.php 配置文件的读取方式是 config('demo.key')
 ```
 
 ## 路由组说明：

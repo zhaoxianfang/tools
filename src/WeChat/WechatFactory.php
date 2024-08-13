@@ -9,16 +9,13 @@ use zxf\WeChat\Contracts\WeChatWorkBase;
 
 class WechatFactory extends WeChatBase
 {
+    // 是否在构造函数中初始化配置
+    protected bool $defaultInit = false;
 
-    public function __construct(string $driver = '')
-    {
-        // 什么也不做
-    }
-
+    // 使用场景:微信小程序、微信开放平台、微信公众号等
     public function defaultScene(string $driver = 'default'): object
     {
-        $this->setDriver($driver);
-        return $this; // 微信小程序、微信开放平台、微信公众号等
+        return parent::instance($driver);
     }
 
     // 使用场景:企业微信
@@ -28,8 +25,8 @@ class WechatFactory extends WeChatBase
     }
 
     // 使用场景: 服务端接收消息
-    public function receiveScene(): object
+    public function receiveScene(string $driver = 'default'): object
     {
-        return new WechatPushEvent(); // 服务端接收消息
+        return new WechatPushEvent($driver); // 服务端接收消息
     }
 }

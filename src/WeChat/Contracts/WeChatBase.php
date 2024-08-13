@@ -59,9 +59,17 @@ abstract class WeChatBase extends WechatCode
         'cache_path' => '',
     ];
 
+    /**
+     * 是否在构造函数中初始化配置
+     * 有少数继承本基类的类在构造函数中需要禁止初始化配置，改为手动调用初始化 eg: parent::instance('work');
+     *
+     * @var bool 默认为true
+     */
+    protected bool $defaultInit = true;
+
     public function __construct(string $driver = 'default')
     {
-        if (get_called_class() != 'zxf\WeChat\WechatFactory') {
+        if ($this->defaultInit) {
             return $this->init($driver);
         }
     }
@@ -445,7 +453,7 @@ abstract class WeChatBase extends WechatCode
      * @return mixed
      * @throws Exception
      */
-    private function getCurlResult($curlResult, string $funcStr, string $url = "", array|string $data = [],array $urlParams = [], ...$args)
+    private function getCurlResult($curlResult, string $funcStr, string $url = "", array|string $data = [], array $urlParams = [], ...$args)
     {
         if (isset($curlResult["errcode"]) && $curlResult["errcode"] > 0) {
             if (in_array($curlResult["errcode"], $this->tryAgainCode)) {
@@ -571,7 +579,7 @@ abstract class WeChatBase extends WechatCode
         return $result;
     }
 
-    public function download(string $url = "",string $savePath = "", array $params = [])
+    public function download(string $url = "", string $savePath = "", array $params = [])
     {
         $this->url = $this->parseUrl($url, $params);
         $this->setApiUrl($url);

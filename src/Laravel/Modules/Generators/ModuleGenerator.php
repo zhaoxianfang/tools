@@ -352,8 +352,6 @@ class ModuleGenerator extends Generator
 
         $this->generateFolders();
 
-        $this->generateModuleJsonFile();
-
         if ($this->type !== 'plain') {
             $this->generateFiles();
             $this->generateResources();
@@ -473,21 +471,22 @@ class ModuleGenerator extends Generator
         }
 
         $routeGeneratorConfig = GenerateConfigReader::read('route-provider');
-        if (
-            (is_null($routeGeneratorConfig->getPath()) && $providerGenerator->generate())
-            || (! is_null($routeGeneratorConfig->getPath()) && $routeGeneratorConfig->generate())
-        ) {
-            $this->console->call('module:route-provider', [
-                'module' => $this->getName(),
-            ]);
-        } else {
-            if ($providerGenerator->generate()) {
-                // comment register RouteServiceProvider
-                $this->filesystem->replaceInFile(
-                    '$this->app->register(Route',
-                    '// $this->app->register(Route',
-                    $this->module->getModulePath($this->getName()).DIRECTORY_SEPARATOR.$providerGenerator->getPath().DIRECTORY_SEPARATOR.sprintf('%sServiceProvider.php', $this->getName())
-                );
+        if(!is_null($routeGeneratorConfig->getPath())){
+            if (
+                (! is_null($routeGeneratorConfig->getPath()) && $routeGeneratorConfig->generate())
+            ) {
+                $this->console->call('module:route-provider', [
+                    'module' => $this->getName(),
+                ]);
+            } else {
+                if ($providerGenerator->generate()) {
+                    // comment register RouteServiceProvider
+                    $this->filesystem->replaceInFile(
+                        '$this->app->register(Route',
+                        '// $this->app->register(Route',
+                        $this->module->getModulePath($this->getName()).DIRECTORY_SEPARATOR.$providerGenerator->getPath().DIRECTORY_SEPARATOR.sprintf('%sServiceProvider.php', $this->getName())
+                    );
+                }
             }
         }
 
@@ -559,23 +558,6 @@ class ModuleGenerator extends Generator
         }
 
         return $replaces;
-    }
-
-    /**
-     * Generate the module.json file
-     */
-    private function generateModuleJsonFile()
-    {
-        return false;
-        $path = $this->module->getModulePath($this->getName()).'module.json';
-
-        $this->component->task("Generating file $path", function () use ($path) {
-            if (! $this->filesystem->isDirectory($dir = dirname($path))) {
-                $this->filesystem->makeDirectory($dir, 0775, true);
-            }
-
-            $this->filesystem->put($path, $this->getStubContents('json'));
-        });
     }
 
     /**

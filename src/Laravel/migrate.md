@@ -42,6 +42,7 @@ module_path()
 7、核心文件改造
 
 ```
+在 src/Laravel/Modules/Generators/ModuleGenerator.php 中读取 GenerateConfigReader::read('route-provider') 是否需要创建路由服务提供者的外层判断加上 if(!is_null($routeGeneratorConfig->getPath())) 判断;
 把 src/Laravel/Modules/Module.php 的 isEnabled() 方法直接改为 return true;
 把 src/Laravel/Modules/Module.php 的 
 public function json($file = null): Json
@@ -54,11 +55,26 @@ public function json($file = null): Collection
     return Collection::make([]);
 }
 
-把 src/Laravel/Modules/Activators/FileActivator.php 的 hasStatus() 方法直接改为 return $status;
+把 src/Laravel/Modules/Activators/FileActivator.php 文件：
+    hasStatus() 方法直接改为 return $status;
+    getStatusesFilePath() 方法直接删除;
+    判断 $this->statusesFile 的方法直接删除;
+    $this->modulesStatuses 相关的直接删除;
+    $this->cacheKey 相关的直接删除;
+    $this->cacheLifetime 相关的直接删除;
+    $this->files 相关的直接删除;
+    $this->cache 相关的直接删除;
+    writeJson() 相关的直接删除;
+    flushCache() 相关的直接删除;
+    getModulesStatuses() 相关的直接删除;
+    config() 相关的直接删除;
+    readJson() 方法相关的直接改为 return [] 并删除readJson() 方法;
+把 src/Laravel/Modules/Activators/FileActivator.php 中相关的 $this->statusesFile 删除或者返回 '';
 把 src/Laravel/Modules/Generators/ModuleGenerator.php 的 generateModuleJsonFile() 方法直接改为 return false;
 把 src/Laravel/Modules/Commands/Database/SeedCommand.php 的 getSeederNames() 方法直接改为 return [];
 把 src/Laravel/Modules/Providers/ConsoleServiceProvider.php 的 register() 方法中的`$this->commands(config('modules.commands', self::defaultCommands()->toArray()));`改为 `$this->commands(self::defaultCommands()->toArray());`;
 把 src/Laravel/Modules/Process/Updater.php 的 isComposerSilenced() 方法直接改为 return ' --quiet';
+把 src/Laravel/Modules/Generators/ModuleGenerator.php 的 generateModuleJsonFile() 方法相关的直接删除;
 
 ```
 
@@ -75,11 +91,15 @@ public function json($file = null): Collection
 删除 `stubs.files.composer`、`stubs.files.assets/js/app`、`stubs.files.assets/sass/app`、`stubs.files.vite`、`stubs.files.package`
 删除 `stubs.path`
 删除 `stubs.enabled`
+删除 `stubs.replacements.vite`
+删除 `stubs.replacements.json`
+删除 `stubs.replacements.composer`
 删除 `activators.file.statuses-file`
 删除整个 `scan`
 删除整个 `commands`
 删除整个 `auto-discover`
 删除整个 `composer`
+删除整个 `activators`
 
 `modules.php` 配置模块里面对应的一级文件夹名称尽量改成首字母大写， 例如 Resources、Config、Migrations、Resources、Routes、Database、Tests、Http、Services、Providers等
 
@@ -120,9 +140,10 @@ php artisan module:update 命令(更新模块下的composer等)
 对应 src/Laravel/Modules/Providers/ConsoleServiceProvider.php 的 Commands\Actions\UpdateCommand::class,
 ```
 
-10、新增本地化文件夹 `Commands/stubs/lang/` 
+10、新增本地化文件夹 `Commands/stubs/lang/`
 
 11、
+
 ```
 在 src/Laravel/Modules/FileRepository.php 里面的 getStubPath 方法上标记废弃 @deprecated 或者直接删除此方法
 把 src/Laravel/Modules/Activators/FileActivator.php 里面的 内容全部注释

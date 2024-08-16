@@ -8,7 +8,31 @@ if (!function_exists('is_laravel')) {
      */
     function is_laravel(): bool
     {
-        return class_exists(\App\Http\Kernel::class) && class_exists('\Illuminate\Support\Facades\DB');
+        return class_exists('\Illuminate\Support\Facades\DB');
+    }
+}
+
+if (!function_exists('laravel_lt_11')) {
+    /**
+     * 检查 laravel 大版本是否小于11
+     *
+     * @return bool
+     */
+    function laravel_lt_11(): bool
+    {
+        return is_laravel() && class_exists(\App\Http\Kernel::class);
+    }
+}
+
+if (!function_exists('laravel_egt_11')) {
+    /**
+     * 检查 laravel 大版本是否大于等于11
+     *
+     * @return bool
+     */
+    function laravel_egt_11(): bool
+    {
+        return is_laravel() && !class_exists(\App\Http\Kernel::class);
     }
 }
 

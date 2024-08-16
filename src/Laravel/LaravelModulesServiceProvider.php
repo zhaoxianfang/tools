@@ -23,12 +23,12 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
 
     public function __construct($app)
     {
-        is_laravel() && !empty(config('modules.enable')) && parent::__construct($app);
+        is_laravel() && !empty(config('modules.enable', true)) && parent::__construct($app);
     }
 
     public function boot()
     {
-        if (!is_laravel() || empty(config('modules.enable'))) {
+        if (!is_laravel() || empty(config('modules.enable', true))) {
             return;
         }
         $this->bootPublishes();
@@ -47,7 +47,7 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
 
     public function register()
     {
-        if (!is_laravel() || empty(config('modules.enable'))) {
+        if (!is_laravel() || empty(config('modules.enable', true))) {
             return;
         }
         // 注册modules 模块服务
@@ -218,13 +218,16 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
     // 使用多模块提示
     protected function tips()
     {
-        if (app()->runningInConsole() && !is_dir(base_path(modules_name()))) {
-            echo PHP_EOL . '==================================================================================' . PHP_EOL;
-            echo '| 插    件 | composer require zxf/tools                                          |' . PHP_EOL;
-            echo '| 格    言 | 人生在勤，不索何获                                                  |' . PHP_EOL;
-            echo '| 模块发布 | php artisan vendor:publish --provider="zxf\Laravel\ServiceProvider" |' . PHP_EOL;
-            echo '| 文档地址 | http://0l0.net/docs/2                                               |' . PHP_EOL;
-            echo '==================================================================================' . PHP_EOL;
+        if (app()->runningInConsole() && is_laravel() && !is_dir(base_path(modules_name()))) {
+            echo PHP_EOL;
+            echo '======================================================================================================' . PHP_EOL;
+            echo '| 插    件 | composer require zxf/tools                                                               |' . PHP_EOL;
+            echo '| 格    言 | 人生在勤，不索何获                                                                       |' . PHP_EOL;
+            echo '| 模块发布 | php artisan vendor:publish --provider="zxf\Laravel\LaravelModulesServiceProvider"        |' . PHP_EOL;
+            echo '| 文档地址 | http://0l0.net/docs/2  或  http://weisifang.com/docs/2                                   |' . PHP_EOL;
+            echo '| github   | https://github.com/zhaoxianfang/tools                                                    |' . PHP_EOL;
+            echo '| gitee    | https://gitee.com/zhaoxianfang/tools                                                     |' . PHP_EOL;
+            echo '======================================================================================================' . PHP_EOL;
         }
     }
 }

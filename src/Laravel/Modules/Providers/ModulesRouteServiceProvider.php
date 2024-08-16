@@ -56,11 +56,8 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
      */
     protected function mapModuleRoute(string $module)
     {
-        $userMiddlewareGroups = []; // 用户定义的中间件组 名称(别名)
-        // 判断是否有 获取中间件组的方法
-        if (class_exists($kernelClass = \App\Http\Kernel::class) && method_exists(($kernelApp = app($kernelClass)), 'getMiddlewareGroups')) {
-            $userMiddlewareGroups = array_keys($kernelApp->getMiddlewareGroups());
-        }
+        // 允许自动加载的中间件组
+        $userMiddlewareGroups = config('modules.allow_automatic_load_middleware_groups', []);
         // 是否自动使用路由文件同名中间件组
         $autoUseMiddleware = config('modules.auto_use_middleware_groups', true);
         // 需要自动添加上同名 `xxx`前缀和 `xxx.` 路由命名 的路由文件

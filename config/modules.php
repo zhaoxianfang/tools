@@ -22,7 +22,17 @@ return [
     |
     */
 
-    'namespace'                      => 'Modules',
+    'namespace'                              => 'Modules',
+
+    /*
+    |--------------------------------------------------------------------------
+    | 允许自动加载的中间件组
+    |--------------------------------------------------------------------------
+    |
+    | laravel 默认内置了 web 和 api 两个中间件组，如果要使用其他中间件组，需要手动添加到该数组中；eg: ['web', 'api','admin']
+    |
+    */
+    'allow_automatic_load_middleware_groups' => ['web', 'api'],
 
     /*
     |--------------------------------------------------------------------------
@@ -32,7 +42,7 @@ return [
     | 默认开启
     |
     */
-    'auto_use_middleware_groups'     => true,
+    'auto_use_middleware_groups'             => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -42,7 +52,7 @@ return [
     | 默认['api'] 表示 api.php 里面的路由全部加上`api`前缀和 `api.` 路由命名, 不需要就设置为 []
     |
     */
-    'route_need_add_prefix_and_name' => ['api'],
+    'route_need_add_prefix_and_name'         => ['api'],
 
     /*
     |--------------------------------------------------------------------------
@@ -52,7 +62,7 @@ return [
     | 默认关闭
     |
     */
-    'publishes_config'               => false,
+    'publishes_config'                       => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -62,7 +72,7 @@ return [
     | 默认关闭
     |
     */
-    'publishes_views'                => false,
+    'publishes_views'                        => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -72,7 +82,7 @@ return [
     | 默认关闭
     |
     */
-    'trace'                          => (bool)env('APP_DEBUG', false),
+    'trace'                                  => (bool)env('APP_DEBUG', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -82,7 +92,7 @@ return [
     | Default module stubs.
     |
     */
-    'stubs'                          => [
+    'stubs'                                  => [
         'files'        => [
             'routes/web'         => 'Routes/web.php',
             'routes/api'         => 'Routes/api.php',

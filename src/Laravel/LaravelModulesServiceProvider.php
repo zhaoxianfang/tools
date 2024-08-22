@@ -138,7 +138,9 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
                 $this->registerTranslations($module, $moduleLower);
                 $this->registerConfig($module, $moduleLower);
                 $this->registerViews($module, $moduleLower);
-                $this->loadMigrationsFrom(module_path($module, 'Database/Migrations'));
+                if (is_dir(module_path($module, 'Database/Migrations'))) {
+                    $this->loadMigrationsFrom(module_path($module, 'Database/Migrations'));
+                }
             }
         }
     }
@@ -156,8 +158,10 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
             $this->loadTranslationsFrom($langPath, $moduleLower);
             $this->loadJsonTranslationsFrom($langPath);
         } else {
-            $this->loadTranslationsFrom(module_path($module, 'Resources/lang'), $moduleLower);
-            $this->loadJsonTranslationsFrom(module_path($module, 'Resources/lang'));
+            if (is_dir(module_path($module, 'Resources/lang'))) {
+                $this->loadTranslationsFrom(module_path($module, 'Resources/lang'), $moduleLower);
+                $this->loadJsonTranslationsFrom(module_path($module, 'Resources/lang'));
+            }
         }
     }
 
@@ -172,7 +176,9 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
         $viewPath = resource_path('views/modules/' . $moduleLower);
 
         $sourcePath = module_path($module, 'Resources/views');
-
+        if (!is_dir($sourcePath)) {
+            return;
+        }
         if (config('modules.publishes_views', true)) {
             $this->publishes([
                 $sourcePath => $viewPath,
@@ -201,18 +207,17 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     protected function registerConfig($module, $moduleLower)
     {
-        if (!is_file(module_path($module, 'Config/config.php'))) {
-            return false;
-        }
-        if (config('modules.publishes_config', false)) {
-            $this->publishes([
-                module_path($module, 'Config/config.php') => config_path($moduleLower . '.php'),
-            ], 'config');
-        }
+        if (is_file(module_path($module, 'Config/config.php'))) {
+            if (config('modules.publishes_config', false)) {
+                $this->publishes([
+                    module_path($module, 'Config/config.php') => config_path($moduleLower . '.php'),
+                ], 'config');
+            }
 
-        $this->mergeConfigFrom(
-            module_path($module, 'Config/config.php'), $moduleLower
-        );
+            $this->mergeConfigFrom(
+                module_path($module, 'Config/config.php'), $moduleLower
+            );
+        }
     }
 
     // 使用多模块提示

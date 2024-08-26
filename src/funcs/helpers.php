@@ -157,40 +157,42 @@ if (!function_exists('is_crawler')) {
     {
         $userAgent = strtolower(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '');
         if (!empty($userAgent)) {
-            $spiderSite = [
-                "TencentTraveler", "Baiduspider+", "Baiduspider", "BaiduGame",
-                "Googlebot", "msnbot", "Sosospider+", "Sosoimagespider+",
-                "Sogou web spider", "ia_archiver", "Yahoo! Slurp", "YoudaoBot",
-                "Yahoo Slurp", "Yahoo! Slurp China", "MSNBot", "Java (Often spam bot)",
-                "BaiDuSpider", "Voila", "Yandex bot", "BSpider", "twiceler",
-                "Sogou Spider", "Speedy Spider", "Google AdSense", "Heritrix",
-                "Python-urllib", "Alexa (IA Archiver)", "Ask", "Exabot", "Custo",
-                "OutfoxBot/YodaoBot", "OutfoxBot", "YodaoBot", "yacy", "SurveyBot", "legs",
-                "lwp-trivial", "Nutch", "StackRambler", "The web archive (IA Archiver)",
-                "Perl tool", "MJ12bot", "Netcraft", "MSIECrawler", "WGet tools", "larbin",
-                "Fish search", "360Spider", 'Bingbot', 'Baiduspider', 'YandexBot',
-                'Yahoo! Slurp', 'DuckDuckGo-Favicons-Bot', 'Twitterbot', 'Facebook External Hit',
-                'LinkedInBot', 'Pinterest', 'Instagram', 'Applebot', 'Sogou Spider',
-                'Exabot', 'MJ12bot', 'AhrefsBot', 'DotBot', 'SemrushBot', 'Yeti',
-                'BingPreview', 'Qwantify', 'Archive.org Bot', 'Embedly', 'Discordbot',
+            // 定义广泛的爬虫模式（包含常见爬虫名称及其变体）
+            $botPatterns = [
+                'bot', 'spider', 'crawler',
+                'slurp', 'search', 'yandex', 'bing', 'baidu',
+                'duckduck', 'google', 'yahoo', 'rogerbot', 'exabot', 'ahrefsbot',
+                'semrushbot', 'mj12bot', 'sogou', 'facebot', 'ia_archiver', 'facebookexternalhit',
+                'pinterest', 'linkedinbot', 'applebot', 'petalbot', 'twitterbot', 'webcrawler',
+                'scraper', 'scrapy', 'parsehub', 'diffbot', 'percybot', 'libcurl',
+                'curl', 'wget', 'httrack', 'snoopy', 'botify', 'spinn3r', 'archive.org_bot',
+                'splash', 'genieo', 'connotate', 'commoncrawl', 'seznam', 'msnbot', 'yeti',
+                'zune', 'panscient', 'gobots', 'updowner',
             ];
-            foreach ($spiderSite as $val) {
-                $str = strtolower($val);
-                if (strpos($userAgent, $str) !== false) {
-                    return $returnName ? $val : true;
-                } else {
-                    // 没有在上面定义的爬虫名称范围内，则判断为未知爬虫
-                    if (strpos($userAgent, 'bot') !== false || strpos($userAgent, 'spider') !== false) {
-                        // 请求者是爬虫
-                        return $returnName ? 'Unnamed Spider' : true;
-                    }
-                    // 检查访问频率
+
+            // 1. 匹配 "compatible; NAME/ VERSION; URL" 形式的爬虫
+            $compatiblePattern = '/\bcompatible;\s*([^\s\/;]+)(?:\/[^\s;]*)?(?:\s*;\s*([^\s;]+))?\s*\b/i';
+            if (preg_match($compatiblePattern, $userAgent, $matches)) {
+                // 返回爬虫名称部分
+                return $returnName ? $matches[1] : true;
+            }
+
+            // 2. 匹配通用爬虫模式
+            $botPattern = '/\b(?:' . implode('|', $botPatterns) . ')[^\s\/;]*\b/i';
+            if (preg_match($botPattern, $userAgent, $matches)) {
+                // 提取并返回通用爬虫名称
+                return $returnName ? $matches[0] : true;
+            }
+
+            // 3. 匹配其他格式的爬虫名称
+            foreach ($botPatterns as $pattern) {
+                if (stripos($userAgent, $pattern) !== false) {
+                    // 返回通用的 'bot' 作为标识
+                    return $returnName ? 'Unnamed Spider' : true;
                 }
             }
-        } else {
-            return $returnName ? "" : false;
         }
-
+        return $returnName ? "" : false;
     }
 }
 

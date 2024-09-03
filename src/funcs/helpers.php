@@ -148,12 +148,12 @@ if (!function_exists('is_crawler')) {
      *
      * @DateTime 2019-12-24
      *
-     * @param boolean $returnName          [是否返回爬虫名称]
-     * @param boolean $forbidUnknownSpider [是否阻止未知的爬虫高频访问]
+     * @param bool  $returnName  [是否返回爬虫名称]
+     * @param array $extendRules [自定义额外规则：eg: ['baiduspider','googlebot'])]
      *
-     * @return   boolean                  [description]
+     * @return bool|string [description]
      */
-    function is_crawler(bool $returnName = false, bool $forbidUnknownSpider = false)
+    function is_crawler(bool $returnName = false, array $extendRules = []): bool|string
     {
         $userAgent = strtolower(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '');
         if (!empty($userAgent)) {
@@ -169,6 +169,10 @@ if (!function_exists('is_crawler')) {
                 'splash', 'genieo', 'connotate', 'commoncrawl', 'seznam', 'msnbot', 'yeti',
                 'zune', 'panscient', 'gobots', 'updowner',
             ];
+
+            if (!empty($extendRules)) {
+                $botPatterns = array_merge($botPatterns, $extendRules);
+            }
 
             // 1. 匹配 "compatible; NAME/ VERSION; URL" 形式的爬虫
             $compatiblePattern = '/\bcompatible;\s*([^\s\/;]+)(?:\/[^\s;]*)?(?:\s*;\s*([^\s;]+))?\s*\b/i';

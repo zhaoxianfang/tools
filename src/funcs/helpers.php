@@ -157,45 +157,77 @@ if (!function_exists('is_crawler')) {
     {
         $userAgent = strtolower(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '');
         if (!empty($userAgent)) {
-            // 定义广泛的爬虫模式（包含常见爬虫名称及其变体）
-            $botPatterns = [
-                'bot', 'spider', 'crawler',
-                'slurp', 'search', 'yandex', 'bing', 'baidu',
-                'duckduck', 'google', 'yahoo', 'rogerbot', 'exabot', 'ahrefsbot',
-                'semrushbot', 'mj12bot', 'sogou', 'facebot', 'ia_archiver', 'facebookexternalhit',
-                'pinterest', 'linkedinbot', 'applebot', 'petalbot', 'twitterbot', 'webcrawler',
-                'scraper', 'scrapy', 'parsehub', 'diffbot', 'percybot', 'libcurl',
-                'curl', 'wget', 'httrack', 'snoopy', 'botify', 'spinn3r', 'archive.org_bot',
-                'splash', 'genieo', 'connotate', 'commoncrawl', 'seznam', 'msnbot', 'yeti',
-                'zune', 'panscient', 'gobots', 'updowner',
+            // 扩展的爬虫标识符列表，包括更多类型的爬虫
+            $crawlers = [
+                'Googlebot'           => 'Googlebot', 'Bingbot' => 'Bingbot',
+                'Slurp'               => 'Yahoo! Slurp', 'DuckDuckBot' => 'DuckDuckBot',
+                'Baiduspider'         => 'Baidu Spider', 'YandexBot' => 'YandexBot',
+                'Sogou'               => 'Sogou Spider', 'Exabot' => 'Exabot',
+                'facebot'             => 'Facebook Crawler', 'ia_archiver' => 'Alexa Crawler',
+                'MJ12bot'             => 'Majestic-12', 'AhrefsBot' => 'AhrefsBot',
+                'SemrushBot'          => 'SemrushBot', 'rogerbot' => 'Moz',
+                'DotBot'              => 'OpenLinkProfiler', 'gigabot' => 'Gigabot',
+                'SEOkicks-Robot'      => 'SEOkicks', 'LinkExtractor' => 'LinkExtractor',
+                'Yeti'                => 'Naver Yeti', 'Panscient' => 'Panscient',
+                'Wget'                => 'Wget', 'Cbot' => 'Cbot',
+                'BotBuster'           => 'BotBuster', 'Lynx' => 'Lynx Browser',
+                'Screaming Frog'      => 'Screaming Frog SEO Spider', 'BLEXBot' => 'BLEXBot',
+                'R6Bot'               => 'R6Bot', 'RapidBot' => 'RapidBot',
+                'Sphinx'              => 'Sphinx', 'CedarBot' => 'CedarBot',
+                'NetcraftSurveyAgent' => 'Netcraft Survey Agent', 'SiteBot' => 'SiteBot',
+                'BrowSEO'             => 'BrowSEO', 'Inagist' => 'Inagist',
+                'WebCrawler'          => 'WebCrawler', 'CommonCrawl' => 'CommonCrawl',
+                'Grapeshot'           => 'Grapeshot', 'Crawler' => 'Crawler',
+                'Python-urllib'       => 'Python urllib', 'HttpClient' => 'HttpClient',
+                'URLExtractor'        => 'URLExtractor',
+
+                // 新增的脚本和工具标识符
+                'curl'                => 'cURL', 'HttpRequest' => 'HttpRequest',
+                'PHPUnit'             => 'PHPUnit', 'TestCafe' => 'TestCafe',
+                'Selenium'            => 'Selenium', 'Puppeteer' => 'Puppeteer',
+                'Scrapy'              => 'Scrapy', 'Requests' => 'Requests',
+                'Automation'          => 'Automation Tool', 'Nmap' => 'Nmap',
+                'HTTrack'             => 'HTTrack', 'WebTest' => 'WebTest',
+                'Fiddler'             => 'Fiddler', 'PhantomJS' => 'PhantomJS',
+                'RestSharp'           => 'RestSharp', 'Httpie' => 'HTTPie',
+                'Apache-HttpClient'   => 'Apache HttpClient', 'ZyBorg' => 'ZyBorg',
+                'Netherbot'           => 'Netherbot', 'Spinn3r' => 'Spinn3r',
+                'Snoopy'              => 'Snoopy', 'Diffbot' => 'Diffbot',
+                'DataForSEO'          => 'DataForSEO', 'Nutch' => 'Nutch',
+                'NaverBot'            => 'NaverBot', 'BaumgartnerBot' => 'BaumgartnerBot',
+                'Gobot'               => 'Gobot', 'Rambler' => 'Rambler',
+                'Siteliner'           => 'Siteliner',
+                // 更多爬虫和脚本标识符可以在这里添加
             ];
 
             if (!empty($extendRules)) {
-                $botPatterns = array_merge($botPatterns, $extendRules);
+                $crawlers = array_merge($crawlers, $extendRules);
             }
 
-            // 1. 匹配 "compatible; NAME/ VERSION; URL" 形式的爬虫
-            $compatiblePattern = '/\bcompatible;\s*([^\s\/;]+)(?:\/[^\s;]*)?(?:\s*;\s*([^\s;]+))?\s*\b/i';
-            if (preg_match($compatiblePattern, $userAgent, $matches)) {
-                // 返回爬虫名称部分
-                return $returnName ? $matches[1] : true;
-            }
+            // 优化正则表达式以匹配更多类型的爬虫和脚本
+            $patterns = [
+                // 匹配 "compatible; CrawlerName/Version"
+                '/\b(?:compatible;\s*([^\/\s;]+)\/[^\)]+|' . implode('|', array_map('preg_quote', array_keys($crawlers))) . ')\b/i',
+                // 匹配其他通用的爬虫和脚本标识符
+                '/\b(' . implode('|', array_map('preg_quote', array_keys($crawlers))) . ')\b/i',
+                // 匹配 "bot", "crawler", "spider" 等关键字
+                '/\b(bot|crawler|spider|scraper|spider|robot|scanner)\b/i',
+            ];
 
-            // 2. 匹配通用爬虫模式
-            $botPattern = '/\b(?:' . implode('|', $botPatterns) . ')[^\s\/;]*\b/i';
-            if (preg_match($botPattern, $userAgent, $matches)) {
-                // 提取并返回通用爬虫名称
-                return $returnName ? $matches[0] : true;
-            }
-
-            // 3. 匹配其他格式的爬虫名称
-            foreach ($botPatterns as $pattern) {
-                if (stripos($userAgent, $pattern) !== false) {
-                    // 返回通用的 'bot' 作为标识
-                    return $returnName ? 'Unnamed Spider' : true;
+            foreach ($patterns as $pattern) {
+                if (preg_match_all($pattern, $userAgent, $matches)) {
+                    foreach ($matches[1] as $crawlerName) {
+                        // 转换爬虫名称为统一格式，先查已知列表
+                        if (array_key_exists($crawlerName, $crawlers)) {
+                            return $returnName ? $crawlers[$crawlerName] : true;
+                        }
+                        // 对未知的爬虫名称进行处理
+                        return $returnName ? $crawlerName : true;
+                    }
                 }
             }
         }
+        // 没有匹配到任何爬虫
         return $returnName ? "" : false;
     }
 }

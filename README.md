@@ -5,7 +5,7 @@
 > 基于 php 的项目模块开发
 > 调用命名空间 使用 use zxf\…… 例如 use zxf\Login\QqOauth; use zxf\Min\JsMin;
 
-<a href="http://0l0.net/docs/2" target="_blank" >在线文档</a>
+<a href="http://weisifang.com/docs/2" target="_blank" >在线文档</a>
 
 ## 引用
 
@@ -17,7 +17,7 @@ composer require zxf/tools
 
 | 模块                     | 需要包含的文件夹/说明                                                                                     |
 |------------------------|-------------------------------------------------------------------------------------------------|
-| zxf\Tools\Collection   | <a href="http://www.0l0.net/docs/doc/2_129" target="_blank">[Collection]</a> 数据集合操作             |
+| zxf\Tools\Collection   | <a href="http://www.weisifang.com/docs/doc/2_129" target="_blank">[Collection]</a> 数据集合操作             |
 | QQ登录                   | Qqlogin                                                                                         |
 | 微信                     | WeChat                                                                                          |
 | 支付                     | 支付                                                                                              |
@@ -251,7 +251,7 @@ use zxf\qrcode\QrCode;
 echo '<p>Example - QrCode</p>';
 $qrCode = new QrCode();
 $qrCode
-    ->setText('http://0l0.net/docs') // 生成二维码的内容
+    ->setText('http://weisifang.com/docs') // 生成二维码的内容
     ->setSize(200) // 设置二维码大小
     ->setPadding(10) // 设置边距
     ->setErrorCorrection('high') // 设置二维码纠错级别。 分为 high(30%)、quartile(25%)、medium(15%)、low(7%) 几种
@@ -268,7 +268,7 @@ echo '<img src="data:' . $qrCode->getContentType() . ';base64,' . $qrCode->gener
 ```php
 $qrCode = new QrCode(); // 实例化
 $qrCode
-    ->setText('http://0l0.net/docs') // 生成二维码的内容
+    ->setText('http://weisifang.com/docs') // 生成二维码的内容
     ->setSize(200) // 设置二维码大小
     ->setPadding(10) // 设置边距
     ->setErrorCorrection('high') // 设置二维码纠错级别。 分为 high(30%)、quartile(25%)、medium(15%)、low(7%) 几种
@@ -578,7 +578,7 @@ use zxf\ScreenShot\ScreenShot;
 // $softPath： 可执行文件phantomjs或者phantomjs.exe 所在目录； ScreenShot 会自动识别系统 $softPath 该使用 phantomjs 还是 phantomjs.exe
 // $url: 被截图网页  url
 // $savePath: 截图成功后的保存文件完整地址
-$res = ScreenShot::init($softPath='/Users/linian/extend')->setUrl($url = 'http://0l0.net')->run($savePath = __DIR__.'/img/'.time().'.png');
+$res = ScreenShot::init($softPath='/Users/linian/extend')->setUrl($url = 'http://weisifang.com')->run($savePath = __DIR__.'/img/'.time().'.png');
 
 $res 返回 true|fales 表示是否截图成功
 ```
@@ -642,4 +642,4 @@ $cmd->getArgVal('test');
 
 ## 更多
 
-<a href="http://0l0.net/docs/2" target="_blank" >查看更多</a>
+<a href="http://weisifang.com/docs/2" target="_blank" >查看更多</a>

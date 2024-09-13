@@ -1,6 +1,6 @@
 # 手册
  
-> http://0l0.net/docs/2
+> http://weisifang.com/docs/2
 > http://weisifang.com/docs/2
 
 ## Db 类使用

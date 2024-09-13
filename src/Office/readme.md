@@ -298,7 +298,7 @@ $write->setParagraphSpacing(90, 90, 40);
 $write->addPaper();
 $write->addText('这是文本这是文本这是文本这是文本');
 
-$write->addLink('http://0l0.net', '测试链接');
+$write->addLink('http://weisifang.com', '测试链接');
 
 // 添加图片
 $write->addImage($imgPath, [

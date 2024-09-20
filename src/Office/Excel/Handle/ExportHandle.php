@@ -13,10 +13,15 @@ use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
+// 展示数字
+use PhpOffice\PhpSpreadsheet\Cell\Cell;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
+
 /**
  * Excel 导出
  */
-class ExportHandle implements WithHeadings, WithMapping, FromArray, ShouldAutoSize, WithTitle, WithStyles
+class ExportHandle extends DefaultValueBinder implements WithHeadings, WithMapping, FromArray, ShouldAutoSize, WithTitle, WithStyles
 {
 
     private array $list      = [];
@@ -35,6 +40,20 @@ class ExportHandle implements WithHeadings, WithMapping, FromArray, ShouldAutoSi
         }
         $this->list     = $data;
         $this->headings = $head;
+    }
+
+    /**
+     * 重写 DefaultValueBinder 的bindValue 方法，解决数字0在表格中不显示的问题
+     */
+    public function bindValue(Cell $cell, $value)
+    {
+        // 展示数字，特别是数字0在表格中不显示的情况
+        if (is_numeric($value)) {
+            $cell->setValueExplicit($value, DataType::TYPE_NUMERIC);
+            return true;
+        }
+
+        return parent::bindValue($cell, $value);
     }
 
     /**

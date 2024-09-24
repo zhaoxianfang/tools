@@ -18,6 +18,8 @@ class Curl
 {
     private $ch         = null; // curl 句柄
     private $httpParams = null;
+    // cookie文件路径地址
+    private string $cookieFile = '';
 
     /**
      * @var object 对象实例
@@ -47,6 +49,12 @@ class Curl
         }
         if (empty($this->ch)) {
             $this->ch = curl_init();
+        }
+
+        if (!empty($this->cookieFile)) {
+            // 使用cookie文件
+            curl_setopt($this->ch, CURLOPT_COOKIEJAR, $this->cookieFile);
+            curl_setopt($this->ch, CURLOPT_COOKIEFILE, $this->cookieFile);
         }
     }
 
@@ -98,6 +106,28 @@ class Curl
     }
 
     /**
+     * 设置cookie文件的保存路径地址或者读取地址
+     *
+     * @param string $file
+     *
+     * @return $this
+     */
+    public function setCookieFile(string $file = '')
+    {
+        if ($file) {
+            // 检查cookies文件是否存在
+            if (!file_exists($file)) {
+                // 创建cookies文件
+                touch($file);
+                // 设置文件权限，例如0644，表示文件所有者可读写，同组用户和其他用户可读
+                chmod($file, 0644);
+            }
+            $this->cookieFile = $file;
+        }
+        return $this;
+    }
+
+    /**
      * 设置http 超时
      *
      * @param int $time
@@ -105,7 +135,7 @@ class Curl
      * @return $this
      * @throws Exception
      */
-    public function setTimeout($time = 3)
+    public function setTimeout(int $time = 3)
     {
         $this->initCurl();
         // 不能小于等于0
@@ -488,6 +518,9 @@ class Curl
      */
     protected function run(string $data_type = 'json')
     {
+        curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, true); // 自动跟随重定向，默认为 false
+        curl_setopt($this->ch, CURLOPT_MAXREDIRS, 5); // 设置最大的重定向次数，默认为 5
+
         $content = curl_exec($this->ch);
         $errInfo = curl_error($this->ch);
         $status  = curl_getinfo($this->ch);

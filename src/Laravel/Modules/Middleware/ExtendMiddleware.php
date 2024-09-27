@@ -78,6 +78,11 @@ class ExtendMiddleware
             return $response;
         }
 
+        // 判断响应数据 $response 中是否有异常数据 exception
+        if (property_exists($response, 'exception')) {
+            return $response;
+        }
+
         $traceHandle  = $this->handle->handle();
         $traceContent = $traceHandle->output();
         if (empty($traceContent)) {

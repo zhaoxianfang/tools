@@ -117,17 +117,16 @@ class Import
      *
      * @param callable $callback          回调函数
      *                                    eg:->validateFile(function () {
-     *                                    // 不论传入的文件表单名称是什么，都会被重命名为file
-     *                                    $rule = [
-     *                                    'file' => 'required|file|max:1024|mimes:xlsx,xls,csv', // 文件最大1MB，仅限
-     *                                    xlsx,xls,csv 格式
-     *                                    ];
-     *                                    $messages = [
-     *                                    'file.required' => '文件不能为空',
-     *                                    'file.max'      => '文件最大1MB',
-     *                                    'file.mimes'    => '不支持的文件格式',
-     *                                    ];
-     *                                    return [$rule,$messages]
+     *                                          // 不论传入的文件表单名称是什么，都会被重命名为file
+     *                                          $rule = [
+     *                                              'file' => 'required|file|max:1024|mimes:xlsx,xls,csv', // 文件最大1MB，仅限 xlsx,xls,csv 格式
+     *                                          ];
+     *                                          $messages = [
+     *                                              'file.required' => '文件不能为空',
+     *                                              'file.max'      => '文件最大1MB',
+     *                                              'file.mimes'    => '不支持的文件格式',
+     *                                          ];
+     *                                          return [$rule,$messages]
      *                                    })
      *
      * @return $this

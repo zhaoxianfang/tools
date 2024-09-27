@@ -251,8 +251,6 @@ class Import
         // 支持读多表
         $import = new ExcelToArray();
 
-        // 验证数据
-
         $results    = Excel::toArray($import, $this->file);
         $mergedData = [];
         foreach ($results as $sheetIndex => $sheetData) {
@@ -286,7 +284,7 @@ class Import
                 } else {
                     $items = $row;
                 }
-                // 添加自定义验证规格
+                // 自定义验证每行的数据
                 if ($this->validateRowFunc && is_callable($customCallback = $this->validateRowFunc)) {
                     $callRes = $customCallback($items, $rowIndex, $sheetIndex, $sheetName);
                     // 返回数组 eg:[[...rules...],[...$messages...]]
@@ -306,7 +304,6 @@ class Import
                     if (is_string($callRes)) {
                         throw new Exception($callRes);
                     }
-
                 }
                 $sheetTableData[] = $items;
             }

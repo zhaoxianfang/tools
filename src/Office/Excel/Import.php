@@ -27,7 +27,12 @@ class Import
 
     // 列名映射 eg: ['A' => 'name', 'B' => 'email'] 表示A列映射为name，B列映射为email
     protected array        $columnMapping = [];
+
+    // 自定义验证表格行数据回调函数
     protected Closure|null $validateRowFunc;
+
+    // 表格读取范围 eg:['1'=>['start'=>10,'end'=>99] ] 表示读取第1张表的10-99行数据(下标都是从0开始)
+    protected array $readRange = [];
 
     /**
      * 导入文件后缀
@@ -181,6 +186,23 @@ class Import
     }
 
     /**
+     * 设置表格读取范围
+     * @param int $sheetIndex   sheet 表索引,第 n 个表，下标从0开始
+     * @param int $start        开始读取行号，从0开始
+     * @param int $end          结束读取行号，从0开始
+     *
+     * @return $this
+     */
+    public function setReadRange(int $sheetIndex=0,int $start = 0, int $end = 99999)
+    {
+        $this->readRange[$sheetIndex] = [
+            'start' => $start,
+            'end'   => $end,
+        ];
+        return $this;
+    }
+
+    /**
      * 获取Excel列名，例如：A,B,C,D,E,F,G,H,I,J,K,L,M...
      *
      * @param $index
@@ -238,6 +260,16 @@ class Import
             // sheet 表名称
             $sheetName  = isset($sheetNames[$sheetIndex]) ? $sheetNames[$sheetIndex] : $sheetIndex;
             foreach ($sheetData as $rowIndex => $row) {
+                if(!empty($this->readRange) && !empty($currentRange = $this->readRange[$sheetIndex])){
+                    if($rowIndex > $currentRange['end']){
+                        // 结束遍历数据
+                        break;
+                    }
+                    if($rowIndex < $currentRange['start']){
+                        // 跳过指定行数遍历数据
+                        continue;
+                    }
+                }
                 $items = [];
                 if ($this->useExcelColumnName) {
                     foreach ($row as $key => $item) {

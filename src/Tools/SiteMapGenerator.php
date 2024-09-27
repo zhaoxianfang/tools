@@ -2,6 +2,7 @@
 
 namespace zxf\Tools;
 
+use Exception;
 use SimpleXMLElement;
 
 /**
@@ -131,14 +132,17 @@ class SiteMapGenerator
      */
     public function addUrl(string $url, string $lastModified = null, string $changeFrequency = 'weekly', float $priority = 0.5, array $customTags = []): void
     {
-        $url          = $this->baseUrl . ltrim($url, '/'); // 构建完整的 URL
-        $this->urls[] = [
+        $url     = $this->baseUrl . ltrim($url, '/'); // 构建完整的 URL
+        $urlItem = [
             'loc'        => $url, // URL
             'lastmod'    => $lastModified, // 最后修改时间
             'changefreq' => $changeFrequency, // 更新频率
             'priority'   => $priority, // 优先级
-            'custom'     => $customTags, // 自定义标签
         ];
+        if (!empty($customTags)) {
+            $urlItem = array_merge($customTags, $urlItem);
+        }
+        $this->urls[] = $urlItem;
 
         // 检查是否达到最大 URL 数量或文件大小
         if (count($this->urls) >= $this->maxUrls || $this->getCurrentFileSize() >= $this->maxFileSize) {
@@ -188,9 +192,11 @@ class SiteMapGenerator
         $this->urls[] = [
             'loc'  => $this->baseUrl . ltrim($url, '/'), // 新闻条目 URL
             'news' => [
-                'publication_date' => $publicationDate, // 出版日期
-                'title'            => $title, // 新闻标题
-                'keywords'         => $keywords, // 新闻关键词
+                [
+                    'publication_date' => $publicationDate, // 出版日期
+                    'title'            => $title, // 新闻标题
+                    'keywords'         => $keywords, // 新闻关键词
+                ],
             ],
         ];
     }
@@ -239,11 +245,11 @@ class SiteMapGenerator
             if ($entry['loc'] === $this->baseUrl . ltrim($url, '/')) {
                 // 如果找到了对应的 URL，添加视频信息
                 $entry['videos'][] = [
-                    'url'         => $videoUrl, // 视频 URL
-                    'title'       => $title, // 视频标题
-                    'description' => $description, // 视频描述
-                    'thumbnail'   => $thumbnailUrl, // 缩略图 URL
-                    'duration'    => $duration, // 视频时长
+                    'url'           => $videoUrl, // 视频 URL
+                    'title'         => $title, // 视频标题
+                    'description'   => $description, // 视频描述
+                    'thumbnail_loc' => $thumbnailUrl, // 缩略图 URL
+                    'duration'      => $duration, // 视频时长
                 ];
             }
         }
@@ -286,16 +292,22 @@ class SiteMapGenerator
      * @param array $urls 存储 URL 的数组
      *
      * @return string 生成的 XML 内容
+     * @throws Exception
      */
     private function generateSitemapXml(array $urls): string
     {
-        $customHeader = '';
-        if ($this->header) {
-            $customHeader = trim($this->header) . "\n"; // 确保 header 在最上面
-        }
+        // 自定义头部
+        $customHeader = !empty($this->header) ? (trim($this->header) . "\n") : ('<?xml version="1.0" encoding="UTF-8"?>' . "\n");
 
         // 创建 XML 对象
-        $xml = new SimpleXMLElement($customHeader . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"/>');
+        $xml = new SimpleXMLElement(
+            $customHeader . // 自定义头部
+            '<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9" ' . // 基本的站点地图规范
+            'xmlns:video="https://www.google.com/schemas/sitemap-video/1.1" ' . // 用于视频扩展
+            'xmlns:image="https://www.google.com/schemas/sitemap-image/1.1" ' . // 用于图片扩展
+            'xmlns:news="https://www.google.com/schemas/sitemap-news/0.9"' . // 用于新闻扩展
+            '/>'
+        );
 
         foreach ($urls as $url) {
             $urlEntry = $xml->addChild('url'); // 添加 URL 节点
@@ -316,6 +328,73 @@ class SiteMapGenerator
             if (!empty($url['custom'])) {
                 foreach ($url['custom'] as $tag => $value) {
                     $urlEntry->addChild($tag, htmlspecialchars($value)); // 添加自定义标签
+                }
+            }
+            // 添加图片信息
+            if (isset($url['images'])) {
+                foreach ($url['images'] as $image) {
+                    // 创建 image:image 节点
+                    $imageElement = $urlEntry->addChild('image:image');
+                    // 图片 URL
+                    !empty($image['url']) && $imageElement->addChild('image:loc', htmlspecialchars($image['url']));
+                    // 如果图片有标题，添加 image:title 标签
+                    !empty($image['title']) && $imageElement->addChild('image:title', htmlspecialchars($image['title']));
+                    // 如果图片有描述，添加 image:caption 标签
+                    !empty($image['caption']) && $imageElement->addChild('image:caption', htmlspecialchars($image['caption']));
+                    // 位置
+                    !empty($image['geo_location']) && $imageElement->addChild('image:geo_location', htmlspecialchars($image['geo_location']));
+                    // 版权
+                    !empty($image['license']) && $imageElement->addChild('image:license', htmlspecialchars($image['license']));
+                }
+            }
+            // 添加视频信息
+            if (isset($url['videos'])) {
+                foreach ($url['videos'] as $video) {
+                    $videoElement = $urlEntry->addChild('video:video');
+                    // 视频标题
+                    !empty($video['title']) && $videoElement->addChild('video:title', htmlspecialchars($video['title']));
+                    // 视频描述
+                    !empty($video['description']) && $videoElement->addChild('video:description', htmlspecialchars($video['description']));
+                    // 视频缩略图
+                    !empty($video['thumbnail_loc']) && $videoElement->addChild('video:thumbnail_loc', htmlspecialchars($video['thumbnail_loc']));
+                    // 视频实际地址
+                    !empty($video['url']) && $videoElement->addChild('video:content_loc', htmlspecialchars($video['url']));
+                    // 视频时长（秒）
+                    !empty($video['duration']) && $videoElement->addChild('video:duration', $video['duration']);
+                    // 视频发布日期
+                    !empty($video['publication_date']) && $videoElement->addChild('video:publication_date', $video['publication_date']);
+                    // 添加视频播放器链接
+                    !empty($video['player_loc']) && $videoElement->addChild('video:player_loc', htmlspecialchars($video['player_loc']));
+                    // 添加视频过期日期
+                    !empty($video['expiration_date']) && $videoElement->addChild('video:expiration_date', $video['expiration_date']);
+                    // 添加视频评分
+                    !empty($video['rating']) && $videoElement->addChild('video:rating', $video['rating']);
+                    // 添加观看次数
+                    !empty($video['view_count']) && $videoElement->addChild('video:view_count', $video['view_count']);
+                    // 添加是否适合家庭观看标志
+                    !empty($video['family_friendly']) && $videoElement->addChild('video:family_friendly', $video['family_friendly']);
+                }
+            }
+
+            // 添加新闻数据
+            if (isset($url['news'])) {
+                foreach ($url['news'] as $news) {
+                    $newsElement = $urlEntry->addChild('news:news'); // 添加 news:news 节点
+                    if (!empty($news['publication'])) {
+                        $publicationElement = $newsElement->addChild('news:publication'); // 添加 news:publication 节点
+                        // 添加发布机构名称
+                        !empty($news['publication']['name']) && $publicationElement->addChild('news:name', $news['publication']['name']);
+                        // 添加发布语言
+                        $publicationElement->addChild('news:language', $news['publication']['language'] ?? 'zh_CN');
+                    }
+                    // 新闻标题
+                    !empty($news['title']) && $newsElement->addChild('news:title', htmlspecialchars($news['title']));
+                    // 发布日期
+                    !empty($news['publication_date']) && $newsElement->addChild('news:publication_date', $news['publication_date']);
+                    // 新闻关键词
+                    !empty($news['keywords']) && $newsElement->addChild('news:keywords', htmlspecialchars($news['keywords']));
+                    // 新闻分类
+                    !empty($news['genres']) && $newsElement->addChild('news:genres', htmlspecialchars($news['genres']));
                 }
             }
         }

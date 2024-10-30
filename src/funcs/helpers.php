@@ -298,7 +298,7 @@ if (!function_exists('is_crawler')) {
                 $crawlerName    = $crawlers[$matchedCrawler] ?? 'Unknown Crawler';
 
                 // 如果匹配到 "Spider" 或 "Crawler"，重新截取出前面的字符串
-                if (strtolower(substr($crawlerName, 0, 7)) == 'generic') {
+                if (strtolower(substr($crawlerName, 0, 7)) == 'generic' || $crawlerName == 'Unknown Crawler') {
                     $suffix = (stripos($matchedCrawler, 'Spider') !== false) ? 'Spider' : (stripos($matchedCrawler, 'Crawler') !== false ? 'Crawler' : '');
                     if (!empty($suffix)) {
                         // 找到 "Spider" 或 "Crawler" 的位置

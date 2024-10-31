@@ -166,6 +166,7 @@ if (!function_exists('is_crawler')) {
                 'DuckDuckBot'          => 'DuckDuckGo Bot',
                 'Baiduspider'          => 'Baidu Spider',
                 'YandexBot'            => 'Yandex Bot',
+                'Sogou web spider'     => 'Sogou Web Spider', // Sogou Web 爬虫
                 'Sogou'                => 'Sogou Spider',
                 'Exabot'               => 'ExaBot',
                 'ia_archiver'          => 'Alexa Bot',
@@ -253,35 +254,6 @@ if (!function_exists('is_crawler')) {
                 'Spider'               => 'Generic Spider',
                 'Crawler'              => 'Generic Crawler',
                 'Bot'                  => 'Generic Bot',
-                'Checkbot'             => 'Checkbot',
-                'HTTPClient'           => 'HTTP Client',
-                'AppEngine-Google'     => 'Google AppEngine',
-                'Cloudflare'           => 'Cloudflare Bot',
-
-                // 校验工具和站点标准检测
-                'W3C_Validator'        => 'W3C Validator',
-                'Wave_Privacy'         => 'Wave Accessibility Tool',
-                'CSS_Validator'        => 'CSS Validator',
-
-                // 社交与内容发布平台的爬虫
-                'Tumblr'               => 'Tumblr Bot',
-                'Snapchat'             => 'Snapchat Bot',
-                'Discordbot'           => 'Discord Bot',
-
-                // 网络监控和安全工具
-                'Nessus'               => 'Nessus Vulnerability Scanner',
-                'OpenVAS'              => 'OpenVAS Security Scanner',
-                'BurpSuite'            => 'Burp Suite Proxy',
-                'Acunetix'             => 'Acunetix Vulnerability Scanner',
-
-                // 区块链和加密货币相关爬虫
-                'Bitcoin'              => 'Bitcoin Node',
-                'Ethereum'             => 'Ethereum Node',
-
-                // 爬虫和采集框架
-                'Octoparse'            => 'Octoparse',
-                'Apify'                => 'Apify Crawler',
-                'WebHarvy'             => 'WebHarvy Scraper',
             ];
 
             if (!empty($extendRules)) {
@@ -297,9 +269,17 @@ if (!function_exists('is_crawler')) {
                 $matchedCrawler = $matches[0][0];
                 $crawlerName    = $crawlers[$matchedCrawler] ?? 'Unknown Crawler';
 
-                // 如果匹配到 "Spider" 或 "Crawler"，重新截取出前面的字符串
-                if (strtolower(substr($crawlerName, 0, 7)) == 'generic' || $crawlerName == 'Unknown Crawler') {
-                    $suffix = (stripos($matchedCrawler, 'Spider') !== false) ? 'Spider' : (stripos($matchedCrawler, 'Crawler') !== false ? 'Crawler' : '');
+                // 如果匹配到 "Spider" 、 "Crawler" 和 “Bot”，重新截取出前面的字符串
+                if (in_array(strtolower(substr($crawlerName, 0, 7)), ['generic', 'unknown'])) {
+                    $suffix = (stripos($matchedCrawler, 'Spider') !== false)
+                        ? 'Spider'
+                        : (stripos($matchedCrawler, 'Crawler') !== false
+                            ? 'Crawler'
+                            : (stripos($matchedCrawler, 'Bot') !== false
+                                ? 'Bot'
+                                : ''
+                            )
+                        );
                     if (!empty($suffix)) {
                         // 找到 "Spider" 或 "Crawler" 的位置
                         $pattern = '/\s+(\S+)' . $suffix . '/i';

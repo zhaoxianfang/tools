@@ -155,7 +155,7 @@ if (!function_exists('is_crawler')) {
      */
     function is_crawler(bool $returnName = false, array $extendRules = []): bool|string
     {
-        $userAgent = strtolower(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '');
+        $userAgent = is_laravel() ? request()->userAgent() : (isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '');
         if (!empty($userAgent)) {
             // 扩展的爬虫标识符列表，包括更多类型的爬虫
             $crawlers = [

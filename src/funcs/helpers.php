@@ -173,6 +173,7 @@ if (!function_exists('is_crawler')) {
                 '360Spider'                                                                                    => '360 Search Bot',
                 'SeznamBot'                                                                                    => 'Seznam Bot',
                 'YisouSpider'                                                                                  => 'Yisou Spider',
+                'Bytespider'                                                                                   => 'Byte Spider',
 
                 // 国际搜索引擎爬虫
                 'Yeti'                                                                                         => 'Naver Yeti',

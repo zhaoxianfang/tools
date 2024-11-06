@@ -241,7 +241,12 @@ if (!function_exists('is_crawler')) {
             if (!empty($matches[0])) {
                 // 返回第一个匹配的爬虫名称
                 $matchedCrawler = $matches[0][0];
-                $crawlerName    = !empty($crawlers[$matchedCrawler]) ? $crawlers[$matchedCrawler] : $matchedCrawler;
+                $crawlerName    = !empty($crawlers[$matchedCrawler])
+                    ? $crawlers[$matchedCrawler]
+                    : (!empty($crawlers[ucfirst($matchedCrawler)])
+                        ? $crawlers[ucfirst($matchedCrawler)]
+                        : $matchedCrawler
+                    );
 
                 // 如果匹配到 "Spider" 、 "Crawler" 和 “Bot”，重新截取出前面的字符串
                 if (in_array(strtolower(substr($crawlerName, 0, 7)), ['generic', 'unknown'])) {

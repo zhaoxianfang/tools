@@ -26,18 +26,18 @@ if (!function_exists('i_session')) {
                 return is_json($val) ? json_decode_plus($val, true) : $val;
             }
         } else {
-            if (empty($value) && $value == '') {
+            if (empty($value)) {
+                $handle->$name = null;
                 // 删除值
                 unset($handle->$name);
             } else {
-                // 使用 键和值 设置值
+                // 设置值
                 $value = (is_array($value) || is_object($value)) ? json_encode($value) : $value;
                 return $handle->$name = $value;
             }
         }
     }
 }
-
 if (!function_exists('cache')) {
     /**
      * cache 助手函数
@@ -390,7 +390,6 @@ if (!function_exists('del_dirs')) {
         return true;
     }
 }
-
 if (!function_exists('del_dir')) {
     /**
      * 删除文件夹及其文件夹下所有文件
@@ -469,8 +468,8 @@ if (!function_exists('get_filesize')) {
     {
         return byteFormat(stat($filePath)['size']);
     }
-}
 
+}
 if (!function_exists('byteFormat')) {
     /**
      * 文件字节转具体大小 array("B", "KB", "MB", "GB", "TB", "PB","EB","ZB","YB")， 默认转成M
@@ -1390,8 +1389,11 @@ if (!function_exists('json_decode_plus')) {
      *
      * @return mixed
      */
-    function json_decode_plus(string $jsonStr, $assoc = null): mixed
+    function json_decode_plus(string|null $jsonStr, $assoc = null): mixed
     {
+        if (empty($jsonStr)) {
+            return null;
+        }
         try {
             $jsonStr = preg_replace('/\\"/', '"', $jsonStr);
             $jsonStr = str_replace('\\', '', $jsonStr);

@@ -112,6 +112,26 @@ class TnCode
         return $ret;
     }
 
+    /**
+     * 验证码二次验证【复检】
+     *
+     * @param $codeValue
+     *
+     * @return bool
+     */
+    public function recheck($codeValue = ''): bool
+    {
+        if (empty(i_session('tncode_r')) && !empty($value = i_session('tncode_validation'))) {
+            $ret = abs($value - $codeValue) <= $this->_fault;
+            if ($ret) {
+                i_session('tncode_validation', ''); // 验证成功时删除
+                i_session('tncode_err', '');
+                return true;
+            }
+        }
+        return false;
+    }
+
     // 初始化相关图片资源及设置滑块初始位置、验证错误次数等的私有方法
     private function init(array $bgImg = []): void
     {

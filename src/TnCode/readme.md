@@ -72,7 +72,7 @@ public function form(Request $request)
 {
     // 前提是初次验证已经通过此步骤才生效
     $request->validate([
-        'tn_r' => 'required|TnCode:min,max',
+        'tn_r' => 'required|TnCode',
     ], [
         'tn_r.required'   => '必填',
         'tn_r.TnCode' => 'TnCode 验证',

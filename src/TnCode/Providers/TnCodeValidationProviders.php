@@ -3,6 +3,7 @@
 namespace zxf\TnCode\Providers;
 
 use Illuminate\Support\Facades\Validator;
+use zxf\TnCode\TnCode;
 
 /**
  * 为 TnCode 插件注册一个验证码验证器 TnCode
@@ -21,13 +22,8 @@ class TnCodeValidationProviders extends \Illuminate\Support\ServiceProvider
         // $parameters : 一些参数 ,例如： 'tn_r' => 'required|TnCode:min,max', 里面的 min和max
         // $validator : Illuminate\Validation\Validator
         Validator::extend('TnCode', function ($attribute, $value, $parameters, $validator) {
-            // 首次验证成功时设置tncode_r为空或者销毁，然后新增一个 tncode_validation 进行二次验证
-            if (empty(i_session('tncode_r')) && $value == i_session('tncode_validation')) {
-                i_session('tncode_validation', ''); // 验证成功时删除
-                i_session('tncode_err', '');
-                return true;
-            }
-            return false;
+            // 进行二次验证
+            return (new TnCode())->recheck($value);
         });
 
 

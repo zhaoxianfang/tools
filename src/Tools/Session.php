@@ -33,7 +33,11 @@ class Session
 
     public function __set($name, $value)
     {
-        $_SESSION[$name] = $value;
+        if (is_null($value)) {
+            unset($_SESSION[$name]);
+        } else {
+            $_SESSION[$name] = $value;
+        }
     }
 
     public function __get($name)

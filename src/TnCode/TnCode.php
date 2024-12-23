@@ -51,9 +51,9 @@ class TnCode
         // 设置错误报告级别为0，即抑制所有错误报告（同样可按需调整，此处维持原做法）
         // error_reporting(0);
         // 检查是否已经开启会话，如果没有则开启会话，以便后续在会话中存储验证码相关的信息，如滑块位置、验证错误次数等
-        if (!isset($_SESSION)) {
-            session_start();
-        }
+//        if (!isset($_SESSION)) {
+//            session_start();
+//        }
 
         $defaultSlideConfig = [
             'tool_icon_img'         => dirname(__DIR__) . '/TnCode/Resources/img/icon.png', // 前端使用的图标组图片
@@ -85,7 +85,7 @@ class TnCode
     public function check($offset = ''): bool
     {
         // 如果会话中不存在正确的滑块位置信息，则直接返回验证失败
-        if (!isset($_SESSION['tncode_r'])) {
+        if (empty(i_session('tncode_r'))) {
             return false;
         }
         // 如果传入的偏移量参数为空，则尝试从请求参数中获取名为'tn_r'的滑块偏移量值
@@ -93,16 +93,16 @@ class TnCode
             $offset = $_REQUEST['tn_r'];
         }
         // 计算用户输入的偏移量与正确的滑块位置的差值绝对值是否在容错范围内，返回比较结果
-        $ret = abs($_SESSION['tncode_r'] - $offset) <= $this->_fault;
+        $ret = abs(i_session('tncode_r') - $offset) <= $this->_fault;
         if ($ret) {
             // 如果验证通过，移除会话中存储的正确滑块位置信息
-            unset($_SESSION['tncode_r']);
+            i_session('tncode_r', '');
         } else {
             // 如果验证失败，增加验证错误次数的计数
-            $_SESSION['tncode_err']++;
+            i_session('tncode_r', i_session('tncode_r') + 1);
             // 如果错误次数超过10次，则强制刷新（移除正确滑块位置信息）
-            if ($_SESSION['tncode_err'] > 10) {
-                unset($_SESSION['tncode_r']);
+            if (i_session('tncode_err') > 10) {
+                i_session('tncode_r', '');
             }
         }
         return $ret;
@@ -137,9 +137,10 @@ class TnCode
         // 创建一个用于滑块的真彩色GD图像资源，尺寸根据滑块标记的宽度和背景图片高度确定
         $this->im_slide = imagecreatetruecolor($this->mark_width, $this->bg_height);
         // 随机生成滑块的横坐标位置，范围在50到背景图片宽度减去滑块标记宽度减1之间，并将其存储在会话中，同时赋值给类属性
-        $_SESSION['tncode_r'] = $this->_x = mt_rand(50, $this->bg_width - $this->mark_width - 1);
+        $x = $this->_x = mt_rand(50, $this->bg_width - $this->mark_width - 1);
+        i_session('tncode_r', $x);
         // 初始化验证错误次数为0，并存储在会话中
-        $_SESSION['tncode_err'] = 0;
+        i_session('tncode_err', 0);
         // 随机生成滑块的纵坐标位置，范围在0到背景图片高度减去滑块标记高度减1之间
         $this->_y = mt_rand(0, $this->bg_height - $this->mark_height - 1);
     }

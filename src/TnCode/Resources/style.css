@@ -178,7 +178,7 @@
 /*拉条*/
 .slide,.slide_block,.tools .tncode_close,.tools .tncode_refresh{
     background-repeat: no-repeat;
-    background-image: url('/tn_code/img/icon.png');
+    background-image: url('/tn_code/assets/img/icon.png');
 }
 .tncode_msg_ok{
     background-color: #24C628;

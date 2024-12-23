@@ -38,6 +38,8 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
 
         // 加载debug路由
         $this->loadRoutesFrom(__DIR__ . '/Trace/routes/debugger.php');
+        // 加载tncode 路由
+        $this->loadRoutesFrom(__DIR__ . '/../TnCode/routes.php');
 
         // 设置数据分页模板
         $this->setPaginationView();

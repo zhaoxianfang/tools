@@ -43,10 +43,8 @@ class Handle
     public function handle()
     {
         if (is_enable_trace()) {
-            // 运行在命令行下
-            return $this;
+            $this->startMemory = memory_get_usage();
         }
-        $this->startMemory = memory_get_usage();
 
         return $this;
     }

@@ -79,7 +79,7 @@ class ExtendMiddleware
         }
 
         // 判断响应数据 $response 中是否有异常数据 exception
-        if (property_exists($response, 'exception')) {
+        if (property_exists($response, 'exception') && !empty($response->exception)) {
             return $response;
         }
 

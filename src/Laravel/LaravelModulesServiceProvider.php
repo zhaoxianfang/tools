@@ -12,6 +12,7 @@ use zxf\Laravel\Modules\Providers\ModulesRouteServiceProvider;
 use zxf\Laravel\Modules\Providers\AutoLoadModulesProviders;
 use Illuminate\Pagination\Paginator;
 use zxf\Laravel\Modules\Middleware\ExtendMiddleware;
+use zxf\TnCode\Providers\TnCodeValidationProviders;
 
 /**
  * 支持 laravel 服务注入
@@ -123,6 +124,9 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
         $this->app->register(ModulesRouteServiceProvider::class);
         // 自动加载 Providers 服务提供者
         AutoLoadModulesProviders::start($this->app);
+
+        // 自动加载TnCode 验证器
+        $this->app->register(TnCodeValidationProviders::class);
 
         // 注册异常报告 [注册异常后，会替代laravel 自身的 错误机制] 不推荐
         // set_error_handler('exception_handler');

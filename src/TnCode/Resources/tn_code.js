@@ -86,6 +86,7 @@
             }
             // 初始化AJAX请求，设置请求方法、URL等信息
             xhr.open(method, url, true);
+            xhr.setRequestHeader('Accept', 'application/json');
             // 发送请求，传递POST参数（如果是POST请求）
             xhr.send(postVars);
         },
@@ -243,6 +244,15 @@
                     tncode._onSuccess();
                 }
             } else {
+                let err_msg =  "验证失败";
+                try {
+                    if (typeof (responseText) == "string") { // json 解析
+                        responseText = JSON.parse(responseText);
+                        err_msg = responseText.message || err_msg;
+                    }
+                } catch (err) {
+                }
+
                 // 获取指定元素并添加类名
                 let obj = document.getElementById("tncode_div");
                 addClass(obj, "dd");
@@ -250,7 +260,7 @@
                     removeClass(obj, "dd");
                 }, 200);
                 tncode._result = false;
-                tncode._showmsg("验证失败");
+                tncode._showmsg(err_msg);
                 tncode._err_c ++;
                 // if (tncode._err_c > 5) {
                 //    tncode.refresh();

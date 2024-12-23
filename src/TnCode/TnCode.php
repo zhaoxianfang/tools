@@ -51,9 +51,9 @@ class TnCode
         // 设置错误报告级别为0，即抑制所有错误报告（同样可按需调整，此处维持原做法）
         // error_reporting(0);
         // 检查是否已经开启会话，如果没有则开启会话，以便后续在会话中存储验证码相关的信息，如滑块位置、验证错误次数等
-//        if (!isset($_SESSION)) {
-//            session_start();
-//        }
+        // if (!isset($_SESSION)) {
+        //    session_start();
+        // }
 
         $defaultSlideConfig = [
             'tool_icon_img'         => dirname(__DIR__) . '/TnCode/Resources/img/icon.png', // 前端使用的图标组图片
@@ -95,11 +95,15 @@ class TnCode
         // 计算用户输入的偏移量与正确的滑块位置的差值绝对值是否在容错范围内，返回比较结果
         $ret = abs(i_session('tncode_r') - $offset) <= $this->_fault;
         if ($ret) {
+            $validationTnCode = i_session('tncode_r');
             // 如果验证通过，移除会话中存储的正确滑块位置信息
-            i_session('tncode_r', '');
+            i_session('tncode_r', ''); // 验证成功时删除
+            i_session('tncode_err', '');
+            // 新增一个给 TnCodeValidationProviders 进行二次验证
+            i_session('tncode_validation', $validationTnCode);
         } else {
             // 如果验证失败，增加验证错误次数的计数
-            i_session('tncode_r', i_session('tncode_r') + 1);
+            i_session('tncode_err', i_session('tncode_err') + 1);
             // 如果错误次数超过10次，则强制刷新（移除正确滑块位置信息）
             if (i_session('tncode_err') > 10) {
                 i_session('tncode_r', '');

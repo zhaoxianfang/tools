@@ -172,7 +172,7 @@ class WechatOauth implements Handle
     {
         // 进行解密 验证是否为本站发出的state
         try {
-            $state = !empty($_REQUEST['state']) ? $_REQUEST['state'] : session('zxf_login_wechat_state');
+            $state = !empty($_REQUEST['state']) ? $_REQUEST['state'] : i_session('zxf_login_wechat_state');
 
             $state = urldecode($state);
             $state = str_replace(' ', '+', $state);

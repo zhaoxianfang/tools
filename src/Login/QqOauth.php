@@ -43,7 +43,7 @@ class QqOauth implements Handle
             "state"         => $state,
             "scope"         => 'get_user_info',
         );
-        session('zxf_login_qq_state', $state);
+        i_session('zxf_login_qq_state', $state);
 
         return $this->combineURL($this->authorization_url, $keysArr);
     }
@@ -99,7 +99,7 @@ class QqOauth implements Handle
 
     public function getStateParam()
     {
-        $state = !empty($_REQUEST['state']) ? $_REQUEST['state'] : session('zxf_login_qq_state');
+        $state = !empty($_REQUEST['state']) ? $_REQUEST['state'] : i_session('zxf_login_qq_state');
         if (!empty($state)) {
             $state = urldecode($state);
             $state = str_replace(' ', '+', $state);

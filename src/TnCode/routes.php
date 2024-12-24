@@ -2,8 +2,14 @@
 
 use zxf\TnCode\AssetController;
 use Illuminate\Support\Str;
+use zxf\TnCode\Http\TnCodeController;
 
 app('router')->prefix('tn_code')->name('tn_code.')->group(function ($router) {
+    // 获取验证码图片
+    $router->get('get_img', [TnCodeController::class, 'getImg'])->name('get_img');
+    // 验证验证码结果
+    $router->get('check', [TnCodeController::class, 'check'])->name('check');
+
     // 加载 css 、 js
     $router->get('assets/{filePath}', function ($filePath) {
         if (Str::endsWith($filePath, '.css')) {

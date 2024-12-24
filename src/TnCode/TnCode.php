@@ -72,6 +72,7 @@ class TnCode
      */
     public function make(array $bgImg = []): void
     {
+        $this->clean();
         $this->init($bgImg);
         $this->createSlide();
         $this->createBg();
@@ -79,6 +80,13 @@ class TnCode
         $this->imgout();
         $this->destroy();
         die;
+    }
+
+    private function clean()
+    {
+        i_session('tncode_r', '');
+        i_session('tncode_err', '');
+        i_session('tncode_validation', '');
     }
 
     // 检查用户输入的滑块偏移量是否正确的方法，根据与存储的正确位置对比及容错值来判断

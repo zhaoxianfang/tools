@@ -167,7 +167,7 @@
                 theEvent = theEvent.touches[0];
             }
 
-            console.log("_block_start_move");
+            // console.log("_block_start_move");
 
             // 获取指定类名的元素并隐藏其文本内容
             let obj = document.getElementsByClassName("slide_block_text")[0];
@@ -188,7 +188,7 @@
                 theEvent = theEvent.touches[0];
             }
             tncode._is_moving = true;
-            console.log("_block_on_move");
+            // console.log("_block_on_move");
 
             let offset = theEvent.clientX - tncode._block_start_x;
             if (offset < 0) {
@@ -214,7 +214,7 @@
             if (theEvent.touches) {
                 theEvent = theEvent.touches[0];
             }
-            console.log("_block_on_end");
+            // console.log("_block_on_end");
             tncode._is_moving = false;
             tncode._send_result();
         },
@@ -233,6 +233,8 @@
         // 验证成功的回调函数
         _send_result_success: function (responseText, responseXML) {
             tncode._doing = false;
+            var tnHandleDom = document.querySelector(tncode._options.handleDom);
+
             if (responseText === "ok") {
                 tncode._tncode.innerHTML = "✓ 验证成功";
                 tncode._showmsg("✓ 验证成功", 1);
@@ -243,6 +245,13 @@
                 if (tncode._onSuccess) {
                     tncode._onSuccess();
                 }
+                // 取消水波纹
+                // tncode._options.handleDom
+                // js 查找 tncode._options.handleDom 元素 并判断元素上是够包含 .tn_ripple
+                if (tnHandleDom.classList.contains("tn_ripple")) {
+                    tnHandleDom.classList.remove("tn_ripple");
+                }
+
             } else {
                 let err_msg =  "验证失败";
                 try {
@@ -269,6 +278,10 @@
                 if (tncode._onFail) {
                     tncode._onFail();
                 }
+                // 添加水波纹
+                if (!tnHandleDom.classList.contains("tn_ripple")) {
+                    tnHandleDom.classList.add("tn_ripple");
+                }
             }
         },
         // 验证失败的回调函数（目前为空，可根据实际需求扩展）
@@ -293,6 +306,12 @@
                 removeClass(obj, "dd");
             }, 200);
             tncode._showmsg( err_msg);
+            // 添加水波纹
+            var tnHandleDom = document.querySelector(tncode._options.handleDom);
+            if (!tnHandleDom.classList.contains("tn_ripple")) {
+                tnHandleDom.classList.add("tn_ripple");
+            }
+
         },
         // 绘制完整背景图片的方法（用于验证码背景）
         _draw_fullbg: function () {
@@ -359,6 +378,13 @@
         },
         // 显示验证码的方法
         show: function () {
+            // 添加水波纹
+            // 添加水波纹
+            var tnHandleDom = document.querySelector(tncode._options.handleDom);
+            if (!tnHandleDom.classList.contains("tn_ripple")) {
+                tnHandleDom.classList.add("tn_ripple");
+            }
+
             let obj = document.getElementsByClassName("hgroup")[0];
             if (obj) {
                 obj.style.display = "none";
@@ -497,9 +523,9 @@
         // 初始化验证码相关功能的方法，绑定各种事件处理函数等
         init: function (options = {}) {
             tncode._options = Object.assign({}, {
-                handleDom: ".tncode",
-                getImgUrl: "./get_img.php",
-                checkUrl: "./check.php"
+                handleDom: ".tncode", // .tncode
+                getImgUrl: "/tn_code/get_img", // ./get_img.php
+                checkUrl: "/tn_code/check" // ./check.php
             }, options);
             let _this = this;
             if ( !tncode._img) {
@@ -526,6 +552,8 @@
                     o.innerHTML = "点击按钮进行验证";
                     tncode._bind(o, "touchstart", _this.show);
                     tncode._bind(o, "click", _this.show);
+                    // js 给 o 添加上 class .tn_ripple
+                    o.classList.add("tn_ripple");
                 }
             }
             return tncode;

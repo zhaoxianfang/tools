@@ -25,7 +25,7 @@
 .tn_ripple::after {
     content: '';
     position: absolute;
-    left: 20%; /* 水波纹开始的位置，靠近文字的左侧 */
+    left: 15%; /* 水波纹开始的位置，靠近文字的左侧 */
     top: 50%;
     transform: translateY(-50%);
     width: 6px; /* 水波纹的初始直径 */
@@ -56,7 +56,7 @@
 .tn_ripple::before {
     content: '';
     position: absolute;
-    left: 20%; /* 水波纹开始的位置，靠近文字的左侧 */
+    left: 15%; /* 水波纹开始的位置，靠近文字的左侧 */
     top: 50%;
     transform: translateY(-50%);
     width: 6px; /* 水波纹的初始直径 */

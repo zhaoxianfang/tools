@@ -1,5 +1,7 @@
 # 迁移笔记
 
+> 来源：https://github.com/nWidart/laravel-modules
+
 1、替换命名空间
 
 ```

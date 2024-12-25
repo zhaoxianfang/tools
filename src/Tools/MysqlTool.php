@@ -35,7 +35,7 @@ class MysqlTool
             $title = '数据字典';
             $mysql_conn = mysqli_connect("$dbserver", "$dbusername", "$dbpassword", "$database") or die("Mysql connect is error.");
             mysqli_query($mysql_conn, "set names utf8mb4");
-//            $table_result = mysqli_query($mysql_conn, 'show tables');
+            // $table_result = mysqli_query($mysql_conn, 'show tables');
             $table_result = mysqli_query($mysql_conn, 'SELECT table_name, table_comment FROM information_schema.tables WHERE table_schema = ' . "'" . $database . "';");
             //取得所有的表名
             while ($row = mysqli_fetch_array($table_result)) {

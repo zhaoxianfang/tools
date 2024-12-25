@@ -13,7 +13,7 @@
  * @copyright 2012 - 2020 Marcus Bointon
  * @copyright 2010 - 2012 Jim Jagielski
  * @copyright 2004 - 2009 Andy Prevost
- * @license   http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
+ * @license   https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html GNU Lesser General Public License
  * @note      This program is distributed in the hope that it will be useful - WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.
@@ -253,7 +253,7 @@ class PHPMailer
      * You can set your own, but it must be in the format "<id@domain>",
      * as defined in RFC5322 section 3.6.4 or it will be ignored.
      *
-     * @see https://tools.ietf.org/html/rfc5322#section-3.6.4
+     * @see https://www.rfc-editor.org/rfc/rfc5322#section-3.6.4
      *
      * @var string
      */
@@ -357,7 +357,7 @@ class PHPMailer
     public $AuthType = '';
 
     /**
-     * SMTP SMTPXClient command attibutes
+     * SMTP SMTPXClient command attributes
      *
      * @var array
      */
@@ -387,7 +387,7 @@ class PHPMailer
      * 'DELAY'   will notify you if there is an unusual delay in delivery, but the actual
      *           delivery's outcome (success or failure) is not yet decided.
      *
-     * @see https://tools.ietf.org/html/rfc3461 See section 4.1 for more information about NOTIFY
+     * @see https://www.rfc-editor.org/rfc/rfc3461.html#section-4.1 for more information about NOTIFY
      */
     public $dsn = '';
 
@@ -756,7 +756,7 @@ class PHPMailer
      *
      * @var string
      */
-    const VERSION = '6.9.1';
+    const VERSION = '6.9.3';
 
     /**
      * Error severity: message only, continue processing.
@@ -934,7 +934,7 @@ class PHPMailer
                 "\t",
                     //Trim trailing space
                 trim(
-                //Indent for readability, except for trailing break
+                    //Indent for readability, except for trailing break
                     str_replace(
                         "\n",
                         "\n                   \t                  ",
@@ -1071,7 +1071,7 @@ class PHPMailer
      * be modified after calling this function), addition of such addresses is delayed until send().
      * Addresses that have been added already return false, but do not throw exceptions.
      *
-     * @param string $kind    One of 'to', 'cc', 'bcc', or 'ReplyTo'
+     * @param string $kind    One of 'to', 'cc', 'bcc', or 'Reply-To'
      * @param string $address The email address
      * @param string $name    An optional username associated with the address
      *
@@ -1317,7 +1317,7 @@ class PHPMailer
         if (
             (false === $pos)
             || ((!$this->has8bitChars(substr($address, ++$pos)) || !static::idnSupported())
-                && !static::validateAddress($address))
+            && !static::validateAddress($address))
         ) {
             $error_message = sprintf(
                 '%s (From): %s',
@@ -1484,7 +1484,7 @@ class PHPMailer
                     $punycode = idn_to_ascii(
                         $domain,
                         \IDNA_DEFAULT | \IDNA_USE_STD3_RULES | \IDNA_CHECK_BIDI |
-                        \IDNA_CHECK_CONTEXTJ | \IDNA_NONTRANSITIONAL_TO_ASCII,
+                            \IDNA_CHECK_CONTEXTJ | \IDNA_NONTRANSITIONAL_TO_ASCII,
                         \INTL_IDNA_VARIANT_UTS46
                     );
                 } elseif (defined('INTL_IDNA_VARIANT_2003')) {
@@ -1654,7 +1654,7 @@ class PHPMailer
                     $this->MIMEBody
                 );
                 $this->MIMEHeader = static::stripTrailingWSP($this->MIMEHeader) . static::$LE .
-                                    static::normalizeBreaks($header_dkim) . static::$LE;
+                    static::normalizeBreaks($header_dkim) . static::$LE;
             }
 
             return true;
@@ -1871,7 +1871,7 @@ class PHPMailer
      */
     protected static function isPermittedPath($path)
     {
-        //Matches scheme definition from https://tools.ietf.org/html/rfc3986#section-3.1
+        //Matches scheme definition from https://www.rfc-editor.org/rfc/rfc3986#section-3.1
         return !preg_match('#^[a-z][a-z\d+.-]*://#i', $path);
     }
 
@@ -2330,8 +2330,8 @@ class PHPMailer
         $PHPMAILER_LANG = [
             'authenticate' => 'SMTP Error: Could not authenticate.',
             'buggy_php' => 'Your version of PHP is affected by a bug that may result in corrupted messages.' .
-                           ' To fix it, switch to sending using SMTP, disable the mail.add_x_header option in' .
-                           ' your php.ini, switch to MacOS or Linux, or upgrade your PHP to version 7.0.17+ or 7.1.3+.',
+                ' To fix it, switch to sending using SMTP, disable the mail.add_x_header option in' .
+                ' your php.ini, switch to MacOS or Linux, or upgrade your PHP to version 7.0.17+ or 7.1.3+.',
             'connect_host' => 'SMTP Error: Could not connect to SMTP host.',
             'data_not_accepted' => 'SMTP Error: data not accepted.',
             'empty_message' => 'Message body empty',
@@ -2359,7 +2359,7 @@ class PHPMailer
         ];
         if (empty($lang_path)) {
             //Calculate an absolute path so it can work if CWD is not here
-            $lang_path = __DIR__ . DIRECTORY_SEPARATOR . 'language' . DIRECTORY_SEPARATOR;
+            $lang_path = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'language' . DIRECTORY_SEPARATOR;
         }
 
         //Validate $langcode
@@ -2477,7 +2477,7 @@ class PHPMailer
         }
 
         return $this->encodeHeader($this->secureHeader($addr[1]), 'phrase') .
-               ' <' . $this->secureHeader($addr[0]) . '>';
+            ' <' . $this->secureHeader($addr[0]) . '>';
     }
 
     /**
@@ -2705,7 +2705,7 @@ class PHPMailer
         }
 
         //Only allow a custom message ID if it conforms to RFC 5322 section 3.6.4
-        //https://tools.ietf.org/html/rfc5322#section-3.6.4
+        //https://www.rfc-editor.org/rfc/rfc5322#section-3.6.4
         if (
             '' !== $this->MessageID &&
             preg_match(
@@ -2815,7 +2815,7 @@ class PHPMailer
     public function getSentMIMEMessage()
     {
         return static::stripTrailingWSP($this->MIMEHeader . $this->mailHeader) .
-               static::$LE . static::$LE . $this->MIMEBody;
+            static::$LE . static::$LE . $this->MIMEBody;
     }
 
     /**
@@ -4224,7 +4224,7 @@ class PHPMailer
             $result = $_SERVER['SERVER_NAME'];
         } elseif (function_exists('gethostname') && gethostname() !== false) {
             $result = gethostname();
-        } elseif (php_uname('n') !== false) {
+        } elseif (php_uname('n') !== '') {
             $result = php_uname('n');
         }
         if (!static::isValidHost($result)) {
@@ -4249,7 +4249,7 @@ class PHPMailer
             empty($host)
             || !is_string($host)
             || strlen($host) > 256
-            || !preg_match('/^([a-zA-Z\d.-]*|\[[a-fA-F\d:]+\])$/', $host)
+            || !preg_match('/^([a-z\d.-]*|\[[a-f\d:]+\])$/i', $host)
         ) {
             return false;
         }
@@ -4476,7 +4476,7 @@ class PHPMailer
         $this->AltBody = static::normalizeBreaks($this->html2text($message, $advanced));
         if (!$this->alternativeExists()) {
             $this->AltBody = 'This is an HTML-only message. To view it, activate HTML in your email application.'
-                             . static::$LE;
+                . static::$LE;
         }
 
         return $this->Body;
@@ -4910,7 +4910,7 @@ class PHPMailer
      * Uses the 'relaxed' algorithm from RFC6376 section 3.4.2.
      * Canonicalized headers should *always* use CRLF, regardless of mailer setting.
      *
-     * @see https://tools.ietf.org/html/rfc6376#section-3.4.2
+     * @see https://www.rfc-editor.org/rfc/rfc6376#section-3.4.2
      *
      * @param string $signHeader Header
      *
@@ -4922,7 +4922,7 @@ class PHPMailer
         $signHeader = static::normalizeBreaks($signHeader, self::CRLF);
         //Unfold header lines
         //Note PCRE \s is too broad a definition of whitespace; RFC5322 defines it as `[ \t]`
-        //@see https://tools.ietf.org/html/rfc5322#section-2.2
+        //@see https://www.rfc-editor.org/rfc/rfc5322#section-2.2
         //That means this may break if you do something daft like put vertical tabs in your headers.
         $signHeader = preg_replace('/\r\n[ \t]+/', ' ', $signHeader);
         //Break headers out into an array
@@ -4954,7 +4954,7 @@ class PHPMailer
      * Uses the 'simple' algorithm from RFC6376 section 3.4.3.
      * Canonicalized bodies should *always* use CRLF, regardless of mailer setting.
      *
-     * @see https://tools.ietf.org/html/rfc6376#section-3.4.3
+     * @see https://www.rfc-editor.org/rfc/rfc6376#section-3.4.3
      *
      * @param string $body Message Body
      *
@@ -4990,7 +4990,7 @@ class PHPMailer
         $DKIMquery = 'dns/txt'; //Query method
         $DKIMtime = time();
         //Always sign these headers without being asked
-        //Recommended list from https://tools.ietf.org/html/rfc6376#section-5.4.1
+        //Recommended list from https://www.rfc-editor.org/rfc/rfc6376#section-5.4.1
         $autoSignHeaders = [
             'from',
             'to',
@@ -5041,7 +5041,7 @@ class PHPMailer
                 $headersToSign[] = $header['label'] . ': ' . $header['value'];
                 if ($this->DKIM_copyHeaderFields) {
                     $copiedHeaders[] = $header['label'] . ':' . //Note no space after this, as per RFC
-                                       str_replace('|', '=7C', $this->DKIM_QP($header['value']));
+                        str_replace('|', '=7C', $this->DKIM_QP($header['value']));
                 }
                 continue;
             }
@@ -5054,7 +5054,7 @@ class PHPMailer
                         $headersToSign[] = $header['label'] . ': ' . $header['value'];
                         if ($this->DKIM_copyHeaderFields) {
                             $copiedHeaders[] = $header['label'] . ':' . //Note no space after this, as per RFC
-                                               str_replace('|', '=7C', $this->DKIM_QP($header['value']));
+                                str_replace('|', '=7C', $this->DKIM_QP($header['value']));
                         }
                         //Skip straight to the next header
                         continue 2;
@@ -5096,19 +5096,19 @@ class PHPMailer
         }
         //The DKIM-Signature header is included in the signature *except for* the value of the `b` tag
         //which is appended after calculating the signature
-        //https://tools.ietf.org/html/rfc6376#section-3.5
+        //https://www.rfc-editor.org/rfc/rfc6376#section-3.5
         $dkimSignatureHeader = 'DKIM-Signature: v=1;' .
-                               ' d=' . $this->DKIM_domain . ';' .
-                               ' s=' . $this->DKIM_selector . ';' . static::$LE .
-                               ' a=' . $DKIMsignatureType . ';' .
-                               ' q=' . $DKIMquery . ';' .
-                               ' t=' . $DKIMtime . ';' .
-                               ' c=' . $DKIMcanonicalization . ';' . static::$LE .
-                               $headerKeys .
-                               $ident .
-                               $copiedHeaderFields .
-                               ' bh=' . $DKIMb64 . ';' . static::$LE .
-                               ' b=';
+            ' d=' . $this->DKIM_domain . ';' .
+            ' s=' . $this->DKIM_selector . ';' . static::$LE .
+            ' a=' . $DKIMsignatureType . ';' .
+            ' q=' . $DKIMquery . ';' .
+            ' t=' . $DKIMtime . ';' .
+            ' c=' . $DKIMcanonicalization . ';' . static::$LE .
+            $headerKeys .
+            $ident .
+            $copiedHeaderFields .
+            ' bh=' . $DKIMb64 . ';' . static::$LE .
+            ' b=';
         //Canonicalize the set of headers
         $canonicalizedHeaders = $this->DKIM_HeaderC(
             $headerValues . static::$LE . $dkimSignatureHeader

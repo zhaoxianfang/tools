@@ -8,34 +8,57 @@ use zxf\Tools\Collection;
 
 if (!function_exists('i_session')) {
     /**
-     * 简易 session 助手函数
+     * 简便操作 Session 的助手函数
+     *
+     * @param string|array|null $name   键名
+     * @param mixed|null        $value  键值
+     * @param int|null          $expiry 过期时间（秒）
+     *
+     * @return mixed|null 返回值或者null
      */
-    function i_session($name, $value = null)
+    function i_session(string|array|null $name = null, mixed $value = null, ?int $expiry = null): mixed
     {
-        $handle = \zxf\Tools\Session::instance();
-        // 获取值或者批量设置值
-        if (is_null($value)) {
-            if (is_array($name)) {
-                // 使用数组 批量赋值
-                foreach ($name as $key => $val) {
-                    $handle->$key = (is_array($val) || is_object($val)) ? json_encode($val) : $val;
-                }
-            } else {
-                // 通过键来获取值
-                $val = $handle->$name;
-                return is_json($val) ? json_decode_plus($val, true) : $val;
-            }
-        } else {
-            if (empty($value)) {
-                $handle->$name = null;
-                // 删除值
-                unset($handle->$name);
-            } else {
-                // 设置值
-                $value = (is_array($value) || is_object($value)) ? json_encode($value) : $value;
-                return $handle->$name = $value;
-            }
+        $session = \zxf\Tools\Session::instance();
+
+        // 判断是否传入了 $value
+        $hasValue = func_num_args() > 1; // 如果参数个数大于1，说明传入了 $value
+
+        // ===== 1、获取session  =====
+
+        // 获取所有值 : i_session('') or i_session(null)
+        if (empty($name) && func_num_args() == 1) {
+            return $session->all();
         }
+        // 获取指定值 : i_session('name')
+        if (is_string($name) && !$hasValue) {
+            return $session->get($name);
+        }
+
+        // ===== 2、设置session =====
+
+        // 传递了 $name 和 $value : i_session('name', 'value')
+        if (is_string($name) && $hasValue && $value !== null) {
+            $session->set($name, $value, $expiry);
+            return null;
+        }
+
+        // $name 是一个数组，表示批量设置 Session 值 : i_session(['name1' => 'value1','name2' => 'value2'])
+        if (is_array($name) && !$hasValue) {
+            // 使用数组 批量赋值
+            foreach ($name as $key => $val) {
+                $session->set($key, $val);
+            }
+            return null;
+        }
+
+        // ===== 3、删除session =====
+        // 第二参数为null: i_session('name', null)
+        if (is_string($name) && $hasValue && $value === null) {
+            $session->delete($name);
+            return null;
+        }
+        // 返回session对象
+        return $session;
     }
 }
 if (!function_exists('cache')) {
@@ -1384,15 +1407,15 @@ if (!function_exists('json_decode_plus')) {
     /**
      * json_decode 加强版， 主要是为了了处理 json 字符串中包含了 \\" 和 \\ 转义字符导致无法解析的问题
      *
-     * @param string $jsonStr json 字符串
-     * @param null   $assoc
+     * @param array|string|null $jsonStr json 字符串
+     * @param null              $assoc
      *
      * @return mixed
      */
-    function json_decode_plus(string|null $jsonStr, $assoc = null): mixed
+    function json_decode_plus(array|string|null $jsonStr, $assoc = null): mixed
     {
-        if (empty($jsonStr)) {
-            return null;
+        if (empty($jsonStr) || is_array($jsonStr) || (json_last_error() !== JSON_ERROR_NONE)) {
+            return $jsonStr;
         }
         try {
             $jsonStr = preg_replace('/\\"/', '"', $jsonStr);

@@ -1,15 +1,5 @@
 # 代码压缩类
 
-## JsMin
-
-支持 css 、js 、 html；修改自 `https://github.com/rgrove/jsmin-php` 仓库
-
-``` php
-use zxf\Min\JsMin;
-// 压缩并返回压缩后的结果字符串
-$minifiedCode = JsMin::minify($jsOrCssString);
-```
-
 ## 压缩 CSS、JS
 
 修改自 `https://github.com/matthiasmullie/minify` 仓库

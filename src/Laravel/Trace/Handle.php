@@ -352,8 +352,10 @@ class Handle
 
         // 运行某个控制器方法的那几行
         if (isset($reflector)) {
-            $fileName       = $this->getFilePath($reflector->getFileName()); //
-            $result['file'] = $fileName . ':' . $reflector->getStartLine() . '-' . $reflector->getEndLine();
+            $fileName = $this->getFilePath($reflector->getFileName()); //
+
+            // $result['file'] = $fileName . ':' . $reflector->getStartLine() . '-' . $reflector->getEndLine();
+            $result['file'] = '<span class="json-label"><a href="phpstorm://open?file=' . urlencode($reflector->getFileName()) . '&amp;line=' . $reflector->getStartLine() . '" class="phpdebugbar-link">' . ($fileName . '#' . $reflector->getStartLine() . '-' . $reflector->getEndLine()) . '</a></span>';
         }
 
         $parametersObj = $route->parameters();

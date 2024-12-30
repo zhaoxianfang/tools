@@ -12,6 +12,7 @@ use zxf\Laravel\Modules\Providers\ModulesRouteServiceProvider;
 use zxf\Laravel\Modules\Providers\AutoLoadModulesProviders;
 use Illuminate\Pagination\Paginator;
 use zxf\Laravel\Modules\Middleware\ExtendMiddleware;
+use zxf\Laravel\Trace\Handle;
 use zxf\TnCode\Providers\TnCodeValidationProviders;
 
 /**
@@ -25,6 +26,22 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
     public function __construct($app)
     {
         is_laravel() && !empty(config('modules.enable', true)) && parent::__construct($app);
+    }
+
+    public function register()
+    {
+        if (!is_laravel() || empty(config('modules.enable', true))) {
+            return;
+        }
+        // 注册modules 模块服务
+        $this->registerModulesServices();
+
+        $this->registerProviders();
+
+        $this->mergeConfigFrom(__DIR__ . '/../../config/modules.php', 'modules');
+
+        // 注册 whereHasIn 的几个查询方式来替换 whereHas 查询全表扫描的问题
+        WhereHasInBuilder::register($this);
     }
 
     public function boot()
@@ -47,23 +64,6 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
         // 使用提示
         $this->tips();
     }
-
-    public function register()
-    {
-        if (!is_laravel() || empty(config('modules.enable', true))) {
-            return;
-        }
-        // 注册modules 模块服务
-        $this->registerModulesServices();
-
-        $this->registerProviders();
-
-        $this->mergeConfigFrom(__DIR__ . '/../../config/modules.php', 'modules');
-
-        // 注册 whereHasIn 的几个查询方式来替换 whereHas 查询全表扫描的问题
-        WhereHasInBuilder::register($this);
-    }
-
 
     public function provides()
     {
@@ -103,6 +103,12 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
             return new FileActivator($app);
         });
         $this->app->alias(Contracts\RepositoryInterface::class, 'modules');
+
+        // 定义 trace
+        $this->app->singleton(Handle::class, function ($app) {
+            return new Handle($app);
+        });
+        $this->app->alias(Handle::class, 'trace');
     }
 
     /**

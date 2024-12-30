@@ -2,41 +2,69 @@
 
 namespace zxf\Laravel\Trace;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\DB;
-use Closure;
 use Illuminate\Support\Facades\Event;
 
 class Handle
 {
+    /**
+     * @var \Illuminate\Foundation\Application
+     */
+    protected $app;
+
+    /**
+     * @var \Illuminate\Routing\Router
+     */
+    protected $router;
+
     protected $startTime;
     protected $startMemory;
     protected $config = [
         'tabs' => [
-            'base'    => 'Base',
-            'route'   => 'Route',
-            'view'    => 'View',
-            'models'  => 'Models',
-            'sql'     => 'SQL',
-            'session' => 'Session',
-            'request' => 'Request',
+            'messages' => 'Messages',
+            'base'     => 'Base',
+            'route'    => 'Route',
+            'view'     => 'View',
+            'models'   => 'Models',
+            'sql'      => 'SQL',
+            'session'  => 'Session',
+            'request'  => 'Request',
         ],
     ];
 
     protected array        $sqlList   = [];
     protected static array $modelList = [];
+    protected array        $messages  = [];
 
     protected $request;
 
     // 实例化并传入参数
-    public function __construct(Request $request, array $config = [])
+
+    /**
+     * @param Application $app
+     * @param array       $config
+     *
+     * @throws BindingResolutionException
+     */
+    public function __construct(mixed $app = null, array $config = [])
     {
-        $this->startTime = constant('LARAVEL_START') ?? microtime(true);
         if (is_enable_trace()) {
-            $this->request = $request;
+            $this->startMemory = memory_get_usage();
+
+            if (!$app) {
+                $app = app();   //Fallback when $app is not given
+            }
+            $this->app       = $app;
+            $this->router    = $this->app['router'];
+            $this->startTime = $this->app['request']->server('REQUEST_TIME_FLOAT') ?? constant('LARAVEL_START');
+
+            $this->request = $app['request'];
             $this->config  = array_merge($this->config, $config);
-            DB::enableQueryLog();
+
+            $this->listenModelEvent();
+            $this->listenSql();
         }
     }
 
@@ -62,6 +90,93 @@ class Handle
         }
     }
 
+    /**
+     * 监听 SQL事件
+     *
+     * @return void
+     */
+    protected function listenSql()
+    {
+        // DB::enableQueryLog();
+        $events = isset($this->app['events']) ? $this->app['events'] : null;
+        try {
+            // 监听SQL执行
+            $events->listen(function (\Illuminate\Database\Events\QueryExecuted $query) {
+                $this->addQuery($query);
+            });
+        } catch (\Exception $e) {
+        }
+
+        try {
+            // 监听事务开始
+            $events->listen(\Illuminate\Database\Events\TransactionBeginning::class, function ($transaction) {
+                $this->addTransactionQuery('Begin Transaction', $transaction->connection);
+            });
+            // 监听事务提交
+            $events->listen(\Illuminate\Database\Events\TransactionCommitted::class, function ($transaction) {
+                $this->addTransactionQuery('Commit Transaction', $transaction->connection);
+            });
+
+            // 监听事务回滚
+            $events->listen(\Illuminate\Database\Events\TransactionRolledBack::class, function ($transaction) {
+                $this->addTransactionQuery('Rollback Transaction', $transaction->connection);
+            });
+
+            $connectionEvents = [
+                'beganTransaction' => 'Begin Transaction', // 开始事务
+                'committed'        => 'Commit Transaction', // 提交事务
+                'rollingBack'      => 'Rollback Transaction', // 回滚事务
+            ];
+            foreach ($connectionEvents as $event => $eventName) {
+                $events->listen('connection.*.' . $event, function ($event, $params) use ($eventName) {
+                    $this->addTransactionQuery($eventName, $params[0]);
+                });
+            }
+            // 监听连接创建
+            $events->listen(function (\Illuminate\Database\Events\ConnectionEstablished $event) {
+                $this->addTransactionQuery('Connection Established', $event->connection);
+            });
+        } catch (\Exception $e) {
+        }
+    }
+
+    /**
+     * 记录sql
+     *
+     * @param \Illuminate\Database\Events\QueryExecuted $query
+     */
+    private function addQuery($query)
+    {
+        $this->sqlList[] = [
+            'query'    => (string)$query->sql,
+            'type'     => 'query',
+            'bindings' => $query->connection->prepareBindings($query->bindings),
+            'time'     => $query->time, // 'ms'
+            // 'connection' => $query->connection->getName(),
+            // 'driver'     => $query->connection->getConfig('driver'),
+        ];
+    }
+
+    /**
+     * 记录事务sql
+     *
+     * @param string                          $event
+     * @param \Illuminate\Database\Connection $connection
+     *
+     * @return array
+     */
+    private function addTransactionQuery($event, $connection)
+    {
+        $this->sqlList[] = [
+            'query'    => '[' . $connection->getName() . ':' . $connection->getConfig('driver') . '] ' . $event,
+            'type'     => 'transaction',
+            'bindings' => [],
+            'time'     => 0,
+            // 'connection' => $connection->getName(),
+            // 'driver'     => $connection->getConfig('driver'),
+        ];
+    }
+
     protected function logModelEvent($listenString, $model, $event)
     {
         $model = isset($model[0]) ? $model[0] : $model;
@@ -79,18 +194,19 @@ class Handle
 
     public function output()
     {
-        if (app()->runningInConsole()) {
+        if (!is_enable_trace()) {
             // 运行在命令行下
             return '';
         }
 
         list($sql, $sqlTimes) = $this->getSqlInfo();
-        $base    = $this->getBaseInfo($sqlTimes);
-        $route   = $this->getRouteInfo();
-        $session = $this->getSessionInfo();
-        $request = $this->getRequestInfo();
-        $view    = $this->getViewInfo();
-        $models  = $this->getModelList();
+        $messages = $this->messages;
+        $base     = $this->getBaseInfo($sqlTimes);
+        $route    = $this->getRouteInfo();
+        $session  = $this->getSessionInfo();
+        $request  = $this->getRequestInfo();
+        $view     = $this->getViewInfo();
+        $models   = $this->getModelList();
 
         // 页面Trace信息
         $trace = [];
@@ -100,16 +216,15 @@ class Handle
             foreach ($$name as $subTitle => $item) {
                 $result[$subTitle] = $item;
             }
-            $trace[$title] = !empty($result) ? $result : ['暂无相关数据'];
+            $trace[$title] = !empty($result) ? $result : ['暂无内容'];
         }
+        unset($trace['Request']['header']['cookie']);
+        // unset($trace['Request']['body']);
 
         if ($this->request->isMethod('get')) {
-            // return $this->randerPage($trace) . $this->randerConsole($trace);
             return $this->randerPage($trace);
         }
-        // return $this->randerConsole($trace);
-        unset($trace['REQUEST']['header']['cookie']);
-        unset($trace['REQUEST']['body']);
+
         return $trace;
     }
 
@@ -146,8 +261,10 @@ class Handle
         if ($this->request->session()) {
             $base['会话信息'] = 'SESSION_ID=' . $this->request->session()->getId();
         }
-        $base['PHP']     = phpversion();
-        $base['Laravel'] = app()->version();
+        $base['PHP version']     = phpversion();
+        $base['Laravel version'] = $this->app->version();
+        $base['environment']     = $this->app->environment();
+        $base['locale']          = $this->app->getLocale();
 
         // DB 数据库连接信息
         $dbConfig = DB::connection()->getConfig();
@@ -204,15 +321,47 @@ class Handle
 
     private function getRouteInfo()
     {
-        $route         = Route::current();
-        $action        = $route->getAction();
+        $route = $this->router->current();
+        if (!is_a($route, 'Illuminate\Routing\Route')) {
+            return [];
+        }
+        $uri        = head($route->methods()) . ' ' . $route->uri();
+        $action     = $route->getAction();
+        $result     = [
+            'uri' => $uri ?: '-',
+        ];
+        $result     = array_merge($result, $action);
+        $controller = is_string($action['controller'] ?? null) ? $action['controller'] : '';
+        $uses       = $action['uses'] ?? null;
+
+        if (str_contains($controller, '@')) {
+            list($controller, $method) = explode('@', $controller);
+            if (class_exists($controller) && method_exists($controller, $method)) {
+                $reflector = new \ReflectionMethod($controller, $method);
+            }
+            unset($result['uses']);
+        } elseif ($uses instanceof \Closure) {
+            $reflector      = new \ReflectionFunction($uses);
+            $result['uses'] = $uses;
+        } elseif (is_string($uses) && str_contains($uses, '@__invoke')) {
+            if (class_exists($controller) && method_exists($controller, 'render')) {
+                $reflector            = new \ReflectionMethod($controller, 'render');
+                $result['controller'] = $controller . '@render';
+            }
+        }
+
+        // 运行某个控制器方法的那几行
+        if (isset($reflector)) {
+            $fileName       = $this->getFilePath($reflector->getFileName()); //
+            $result['file'] = $fileName . ':' . $reflector->getStartLine() . '-' . $reflector->getEndLine();
+        }
+
         $parametersObj = $route->parameters();
         $parameters    = [];
-        foreach ($parametersObj as $key => $param) {
+        foreach ($parametersObj as $param) {
             if (is_object($param)) {
                 if (method_exists($param, 'getRouteKey')) {
-                    // $param->getRouteKeyName()
-                    $parameters[] = get_class($param) . ':' . $param->getRouteKey();
+                    $parameters[] = get_class($param) . ':[' . $param->getRouteKeyName() . ':' . $param->getRouteKey() . ']';
                 } else {
                     $parameters[] = collect($param)->toArray();
                 }
@@ -220,40 +369,42 @@ class Handle
                 $parameters[] = $param;
             }
         }
-        $middleware = $route->middleware();
-        if (!empty($middleware) && in_array('tools_middleware', $middleware)) {
-            $middlewareIndex = array_search('tools_middleware', $middleware);
-            unset($middleware[$middlewareIndex]);
-            $middleware = array_values($middleware);
+        if ($parameters) {
+            $result['params'] = $parameters;
         }
-        return [
-            'uri'        => request()->method() . ' ' . $route->uri(),
-            'parameters' => $parameters,
-            'middleware' => $middleware,
-            'controller' => $route->getControllerClass(),
-            'action'     => $route->getActionMethod(),
-            'where'      => $action['where'] ?? [],
-            'as'         => $route->getName(),
-            'prefix'     => $route->getPrefix(),
-        ];
+
+        $result['middleware'] = implode(', ', array_diff($route->middleware(), ['tools_middleware']));
+        $result['action']     = $route->getActionMethod();
+
+        return $result;
     }
 
     private function getSqlInfo()
     {
-        $this->sqlList = DB::getQueryLog();
-        $sqlArr        = [];
-        $sqlTimes      = 0;
-        foreach ($this->sqlList as $sqlItem) {
-            $sqlArr[] = [
-                'time'     => $sqlItem['time'] . 'ms',
-                'query'    => $sqlItem['query'],
-                'bindings' => json_encode($sqlItem['bindings']),
-            ];
-            $sqlTimes = bcadd($sqlTimes, $sqlItem['time'], 3);
+        // $this->sqlList = DB::getQueryLog(); // 获取查询sql
+
+        $sqlTimes = 0;
+        foreach ($this->sqlList as &$item) {
+            $sqlTimes = bcadd($sqlTimes, $item['time'], 3);
+
+            if ($item['type'] == 'transaction') {
+                // 事务
+                $item = $item['query'];
+            } else {
+                // curd
+                $item['right'] = $item['time'] . 'ms'; // 显示时间
+                // 提取 $item['query'] 里面 第一个空格前的字符串
+                $query         = trim($item['query']);
+                $item['label'] = strtoupper(substr($query, 0, strpos($query, ' ')));
+                unset($item['time']);
+                unset($item['connection']);
+                unset($item['driver']);
+            }
+
         }
         // 毫秒转秒
         $sqlTimes = $sqlTimes > 0 ? bcdiv($sqlTimes, 1000, 3) : 0;
-        return [$sqlArr, $sqlTimes];
+        return [$this->sqlList, $sqlTimes];
     }
 
     private function getSessionInfo()
@@ -287,101 +438,161 @@ class Handle
         return $viewFiles;
     }
 
-    public function randerPage($trace)
+    /**
+     * 添加调试信息
+     *
+     * @param mixed  $var1
+     * @param string $type
+     *
+     * @return void
+     */
+    public function addMessage(mixed $var1, string $type = 'trace'): void
     {
-        $str = <<<EOT
-    <div id="tools_trace_page_trace" >
-    <div id="tools_trace_page_trace_tab">
-        <div id="tools_trace_page_trace_tab_tit">
-EOT;
-        foreach ($trace as $key => $title) {
-            $str .= '<span class="tools_trace_tab_title">' . $key . '</span>';
+        if (!is_enable_trace()) {
+            return;
         }
-        $str .= <<<EOT
-        </div>
-        <div id="tools_trace_page_trace_tab_cont">
-EOT;
-        foreach ($trace as $tabs) {
-            $str .= <<<EOT
-            <div class="tools_trace_tab_list">
-                <ol>
-EOT;
-            if (is_array($tabs)) {
-                foreach ($tabs as $k => $item) {
-                    if (is_string($item)) {
-                        if (is_numeric($k)) {
-                            $str .= '<li class="tools_trace_li" >' . $item . '</li>';
-                        } else {
-                            $str .= '<li class="tools_trace_li">' . '<div class="tools_trace_li_key">' . $k . '</div><pre class="tools_trace_li_pre">' . $item . '</pre></li>';
-                        }
-                    } else {
-                        if (is_numeric($k)) {
-                            $str .= '<li class="tools_trace_li">' . '<pre class="tools_trace_li_only_pre">' . json_encode($item, JSON_PRETTY_PRINT) . '</pre></li>';
-                        } else {
-                            $str .= '<li class="tools_trace_li">' . '<div class="tools_trace_li_key">' . $k . '</div><pre class="tools_trace_li_pre">' . json_encode($item, JSON_PRETTY_PRINT) . '</pre></li>';
-                        }
-                    }
-                }
+
+        $stacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
+        $stackItem  = $stacktrace[0];
+        foreach ($stacktrace as $trace) {
+            if (!isset($trace['file']) || str_contains($trace['file'], '/vendor/')) {
+                continue;
             }
-            $str .= <<<EOT
-                </ol>
-            </div>
-EOT;
+
+            $stackItem = $trace;
+            break;
         }
-        $str .= <<<EOT
-        </div>
-<div id="tools_trace_page_trace_close">×</div>
-</div>
-<div id="tools_trace_page_trace_open">
-    <div style="background:#232323;color:#FFF;padding:0 6px;float:right;line-height:30px;font-size:14px">调试跟踪</div>
-    <img width="30" style="" title="ShowPageTrace" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAABB5JREFUWEft2M1v2mYcB/CvCRiMzTstL6vSCalvU1stPXbSclsO+xO2f6L0lKjn9tRq/8TOk9pDRXbapO00aeo2JVsnpQtKeEkMwUDAGBNPjx1TcGxsY6e7jKPx8/PHv5fHBgo+fQ5/+OqLM4V6TMIFKOX5R+vfbvsRmvIahMCAQFlRlI3ZWBRFVYCzF16hSwPNYCcnI9WYSoWnVq9Q10ArWPPoFKdDWYWxTBC5q6wvUMdADYayolDTUpKMzcKM7WIOVSoAHJfeFrgMzE+oJdAPmB/QC8DLgHmBToEfArYMlNr5/smjBP1uw03ze907nUKFWr5C/f5666kkpzc5ugE23JiuHYoymkcDtNqi3565eJl0BLmrUTCR4PT46VES/eMk6Fj3mQoUx/lN7REl4UNBF8HOxho2km7PA/VbuEyoE5jumAO2O30c1HiUrufAsYx6jp9QJ7D+cIS9Jo9rmSTSMXY+gwT48y+7Kmy1eMUAHYML18HS7nvUDax63Fav//B2aTFQT7EX6DIw/bqOgVbQFWoM1iKjZI3ZVJ4eJzE5b369lHrGjNuEa6Ab6OzFyHbhBrZ0Bo13aCy9MaMaLIXJeEVdapcx3zLoBIpqZ2mYbxk0g97/5GPt8J42ib/9cwirHjOuv7QM6oFDoRVsrD+YA1Z+3cFYnthZTL9fekisrvY/kLwszD5J3NblP89gYSjiniBgO58ztbsF3m0e4CCeRoeJeu/BO90ePud5NdBuPIYfs9kLQd0Ab/ENFHsdQAH+upJHLZa8EM/VkKwOB8gPRKwJghroZaGAVpjGzV4ffyTi6jE74LXOCRrxBLiRiLVGVV2zn8hAYBi0GM4bkKy+K3TxWauF74pFpMYSHrbaoM/O8I6NYjuXWwi81zxEdtCDHAhgN1vAOBjEg9o+/k7lcJBMOS+xusdWG9irNiGK0txCHfgmkcDbGIf7Qhe3ej1SJbwqFMDHWdN9kO31sFavAhTQ4BKoJtLI9wSsdtumwAgdQimXRSmXAShKex/cqTx5NJaZLWkSmzaXGXSd51EcDBGXZfzJcbjd7+OnTAYtml4I5EYj3Dhpos4lUOgLGAZDaEc5vM28H7gpLP++v2l2yIc4+en0Z+fu661NSWHLkmwNDSsKbna7askJlABJHy7qQdJ/BCiGQurkEigpN/lYwWhm9OLO1988I+dc+OHuBErCf1mr41Wx4GhIPq3v403hutoSTmF6j1n+9eEE6vZZ7CRjxqmx/fNIg8bKksxa9qjdNrMMzDaDxjtZBJ1MJqZTvBIIaFM51/wiTzPitMfsHqu2GTSHxsuSHJ3LaGk1r516/j641+ANMImnmYFjmOsMOoHOAvXzaXY5mGegHkAr/UxGzzPoFeYbcBYqTrjHOOwiworP9X3Mrsfsvv8XdoYOW/spfXkAAAAASUVORK5CYII=">
-</div>
-EOT;
-        return $str;
+        if (empty($stackItem)) {
+            return;
+        }
+        $baseFilePath     = $this->getFilePath($stackItem['file']);
+        $this->messages[] = [
+            'var'       => $var1,// 传入的变量调试值
+            'local'     => basename($baseFilePath) . '#' . $stackItem['line'],// 文件名+行号',
+            'type'      => 'trace',
+            'right'     => strtoupper($type),
+            'file_path' => $stackItem['file'],
+            'base_path' => $baseFilePath, // 相对于 项目 的路径
+            'line'      => $stackItem['line'] ?? 1,
+        ];
+        return;
     }
 
-    protected function randerConsole($trace)
+    private function getFilePath($file = '')
     {
-        //输出到控制台
-        $lines = '';
-        foreach ($trace as $type => $msg) {
-            $type       = strtolower($type);
-            $trace_tabs = array_values($this->config['tabs']);
-            $line       = [];
-            $line[]     = ($type == $trace_tabs[0] || '调试' == $type || '错误' == $type)
-                ? "console.group('{$type}');"
-                : "console.groupCollapsed('{$type}');";
+        return substr($file, strlen(base_path()) + 1);
+    }
 
-            foreach ((array)$msg as $key => $m) {
-                switch ($type) {
-                    case '调试':
-                        $var_type = gettype($m);
-                        if (in_array($var_type, ['array', 'string'])) {
-                            $line[] = "console.log(" . json_encode($m) . ");";
-                        } else {
-                            $line[] = "console.log(" . json_encode(var_export($m, true)) . ");";
-                        }
-                        break;
-                    case 'sql':
-                        $msg    = str_replace("\n", '\n', addslashes($m));
-                        $style  = "color:#009bb4;";
-                        $line[] = "console.log(\"%c{$msg}\", \"{$style}\");";
-                        break;
-                    default:
-                        $m      = is_string($key) ? $key . ' ' . $m : $key + 1 . ' ' . $m;
-                        $msg    = json_encode($m);
-                        $line[] = "console.log({$msg});";
-                        break;
-                }
-            }
-            $line[] = "console.groupEnd();";
-            $lines  .= implode(PHP_EOL, $line);
+    public function randerPage($trace)
+    {
+        $html = <<<EOT
+    <div id="tools_trace">
+    <div class="trace-logo">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAT9JREFUOE+tVFuOwjAMtMtqF06FtOVc/eBcFCmn2oegWU1Su7ZJ6X4QCakJycx4/OCc845euHgT8Ho4Fr7Pr+R4cR7PiGgdcNwNlPORCD8sTnSa+vJZ/psGdzazPQKCefoeFQQf3cdZVSpYIGkCWjDuztTfK5BdF775A07EnOSuVyiXu32v/oAk/9aw+T0t6gPRKb+VK5oUCcUqu3SjeojzNUDzZgEUdTOTGi9AyKjzT0zz1lRA8U6Y4t5mVggk4lA6bUBRIl5GO2AFMi9gZu8BI4DdQxGyHtUH8uDhXLytkCXENfUPWS4ZJdJukAxbz1A+6BBXCajLpYuel00rq60WbJYN1ImqZ4UtiVixxXfKf1rPDQdYVDtEVnva2FARjrbdz1AfYgKZ6bMJqCrs+FINydVgaOntARsebG1fDvgH5+lCJDZyUmAAAAAASUVORK5CYII=" alt="Logo" class="logo">
+      <span class="title">Trace</span>
+    </div>
+    <div class="tabs-container">
+      <div class="tabs-header">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAT9JREFUOE+tVFuOwjAMtMtqF06FtOVc/eBcFCmn2oegWU1Su7ZJ6X4QCakJycx4/OCc845euHgT8Ho4Fr7Pr+R4cR7PiGgdcNwNlPORCD8sTnSa+vJZ/psGdzazPQKCefoeFQQf3cdZVSpYIGkCWjDuztTfK5BdF775A07EnOSuVyiXu32v/oAk/9aw+T0t6gPRKb+VK5oUCcUqu3SjeojzNUDzZgEUdTOTGi9AyKjzT0zz1lRA8U6Y4t5mVggk4lA6bUBRIl5GO2AFMi9gZu8BI4DdQxGyHtUH8uDhXLytkCXENfUPWS4ZJdJukAxbz1A+6BBXCajLpYuel00rq60WbJYN1ImqZ4UtiVixxXfKf1rPDQdYVDtEVnva2FARjrbdz1AfYgKZ6bMJqCrs+FINydVgaOntARsebG1fDvgH5+lCJDZyUmAAAAAASUVORK5CYII=" alt="Logo" class="tabs-logo-small">
+        <div class="tabs-menu">
+EOT;
+
+        $tabNames = array_keys($trace);
+        // tab name
+        foreach ($tabNames as $key => $name) {
+            $tabKey = ($key + 1);
+            $html   .= "<div class='tabs-item " . ($key < 1 ? 'active' : '') . "' data-tab='tab" . $tabKey . "'>" . $name . "</div>";
         }
-        $js = <<<JS
-<script type='text/javascript'>
-{$lines}
-</script>
-JS;
-        return $js;
+
+        $html .= <<<EOT
+        </div>
+        <div class="tabs-close">关闭</div>
+      </div>
+EOT;
+
+        $tabIndex = 0;
+        // tab content
+        foreach ($trace as $key => $tabs) {
+            $tabKey = ($tabIndex + 1);
+            $tabIndex++;
+            $active = ($tabIndex < 2 ? 'active' : '');
+            $html   .= <<<EOT
+        <div id="tab{$tabKey}" class="tabs-content {$active}">
+<ul>
+EOT;
+            foreach ($tabs as $k => $item) {
+                $html .= '<li>';
+                if (is_numeric($k)) {
+                    if (!empty($item['type']) && $item['type'] == 'trace') {
+                        // trace 数据跟踪信息打印
+                        $html .= $this->handleTraceData($item);
+                    } else {
+                        if (isset($item['label'])) {
+                            $html .= "<span class='json-label'>{$item['label']}</span>";
+                        }
+                        if (is_array($item) && !empty($item)) {
+                            $arrayString = json_encode($item, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                            $html        .= <<<EOT
+                    <div class="json-arrow-pre-wrapper">
+                      <span class="json-arrow" onclick="toggleJson(this)">▶</span>
+                      <pre class="json">{$arrayString}</pre>
+                    </div>
+EOT;
+                        } else {
+                            $html .= "<span class='json-label'>" . (is_array($item) ? 'array[]' : $item) . "</span>";
+                        }
+                    }
+                } else {
+                    $html .= "<span class='json-label'>{$k}</span>";
+                    if (is_array($item) && !empty($item)) {
+                        $arrayString = empty($item) ? '[]' : json_encode($item, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                        $html        .= <<<EOT
+                    <div class="json-arrow-pre-wrapper">
+                      <span class="json-arrow" onclick="toggleJson(this)">▶</span>
+                      <pre class="json">{$arrayString}</pre>
+                    </div>
+EOT;
+                    } else {
+                        $html .= "<div class='json-string-content'>" . (is_array($item) ? '[]' : $item) . "</div>";
+                    }
+                }
+                if (!empty($item['right'])) {
+                    $html .= "<span class='json-right'>" . $item['right'] . "</span>";
+                } else {
+                    $html .= "<span class='json-right'></span>";
+                }
+                $html .= '</li>';
+            }
+
+            $html .= <<<EOT
+        </ul>
+       </div>
+EOT;
+        }
+
+        $html .= <<<EOT
+      </div></div>
+EOT;
+
+        return $html;
+    }
+
+    protected function handleTraceData($data = []): string
+    {
+
+        $str = '<span class="json-label"><a href="phpstorm://open?file=' . urlencode($data['file_path']) . '&amp;line=' . $data['line'] . '" class="phpdebugbar-link">' . $data['local'] . '</a></span>';
+
+        if (is_array($data['var']) && !empty($data['var'])) {
+            $arrayString = json_encode($data['var'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            $str         .= <<<EOT
+                    <div class="json-arrow-pre-wrapper">
+                      <span class="json-arrow" onclick="toggleJson(this)">▶</span>
+                      <pre class="json">{$arrayString}</pre>
+                    </div>
+EOT;
+        } else {
+            $str .= "<div class='json-string-content'>" . (is_array($data['var']) ? '[]' : $data['var']) . "</div>";
+        }
+        return $str;
     }
 }

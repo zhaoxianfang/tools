@@ -238,7 +238,8 @@ if (!function_exists('is_enable_trace')) {
     function is_enable_trace(): bool
     {
         // return !app()->runningInConsole() && !app()->environment('testing') && request()->isMethod('get') && config('modules.trace');
-        return !app()->runningInConsole() && config('modules.trace');
+        // return !app()->runningInConsole() && config('modules.trace');
+        return !app()->runningInConsole() && !app()->environment('production') && config('modules.trace') && !request()->expectsJson();
     }
 }
 
@@ -292,5 +293,26 @@ if (!function_exists('module_vite')) {
     function module_vite($module, $asset): Illuminate\Foundation\Vite
     {
         return \Illuminate\Support\Facades\Vite::useHotFile(storage_path('vite.hot'))->useBuildDirectory($module)->withEntryPoints([$asset]);
+    }
+}
+
+
+if (!function_exists('trace')) {
+    /**
+     * 调试代码
+     *
+     * @param mixed ...$args  调试任意个参数
+     *                        eg：trace('hello', 'world');
+     *                        trace(['hello', 'world']);
+     *
+     * @return void
+     */
+    function trace(mixed ...$args)
+    {
+        /** @var $trace \zxf\Laravel\Trace\Handle */
+        $trace = app('trace');
+        foreach ($args as $value) {
+            $trace->addMessage($value, 'debug');
+        }
     }
 }

@@ -24,9 +24,7 @@ class ExtendMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (is_enable_trace()) {
-            $this->handle = new Handle($request);
-
-            $this->handle->listenModelEvent();
+            $this->handle = app(Handle::class);
         }
 
 //        // ================================================
@@ -83,8 +81,7 @@ class ExtendMiddleware
             return $response;
         }
 
-        $traceHandle  = $this->handle->handle();
-        $traceContent = $traceHandle->output();
+        $traceContent = $this->handle->output();
         if (empty($traceContent)) {
             return $response;
         }

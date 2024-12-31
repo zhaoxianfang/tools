@@ -84,7 +84,10 @@ class Session
             if (!$this->exists($name)) {
                 return null;
             }
-            return isset($data['value']) && isset($data['expiry']) ? $data['value'] : $data;
+            $setExpiry = array_key_exists('expiry', $data);
+            $setValue  = array_key_exists('value', $data);
+
+            return $setValue && $setExpiry ? $data['value'] : $data;
         }
         return null;
     }

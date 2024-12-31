@@ -6,6 +6,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 
 class Handle
 {
@@ -38,7 +39,10 @@ class Handle
     protected static array $modelList = [];
     protected array        $messages  = [];
 
+    /** @var \Illuminate\Http\Request $request */
     protected $request;
+    /** @var  \Illuminate\Http\Response $response */
+    protected $response;
 
     // 实例化并传入参数
 
@@ -66,15 +70,6 @@ class Handle
             $this->listenModelEvent();
             $this->listenSql();
         }
-    }
-
-    public function handle()
-    {
-        if (is_enable_trace()) {
-            $this->startMemory = memory_get_usage();
-        }
-
-        return $this;
     }
 
     /**
@@ -192,12 +187,13 @@ class Handle
         ];
     }
 
-    public function output()
+    public function output($response)
     {
         if (!is_enable_trace()) {
             // 运行在命令行下
             return '';
         }
+        $this->response = $response;
 
         list($sql, $sqlTimes) = $this->getSqlInfo();
         $messages = $this->messages;
@@ -218,14 +214,16 @@ class Handle
             }
             $trace[$title] = !empty($result) ? $result : ['暂无内容'];
         }
-        unset($trace['Request']['header']['cookie']);
-        // unset($trace['Request']['body']);
 
-        if ($this->request->isMethod('get')) {
+        // 不是ajax请求的GET请求
+        if ($this->request->isMethod('get') && !request()->expectsJson() && !($response instanceof \Illuminate\Http\JsonResponse)) {
             return $this->randerPage($trace);
         }
 
-        return $trace;
+        // 不能通过 view 渲染到页面 的需要把trace数据 写入本地文件日志
+        Log::channel('stack')->debug('===== [Trace]调试: ===== ', $trace);
+
+        return '';
     }
 
     private function getModelList()
@@ -420,13 +418,19 @@ class Handle
 
     private function getRequestInfo()
     {
-        $request = request();
         return [
-            'path'   => $request->path(),
-            'host'   => $request->host(),
-            'ip'     => $request->ip(),
-            'header' => $request->header(),
-            'body'   => $request->all(),
+            'path'             => $this->request->path(),
+            'status_code'      => $this->response->getStatusCode(),
+            'format'           => $this->request->getRequestFormat(),
+            'content_type'     => $this->response->headers->get('Content-Type') ? $this->response->headers->get('Content-Type') : 'text/html',
+            'host'             => $this->request->host(),
+            'ip'               => $this->request->ip(),
+            // 'body'             => $this->request->all(),
+            'request_query'    => $this->request->query->all(),
+            'request_request'  => $this->request->request->all(),
+            'request_headers'  => $this->request->headers->all(),
+            // 'request_cookies' => $this->request->cookies->all(),
+            'response_headers' => $this->response->headers->all(),
         ];
     }
 

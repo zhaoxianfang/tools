@@ -6,11 +6,11 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
-use zxf\Laravel\Trace\Handle;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExtendMiddleware
 {
+    /** @var $handle \zxf\Laravel\Trace\Handle */
     protected $handle;
 
     /**
@@ -24,7 +24,7 @@ class ExtendMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (is_enable_trace()) {
-            $this->handle = app(Handle::class);
+            $this->handle = app('trace');
         }
 
 //        // ================================================
@@ -51,23 +51,18 @@ class ExtendMiddleware
 
         $response = $next($request);
 
-        // 检查响应是否为 BinaryFileResponse 类型（表示文件下载）
-        if ($response instanceof BinaryFileResponse) {
+        // 检查响应是否为 BinaryFileResponse 类型（表示文件下载） || 不需要trace处理
+        if ($response instanceof BinaryFileResponse || !is_enable_trace()) {
             return $response;
         }
 
         // 检查响应是否为 JsonResponse 类型（Json 响应）
-        if ($response instanceof JsonResponse) {
-            return $response;
-        }
+        // if ($response instanceof JsonResponse) {
+        //     return $response;
+        // }
 
-        // 视图响应
-        if (is_enable_trace()) {
-            // 在响应发送到浏览器前处理任务
-            $this->attachStyleAndScript($request, $response);
-        }
-
-        return $response;
+        // 在响应发送到浏览器前处理 Trace 内容
+        return $this->attachStyleAndScript($request, $response);
     }
 
     private function attachStyleAndScript(Request $request, $response)
@@ -81,7 +76,7 @@ class ExtendMiddleware
             return $response;
         }
 
-        $traceContent = $this->handle->output();
+        $traceContent = $this->handle->output($response);
         if (empty($traceContent)) {
             return $response;
         }
@@ -99,8 +94,8 @@ class ExtendMiddleware
             return $response;
         }
 
-        $cssRoute = preg_replace('/\Ahttps?:/', '', route('debugger.assets.css'));
-        $jsRoute  = preg_replace('/\Ahttps?:/', '', route('debugger.assets.js'));
+        $cssRoute = preg_replace('/\Ahttps?:/', '', route('debugger.trace.css'));
+        $jsRoute  = preg_replace('/\Ahttps?:/', '', route('debugger.trace.js'));
 
         $style  = "<link rel='stylesheet' type='text/css' property='stylesheet' href='{$cssRoute}'  data-turbolinks-eval='false' data-turbo-eval='false'>";
         $script = "<script src='{$jsRoute}' type='text/javascript'  data-turbolinks-eval='false' data-turbo-eval='false' ></script>";

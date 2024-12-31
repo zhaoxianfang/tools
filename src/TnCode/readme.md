@@ -6,7 +6,7 @@
 
 ```
 <script src="/tn_code/assets/tn_code.min.js"></script>
-<link href="/tn_code/assets/style.min.css" rel="stylesheet">
+<link href="/tn_code/assets/tn_code.min.css" rel="stylesheet">
 ```
 
 页面中定义一个容器 `.tncode`(名称可随意起名) 传递给 下面的 `handleDom`
@@ -88,7 +88,7 @@ public function form(Request $request)
 
 ```
 <script src="/tn_code/assets/tn_code.min.js"></script>
-<link href="/tn_code/assets/style.min.css" rel="stylesheet">
+<link href="/tn_code/assets/tn_code.min.css" rel="stylesheet">
 
 <img src="/tn_code/assets/img/icon.png"/>
 ```

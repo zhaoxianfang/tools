@@ -238,8 +238,8 @@ if (!function_exists('is_enable_trace')) {
     function is_enable_trace(): bool
     {
         // return !app()->runningInConsole() && !app()->environment('testing') && request()->isMethod('get') && config('modules.trace');
-        // return !app()->runningInConsole() && config('modules.trace');
-        return !app()->runningInConsole() && !app()->environment('production') && config('modules.trace') && !request()->expectsJson();
+        // return !app()->runningInConsole() && !app()->environment('production') && config('modules.trace') && !request()->expectsJson();
+        return !app()->runningInConsole() && config('modules.trace');
     }
 }
 

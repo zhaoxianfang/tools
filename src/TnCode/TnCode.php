@@ -56,9 +56,9 @@ class TnCode
         // }
 
         $defaultSlideConfig = [
-            'tool_icon_img'         => dirname(__DIR__) . '/TnCode/Resources/img/icon.png', // 前端使用的图标组图片
-            'slide_dark_img'        => dirname(__DIR__) . '/TnCode/Resources/img/mark2.png', // 黑色滑块图片
-            'slide_transparent_img' => dirname(__DIR__) . '/TnCode/Resources/img/mark.png', // 透明滑块图片
+            'tool_icon_img'         => dirname(__DIR__) . '/resource/images/tn_code/img/icon.png', // 前端使用的图标组图片
+            'slide_dark_img'        => dirname(__DIR__) . '/resource/images/tn_code/img/mark2.png', // 黑色滑块图片
+            'slide_transparent_img' => dirname(__DIR__) . '/resource/images/tn_code/img/mark.png', // 透明滑块图片
         ];
         $this->slideConfig  = !empty($slideConfig) ? array_merge($defaultSlideConfig, $slideConfig) : $defaultSlideConfig;
     }
@@ -150,11 +150,11 @@ class TnCode
 
         // 背景图
         $bgImg = !empty($bgImg) ? $bgImg : [
-            dirname(__DIR__) . '/TnCode/Resources/bg/1.png',
-            dirname(__DIR__) . '/TnCode/Resources/bg/2.png',
-            dirname(__DIR__) . '/TnCode/Resources/bg/3.png',
-            dirname(__DIR__) . '/TnCode/Resources/bg/4.png',
-            dirname(__DIR__) . '/TnCode/Resources/bg/5.png',
+            dirname(__DIR__) . '/resource/images/tn_code/bg/1.png',
+            dirname(__DIR__) . '/resource/images/tn_code/bg/2.png',
+            dirname(__DIR__) . '/resource/images/tn_code/bg/3.png',
+            dirname(__DIR__) . '/resource/images/tn_code/bg/4.png',
+            dirname(__DIR__) . '/resource/images/tn_code/bg/5.png',
         ];
 
         // 从 $bgImg 里面随机取出一个元素作为背景图

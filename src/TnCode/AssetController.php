@@ -13,15 +13,15 @@ class AssetController
     public function __construct()
     {
         $this->jsFiles  = [
-            dirname(__DIR__) . '/TnCode/Resources/tn_code.min.js',
+            dirname(__DIR__) . '/resource/js/tn_code.min.js',
         ];
         $this->cssFiles = [
-            dirname(__DIR__) . '/TnCode/Resources/style.css',
+            dirname(__DIR__) . '/resource/css/tn_code.min.css',
         ];
     }
 
     /**
-     * 获取调试js
+     * @deprecated 废弃
      */
     public function js()
     {
@@ -37,9 +37,12 @@ class AssetController
         return $this->cacheResponse($response);
     }
 
+    /**
+     * @deprecated 废弃
+     */
     public function img($path)
     {
-        $image_file = dirname(__DIR__) . '/TnCode/Resources/img/' . $path;
+        $image_file = dirname(__DIR__) . '/resource/images/tn_code/' . $path;
         // 设置适当的 Content-Type 头信息
         header('Content-Type: image/png');
 
@@ -52,7 +55,7 @@ class AssetController
     }
 
     /**
-     * 获取调试css
+     * @deprecated 废弃
      */
     public function css()
     {
@@ -72,7 +75,7 @@ class AssetController
     public static function loadCss($path = '')
     {
         $content = '';
-        $cssPath = base_path('vendor/zxf/tools/src/TnCode/Resources/' . $path);
+        $cssPath = dirname(__DIR__) . '/resource/css/' . $path;
         if (file_exists($cssPath)) {
             $content .= file_get_contents($cssPath) . "\n";
         }
@@ -91,9 +94,9 @@ class AssetController
     public static function loadJs($path = '')
     {
         $content = '';
-        $cssPath = base_path('vendor/zxf/tools/src/TnCode/Resources/' . $path);
-        if (file_exists($cssPath)) {
-            $content .= file_get_contents($cssPath) . "\n";
+        $jsPath  = dirname(__DIR__) . '/resource/js/' . $path;
+        if (file_exists($jsPath)) {
+            $content .= file_get_contents($jsPath) . "\n";
         }
 
         $response = new Response($content, 200, [
@@ -109,9 +112,9 @@ class AssetController
 
     public static function loadImg($path = '')
     {
-        $resPath = base_path('vendor/zxf/tools/src/TnCode/Resources/' . $path);
-        if (file_exists($resPath)) {
-            return response()->file($resPath);
+        $imgPath = dirname(__DIR__) . '/resource/images/tn_code/' . $path;
+        if (file_exists($imgPath)) {
+            return response()->file($imgPath);
         }
 
 //        // 设置适当的 Content-Type 头信息

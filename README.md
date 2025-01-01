@@ -3,11 +3,11 @@
 ![](https://img.shields.io/packagist/dt/zxf/tools) ![](https://img.shields.io/github/stars/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/forks/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/tag/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/release/zhaoxianfang/tools.svg) ![](https://img.shields.io/github/issues/zhaoxianfang/tools.svg)
 
 > 基于 php 的项目模块开发
-> 调用命名空间 使用 use zxf\…… 例如 use zxf\Login\QqOauth; use zxf\Min\JsMin;
+> 调用命名空间 使用 use zxf\…… 例如 use zxf\Http\Curl; use zxf\Tools\Collection;
 
 <a href="http://weisifang.com/docs/2" target="_blank" >在线文档</a>
 
-## 引用
+## 安装&引用
 
 ```
 composer require zxf/tools
@@ -23,19 +23,16 @@ composer require zxf/tools
 | 支付                   | 支付                                                                                              |
 | 截图                   | ScreenShot                                                                                      |
 | 微博登录                 | sina                                                                                            |
-| zxf\Min\JsMin        | js 压缩工具                                                                                         |
 | zxf\Min\JS           | js 压缩工具(推荐)                                                                                     |
 | zxf\Min\CSS          | css 压缩工具(推荐)                                                                                    |
 | QrCode               | 生成二维码                                                                                           |
 | BarCode              | 生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
 | Compressor           | 图片压缩类                                                                                           |
 | Cache                | 文件缓存                                                                                            |
-| TextToPNG            | 文字转图片                                                                                           |
 | TextToImg            | 文字转图片                                                                                           |
 | PHPMailer            | 发送邮件                                                                                            |
 | Curl                 | http 网络请求                                                                                       |
 | Sms                  | 发送短信: ali(阿里云)[默认] 或者 tencent（腾讯云）                                                              |
-| MysqlTool            | 创建mysql数据库字典                                                                                    |
 | Database             | 数据库模型                                                                                           |
 | Img                  | 修改图片尺寸、给图片上添加文字等                                                                                |
 | Pinyin               | 中文转拼音                                                                                           |
@@ -223,13 +220,6 @@ $cache->delete('name');
 $cache->has('name');
 ```
 
-### jsMin 压缩
-
-``` php
-use zxf\Min\JsMin;
-$minifiedCode = JsMin::minify($jsString);
-```
-
 ### js压缩
 
 ```
@@ -414,40 +404,26 @@ $barcode->setAllowsUnknownIdentifier(true);
  */
 ```
 
-### TextToPNG 文字转图片
+### TextToImg 文字转图片
 
 ``` php
-use zxf\tools\TextToPNG;
-
-$text = 'hello';
-$color = '#ffffff';
-$bgcolor = '#cccccc';
-$rotate = 0;
-$font = 'pmzdxx'; // 使用的字体
-
-TextToPNG::instance()->setFontStyle($font)->setText($text)->setSize('900', '500')->setColor($color)->setBackgroundColor($bgcolor)->setTransparent(false)->setRotate($rotate)->draw();
-```
-
-### TextToImage 文字转图片
-
-``` php
-use zxf\tools\TextToImage;
+use zxf\tools\TextToImg;
 
 /**
  * 文字生成图片
  *
  * // 创建一个实例
- * $textToImage = new TextToImage(1200, 800);
+ * $TextToImg = new TextToImg(1200, 800);
  *
- * $textToImage->setFontFile('./arial.ttf'); // 设置自定义字体路径
- * $textToImage->setFontStyle('foxi'); // 选择本库中支持的一种字体
- * $textToImage->setText('这是<br>一段<br>测试文字'); // 设置文字内容，支持使用 <br> 换行
- * $textToImage->setColor('FF00FF'); // 设置文字颜色
- * $textToImage->setBgColor('00FF00'); // 设置图片背景色
- * $textToImage->setAngle(90);// 设置文字旋转
- * $textToImage->setSize(20);// 设置文字固定字号为20【提示：本库默认会自动计算字体大小，如果设置该属性就使用传入的固定值】
- * $textToImage->render();// 显示图片到浏览器
- * $textToImage->render('test.png');// 将图片保存至本地
+ * $TextToImg->setFontFile('./arial.ttf'); // 设置自定义字体路径
+ * $TextToImg->setFontStyle('foxi'); // 选择本库中支持的一种字体
+ * $TextToImg->setText('这是<br>一段<br>测试文字'); // 设置文字内容，支持使用 <br> 换行
+ * $TextToImg->setColor('FF00FF'); // 设置文字颜色
+ * $TextToImg->setBgColor('00FF00'); // 设置图片背景色
+ * $TextToImg->setAngle(90);// 设置文字旋转
+ * $TextToImg->setSize(20);// 设置文字固定字号为20【提示：本库默认会自动计算字体大小，如果设置该属性就使用传入的固定值】
+ * $TextToImg->render();// 显示图片到浏览器
+ * $TextToImg->render('test.png');// 将图片保存至本地
  */
 ```
 
@@ -585,6 +561,8 @@ $res 返回 true|fales 表示是否截图成功
 ```
 
 ### laravel 多模块应用
+
+> 使用 `trace` 助手函数进行代码调试
 
 [多模文档说明](README_laravel.md)
 

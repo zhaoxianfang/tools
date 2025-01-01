@@ -231,8 +231,8 @@ class Handle
             $trace[$title] = !empty($result) ? $result : ['暂无内容'];
         }
 
-        // 不是ajax请求的GET请求
-        if ($this->request->isMethod('get') && !request()->expectsJson() && !($response instanceof \Illuminate\Http\JsonResponse)) {
+        // 不是ajax请求的GET请求 && 不是生产环境 的直接在页面渲染
+        if ($this->request->isMethod('get') && !request()->expectsJson() && !($response instanceof \Illuminate\Http\JsonResponse) && !app()->environment('production')) {
             return $this->randerPage($trace);
         }
 

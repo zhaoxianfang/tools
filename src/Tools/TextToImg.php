@@ -8,17 +8,17 @@ use Exception;
  * 文字生成图片
  *
  * // 创建一个实例
- * $textToImage = new TextToImage(1200, 800);
+ * $TextToImg = new TextToImg(1200, 800);
  *
- * $textToImage->setFontFile('./arial.ttf'); // 设置自定义字体路径
- * $textToImage->setFontStyle('foxi'); // 选择本库中支持的一种字体
- * $textToImage->setText('这是<br>一段<br>测试文字'); // 设置文字内容，支持使用 <br> 换行
- * $textToImage->setColor('FF00FF'); // 设置文字颜色
- * $textToImage->setBgColor('00FF00'); // 设置图片背景色
- * $textToImage->setAngle(90);// 设置文字旋转
- * $textToImage->setSize(20);// 设置文字固定字号为20【提示：本库默认会自动计算字体大小，如果设置该属性就使用传入的固定值】
- * $textToImage->render();// 显示图片到浏览器
- * $textToImage->render('test.png');// 将图片保存至本地
+ * $TextToImg->setFontFile('./arial.ttf'); // 设置自定义字体路径
+ * $TextToImg->setFontStyle('foxi'); // 选择本库中支持的一种字体
+ * $TextToImg->setText('这是<br>一段<br>测试文字'); // 设置文字内容，支持使用 <br> 换行
+ * $TextToImg->setColor('FF00FF'); // 设置文字颜色
+ * $TextToImg->setBgColor('00FF00'); // 设置图片背景色
+ * $TextToImg->setAngle(90);// 设置文字旋转
+ * $TextToImg->setSize(20);// 设置文字固定字号为20【提示：本库默认会自动计算字体大小，如果设置该属性就使用传入的固定值】
+ * $TextToImg->render();// 显示图片到浏览器
+ * $TextToImg->render('test.png');// 将图片保存至本地
  */
 class TextToImg
 {

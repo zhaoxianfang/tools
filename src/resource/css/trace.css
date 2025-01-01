@@ -3,6 +3,7 @@
     position: fixed;
     z-index: 99999999;
     font-size: 14px !important;
+    text-align: left !important;
 }
 
 /* Logo 图标右下角 */

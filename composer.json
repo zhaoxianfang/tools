@@ -33,7 +33,7 @@
     "ext-gd": "*",
     "ext-dom": "*",
     "ext-iconv": "*",
-    "ext-openssl": "*"
+    "ext-curl": "*"
   },
   "autoload": {
     "psr-4": {

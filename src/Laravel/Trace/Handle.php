@@ -24,14 +24,15 @@ class Handle
     protected $startMemory;
     protected $config = [
         'tabs' => [
-            'messages' => 'Messages',
-            'base'     => 'Base',
-            'route'    => 'Route',
-            'view'     => 'View',
-            'models'   => 'Models',
-            'sql'      => 'SQL',
-            'session'  => 'Session',
-            'request'  => 'Request',
+            'messages'  => 'Messages',
+            'base'      => 'Base',
+            'route'     => 'Route',
+            'view'      => 'View',
+            'models'    => 'Models',
+            'sql'       => 'SQL',
+            'exception' => 'Exception',
+            'session'   => 'Session',
+            'request'   => 'Request',
         ],
     ];
 
@@ -195,6 +196,21 @@ class Handle
         }
         $this->response = $response;
 
+        $exception = [];
+        // 判断响应数据 $response 中是否有异常数据 exception
+        if (property_exists($response, 'exception') && !empty($response->exception)) {
+            $exceptionObj    = $response->exception;
+            $exceptionString = $this->getExceptionContent($response->exception);
+            $fileName        = $this->getFilePath($exceptionObj->getFile()); //
+            $exception       = [
+                'message'   => $exceptionObj->getMessage(),
+                'line'      => $exceptionObj->getLine(),
+                'exception' => '<pre class="show" style="line-height: 14px;"><code>' . $exceptionString . '</code></pre>',
+                'file'      => '<span class="json-label"><a href="phpstorm://open?file=' . urlencode($exceptionObj->getFile()) . '&amp;line=' . $exceptionObj->getLine() . '" class="phpdebugbar-link">' . ($fileName . '#' . $exceptionObj->getLine()) . '</a></span>',
+                'code'      => $exceptionObj->getCode(),
+            ];
+        }
+
         list($sql, $sqlTimes) = $this->getSqlInfo();
         $messages = $this->messages;
         $base     = $this->getBaseInfo($sqlTimes);
@@ -224,6 +240,53 @@ class Handle
         Log::channel('stack')->debug('===== [Trace]调试: ===== ', $trace);
 
         return '';
+    }
+
+    /**
+     * 获取异常代码片段
+     *
+     * @param $e
+     *
+     * @return array|false
+     */
+    private function getExceptionContent($e)
+    {
+        $startLine = $e->getLine() - 5;
+        $endLine   = $e->getLine() + 5;
+        $filePath  = $e->getFile();
+
+        // 检查行号是否合理
+        if (!is_int($startLine) || !is_int($endLine) || $startLine <= 0 || $endLine < $startLine) {
+            return false;
+        }
+
+        // 初始化结果数组和当前行计数器
+        $exceptionCode = '';
+        $currentLine   = 0;
+
+        // 打开文件
+        $file = fopen($filePath, "r");
+        if ($file === false) {
+            return false;
+        }
+
+        // 循环读取每一行直到到达指定行范围或文件结束
+        while (($line = fgets($file)) !== false) {
+            $currentLine++;
+            if ($currentLine >= $startLine && $currentLine <= $endLine) {
+                // 去除行尾的换行符，并将该行添加到结果数组中
+                $exceptionCode .= $currentLine . '|' . $line;
+            }
+            if ($currentLine > $endLine) {
+                break; // 如果已经超过了所需的最后一行，则停止读取
+            }
+        }
+
+        // 关闭文件
+        fclose($file);
+
+        // 返回结果数组
+        return $exceptionCode;
     }
 
     private function getModelList()

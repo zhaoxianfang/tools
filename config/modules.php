@@ -86,6 +86,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | 代码调试编辑器
+    |--------------------------------------------------------------------------
+    |
+    | 设置代码调试编辑器，调试工具会引导点击链接跳转到编辑器的指定位置，默认为 phpstorm
+    |
+    | Supported: "phpstorm", "vscode", "vscode-insiders", "vscode-remote",
+    |            "vscode-insiders-remote", "vscodium", "textmate", "emacs",
+    |            "sublime", "atom", "nova", "macvim", "idea", "netbeans",
+    |            "xdebug", "espresso"
+    |
+    */
+    'editor' => env('DEBUGBAR_EDITOR') ?: env('IGNITION_EDITOR', 'phpstorm'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Module Stubs
     |--------------------------------------------------------------------------
     |

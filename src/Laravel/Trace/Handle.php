@@ -207,11 +207,12 @@ class Handle
             $hasParseError   = $exceptionObj instanceof \ParseError; // 判断是否有语法错误
             $exceptionString = $this->getExceptionContent($response->exception);
             $fileName        = $this->getFilePath($exceptionObj->getFile()); //
+            $editor          = config('modules.editor') ?? 'phpstorm';
             $exception       = [
                 'message'   => $exceptionObj->getMessage(),
                 'line'      => $exceptionObj->getLine(),
                 'exception' => '<pre class="show" style="line-height: 14px;"><code>' . $exceptionString . '</code></pre>',
-                'file'      => '<span class="json-label"><a href="phpstorm://open?file=' . urlencode($exceptionObj->getFile()) . '&amp;line=' . $exceptionObj->getLine() . '" class="phpdebugbar-link">' . ($fileName . '#' . $exceptionObj->getLine()) . '</a></span>',
+                'file'      => '<span class="json-label"><a href="' . $editor . '://open?file=' . urlencode($exceptionObj->getFile()) . '&amp;line=' . $exceptionObj->getLine() . '" class="phpdebugbar-link">' . ($fileName . '#' . $exceptionObj->getLine()) . '</a></span>',
                 'code'      => $exceptionObj->getCode(),
             ];
         }
@@ -233,7 +234,11 @@ class Handle
             foreach ($$name as $subTitle => $item) {
                 $result[$subTitle] = $item;
             }
-            $trace[$title] = !empty($result) ? $result : ['暂无内容'];
+            // 显示数字提示
+            $showTips = in_array($name, ['messages', 'sql', 'models']) && !empty($result) ? ' (' . count($result) . ')' : '';
+            $showTips = in_array($name, ['exception']) && !empty($result) ? ' ◉' : $showTips;
+
+            $trace[$title . $showTips] = !empty($result) ? $result : ['暂无内容'];
         }
 
         // 不是ajax请求的GET请求 && 不是生产环境 的直接在页面渲染
@@ -439,8 +444,9 @@ class Handle
         if (isset($reflector)) {
             $fileName = $this->getFilePath($reflector->getFileName()); //
 
+            $editor = config('modules.editor') ?? 'phpstorm';
             // $result['file'] = $fileName . ':' . $reflector->getStartLine() . '-' . $reflector->getEndLine();
-            $result['file'] = '<span class="json-label"><a href="phpstorm://open?file=' . urlencode($reflector->getFileName()) . '&amp;line=' . $reflector->getStartLine() . '" class="phpdebugbar-link">' . ($fileName . '#' . $reflector->getStartLine() . '-' . $reflector->getEndLine()) . '</a></span>';
+            $result['file'] = '<span class="json-label"><a href="' . $editor . '://open?file=' . urlencode($reflector->getFileName()) . '&amp;line=' . $reflector->getStartLine() . '" class="phpdebugbar-link">' . ($fileName . '#' . $reflector->getStartLine() . '-' . $reflector->getEndLine()) . '</a></span>';
         }
 
         $parametersObj = $route->parameters();

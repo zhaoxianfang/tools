@@ -4,6 +4,9 @@ namespace zxf\Laravel\Trace\Traits;
 
 use Illuminate\Http\Request;
 
+/**
+ * 把trace调试数据渲染到响应的html中
+ */
 trait TraceResponseTrait
 {
     public function randerPage($trace)

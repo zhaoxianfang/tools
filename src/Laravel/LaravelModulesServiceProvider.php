@@ -13,7 +13,9 @@ use zxf\Laravel\Modules\Providers\AutoLoadModulesProviders;
 use Illuminate\Pagination\Paginator;
 use zxf\Laravel\Modules\Middleware\ExtendMiddleware;
 use zxf\Laravel\Trace\Handle;
+use zxf\Laravel\Trace\ToolsParseExceptionHandler;
 use zxf\TnCode\Providers\TnCodeValidationProviders;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 
 /**
  * 支持 laravel 服务注入
@@ -33,12 +35,13 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
         if (!is_laravel() || empty(config('modules.enable', true))) {
             return;
         }
+
+        $this->mergeConfigFrom(__DIR__ . '/../../config/modules.php', 'modules');
+
         // 注册modules 模块服务
         $this->registerModulesServices();
 
         $this->registerProviders();
-
-        $this->mergeConfigFrom(__DIR__ . '/../../config/modules.php', 'modules');
 
         // 注册 whereHasIn 的几个查询方式来替换 whereHas 查询全表扫描的问题
         WhereHasInBuilder::register($this);
@@ -49,6 +52,9 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
         if (!is_laravel() || empty(config('modules.enable', true))) {
             return;
         }
+
+        $this->registerMiddleware(ExtendMiddleware::class);
+
         $this->bootPublishes();
 
         // 加载模块boot
@@ -59,10 +65,38 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
         // 加载tncode 路由
         $this->loadRoutesFrom(__DIR__ . '/../TnCode/routes.php');
 
+        // 处理异常
+        // 获取 Laravel 的异常处理器实例
+        $handler = app(ExceptionHandler::class);
+
+        // 自定义的异常处理
+        app()->bind(ExceptionHandler::class, function () use ($handler) {
+            return new ToolsParseExceptionHandler($handler);
+        });
+
         // 设置数据分页模板
         $this->setPaginationView();
         // 使用提示
         $this->tips();
+    }
+
+    /**
+     * 注册中间件
+     *
+     * @param string $middleware
+     */
+    protected function registerMiddleware($middleware)
+    {
+        $this->app['router']->aliasMiddleware('exception.handler', $middleware);
+
+        /** @var \Illuminate\Foundation\Http\Kernel $kernel */
+        $kernel = $this->app[\Illuminate\Foundation\Http\Kernel::class];
+        $kernel->pushMiddleware($middleware); // 追加
+        // $kernel->prependMiddleware($middleware); // 放在最前面
+        if (isset($kernel->getMiddlewareGroups()['web'])) {
+            $kernel->appendMiddlewareToGroup('web', $middleware); // 追加
+            // $kernel->prependMiddlewareToGroup('web', $middleware);   // 放在最前面
+        }
     }
 
     public function provides()
@@ -121,10 +155,9 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
         }
         $this->app->register(ContractsServiceProvider::class);
 
-
         // 注册自定义 中间件 tools_middleware
-        $this->app->singleton(ExtendMiddleware::class);
-        $this->app->alias(ExtendMiddleware::class, 'tools_middleware');
+        // $this->app->singleton(ExtendMiddleware::class);
+        // $this->app->alias(ExtendMiddleware::class, 'tools_middleware');
 
         // 注册路由
         $this->app->register(ModulesRouteServiceProvider::class);

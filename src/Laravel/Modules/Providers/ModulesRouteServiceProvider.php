@@ -72,8 +72,8 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
             // 判断中间件是否存在 中间件组中`$middlewareGroups`
             $useMiddlewareName = in_array($lowRouteName, $userMiddlewareGroups) ? $lowRouteName : '';
 
-            // 默认 使用  tools_middleware 和  $useMiddlewareName 中间件
-            $middlewareGroup = (!$autoUseMiddleware || empty($useMiddlewareName)) ? ['tools_middleware'] : ['tools_middleware', $useMiddlewareName];
+            // 中间件
+            $middlewareGroup = (!$autoUseMiddleware || empty($useMiddlewareName)) ? [] : [$useMiddlewareName];
             // 需要自动加上路由前缀的文件，例如 api.php
             $addPrefix = (!empty($routeNeedAddPrefixAndName) && in_array($lowRouteName, $routeNeedAddPrefixAndName)) ? $lowRouteName : '';
             // 需要自动加上路由名称的文件，例如 api.php

@@ -6,7 +6,6 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Log;
 use zxf\Laravel\Trace\Traits\AppEndTrait;
 use zxf\Laravel\Trace\Traits\TraceResponseTrait;
 
@@ -249,9 +248,6 @@ class Handle
         if ($this->request->isMethod('get') && !request()->expectsJson() && !($response instanceof \Illuminate\Http\JsonResponse) && !app()->environment('production')) {
             return $this->randerPage($trace);
         }
-
-        // 不能通过 view 渲染到页面 的需要把trace数据 写入本地文件日志
-        Log::channel('stack')->debug('===== [Trace]调试: ===== ', $trace);
 
         return '';
     }

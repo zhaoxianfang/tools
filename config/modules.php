@@ -99,6 +99,7 @@ return [
     |        public function handleTrace(array $trace=[]): void
     |        {
     |            // 做点什么...
+    |            // Log::channel('stack')->debug('===== [Trace]调试: ===== ', $trace);
     |        }
     |    }
     |

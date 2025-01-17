@@ -7,11 +7,13 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use zxf\Laravel\Trace\Traits\AppShutdownTrait;
 use zxf\Laravel\Trace\Traits\TraceResponseTrait;
 
 class Handle
 {
     use TraceResponseTrait;
+    use AppShutdownTrait;
 
     /**
      * @var \Illuminate\Foundation\Application

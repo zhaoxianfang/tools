@@ -4,13 +4,12 @@ namespace zxf\Laravel\Modules\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use zxf\Laravel\Trace\Handle;
 
 class ExtendMiddleware
 {
-    /** @var $handle \zxf\Laravel\Trace\Handle */
+    /** @var $handle Handle */
     protected $handle;
 
     /**
@@ -23,8 +22,9 @@ class ExtendMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-
         $this->handle = app('trace');
+
+        $this->handle->customRegisterShutdown($request);
 
         $response = $next($request);
 

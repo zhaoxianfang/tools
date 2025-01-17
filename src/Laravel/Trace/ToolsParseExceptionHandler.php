@@ -3,6 +3,8 @@
 namespace zxf\Laravel\Trace;
 
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Support\Facades\Request;
+use zxf\Laravel\Trace\Handle;
 use Throwable;
 
 /**
@@ -11,6 +13,7 @@ use Throwable;
 class ToolsParseExceptionHandler implements ExceptionHandler
 {
     protected ExceptionHandler $handler;
+    protected                  $e;
 
     public function __construct(ExceptionHandler $handler)
     {
@@ -28,6 +31,10 @@ class ToolsParseExceptionHandler implements ExceptionHandler
     public function report(Throwable $e): void
     {
         // 记录异常前的处理逻辑
+        $this->e = $e;
+
+        /** @var $handle Handle */
+        app('trace')->customRegisterShutdown(Request::instance());
 
         // 调用原始 report 方法
         $this->handler->report($e);
@@ -44,6 +51,8 @@ class ToolsParseExceptionHandler implements ExceptionHandler
      */
     public function render($request, Throwable $e)
     {
+        $this->e = $e;
+
         // 开发环境下显示详细错误
         // if (app()->isLocal()) {
         // }
@@ -51,15 +60,19 @@ class ToolsParseExceptionHandler implements ExceptionHandler
         // 获取当前响应对象
         $response = $this->handler->render($request, $e);
 
-        // 如果是语法错误在此处理（其他类型的错误在中间件中能捕捉到）
-        if ($e instanceof \ParseError) {
-            set_protected_value($response, 'exception', $e);
+        return $this->pringTrace($request, $response);
+    }
 
-            /** @var $trace \zxf\Laravel\Trace\Handle */
+    public function pringTrace($request, $response)
+    {
+        // 如果是语法错误在此处理（其他类型的错误在中间件中能捕捉到）
+        if ($this->e instanceof \ParseError) {
+            set_protected_value($response, 'exception', $this->e);
+
+            /** @var $trace Handle */
             $trace = app('trace');
             return $trace->renderTraceStyleAndScript($request, $response);
         }
-
         return $response;
     }
 

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
  */
 trait TraceResponseTrait
 {
+    // 返回在页面只渲染调试页面
     public function randerPage($trace)
     {
         $html = <<<EOT

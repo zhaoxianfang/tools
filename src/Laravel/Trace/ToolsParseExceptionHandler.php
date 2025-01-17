@@ -34,7 +34,7 @@ class ToolsParseExceptionHandler implements ExceptionHandler
         $this->e = $e;
 
         /** @var $handle Handle */
-        app('trace')->customRegisterShutdown(Request::instance());
+        app('trace')->registerShutdownHandle(Request::instance());
 
         // 调用原始 report 方法
         $this->handler->report($e);

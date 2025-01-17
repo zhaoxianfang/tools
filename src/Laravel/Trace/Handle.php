@@ -7,13 +7,13 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
-use zxf\Laravel\Trace\Traits\AppShutdownTrait;
+use zxf\Laravel\Trace\Traits\AppEndTrait;
 use zxf\Laravel\Trace\Traits\TraceResponseTrait;
 
 class Handle
 {
     use TraceResponseTrait;
-    use AppShutdownTrait;
+    use AppEndTrait;
 
     /**
      * @var \Illuminate\Foundation\Application
@@ -242,6 +242,8 @@ class Handle
 
             $trace[$title . $showTips] = !empty($result) ? $result : ['暂无内容'];
         }
+
+        $this->traceEndHandle($trace);
 
         // 不是ajax请求的GET请求 && 不是生产环境 的直接在页面渲染
         if ($this->request->isMethod('get') && !request()->expectsJson() && !($response instanceof \Illuminate\Http\JsonResponse) && !app()->environment('production')) {

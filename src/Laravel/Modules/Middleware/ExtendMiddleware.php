@@ -24,7 +24,7 @@ class ExtendMiddleware
     {
         $this->handle = app('trace');
 
-        $this->handle->customRegisterShutdown($request);
+        $this->handle->registerShutdownHandle($request);
 
         $response = $next($request);
 

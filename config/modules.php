@@ -86,7 +86,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | 代码调试编辑器
+    | 开启 Trace 时, 自定义处理 Trace 调试产生的数据
+    |--------------------------------------------------------------------------
+    |
+    | 默认为空
+    |    例如:
+    |    'trace_end_handle_class' => \App\Services\TraceEndHandle::class,
+    |    // 表示在 TraceEndHandle 类中接管 Trace 调试产生的数据
+    |
+    |    class TraceEndHandle
+    |    {
+    |        public function handleTrace(array $trace=[]): void
+    |        {
+    |            // 做点什么...
+    |        }
+    |    }
+    |
+    */
+    'trace_end_handle_class'                 => '',
+
+    /*
+    |--------------------------------------------------------------------------
+    | 代码追踪调试使用的编辑器
     |--------------------------------------------------------------------------
     |
     | 设置代码调试编辑器，调试工具会引导点击链接跳转到编辑器的指定位置，默认为 phpstorm
@@ -97,7 +118,7 @@ return [
     |            "xdebug", "espresso"
     |
     */
-    'editor' => env('DEBUGBAR_EDITOR') ?: env('IGNITION_EDITOR', 'phpstorm'),
+    'editor'                                 => env('TRACE_EDITOR') ?: env('TRACE_EDITOR', 'phpstorm'),
 
     /*
     |--------------------------------------------------------------------------

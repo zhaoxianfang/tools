@@ -321,7 +321,7 @@ class Curl
      *
      * Examples:
      * ```
-     * HttpCurl::get('http://api.example.com/?a=123&b=456', 'json');
+     * Curl::get('http://api.example.com/?a=123&b=456', 'json');
      * ```
      * @throws Exception
      */
@@ -366,7 +366,7 @@ class Curl
      * Http->post('http://api.example.com/?a=123',  'json');
      * Http->post('http://api.example.com/',  'json');
      * 文件post上传
-     * HttpCurl::post('http://api.example.com/', 'json');
+     * Curl::post('http://api.example.com/', 'json');
      * ```
      * @throws Exception
      */
@@ -476,7 +476,7 @@ class Curl
      * @return array|mixed
      * @throws Exception
      */
-    public function download(string $url = '', string $filePath = '')
+    public function download(string $url = '', string $filePath = ''): mixed
     {
         set_time_limit(0);
         $this->initCurl();
@@ -533,19 +533,13 @@ class Curl
         if ($data_type == 'html') {
             return $content;
         }
+        // JSONP 格式的json字符串处理, 如:callback({"key":"value"})
         if (str_starts_with($content, 'callback(')) {
             $result = [];
             preg_match_all("/(?:\{)(.*)(?:\})/i", $content, $result);
             $content = $result[0][0];
-        } else {
-            if (!$this->isJson($content)) {
-                // 判断 等号出现次数
-                $countEqStr = substr_count($content, '=', 0);
-                if ($countEqStr > 0) {
-                    parse_str($content, $content);
-                }
-            }
         }
+        // json字符串处理
         if (is_string($content) && $this->isJson($content) && $data_type == 'json') {
             $content = json_decode($content, true);
         }

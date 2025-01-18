@@ -84,6 +84,7 @@ return [
     */
     'trace'                                  => (bool)env('APP_DEBUG', false),
 
+
     /*
     |--------------------------------------------------------------------------
     | 开启 Trace 时, 自定义处理 Trace 调试产生的数据
@@ -91,12 +92,14 @@ return [
     |
     | 默认为空
     |    例如:
-    |    'trace_end_handle_class' => \App\Services\TraceEndHandle::class,
+    |    'trace_end_handle_class' => \App\Services\TraceEndService::class,
     |    // 表示在 TraceEndHandle 类中接管 Trace 调试产生的数据
     |
-    |    class TraceEndHandle
+    |    use Illuminate\Support\Facades\Log;
+    |
+    |    class TraceEndService
     |    {
-    |        public function handleTrace(array $trace=[]): void
+    |        public function handle(array $trace=[]): void
     |        {
     |            // 做点什么...
     |            // Log::channel('stack')->debug('===== [Trace]调试: ===== ', $trace);

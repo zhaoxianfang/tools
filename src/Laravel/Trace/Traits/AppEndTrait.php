@@ -54,15 +54,15 @@ trait AppEndTrait
                 if (!class_exists($handleClass)) {
                     return;
                 }
-                // 检查 $handleClass 类中是否存在 handleTrace 方法
-                if (!method_exists($handleClass, 'handleTrace')) {
+                // 检查 $handleClass 类中是否存在 handle 方法
+                if (!method_exists($handleClass, 'handle')) {
                     return;
                 }
                 $callClass = is_string($handleClass) ? new $handleClass() : $handleClass;
-                if (!is_callable([$callClass, 'handleTrace'])) {
+                if (!is_callable([$callClass, 'handle'])) {
                     return;
                 }
-                $callClass->handleTrace($traceData);
+                $callClass->handle($traceData);
             }
         } catch (\Exception $e) {
         }

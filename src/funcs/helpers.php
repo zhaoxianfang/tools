@@ -874,44 +874,33 @@ if (!function_exists('is_idcard')) {
 }
 
 if (!function_exists('detach_html')) {
-    // 去除所有html标签
+    /**
+     * 去除所有html标签,只保留纯文本
+     *
+     * @param $string
+     *
+     * @return string
+     */
     function detach_html($string): string
     {
-        $string = htmlspecialchars_decode($string);
-        $string = html_entity_decode($string);
-        $string = strip_tags($string);
-        $string = trim($string);
-        $string = str_replace(PHP_EOL, '', $string);                                      // 过滤换行
-        $string = str_replace('&nbsp;', '', $string);                                     // 去除实体空格
-        $string = preg_replace("/\s+/", " ", $string);                                    //过滤多余回车
-        $string = preg_replace("/<[ ]+/si", "<", $string);                                //过滤<__("<"号后面带空格)
-        $string = preg_replace("/<\!--.*?-->/si", "", $string);                           //过滤html注释
-        $string = preg_replace("/<(\!.*?)>/si", "", $string);                             //过滤DOCTYPE
-        $string = preg_replace("/<(\/?html.*?)>/si", "", $string);                        //过滤html标签
-        $string = preg_replace("/<(\/?head.*?)>/si", "", $string);                        //过滤head标签
-        $string = preg_replace("/<(\/?meta.*?)>/si", "", $string);                        //过滤meta标签
-        $string = preg_replace("/<(\/?body.*?)>/si", "", $string);                        //过滤body标签
-        $string = preg_replace("/<(\/?link.*?)>/si", "", $string);                        //过滤link标签
-        $string = preg_replace("/<(\/?form.*?)>/si", "", $string);                        //过滤form标签
-        $string = preg_replace("/cookie/si", "COOKIE", $string);                          //过滤COOKIE标签
-        $string = preg_replace("/<(applet.*?)>(.*?)<(\/applet.*?)>/si", "", $string);     //过滤applet标签
-        $string = preg_replace("/<(\/?applet.*?)>/si", "", $string);                      //过滤applet标签
-        $string = preg_replace("/<(style.*?)>(.*?)<(\/style.*?)>/si", "", $string);       //过滤style标签
-        $string = preg_replace("/<(\/?style.*?)>/si", "", $string);                       //过滤style标签
-        $string = preg_replace("/<(title.*?)>(.*?)<(\/title.*?)>/si", "", $string);       //过滤title标签
-        $string = preg_replace("/<(\/?title.*?)>/si", "", $string);                       //过滤title标签
-        $string = preg_replace("/<(object.*?)>(.*?)<(\/object.*?)>/si", "", $string);     //过滤object标签
-        $string = preg_replace("/<(\/?objec.*?)>/si", "", $string);                       //过滤object标签
-        $string = preg_replace("/<(noframes.*?)>(.*?)<(\/noframes.*?)>/si", "", $string); //过滤noframes标签
-        $string = preg_replace("/<(\/?noframes.*?)>/si", "", $string);                    //过滤noframes标签
-        $string = preg_replace("/<(i?frame.*?)>(.*?)<(\/i?frame.*?)>/si", "", $string);   //过滤frame标签
-        $string = preg_replace("/<(\/?i?frame.*?)>/si", "", $string);                     //过滤frame标签
-        $string = preg_replace("/<(script.*?)>(.*?)<(\/script.*?)>/si", "", $string);     //过滤script标签
-        $string = preg_replace("/<(\/?script.*?)>/si", "", $string);                      //过滤script标签
-        $string = preg_replace("/javascript/si", "Javascript", $string);                  //过滤script标签
-        $string = preg_replace("/vbscript/si", "Vbscript", $string);                      //过滤script标签
-        $string = preg_replace("/on([a-z]+)\s*=/si", "On\\1=", $string);                  //过滤script标签
-        return trim($string);
+        // 移除 BOM 字符（解决某些带 BOM 文件导致的异常问题）
+        $string = preg_replace('/^\xEF\xBB\xBF/', '', $string);
+        // 移除 <script> 和 <style> 标签及其内容
+        $output = preg_replace('#<(script|style)[^>]*>.*?</\1>#is', '', $string);
+        // 移除 HTML 注释，包括条件注释（如 [if IE]）
+        $output = preg_replace('#<!--.*?-->#s', '', $output);
+        // 移除内嵌 CSS 样式（如 style="color:red;"）
+        $output = preg_replace('#\s*style=["\'][^"\']*["\']#i', '', $output);
+        // 移除所有 HTML 标签，包括自定义标签
+        $output = preg_replace('#<[^>]+>#', '', $output);
+        // 移除多余的换行、制表符等空白符
+        $output = preg_replace('/[\t\n\r]+/', ' ', $output);
+        // 替换 HTML 实体为正常字符
+        $output = html_entity_decode($output, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        // 去除连续空白符
+        $output = preg_replace('/\s{2,}/', ' ', $output);
+        // 修整首尾空白
+        return trim($output);
     }
 }
 if (!function_exists('str_rand')) {

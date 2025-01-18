@@ -512,7 +512,7 @@ class Curl
     }
 
     /**
-     * @param string $data_type 返回数据类型 json|string|collection
+     * @param string $data_type 返回数据类型 json|string(json字符串)|collection|html(原网页)
      *
      * @return array|mixed
      */
@@ -529,6 +529,9 @@ class Curl
 
         if (empty($content) && !empty($errInfo)) {
             $content = $errInfo;
+        }
+        if ($data_type == 'html') {
+            return $content;
         }
         if (str_starts_with($content, 'callback(')) {
             $result = [];

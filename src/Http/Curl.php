@@ -21,17 +21,70 @@ class Curl
     // cookie文件路径地址
     private string $cookieFile = '';
 
+    // 发起请求后是否响应Curl对象; true:返回Curl对象,false:直接返回请求结果
+    private bool $responseObject = false;
+
+    // 响应内容
+    private array $respObjData   = [];
+    private array $defaultParams = [
+        CURLOPT_RETURNTRANSFER => true, // 返回响应内容，而不是直接输出; 获取的信息以文件流的形式返回
+        CURLOPT_HEADER         => true, // 返回头部信息
+        CURLOPT_SSL_VERIFYPEER => false, // 对认证证书来源的检查
+        CURLOPT_SSL_VERIFYHOST => false, // 从证书中检查SSL加密算法是否存在
+        CURLOPT_SSLVERSION     => 1, // 选择合适的 SSL 版本
+        CURLOPT_TIMEOUT        => 10, // 设置超时限制防止死循环
+        CURLOPT_FOLLOWLOCATION => true, // 启用时会将服务器服务器返回的"Location: "放在header中递归的返回给服务器
+        CURLOPT_AUTOREFERER    => true, // 自动设置Referer
+        CURLOPT_MAXREDIRS      => 5, // 最大跳转次数
+        CURLOPT_CONNECTTIMEOUT => 10, // 设置连接等待时间
+    ];
+
+    // 默认请求头信息
+    private array $defaultHeaders = [
+        "Content-type:application/x-www-form-urlencoded",
+        "Content-type:application/json;charset='utf-8'",
+    ];
+
     /**
      * @var object 对象实例
      */
     protected static $instance;
 
-    public function __construct($config = [])
+    /**
+     * @param array $config          给curl进行默认配置
+     *                               eg: [
+     *                               CURLOPT_TIMEOUT => 10,
+     *                               CURLOPT_RETURNTRANSFER=>true,
+     *                               CURLOPT_HTTPHEADER => [
+     *                               'Accept: application/json',
+     *                               'Authorization: Bearer YOUR_API_TOKEN'
+     *                               ],
+     *                               CURLOPT_COOKIEJAR => 'cookie.txt',
+     *                               CURLOPT_COOKIEFILE => 'cookie.txt',
+     *                               ...
+     *                               ]
+     * @param bool  $responseObject  发起请求后是否响应对象; true:返回Curl对象,false:直接返回请求结果
+     *                               true:返回Curl对象, 后面可以再次调用
+     *                               ->getStatusCode()、->getBody()、->isSuccessful()、->getHeaders()等方法
+     *                               false:直接返回请求结果，直接返回html原始网页、json数组、Collection集合等
+     *
+     * @throws Exception
+     */
+    public function __construct(array $config = [], bool $responseObject = false)
     {
         if (!function_exists('curl_init')) {
             throw new Exception('不支持CURL功能.');
         }
-        $this->ch = curl_init();
+        $this->responseObject = $responseObject;
+        $this->ch             = null;
+
+        $this->defaultParams[CURLOPT_HTTPHEADER]  = $this->defaultHeaders;
+        $this->defaultParams[CURLINFO_HEADER_OUT] = true;
+
+        if ($config) {
+            $this->defaultParams = array_merge($this->defaultParams, $config);
+        }
+        $this->initCurl();
     }
 
     /**
@@ -44,11 +97,9 @@ class Curl
      */
     private function initCurl()
     {
-        if (!function_exists('curl_init')) {
-            throw new Exception('不支持CURL功能.');
-        }
         if (empty($this->ch)) {
             $this->ch = curl_init();
+            curl_setopt_array($this->ch, $this->defaultParams);
         }
 
         if (!empty($this->cookieFile)) {
@@ -68,10 +119,10 @@ class Curl
      * @return Curl
      * @throws Exception
      */
-    public static function instance(array $options = [])
+    public static function instance(array $options = [], bool $responseObject = false)
     {
         if (!isset(self::$instance) || is_null(self::$instance)) {
-            self::$instance = new static($options);
+            self::$instance = new static($options, $responseObject);
         }
 
         return self::$instance;
@@ -90,17 +141,15 @@ class Curl
     {
         $this->initCurl();
 
-        $headData = $isAppend ? [
-            "Content-type:application/x-www-form-urlencoded",
-            "Content-type:application/json;charset='utf-8'",
-        ] : [];
-
+        $headData = [];
         foreach ($header as $key => $head) {
             if ($head) {
                 $headData[] = is_integer($key) ? $head : ($key . ':' . $head);
             }
         }
-        curl_setopt($this->ch, CURLOPT_HTTPHEADER, $headData);
+        $this->defaultHeaders = $isAppend ? array_merge($this->defaultHeaders, $headData) : $headData;
+
+        curl_setopt($this->ch, CURLOPT_HTTPHEADER, $this->defaultHeaders);
         curl_setopt($this->ch, CURLINFO_HEADER_OUT, true);
         return $this;
     }
@@ -207,7 +256,7 @@ class Curl
      * @return $this
      * @throws Exception
      */
-    public function setUserAgent($agent = "")
+    public function setUserAgent(string $agent = "")
     {
         $this->initCurl();
         if ($agent) {
@@ -328,11 +377,6 @@ class Curl
     public function get(string $url, string $data_type = 'json')
     {
         $this->initCurl();
-        curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, false);
-        if (stripos($url, 'https://') !== false) {
-            curl_setopt($this->ch, CURLOPT_SSLVERSION, 1);
-        }
         // 设置get参数
         if (!empty($this->httpParams) && is_array($this->httpParams)) {
             if (strpos($url, '?') !== false) {
@@ -346,9 +390,7 @@ class Curl
 
         curl_setopt($this->ch, CURLOPT_URL, $url);
         curl_setopt($this->ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
-        curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($this->ch, CURLOPT_USERAGENT, $this->randUserAgent());
-        curl_setopt($this->ch, CURLOPT_HEADER, false);
 
         return $this->run($data_type);
     }
@@ -374,14 +416,7 @@ class Curl
     {
         $this->initCurl();
 
-        if (stripos($url, 'https://') !== false) {
-            curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, false);
-            curl_setopt($this->ch, CURLOPT_SSLVERSION, 1);
-        }
-
         curl_setopt($this->ch, CURLOPT_URL, $url);
-        curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($this->ch, CURLOPT_POST, true);
         curl_setopt($this->ch, CURLOPT_USERAGENT, $this->randUserAgent());
 
@@ -396,7 +431,6 @@ class Curl
     {
         $this->initCurl();
         curl_setopt($this->ch, CURLOPT_URL, $url); //设置请求的URL
-        curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1); //设为TRUE把curl_exec()结果转化为字串，而不是直接输出
         curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, "PUT"); //设置请求方式
         // curl_setopt($this->ch, CURLOPT_POSTFIELDS, $data); //设置提交的字符串
         curl_setopt($this->ch, CURLOPT_USERAGENT, $this->randUserAgent());
@@ -412,7 +446,6 @@ class Curl
         $this->initCurl();
         // $data = json_encode($data);
         curl_setopt($this->ch, CURLOPT_URL, $url);
-        curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, "DELETE");
         curl_setopt($this->ch, CURLOPT_USERAGENT, $this->randUserAgent());
         // curl_setopt($this->ch, CURLOPT_POSTFIELDS, $data);
@@ -427,7 +460,6 @@ class Curl
         $this->initCurl();
         // $data = json_encode($data);
         curl_setopt($this->ch, CURLOPT_URL, $url);
-        curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, "PATCH");
         curl_setopt($this->ch, CURLOPT_USERAGENT, $this->randUserAgent());
         // curl_setopt($this->ch, CURLOPT_POSTFIELDS, $data); //20170611修改接口，用/id的方式传递，直接写在url中了
@@ -480,11 +512,7 @@ class Curl
     {
         set_time_limit(0);
         $this->initCurl();
-        if (stripos($url, 'https://') !== false) {
-            curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, false);
-            curl_setopt($this->ch, CURLOPT_SSLVERSION, 1);
-        }
+
         curl_setopt($this->ch, CURLOPT_URL, $url);
         $fp = fopen($filePath, 'w+');
         curl_setopt($this->ch, CURLOPT_FILE, $fp);
@@ -518,32 +546,30 @@ class Curl
      */
     protected function run(string $data_type = 'json')
     {
-        curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, true); // 自动跟随重定向，默认为 false
-        curl_setopt($this->ch, CURLOPT_MAXREDIRS, 5); // 设置最大的重定向次数，默认为 5
+        // 解析返回的数据
+        $this->parserResponse();
 
-        $content = curl_exec($this->ch);
-        $errInfo = curl_error($this->ch);
-        $status  = curl_getinfo($this->ch);
+        // 获取请求是否发生错误
+        $error = curl_errno($this->ch) ? curl_error($this->ch) : null;
+
         curl_close($this->ch);
         $this->ch = null;// 重置
 
-        if (empty($content) && !empty($errInfo)) {
-            $content = $errInfo;
+        if ($this->responseObject) {
+            // 返回curl对象，以便调用其他方法
+            return $this;
+        }
+
+        $content = $this->respObjData['body'];
+
+        if (empty($content) && !empty($error)) {
+            $content = $error;
         }
         if ($data_type == 'html') {
             return $content;
         }
-        // JSONP 格式的json字符串处理, 如:callback({"key":"value"})
-        if (str_starts_with($content, 'callback(')) {
-            $result = [];
-            preg_match_all("/(?:\{)(.*)(?:\})/i", $content, $result);
-            $content = $result[0][0];
-        }
-        // json字符串处理
-        if (is_string($content) && $this->isJson($content) && $data_type == 'json') {
-            $content = json_decode($content, true);
-        }
-        $jsonArr = $this->objectArray($content);
+
+        $jsonArr = $this->objectToArray($content);
         if ($data_type == 'string') {
             return json_array_to_string($jsonArr);
         }
@@ -553,18 +579,199 @@ class Curl
         }
         // 默认返回json 数组
         return $jsonArr;
+    }
 
+    private function parserResponse()
+    {
+        if (!$this->responseObject) {
+            return $this;
+        }
+        $content = curl_exec($this->ch);
+
+        $http_code           = curl_getinfo($this->ch, CURLINFO_HTTP_CODE); // 获取 HTTP 状态码
+        $effective_url       = curl_getinfo($this->ch, CURLINFO_EFFECTIVE_URL); // 最终请求的 URL（跟随重定向后的 URL）
+        $content_type        = curl_getinfo($this->ch, CURLINFO_CONTENT_TYPE); // 响应的 Content-Type
+        $total_time          = curl_getinfo($this->ch, CURLINFO_TOTAL_TIME);//总请求时间（秒）
+        $name_lookup_time    = curl_getinfo($this->ch, CURLINFO_NAMELOOKUP_TIME);// DNS 解析时间（秒）
+        $connect_time        = curl_getinfo($this->ch, CURLINFO_CONNECT_TIME);// 连接服务器所用时间（秒）
+        $pre_transfer_time   = curl_getinfo($this->ch, CURLINFO_PRETRANSFER_TIME);// 从连接到数据传输前所用时间（秒）
+        $start_transfer_time = curl_getinfo($this->ch, CURLINFO_STARTTRANSFER_TIME);// 从请求开始到第一个字节传输时间（秒）
+        $redirect_count      = curl_getinfo($this->ch, CURLINFO_REDIRECT_COUNT); // 重定向次数
+        $redirect_time       = curl_getinfo($this->ch, CURLINFO_REDIRECT_TIME); // 重定向消耗的总时间（秒）
+        $download_size       = curl_getinfo($this->ch, CURLINFO_SIZE_DOWNLOAD); // 下载内容大小（字节）
+        $size_upload         = curl_getinfo($this->ch, CURLINFO_SIZE_UPLOAD); // 上传内容大小（字节）
+        $speed_download      = curl_getinfo($this->ch, CURLINFO_SPEED_DOWNLOAD); // 平均下载速度（字节/秒）
+        $speed_upload        = curl_getinfo($this->ch, CURLINFO_SPEED_UPLOAD); // 平均上传速度（字节/秒）
+        $header_size         = curl_getinfo($this->ch, CURLINFO_HEADER_SIZE); // 响应头部大小（字节）
+        $request_size        = curl_getinfo($this->ch, CURLINFO_REQUEST_SIZE); // 请求头部大小（字节）
+        $ssl_verify_result   = curl_getinfo($this->ch, CURLINFO_SSL_VERIFYRESULT); // SSL 证书验证结果
+        $primary_ip          = curl_getinfo($this->ch, CURLINFO_PRIMARY_IP); // 服务器ip
+        $primary_port        = curl_getinfo($this->ch, CURLINFO_PRIMARY_PORT); // 服务器端口
+        $local_ip            = curl_getinfo($this->ch, CURLINFO_LOCAL_IP); // 本地ip
+        $local_port          = curl_getinfo($this->ch, CURLINFO_LOCAL_PORT); // 本地端口
+        $http_version        = curl_getinfo($this->ch, CURLINFO_HTTP_VERSION); // HTTP 版本
+        $request_header      = curl_getinfo($this->ch, CURLINFO_HEADER_OUT); // 请求头部
+        $redirect_url        = curl_getinfo($this->ch, CURLINFO_REDIRECT_URL); // 重定向 URL
+
+        // 提取响应头和主体内容
+        $headerStr = substr($content, 0, $header_size);  // 响应头
+        $body      = substr($content, $header_size);  // 响应主体
+
+        // 提取响应头
+        $headers = [];
+        $lines   = explode("\r\n", $headerStr);
+        foreach ($lines as $line) {
+            if (str_contains($line, ': ')) {
+                list($key, $value) = explode(': ', $line, 2);
+                $headers[$key] = $value;
+            }
+        }
+        $headers['content_type'] = $content_type; // 响应的 Content-Type
+        $headers['header_size']  = $header_size; // 响应头部大小（字节）
+        $headers['http_code']    = $http_code; // HTTP 响应状态码
+        $headers['request_size'] = $request_size;// 请求头部大小（字节）
+
+        // 服务器信息
+        $servers = [
+            'is_redirect'         => $redirect_count > 0, // 请求是否发生跳转（重定向）
+            'total_time'          => $total_time, //总请求时间（秒）
+            'primary_ip'          => $primary_ip, // 服务器ip
+            'primary_port'        => $primary_port, // 服务器端口
+            'local_ip'            => $local_ip, // 本地ip
+            'local_port'          => $local_port, // 本地端口
+            'http_version'        => $http_version, // HTTP 版本
+            'request_header'      => $request_header, // 请求头部
+            'redirect_url'        => $redirect_url, // 重定向 URL
+            'ssl_verify_result'   => $ssl_verify_result, // SSL 证书验证结果
+            'redirect_count'      => $redirect_count, // 重定向次数
+            'redirect_time'       => $redirect_time, // 重定向消耗的总时间（秒）
+            'download_size'       => $download_size, // 下载内容大小（字节）
+            'size_upload'         => $size_upload, // 上传内容大小（字节）
+            'speed_download'      => $speed_download, // 平均下载速度（字节/秒）
+            'speed_upload'        => $speed_upload, // 平均上传速度（字节/秒）
+            'effective_url'       => $effective_url, // 最终请求的 URL（跟随重定向后的 URL）
+            'name_lookup_time'    => $name_lookup_time,// DNS 解析时间（秒）
+            'connect_time'        => $connect_time,// 连接服务器所用时间（秒）
+            'pre_transfer_time'   => $pre_transfer_time,// 从连接到数据传输前所用时间（秒）
+            'start_transfer_time' => $start_transfer_time,// 从请求开始到第一个字节传输时间（秒）
+        ];
+
+        $this->respObjData = [
+            'success'   => $http_code >= 200 && $http_code < 300, // 请求是否成功
+            'http_code' => $http_code, // HTTP 响应状态码
+            'servers'   => $servers, // 服务器信息
+            'headers'   => $headers, // 响应头
+            'body'      => $body,// 响应内容
+        ];
+
+        // JSONP 格式的json字符串处理, 如:callback({"key":"value"})
+        if (str_starts_with($body, 'callback(')) {
+            $result = [];
+            preg_match_all("/(?:\{)(.*)(?:\})/i", $body, $result);
+            $body = $result[0][0];
+        }
+
+        // 根据 `Content-Type` 解析内容
+        if (stripos($content_type, 'application/json') !== false) {
+            // json字符串处理
+            if (is_string($body) && $this->isJson($body)) {
+                $body = json_decode($body, true);
+            }
+        } elseif (stripos($content_type, 'text/xml') !== false || stripos($content_type, 'application/xml') !== false) {
+            // 解析 XML
+            $xmlObject = simplexml_load_string($body, "SimpleXMLElement", LIBXML_NOCDATA);
+            // 将对象转换为 JSON，再转换为数组
+            $body = json_decode(json_encode($xmlObject), true);
+        } else {
+            // html(text/html)、文本(text/plain) 和其他不需要处理的格式
+            // 其他类型
+        }
+        $this->respObjData['body'] = $body;
+
+        return $this;
+    }
+
+    // 请求是否成功
+    public function isSuccessful()
+    {
+        if (!$this->responseObject) {
+            return $this;
+        }
+        return $this->respObjData['success'];
+    }
+
+    // 返回状态码
+    public function getStatusCode()
+    {
+        if (!$this->responseObject) {
+            return $this;
+        }
+        return $this->respObjData['http_code'];
+    }
+
+    // 响应内容
+    public function getBody()
+    {
+        if (!$this->responseObject) {
+            return $this;
+        }
+        return $this->respObjData['body'];
+    }
+
+    // 响应头
+    public function getHeader(string $key = '')
+    {
+        if (!$this->responseObject) {
+            return $this;
+        }
+        if ($key) {
+            return $this->respObjData['headers'][$key] ?? null;
+        }
+        return $this->respObjData['headers'];
+    }
+
+    // 服务器ip
+    public function getServer(string $key = '')
+    {
+        if (!$this->responseObject) {
+            return $this;
+        }
+        if ($key) {
+            return $this->respObjData['servers'][$key] ?? null;
+        }
+        return $this->respObjData['servers'];
+    }
+
+    // 是否重定向
+    public function hasRedirect()
+    {
+        if (!$this->responseObject) {
+            return $this;
+        }
+        return $this->respObjData['servers']['is_redirect'];
+    }
+
+    // 所有响应数据
+    public function getResp(string $key = '')
+    {
+        if (!$this->responseObject) {
+            return $this;
+        }
+        if ($key) {
+            return $this->respObjData[$key] ?? null;
+        }
+        return $this->respObjData;
     }
 
     //PHP stdClass Object转array
-    protected function objectArray($array)
+    protected function objectToArray($array)
     {
         if (is_object($array)) {
             $array = (array)$array;
         }
         if (is_array($array)) {
             foreach ($array as $key => $value) {
-                $array[$key] = $this->objectArray($value);
+                $array[$key] = $this->objectToArray($value);
             }
         }
         return $array;
@@ -607,10 +814,6 @@ class Curl
         curl_setopt($this->ch, CURLOPT_URL, $url);
         // 设置header
         curl_setopt($this->ch, CURLOPT_HEADER, 0);
-        // 设置cURL 参数，要求结果保存到字符串中还是输出到屏幕上。
-        curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
-        //这个是重点，加上这个便可以支持http和https下载
-        curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false);
         // 运行cURL，请求网页
         $file = curl_exec($this->ch);
         // 关闭URL请求

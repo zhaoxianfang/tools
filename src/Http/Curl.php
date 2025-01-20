@@ -107,6 +107,7 @@ class Curl
             curl_setopt($this->ch, CURLOPT_COOKIEJAR, $this->cookieFile);
             curl_setopt($this->ch, CURLOPT_COOKIEFILE, $this->cookieFile);
         }
+        $this->respObjData = [];
     }
 
     /**
@@ -540,7 +541,9 @@ class Curl
     }
 
     /**
-     * @param string $data_type 返回数据类型 json|string(json字符串)|collection|html(原网页)
+     * 执行请求 [如果是网页内容会直接返回网页]
+     *
+     * @param string $data_type 返回数据类型 json|string(json字符串)|collection
      *
      * @return array|mixed
      */
@@ -553,6 +556,7 @@ class Curl
         $error = curl_errno($this->ch) ? curl_error($this->ch) : null;
 
         curl_close($this->ch);
+
         $this->ch = null;// 重置
 
         if ($this->responseObject) {
@@ -562,10 +566,15 @@ class Curl
 
         $content = $this->respObjData['body'];
 
+        // 对于直接返回响应内容的请求，直接清空响应对象
+        $this->respObjData = [];
+
         if (empty($content) && !empty($error)) {
             $content = $error;
         }
-        if ($data_type == 'html') {
+
+        // 响应内容为无法解析的文本，直接返回响应内容
+        if (is_string($content)) {
             return $content;
         }
 
@@ -583,9 +592,6 @@ class Curl
 
     private function parserResponse()
     {
-        if (!$this->responseObject) {
-            return $this;
-        }
         $content = curl_exec($this->ch);
 
         $http_code           = curl_getinfo($this->ch, CURLINFO_HTTP_CODE); // 获取 HTTP 状态码
@@ -612,6 +618,10 @@ class Curl
         $http_version        = curl_getinfo($this->ch, CURLINFO_HTTP_VERSION); // HTTP 版本
         $request_header      = curl_getinfo($this->ch, CURLINFO_HEADER_OUT); // 请求头部
         $redirect_url        = curl_getinfo($this->ch, CURLINFO_REDIRECT_URL); // 重定向 URL
+        $error               = curl_errno($this->ch) ? [
+            'no'   => curl_errno($this->ch),
+            'info' => curl_error($this->ch),
+        ] : []; // 获取请求是否发生错误
 
         // 提取响应头和主体内容
         $headerStr = substr($content, 0, $header_size);  // 响应头
@@ -662,6 +672,7 @@ class Curl
             'servers'   => $servers, // 服务器信息
             'headers'   => $headers, // 响应头
             'body'      => $body,// 响应内容
+            'error'     => $error, // 获取请求是否发生错误
         ];
 
         // JSONP 格式的json字符串处理, 如:callback({"key":"value"})
@@ -672,70 +683,78 @@ class Curl
         }
 
         // 根据 `Content-Type` 解析内容
-        if (stripos($content_type, 'application/json') !== false) {
-            // json字符串处理
-            if (is_string($body) && $this->isJson($body)) {
-                $body = json_decode($body, true);
-            }
-        } elseif (stripos($content_type, 'text/xml') !== false || stripos($content_type, 'application/xml') !== false) {
+        if (stripos($content_type, 'text/xml') !== false || stripos($content_type, 'application/xml') !== false) {
             // 解析 XML
             $xmlObject = simplexml_load_string($body, "SimpleXMLElement", LIBXML_NOCDATA);
             // 将对象转换为 JSON，再转换为数组
             $body = json_decode(json_encode($xmlObject), true);
         } else {
-            // html(text/html)、文本(text/plain) 和其他不需要处理的格式
             // 其他类型
+            // json(application/json)、html(text/html)、文本(text/plain) 和其他不需要处理的格式
+            if (stripos($content_type, 'application/json') !== false && $this->isJson($body)) {
+                // json字符串处理
+                $body = is_array($body) ? $body : json_decode($body, true);
+            }
         }
         $this->respObjData['body'] = $body;
 
         return $this;
     }
 
-    // 请求是否成功
+    /**
+     * 请求是否成功（响应状态码是否为 2xx ）
+     *
+     * @return mixed
+     */
     public function isSuccessful()
     {
-        if (!$this->responseObject) {
-            return $this;
-        }
         return $this->respObjData['success'];
     }
 
-    // 返回状态码
+    /**
+     * 判断请求是否发生请求错误
+     *
+     * @return bool
+     */
+    public function isError(): bool
+    {
+        return !empty($this->respObjData['error']);
+    }
+
+    /**
+     * 返回响应状态码
+     *
+     * @return mixed
+     */
     public function getStatusCode()
     {
-        if (!$this->responseObject) {
-            return $this;
-        }
         return $this->respObjData['http_code'];
     }
 
     // 响应内容
     public function getBody()
     {
-        if (!$this->responseObject) {
-            return $this;
-        }
         return $this->respObjData['body'];
     }
 
     // 响应头
     public function getHeader(string $key = '')
     {
-        if (!$this->responseObject) {
-            return $this;
-        }
         if ($key) {
             return $this->respObjData['headers'][$key] ?? null;
         }
         return $this->respObjData['headers'];
     }
 
-    // 服务器ip
+    /**
+     * 获取 服务器信息
+     *
+     * @param string $key eg: primary_ip:服务器ip
+     *
+     * @return mixed|null
+     */
     public function getServer(string $key = '')
     {
-        if (!$this->responseObject) {
-            return $this;
-        }
         if ($key) {
             return $this->respObjData['servers'][$key] ?? null;
         }
@@ -745,21 +764,22 @@ class Curl
     // 是否重定向
     public function hasRedirect()
     {
-        if (!$this->responseObject) {
-            return $this;
-        }
         return $this->respObjData['servers']['is_redirect'];
     }
 
-    // 所有响应数据
-    public function getResp(string $key = '')
+    // 所有响应错误内容
+    public function getError()
     {
-        if (!$this->responseObject) {
-            return $this;
-        }
-        if ($key) {
-            return $this->respObjData[$key] ?? null;
-        }
+        return $this->respObjData['error'];
+    }
+
+    /**
+     * 所有响应数据
+     *
+     * @return array
+     */
+    public function getResp(): array
+    {
         return $this->respObjData;
     }
 
@@ -781,13 +801,16 @@ class Curl
     /**
      * 判断字符串是否为 Json 格式
      *
-     * @param string $string Json 字符串
+     * @param string|array $string $string Json 字符串
      *
      * @return bool 成功返回true，失败返回 false
      */
-    protected function isJson(string $string = ''): bool
+    protected function isJson(string|array $string = ''): bool
     {
         try {
+            if (is_array($string)) {
+                return true;
+            }
             $data = json_decode($string, true);
             if (($data && is_object($data)) || (is_array($data) && !empty($data))) {
                 return true;

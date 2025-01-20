@@ -552,9 +552,6 @@ class Curl
         // 解析返回的数据
         $this->parserResponse();
 
-        // 获取请求是否发生错误
-        $error = curl_errno($this->ch) ? curl_error($this->ch) : null;
-
         curl_close($this->ch);
 
         $this->ch = null;// 重置
@@ -564,30 +561,26 @@ class Curl
             return $this;
         }
 
-        $content = $this->respObjData['body'];
+        $body = $this->respObjData['body'];
 
-        // 对于直接返回响应内容的请求，直接清空响应对象
-        $this->respObjData = [];
-
-        if (empty($content) && !empty($error)) {
-            $content = $error;
+        if ($this->isError()) {
+            return $this->getError();
         }
 
         // 响应内容为无法解析的文本，直接返回响应内容
-        if (is_string($content)) {
-            return $content;
+        if (is_string($body)) {
+            return $body;
         }
 
-        $jsonArr = $this->objectToArray($content);
         if ($data_type == 'string') {
-            return json_array_to_string($jsonArr);
+            return json_array_to_string($body);
         }
         // 集合
         if ($data_type == 'collection') {
-            return new Collection($jsonArr);
+            return new Collection($body);
         }
         // 默认返回json 数组
-        return $jsonArr;
+        return $body;
     }
 
     private function parserResponse()
@@ -691,9 +684,10 @@ class Curl
         } else {
             // 其他类型
             // json(application/json)、html(text/html)、文本(text/plain) 和其他不需要处理的格式
-            if (stripos($content_type, 'application/json') !== false && $this->isJson($body)) {
+            if ($this->isJson($body)) {
                 // json字符串处理
                 $body = is_array($body) ? $body : json_decode($body, true);
+                $body = $this->objectToArray($body);
             }
         }
         $this->respObjData['body'] = $body;

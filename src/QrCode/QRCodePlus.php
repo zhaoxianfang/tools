@@ -103,11 +103,11 @@ class QRCodePlus
      * @param int    $type     渲染类型
      * @param string $savePath 保存路径
      *
-     * @return GdImage|string|QRCodePlus
+     * @return GdImage|string
      * @throws QRCodeOutputException
      * @throws \ErrorException
      */
-    public function renderWith(int $type = WithTextOrLogo::HANDLE_TYPE_RETURN_IMG, string $savePath = '')
+    public function run(int $type = WithTextOrLogo::HANDLE_TYPE_TO_BROWSER, string $savePath = ''): GdImage|string
     {
         if (!empty($this->logoPath)) {
             $this->options->addLogoSpace    = true; // 是否在 QR 码中添加 Logo 空间
@@ -115,14 +115,11 @@ class QRCodePlus
             $this->options->logoSpaceHeight = 20; // Logo 空间的高度
         }
         // 带logo或文字的二维码
-        if (!empty($this->logoPath) || !empty($this->text)) {
-            $obj = new WithTextOrLogo($this->options, $this->qrcode->getQRMatrix());
-            $obj->setText($this->text, $this->fontPath, $this->textSize);
-            $obj->setLogo($this->logoPath);
-            $obj->setHandleType($type);
-            return $obj->dump($savePath);
-        }
-        return $this;
+        $obj = new WithTextOrLogo($this->options, $this->qrcode->getQRMatrix());
+        $obj->setText($this->text, $this->fontPath, $this->textSize);
+        $obj->setLogo($this->logoPath);
+        $obj->setHandleType($type);
+        return $obj->dump($savePath);
     }
 
     /**

@@ -7,17 +7,23 @@
 
 ## 快速开始
 
+```php
+use zxf\QRCode\QRCodePlus;
+```
+
 ### 需要自定义处理图片
 
 ```php
-try {
+
+$options=[];
+
 // 1、生成带logo 和文字的 二维码
 $qrcode = new QRCodePlus();
 $out = $qrcode
     ->content('hello')
     ->withText('威四方 QrCode')
     ->withLogo('/Users/linian/Pictures/Things.png')
-    ->renderWith()
+    ->run(WithTextOrLogo::HANDLE_TYPE_RETURN_IMG)
 
 header('Content-type: image/png');
 
@@ -31,14 +37,13 @@ exit;
 ### 把图片直接输出到浏览器上
 
 ```php
-try {
 // 1、生成带logo 和文字的 二维码
 $qrcode = new QRCodePlus();
 $qrcode
     ->content('hello')
-    ->withText('威四方 QrCode')
-    ->withLogo('/Users/linian/Pictures/Things.png')
-    ->renderWith(WithTextOrLogo::HANDLE_TYPE_TO_BROWSER)
+    ->withText('威四方 QrCode') // 可选
+    ->withLogo('/your/path/logo.png') // 可选
+    ->run(WithTextOrLogo::HANDLE_TYPE_TO_BROWSER)
 
 ```
 
@@ -50,9 +55,9 @@ try {
 $qrcode = new QRCodePlus();
 $filePath = $qrcode
     ->content('hello')
-    ->withText('威四方 QrCode')
-    ->withLogo('/Users/linian/Pictures/Things.png')
-    ->renderWith(WithTextOrLogo::HANDLE_TYPE_TO_PATH,'/your/path/to/qrcode.png')
+    ->withText('威四方 QrCode') // 可选
+    ->withLogo('/your/path/logo.png') // 可选
+    ->run(WithTextOrLogo::HANDLE_TYPE_TO_PATH, '/your/path/to/qrcode.png')
 
 // 输出图像数据
 echo $filePath;

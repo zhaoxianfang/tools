@@ -2,6 +2,7 @@
 
 namespace zxf\QrCode;
 
+use ErrorException;
 use GdImage;
 use zxf\QrCode\Common\EccLevel;
 use zxf\QrCode\Extend\WithTextOrLogo;
@@ -100,19 +101,19 @@ class QRCodePlus
     /**
      * 渲染带logo或文字的二维码
      *
-     * @param int    $type     渲染类型
-     * @param string $savePath 保存路径
+     * @param int         $type     渲染类型
+     * @param string|null $savePath 保存路径
      *
-     * @return GdImage|string
+     * @return GdImage|string|null
+     * @throws ErrorException
      * @throws QRCodeOutputException
-     * @throws \ErrorException
      */
-    public function run(int $type = WithTextOrLogo::HANDLE_TYPE_TO_BROWSER, string $savePath = ''): GdImage|string
+    private function draw(int $type = WithTextOrLogo::HANDLE_TYPE_TO_BROWSER, string|null $savePath = null): GdImage|string|null
     {
         if (!empty($this->logoPath)) {
             $this->options->addLogoSpace    = true; // 是否在 QR 码中添加 Logo 空间
-            $this->options->logoSpaceWidth  = 20; // Logo 空间的宽度, 如果仅给出 QROptions::$logoSpaceWidth，则徽标空间被假定为该大小的正方形
-            $this->options->logoSpaceHeight = 20; // Logo 空间的高度
+            $this->options->logoSpaceWidth  = 16; // Logo 空间的宽度, 如果仅给出 QROptions::$logoSpaceWidth，则徽标空间被假定为该大小的正方形
+            $this->options->logoSpaceHeight = 16; // Logo 空间的高度
         }
         // 带logo或文字的二维码
         $obj = new WithTextOrLogo($this->options, $this->qrcode->getQRMatrix());
@@ -120,6 +121,56 @@ class QRCodePlus
         $obj->setLogo($this->logoPath);
         $obj->setHandleType($type);
         return $obj->dump($savePath);
+    }
+
+    /**
+     * 把生成的图片直接渲染到浏览器中
+     *
+     * @return void
+     * @throws ErrorException
+     * @throws QRCodeOutputException
+     */
+    public function toBrowser(): void
+    {
+        $this->draw(WithTextOrLogo::HANDLE_TYPE_TO_BROWSER);
+    }
+
+    /**
+     * 把生成的图片保存到指定路径
+     *
+     * @param string $savePath
+     *
+     * @return string
+     * @throws ErrorException
+     * @throws QRCodeOutputException
+     */
+    public function toFile(string $savePath = ''): string
+    {
+        return $this->draw(WithTextOrLogo::HANDLE_TYPE_TO_FILE, $savePath);
+    }
+
+    /**
+     * 生成base64图片字符串
+     *
+     * @return string
+     * @throws ErrorException
+     * @throws QRCodeOutputException
+     */
+    public function toBase64(): string
+    {
+        return $this->draw(WithTextOrLogo::HANDLE_TYPE_TO_BASE_64);
+    }
+
+    /**
+     * 把生成的图片资源返回
+     *
+     * @return string
+     * @throws ErrorException
+     * @throws QRCodeOutputException
+     */
+    public function toImg(): string
+    {
+        return $this->draw(WithTextOrLogo::HANDLE_TYPE_TO_IMG);
     }
 
     /**

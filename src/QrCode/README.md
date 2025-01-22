@@ -1,3 +1,5 @@
+# QrCode 二维码
+
 > 来源：https://github.com/chillerlan/php-qrcode
 > 文档：https://php-qrcode.readthedocs.io/en/main/
 > 日期：2025-01-21
@@ -18,12 +20,8 @@ use zxf\QrCode\QRCodePlus;
 $options=[];
 
 // 1、生成带logo 和文字的 二维码
-$qrcode = new QRCodePlus();
-$out = $qrcode
-    ->content('hello')
-    ->withText('威四方 QrCode')
-    ->withLogo('/Users/linian/Pictures/Things.png')
-    ->run(WithTextOrLogo::HANDLE_TYPE_RETURN_IMG)
+$qrcode = new QRCodePlus($options);
+$out = $qrcode->content('hello')->toImg();
 
 header('Content-type: image/png');
 
@@ -43,24 +41,41 @@ $qrcode
     ->content('hello')
     ->withText('威四方 QrCode') // 可选
     ->withLogo('/your/path/logo.png') // 可选
-    ->run(WithTextOrLogo::HANDLE_TYPE_TO_BROWSER)
+    ->toBrowser();
 
 ```
 
 ### 生成图片保存到文件
 
 ```php
-try {
+
 // 1、生成带logo 和文字的 二维码
 $qrcode = new QRCodePlus();
 $filePath = $qrcode
     ->content('hello')
     ->withText('威四方 QrCode') // 可选
     ->withLogo('/your/path/logo.png') // 可选
-    ->run(WithTextOrLogo::HANDLE_TYPE_TO_PATH, '/your/path/to/qrcode.png')
+    ->toFile('/your/path/to/qrcode.png');
 
 // 输出图像数据
 echo $filePath;
+
+```
+
+### 生成base64图片字符串
+
+```php
+
+// 1、生成带logo 和文字的 二维码
+$qrcode = new QRCodePlus();
+$filePath = $qrcode
+    ->content('hello')
+    ->withText('威四方 QrCode') // 可选
+    ->withLogo('/your/path/logo.png') // 可选
+    ->toBase64();
+
+// 输出图像数据
+echo '<img src="' . $filePath . '">';
 
 ```
 
@@ -71,10 +86,10 @@ try {
     // 2、读取二维码
     $filePath = '/your/path/qrcode.png';
     $result   = (new QRCodePlus)->readFromFile($filePath);
-    // you can now use the result instance...
+    // 可以使用结果实例...
     $content = $result->data;
     var_dump($content);
-    // ...or simply cast the result instance to string to get the content
+    // ...或者 简单地将结果实例转换为字符串以获取内容
     $content = (string)$result;
     var_dump($content);
 } catch (Throwable $e) {

@@ -2,7 +2,10 @@
 
 namespace zxf\QrCode\Extend;
 
+use ErrorException;
+use GdImage;
 use zxf\QrCode\Data\QRMatrix;
+use zxf\QrCode\Output\QRCodeOutputException;
 use zxf\QrCode\Output\QRGdImagePNG;
 use zxf\QrCode\QRCode;
 use zxf\QrCode\QROptions;
@@ -38,11 +41,12 @@ class WithTextOrLogo extends QRGdImagePNG
     protected string $logoPath = '';
 
     /** @var int 图片处理方式 */
-    protected int $handleType = self::HANDLE_TYPE_RETURN_IMG;
+    protected int $handleType = self::HANDLE_TYPE_TO_IMG;
 
     const HANDLE_TYPE_TO_BROWSER = 1; // 输出到浏览器
-    const HANDLE_TYPE_TO_PATH    = 2; // 保存到文件
-    const HANDLE_TYPE_RETURN_IMG = 3; // 返回图片资源
+    const HANDLE_TYPE_TO_FILE    = 2; // 保存到文件
+    const HANDLE_TYPE_TO_IMG     = 3; // 返回图片资源
+    const HANDLE_TYPE_TO_BASE_64 = 4; // 返回base64图片
 
     /**
      * 重写构造函数，允许传入文本配置选项
@@ -84,14 +88,14 @@ class WithTextOrLogo extends QRGdImagePNG
         return $this;
     }
 
-    public function setLogo(string $logoPath = '')
+    public function setLogo(string|null $logoPath = '')
     {
         $this->logoPath = $logoPath;
         return $this;
     }
 
     // 设置处理方式
-    public function setHandleType(int $handleType = self::HANDLE_TYPE_RETURN_IMG)
+    public function setHandleType(int $handleType = self::HANDLE_TYPE_TO_IMG)
     {
         $this->handleType = $handleType;
         return $this;
@@ -107,11 +111,11 @@ class WithTextOrLogo extends QRGdImagePNG
      *
      * @param string|null $file 保存文件路径
      *
-     * @return \GdImage|string
-     * @throws \ErrorException
-     * @throws \zxf\QrCode\Output\QRCodeOutputException
+     * @return GdImage|string
+     * @throws ErrorException
+     * @throws QRCodeOutputException
      */
-    public function dump(string|null $file = null): \GdImage|string
+    public function dump(string|null $file = null): GdImage|string
     {
         // 设置 returnResource 为 true 以跳过进一步处理
         $this->options->returnResource = true;
@@ -131,9 +135,9 @@ class WithTextOrLogo extends QRGdImagePNG
         $imageData = $this->dumpImage();
 
         // 是否保存文件到指定路径
-        if ($this->handleType == self::HANDLE_TYPE_TO_PATH) {
+        if ($this->handleType == self::HANDLE_TYPE_TO_FILE) {
             if (empty($file)) {
-                throw new \ErrorException('未设置文件保存路径');
+                throw new ErrorException('未设置文件保存路径');
             }
             $this->saveToFile($imageData, $file);
             return $file;
@@ -144,7 +148,7 @@ class WithTextOrLogo extends QRGdImagePNG
             $this->outputToBrowser();
         }
 
-        if ($this->options->outputBase64) {
+        if ($this->options->outputBase64 || $this->handleType == self::HANDLE_TYPE_TO_BASE_64) {
             $imageData = $this->toBase64DataURI($imageData);
         }
 
@@ -161,7 +165,6 @@ class WithTextOrLogo extends QRGdImagePNG
         $textBG      = $this->textBG;
         $textColor   = $this->textColor;
         $fontPath    = $this->fontPath;
-        $fontPath    = dirname(__DIR__, 2) . '/resource/font/pmzdxx.ttf';
         $lineSpacing = $this->lineSpacing;
 
         // 存储文本行的数组
@@ -229,8 +232,6 @@ class WithTextOrLogo extends QRGdImagePNG
         // 获取二维码图像
         $qrImage = $this->image;
 
-        $this->logoPath = $this->logoPath ?: dirname(__DIR__, 2) . '/resource/images/tn_code/bg/1.png';
-
         // 创建标志图片的图像资源
         $logo = imagecreatefromstring(file_get_contents($this->logoPath));
 
@@ -239,9 +240,9 @@ class WithTextOrLogo extends QRGdImagePNG
         $qrHeight = imagesy($qrImage);
 
 
-        // 计算标志图片的尺寸（为二维码宽度的 25%）
-        $logoWidth  = (int)($qrWidth * 0.3);
-        $logoHeight = (int)($qrWidth * 0.3);
+        // 计算标志图片的尺寸（为二维码宽度的 22%）
+        $logoWidth  = (int)($qrWidth * 0.2);
+        $logoHeight = (int)($qrWidth * 0.2);
 
         // 调整标志图片的大小
         $resizedLogo = imagescale($logo, $logoWidth, $logoHeight);

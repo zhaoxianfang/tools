@@ -10,13 +10,13 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Decoder;
+namespace zxf\QrCode\Decoder;
 
-use zxf\QRCode\QROptions;
-use zxf\QRCode\Common\{BitBuffer, EccLevel, LuminanceSourceInterface, MaskPattern, Mode, Version};
-use zxf\QRCode\Data\{AlphaNum, Byte, ECI, Hanzi, Kanji, Number};
-use zxf\QRCode\Detector\Detector;
-use zxf\QRCode\Settings\SettingsContainerInterface;
+use zxf\QrCode\QROptions;
+use zxf\QrCode\Common\{BitBuffer, EccLevel, LuminanceSourceInterface, MaskPattern, Mode, Version};
+use zxf\QrCode\Data\{AlphaNum, Byte, ECI, Hanzi, Kanji, Number};
+use zxf\QrCode\Detector\Detector;
+use zxf\QrCode\Settings\SettingsContainerInterface;
 use Throwable;
 use function chr, str_replace;
 
@@ -42,7 +42,7 @@ final class Decoder{
 	 * Decodes a QR Code represented as a BitMatrix.
 	 * A 1 or "true" is taken to mean a black module.
 	 *
-	 * @throws \Throwable|\zxf\QRCode\Decoder\QRCodeDecoderException
+	 * @throws \Throwable|\zxf\QrCode\Decoder\QRCodeDecoderException
 	 */
 	public function decode(LuminanceSourceInterface $source):DecoderResult{
 		$matrix = (new Detector($source))->detect();
@@ -74,7 +74,7 @@ final class Decoder{
 	}
 
 	/**
-	 * @throws \zxf\QRCode\Decoder\QRCodeDecoderException
+	 * @throws \zxf\QrCode\Decoder\QRCodeDecoderException
 	 */
 	private function decodeMatrix(BitMatrix $matrix):DecoderResult{
 		// Read raw codewords
@@ -95,7 +95,7 @@ final class Decoder{
 	/**
 	 * Decode the contents of that stream of bytes
 	 *
-	 * @throws \zxf\QRCode\Decoder\QRCodeDecoderException
+	 * @throws \zxf\QrCode\Decoder\QRCodeDecoderException
 	 */
 	private function decodeBitStream(BitBuffer $bitBuffer):DecoderResult{
 		$this->bitBuffer  = $bitBuffer;

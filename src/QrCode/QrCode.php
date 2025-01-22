@@ -1,6 +1,6 @@
 <?php
 /**
- * Class QRCode
+ * Class QrCode
  *
  * @created      26.11.2015
  * @author       Smiley <smiley@chillerlan.net>
@@ -9,15 +9,15 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode;
+namespace zxf\QrCode;
 
-use zxf\QRCode\Common\{
+use zxf\QrCode\Common\{
 	ECICharset, GDLuminanceSource, IMagickLuminanceSource, LuminanceSourceInterface, MaskPattern, Mode
 };
-use zxf\QRCode\Data\{AlphaNum, Byte, ECI, Hanzi, Kanji, Number, QRData, QRDataModeInterface, QRMatrix};
-use zxf\QRCode\Decoder\{Decoder, DecoderResult};
-use zxf\QRCode\Output\{QRCodeOutputException, QROutputInterface};
-use zxf\QRCode\Settings\SettingsContainerInterface;
+use zxf\QrCode\Data\{AlphaNum, Byte, ECI, Hanzi, Kanji, Number, QRData, QRDataModeInterface, QRMatrix};
+use zxf\QrCode\Decoder\{Decoder, DecoderResult};
+use zxf\QrCode\Output\{QRCodeOutputException, QROutputInterface};
+use zxf\QrCode\Settings\SettingsContainerInterface;
 use function class_exists, class_implements, in_array, is_iterable, mb_convert_encoding, mb_internal_encoding;
 
 /**
@@ -39,7 +39,7 @@ class QRCode{
 	/**
 	 * A collection of one or more data segments of QRDataModeInterface instances to write
 	 *
-	 * @var \zxf\QRCode\Data\QRDataModeInterface[]
+	 * @var \zxf\QrCode\Data\QRDataModeInterface[]
 	 */
 	protected array $dataSegments = [];
 
@@ -49,7 +49,7 @@ class QRCode{
 	protected string $luminanceSourceFQN = GDLuminanceSource::class;
 
 	/**
-	 * QRCode constructor.
+	 * QrCode constructor.
 	 *
 	 * @phpstan-param array<string, mixed> $options
 	 */
@@ -146,7 +146,7 @@ class QRCode{
 	/**
 	 * initializes a fresh built-in or custom QROutputInterface
 	 *
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 */
 	protected function initOutputInterface(QRMatrix $matrix):QROutputInterface{
 		$outputInterface = $this->options->outputInterface;
@@ -159,7 +159,7 @@ class QRCode{
 			throw new QRCodeOutputException('output class does not implement QROutputInterface');
 		}
 
-		/** @var \zxf\QRCode\Output\QROutputInterface $instance */
+		/** @var \zxf\QrCode\Output\QROutputInterface $instance */
 		$instance = new $outputInterface($this->options, $matrix);
 
 		return $instance;
@@ -251,7 +251,7 @@ class QRCode{
 	 *
 	 * I hate this somehow, but I'll leave it for now
 	 *
-	 * @throws \zxf\QRCode\QRCodeException
+	 * @throws \zxf\QrCode\QRCodeException
 	 */
 	public function addEciSegment(int $encoding, string $data):static{
 		// validate the encoding id

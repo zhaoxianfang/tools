@@ -12,10 +12,10 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Common;
+namespace zxf\QrCode\Common;
 
-use zxf\QRCode\QROptions;
-use zxf\QRCode\Settings\SettingsContainerInterface;
+use zxf\QrCode\QROptions;
+use zxf\QrCode\Settings\SettingsContainerInterface;
 use Imagick;
 use function count;
 

@@ -9,9 +9,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Data;
+namespace zxf\QrCode\Data;
 
-use zxf\QRCode\Common\{BitBuffer, EccLevel, MaskPattern, Version};
+use zxf\QrCode\Common\{BitBuffer, EccLevel, MaskPattern, Version};
 use function array_fill, array_map, array_reverse, count, intdiv;
 
 /**
@@ -93,7 +93,7 @@ class QRMatrix{
 	/**
 	 * Map of flag => coord
 	 *
-	 * @see \zxf\QRCode\Data\QRMatrix::checkNeighbours()
+	 * @see \zxf\QrCode\Data\QRMatrix::checkNeighbours()
 	 *
 	 * @var int[][]
 	 */
@@ -555,7 +555,7 @@ class QRMatrix{
 	 *
 	 * ISO/IEC 18004:2000 Section 7.3.7
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public function setQuietZone(int $quietZoneSize):static{
 
@@ -637,7 +637,7 @@ class QRMatrix{
 	 *
 	 * @link https://github.com/chillerlan/php-qrcode/issues/52
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public function setLogoSpace(int $width, int|null $height = null, int|null $startX = null, int|null $startY = null):static{
 		$height ??= $width;

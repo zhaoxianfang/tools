@@ -10,10 +10,10 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Decoder;
+namespace zxf\QrCode\Decoder;
 
-use zxf\QRCode\Common\LuminanceSourceInterface;
-use zxf\QRCode\Data\QRMatrix;
+use zxf\QrCode\Common\LuminanceSourceInterface;
+use zxf\QrCode\Data\QRMatrix;
 use function array_fill, count, intdiv, max;
 
 /**
@@ -58,7 +58,7 @@ final class Binarizer{
 
 	/**
 	 * @param int[] $buckets
-	 * @throws \zxf\QRCode\Decoder\QRCodeDecoderException
+	 * @throws \zxf\QrCode\Decoder\QRCodeDecoderException
 	 */
 	private function estimateBlackPoint(array $buckets):int{
 		// Find the tallest peak in the histogram.
@@ -134,7 +134,7 @@ final class Binarizer{
 	 * may not apply sharpening. Therefore, a row from this matrix may not be identical to one
 	 * fetched using getBlackRow(), so don't mix and match between them.
 	 *
-	 * @return \zxf\QRCode\Decoder\BitMatrix The 2D array of bits for the image (true means black).
+	 * @return \zxf\QrCode\Decoder\BitMatrix The 2D array of bits for the image (true means black).
 	 */
 	public function getBlackMatrix():BitMatrix{
 		$width  = $this->source->getWidth();

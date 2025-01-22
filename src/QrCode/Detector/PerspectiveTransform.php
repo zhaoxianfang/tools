@@ -10,7 +10,7 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Detector;
+namespace zxf\QrCode\Detector;
 
 use function count;
 

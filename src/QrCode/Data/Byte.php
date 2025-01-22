@@ -9,9 +9,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Data;
+namespace zxf\QrCode\Data;
 
-use zxf\QRCode\Common\{BitBuffer, Mode};
+use zxf\QrCode\Common\{BitBuffer, Mode};
 use function chr, ord;
 
 /**
@@ -53,7 +53,7 @@ final class Byte extends QRDataModeAbstract{
 	/**
 	 * @inheritDoc
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public static function decodeSegment(BitBuffer $bitBuffer, int $versionNumber):string{
 		$length = $bitBuffer->read(self::getLengthBits($versionNumber));

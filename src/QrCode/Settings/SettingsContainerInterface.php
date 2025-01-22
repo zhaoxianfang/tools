@@ -9,7 +9,7 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Settings;
+namespace zxf\QrCode\Settings;
 
 use JsonSerializable, Serializable;
 
@@ -41,7 +41,7 @@ interface SettingsContainerInterface extends JsonSerializable, Serializable{
     public function __unset(string $property):void;
 
     /**
-     * @see \zxf\QRCode\Settings\SettingsContainerInterface::toJSON()
+     * @see \zxf\QrCode\Settings\SettingsContainerInterface::toJSON()
      */
     public function __toString():string;
 
@@ -67,7 +67,7 @@ interface SettingsContainerInterface extends JsonSerializable, Serializable{
      * Returns a JSON representation of the settings object
      *
      * @see \json_encode()
-     * @see \zxf\QRCode\Settings\SettingsContainerInterface::toArray()
+     * @see \zxf\QrCode\Settings\SettingsContainerInterface::toArray()
      *
      * @throws \JsonException
      */
@@ -76,7 +76,7 @@ interface SettingsContainerInterface extends JsonSerializable, Serializable{
     /**
      * Sets properties from a given JSON string
      *
-     * @see \zxf\QRCode\Settings\SettingsContainerInterface::fromIterable()
+     * @see \zxf\QrCode\Settings\SettingsContainerInterface::fromIterable()
      *
      * @throws \Exception
      * @throws \JsonException

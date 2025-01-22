@@ -10,10 +10,10 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Decoder;
+namespace zxf\QrCode\Decoder;
 
-use zxf\QRCode\Common\{EccLevel, MaskPattern, Version};
-use zxf\QRCode\Data\{QRCodeDataException, QRMatrix};
+use zxf\QrCode\Common\{EccLevel, MaskPattern, Version};
+use zxf\QrCode\Data\{QRCodeDataException, QRMatrix};
 use function array_fill, array_reverse, count;
 use const PHP_INT_MAX, PHP_INT_SIZE;
 
@@ -107,7 +107,7 @@ final class BitMatrix extends QRMatrix{
 	 * QR Code. Throws if the exact number of bytes expected is not read.
 	 *
 	 * @return int[]
-	 * @throws \zxf\QRCode\Decoder\QRCodeDecoderException
+	 * @throws \zxf\QrCode\Decoder\QRCodeDecoderException
 	 */
 	public function readCodewords():array{
 
@@ -178,7 +178,7 @@ final class BitMatrix extends QRMatrix{
 	 * Reads format information from one of its two locations within the QR Code.
 	 * Throws if both format information locations cannot be parsed as the valid encoding of format information.
 	 *
-	 * @throws \zxf\QRCode\Decoder\QRCodeDecoderException
+	 * @throws \zxf\QrCode\Decoder\QRCodeDecoderException
 	 */
 	private function readFormatInformation():static{
 
@@ -291,7 +291,7 @@ final class BitMatrix extends QRMatrix{
 	 * Reads version information from one of its two locations within the QR Code.
 	 * Throws if both version information locations cannot be parsed as the valid encoding of version information.
 	 *
-	 * @throws \zxf\QRCode\Decoder\QRCodeDecoderException
+	 * @throws \zxf\QrCode\Decoder\QRCodeDecoderException
 	 * @noinspection DuplicatedCode
 	 */
 	private function readVersion():static{
@@ -404,7 +404,7 @@ final class BitMatrix extends QRMatrix{
 
 	/**
 	 * @codeCoverageIgnore
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public function setQuietZone(int|null $quietZoneSize = null):static{
 		throw new QRCodeDataException('not supported');
@@ -412,7 +412,7 @@ final class BitMatrix extends QRMatrix{
 
 	/**
 	 * @codeCoverageIgnore
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public function setLogoSpace(int $width, int|null $height = null, int|null $startX = null, int|null $startY = null):static{
 		throw new QRCodeDataException('not supported');

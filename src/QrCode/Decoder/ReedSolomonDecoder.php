@@ -10,9 +10,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Decoder;
+namespace zxf\QrCode\Decoder;
 
-use zxf\QRCode\Common\{BitBuffer, EccLevel, GenericGFPoly, GF256, Version};
+use zxf\QrCode\Common\{BitBuffer, EccLevel, GenericGFPoly, GF256, Version};
 use function array_fill, array_reverse, count;
 
 /**
@@ -71,7 +71,7 @@ final class ReedSolomonDecoder{
 	 * That is, the first byte of data block 1 to n is written, then the second bytes, and so on. This
 	 * method will separate the data into original blocks.
 	 *
-	 * @throws \zxf\QRCode\Decoder\QRCodeDecoderException
+	 * @throws \zxf\QrCode\Decoder\QRCodeDecoderException
 	 *
 	 * @param int[] $rawCodewords
 	 */
@@ -172,7 +172,7 @@ final class ReedSolomonDecoder{
 	 * @param int   $numEccCodewords number of error-correction codewords available
 	 *
 	 * @return int[]
-	 * @throws \zxf\QRCode\Decoder\QRCodeDecoderException if decoding fails for any reason
+	 * @throws \zxf\QrCode\Decoder\QRCodeDecoderException if decoding fails for any reason
 	 */
 	private function decodeWords(array $received, int $numEccCodewords):array{
 		$poly                 = new GenericGFPoly($received);
@@ -216,8 +216,8 @@ final class ReedSolomonDecoder{
 	}
 
 	/**
-	 * @return \zxf\QRCode\Common\GenericGFPoly[] [sigma, omega]
-	 * @throws \zxf\QRCode\Decoder\QRCodeDecoderException
+	 * @return \zxf\QrCode\Common\GenericGFPoly[] [sigma, omega]
+	 * @throws \zxf\QrCode\Decoder\QRCodeDecoderException
 	 */
 	private function runEuclideanAlgorithm(GenericGFPoly $a, GenericGFPoly $b, int $z):array{
 		// Assume a's degree is >= b's
@@ -262,7 +262,7 @@ final class ReedSolomonDecoder{
 
 	/**
 	 * @return int[]
-	 * @throws \zxf\QRCode\Decoder\QRCodeDecoderException
+	 * @throws \zxf\QrCode\Decoder\QRCodeDecoderException
 	 */
 	private function findErrorLocations(GenericGFPoly $errorLocator):array{
 		// This is a direct application of Chien's search

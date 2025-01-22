@@ -12,10 +12,10 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Common;
+namespace zxf\QrCode\Common;
 
-use zxf\QRCode\QROptions;
-use zxf\QRCode\Settings\SettingsContainerInterface;
+use zxf\QrCode\QROptions;
+use zxf\QrCode\Settings\SettingsContainerInterface;
 use GdImage;
 use function file_get_contents, imagecolorat, imagecolorsforindex,
 	imagecreatefromstring, imagefilter, imagesx, imagesy;
@@ -32,7 +32,7 @@ final class GDLuminanceSource extends LuminanceSourceAbstract{
 	/**
 	 * GDLuminanceSource constructor.
 	 *
-	 * @throws \zxf\QRCode\Decoder\QRCodeDecoderException
+	 * @throws \zxf\QrCode\Decoder\QRCodeDecoderException
 	 */
 	public function __construct(GdImage $gdImage, SettingsContainerInterface|QROptions $options = new QROptions){
 		parent::__construct(imagesx($gdImage), imagesy($gdImage), $options);

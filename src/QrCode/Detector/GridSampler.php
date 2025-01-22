@@ -10,10 +10,10 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Detector;
+namespace zxf\QrCode\Detector;
 
-use zxf\QRCode\Data\QRMatrix;
-use zxf\QRCode\Decoder\BitMatrix;
+use zxf\QrCode\Data\QRMatrix;
+use zxf\QrCode\Decoder\BitMatrix;
 use function array_fill, count, intdiv, sprintf;
 
 /**
@@ -47,7 +47,7 @@ final class GridSampler{
 	 *
 	 * @param int $dimension matrix width/height
 	 *
-	 * @throws \zxf\QRCode\Detector\QRCodeDetectorException if an endpoint is lies outside the image boundaries
+	 * @throws \zxf\QrCode\Detector\QRCodeDetectorException if an endpoint is lies outside the image boundaries
 	 */
 	private function checkAndNudgePoints(int $dimension):void{
 		$nudged = true;
@@ -124,9 +124,9 @@ final class GridSampler{
 	 * transformation is determined by the coordinates of 4 points, in the original and transformed
 	 * image space.
 	 *
-	 * @return \zxf\QRCode\Decoder\BitMatrix representing a grid of points sampled from the image within a region
+	 * @return \zxf\QrCode\Decoder\BitMatrix representing a grid of points sampled from the image within a region
 	 *   defined by the "from" parameters
-	 * @throws \zxf\QRCode\Detector\QRCodeDetectorException if image can't be sampled, for example, if the transformation defined
+	 * @throws \zxf\QrCode\Detector\QRCodeDetectorException if image can't be sampled, for example, if the transformation defined
 	 *   by the given points is invalid or results in sampling outside the image boundaries
 	 */
 	public function sampleGrid(BitMatrix $matrix, int $dimension, PerspectiveTransform $transform):BitMatrix{

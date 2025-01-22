@@ -9,9 +9,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Output;
+namespace zxf\QrCode\Output;
 
-use zxf\QRCode\Data\QRMatrix;
+use zxf\QrCode\Data\QRMatrix;
 
 /**
  * Converts the data matrix into readable output
@@ -112,7 +112,7 @@ interface QROutputInterface{
 	 * Note: do not call this constant from the interface, but rather from one of the child classes
 	 *
 	 * @var string
-	 * @see \zxf\QRCode\Output\QROutputAbstract::toBase64DataURI()
+	 * @see \zxf\QrCode\Output\QROutputAbstract::toBase64DataURI()
 	 */
 	public const MIME_TYPE = '';
 
@@ -128,7 +128,7 @@ interface QROutputInterface{
 	 * if the output module is invoked manually, it has no effect at all.
 	 * you need to supply the $file parameter here in that case (or handle the option value in your custom output module).
 	 *
-	 * @see \zxf\QRCode\QRCode::renderMatrix()
+	 * @see \zxf\QrCode\QRCode::renderMatrix()
 	 */
 	public function dump(string|null $file = null):mixed;
 

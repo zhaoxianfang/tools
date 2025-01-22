@@ -9,7 +9,7 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Output;
+namespace zxf\QrCode\Output;
 
 use function array_chunk, implode, is_string, preg_match, sprintf, trim;
 

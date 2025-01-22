@@ -9,9 +9,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Data;
+namespace zxf\QrCode\Data;
 
-use zxf\QRCode\QRCodeException;
+use zxf\QrCode\QRCodeException;
 
 /**
  * An exception container

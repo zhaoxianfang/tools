@@ -11,11 +11,11 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Output;
+namespace zxf\QrCode\Output;
 
-use zxf\QRCode\QROptions;
-use zxf\QRCode\Data\QRMatrix;
-use zxf\QRCode\Settings\SettingsContainerInterface;
+use zxf\QrCode\QROptions;
+use zxf\QrCode\Data\QRMatrix;
+use zxf\QrCode\Settings\SettingsContainerInterface;
 use GdImage;
 use function extension_loaded, imagecolorallocate, imagecolortransparent,
 	imagecreatetruecolor, imagedestroy, imagefilledellipse, imagefilledrectangle,
@@ -49,12 +49,12 @@ abstract class QRGdImage extends QROutputAbstract{
 	/**
 	 * Whether we're running in upscale mode (scale < 20)
 	 *
-	 * @see \zxf\QRCode\QROptions::$drawCircularModules
+	 * @see \zxf\QrCode\QROptions::$drawCircularModules
 	 */
 	protected bool $upscaled = false;
 
 	/**
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 * @noinspection PhpMissingParentConstructorInspection
 	 */
 	public function __construct(SettingsContainerInterface|QROptions $options, QRMatrix $matrix){
@@ -74,7 +74,7 @@ abstract class QRGdImage extends QROutputAbstract{
 	/**
 	 * Checks whether GD is installed and if the given mode is supported
 	 *
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 * @codeCoverageIgnore
 	 */
 	protected function checkGD():void{
@@ -107,7 +107,7 @@ abstract class QRGdImage extends QROutputAbstract{
 
 	/**
 	 * @inheritDoc
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 */
 	protected function prepareModuleValue(mixed $value):int{
 		$values = [];
@@ -137,7 +137,7 @@ abstract class QRGdImage extends QROutputAbstract{
 	/**
 	 * @inheritDoc
 	 *
-	 * @throws \ErrorException|\zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \ErrorException|\zxf\QrCode\Output\QRCodeOutputException
 	 */
 	public function dump(string|null $file = null):string|GdImage{
 		$this->image = $this->createImage();
@@ -191,7 +191,7 @@ abstract class QRGdImage extends QROutputAbstract{
 	 *
 	 * @see https://github.com/chillerlan/php-qrcode/issues/23
 	 *
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 */
 	protected function createImage():GdImage{
 
@@ -309,7 +309,7 @@ abstract class QRGdImage extends QROutputAbstract{
 	/**
 	 * Creates the final image by calling the desired GD output function
 	 *
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 */
 	protected function dumpImage():string{
 		ob_start();

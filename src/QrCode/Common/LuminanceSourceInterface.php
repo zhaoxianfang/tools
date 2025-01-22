@@ -9,10 +9,10 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Common;
+namespace zxf\QrCode\Common;
 
-use zxf\QRCode\QROptions;
-use zxf\QRCode\Settings\SettingsContainerInterface;
+use zxf\QrCode\QROptions;
+use zxf\QrCode\Settings\SettingsContainerInterface;
 
 /**
  * Interface for the luminance sources
@@ -49,7 +49,7 @@ interface LuminanceSourceInterface{
 	 * @param int $y  The row to fetch, which must be in [0,getHeight())
 	 *
 	 * @return int[] An array containing the luminance data.
-	 * @throws \zxf\QRCode\Decoder\QRCodeDecoderException
+	 * @throws \zxf\QrCode\Decoder\QRCodeDecoderException
 	 */
 	public function getRow(int $y):array;
 

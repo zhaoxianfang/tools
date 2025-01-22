@@ -10,9 +10,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Common;
+namespace zxf\QrCode\Common;
 
-use zxf\QRCode\QRCodeException;
+use zxf\QrCode\QRCodeException;
 
 use function array_fill;
 
@@ -85,7 +85,7 @@ final class GF256{
 
 	/**
 	 * @return GenericGFPoly the monomial representing coefficient * x^degree
-	 * @throws \zxf\QRCode\QRCodeException
+	 * @throws \zxf\QrCode\QRCodeException
 	 */
 	public static function buildMonomial(int $degree, int $coefficient):GenericGFPoly{
 
@@ -116,7 +116,7 @@ final class GF256{
 
 	/**
 	 * @return int base 2 log of $a in GF(size)
-	 * @throws \zxf\QRCode\QRCodeException
+	 * @throws \zxf\QrCode\QRCodeException
 	 */
 	public static function log(int $a):int{
 
@@ -129,7 +129,7 @@ final class GF256{
 
 	/**
 	 * @return int multiplicative inverse of a
-	 * @throws \zxf\QRCode\QRCodeException
+	 * @throws \zxf\QrCode\QRCodeException
 	 */
 	public static function inverse(int $a):int{
 

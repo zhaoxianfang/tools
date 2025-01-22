@@ -9,9 +9,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Common;
+namespace zxf\QrCode\Common;
 
-use zxf\QRCode\QRCodeException;
+use zxf\QrCode\QRCodeException;
 use function array_column;
 
 /**
@@ -143,7 +143,7 @@ final class EccLevel{
 	/**
 	 * @param int $eccLevel containing the two bits encoding a QR Code's error correction level
 	 *
-	 * @throws \zxf\QRCode\QRCodeException
+	 * @throws \zxf\QrCode\QRCodeException
 	 */
 	public function __construct(int $eccLevel){
 
@@ -178,9 +178,9 @@ final class EccLevel{
 	 *
 	 * references to the keys of the following tables:
 	 *
-	 * @see \zxf\QRCode\Common\EccLevel::MAX_BITS
-	 * @see \zxf\QRCode\Common\EccLevel::FORMAT_PATTERN
-	 * @see \zxf\QRCode\Common\Version::RSBLOCKS
+	 * @see \zxf\QrCode\Common\EccLevel::MAX_BITS
+	 * @see \zxf\QrCode\Common\EccLevel::FORMAT_PATTERN
+	 * @see \zxf\QrCode\Common\Version::RSBLOCKS
 	 */
 	public function getOrdinal():int{
 		return [

@@ -11,11 +11,11 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Output;
+namespace zxf\QrCode\Output;
 
-use zxf\QRCode\QROptions;
-use zxf\QRCode\Data\QRMatrix;
-use zxf\QRCode\Settings\SettingsContainerInterface;
+use zxf\QrCode\QROptions;
+use zxf\QrCode\Data\QRMatrix;
+use zxf\QrCode\Settings\SettingsContainerInterface;
 use Closure, finfo;
 use function base64_encode, dirname, extension_loaded, file_put_contents, is_writable, ksort, sprintf;
 use const FILEINFO_MIME_TYPE;
@@ -28,7 +28,7 @@ abstract class QROutputAbstract implements QROutputInterface{
 	/**
 	 * the current size of the QR matrix
 	 *
-	 * @see \zxf\QRCode\Data\QRMatrix::getSize()
+	 * @see \zxf\QrCode\Data\QRMatrix::getSize()
 	 */
 	protected int $moduleCount;
 
@@ -55,26 +55,26 @@ abstract class QROutputAbstract implements QROutputInterface{
 	protected SettingsContainerInterface|QROptions $options;
 
 	/**
-	 * @see \zxf\QRCode\QROptions::$excludeFromConnect
+	 * @see \zxf\QrCode\QROptions::$excludeFromConnect
 	 * @var int[]
 	 */
 	protected array $excludeFromConnect;
 	/**
-	 * @see \zxf\QRCode\QROptions::$keepAsSquare
+	 * @see \zxf\QrCode\QROptions::$keepAsSquare
 	 * @var int[]
 	 */
 	protected array $keepAsSquare;
-	/** @see \zxf\QRCode\QROptions::$scale */
+	/** @see \zxf\QrCode\QROptions::$scale */
 	protected int $scale;
-	/** @see \zxf\QRCode\QROptions::$connectPaths */
+	/** @see \zxf\QrCode\QROptions::$connectPaths */
 	protected bool $connectPaths;
-	/** @see \zxf\QRCode\QROptions::$eol */
+	/** @see \zxf\QrCode\QROptions::$eol */
 	protected string $eol;
-	/** @see \zxf\QRCode\QROptions::$drawLightModules */
+	/** @see \zxf\QrCode\QROptions::$drawLightModules */
 	protected bool $drawLightModules;
-	/** @see \zxf\QRCode\QROptions::$drawCircularModules */
+	/** @see \zxf\QrCode\QROptions::$drawCircularModules */
 	protected bool $drawCircularModules;
-	/** @see \zxf\QRCode\QROptions::$circleRadius */
+	/** @see \zxf\QrCode\QROptions::$circleRadius */
 	protected float $circleRadius;
 	protected float $circleDiameter;
 
@@ -174,7 +174,7 @@ abstract class QROutputAbstract implements QROutputInterface{
 	/**
 	 * Returns the prepared value for the given $M_TYPE
 	 *
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException if $moduleValues[$M_TYPE] doesn't exist
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException if $moduleValues[$M_TYPE] doesn't exist
 	 */
 	protected function getModuleValue(int $M_TYPE):mixed{
 
@@ -211,7 +211,7 @@ abstract class QROutputAbstract implements QROutputInterface{
 	/**
 	 * Guesses the mime type from the given $imageData
 	 *
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 */
 	protected function guessMimeType(string $imageData):string{
 
@@ -232,9 +232,9 @@ abstract class QROutputAbstract implements QROutputInterface{
 	 * Saves the qr $data to a $file. If $file is null, nothing happens.
 	 *
 	 * @see file_put_contents()
-	 * @see \zxf\QRCode\QROptions::$cachefile
+	 * @see \zxf\QrCode\QROptions::$cachefile
 	 *
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 */
 	protected function saveToFile(string $data, string|null $file = null):void{
 

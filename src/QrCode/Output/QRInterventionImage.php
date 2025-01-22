@@ -9,11 +9,11 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Output;
+namespace zxf\QrCode\Output;
 
-use zxf\QRCode\Data\QRMatrix;
-use zxf\QRCode\QROptions;
-use zxf\QRCode\Settings\SettingsContainerInterface;
+use zxf\QrCode\Data\QRMatrix;
+use zxf\QrCode\QROptions;
+use zxf\QrCode\Settings\SettingsContainerInterface;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
 use Intervention\Image\Geometry\Factories\CircleFactory;
@@ -46,7 +46,7 @@ class QRInterventionImage extends QROutputAbstract{
 	/**
 	 * QRInterventionImage constructor.
 	 *
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 */
 	public function __construct(SettingsContainerInterface|QROptions $options, QRMatrix $matrix){
 

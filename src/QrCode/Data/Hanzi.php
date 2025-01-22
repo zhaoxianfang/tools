@@ -9,9 +9,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Data;
+namespace zxf\QrCode\Data;
 
-use zxf\QRCode\Common\{BitBuffer, Mode};
+use zxf\QrCode\Common\{BitBuffer, Mode};
 use Throwable;
 use function chr, implode, intdiv, is_string, mb_convert_encoding, mb_detect_encoding,
 	mb_detect_order, mb_internal_encoding, mb_strlen, ord, sprintf, strlen;
@@ -116,7 +116,7 @@ final class Hanzi extends QRDataModeAbstract{
 	/**
 	 * @inheritDoc
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException on an illegal character occurence
+	 * @throws \zxf\QrCode\Data\QRCodeDataException on an illegal character occurence
 	 */
 	public function write(BitBuffer $bitBuffer, int $versionNumber):static{
 
@@ -154,7 +154,7 @@ final class Hanzi extends QRDataModeAbstract{
 	/**
 	 * See specification GBT 18284-2000
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public static function decodeSegment(BitBuffer $bitBuffer, int $versionNumber):string{
 

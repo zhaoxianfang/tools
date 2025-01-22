@@ -13,15 +13,15 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode;
+namespace zxf\QrCode;
 
-use zxf\QRCode\Common\{EccLevel, MaskPattern, Version};
-use zxf\QRCode\Output\QRMarkupSVG;
+use zxf\QrCode\Common\{EccLevel, MaskPattern, Version};
+use zxf\QrCode\Output\QRMarkupSVG;
 use function constant, in_array, is_string, max, min, sprintf, strtolower, strtoupper, trim;
 use const JSON_THROW_ON_ERROR, JSON_UNESCAPED_SLASHES, PHP_EOL;
 
 /**
- * The QRCode plug-in settings & setter functionality
+ * The QrCode plug-in settings & setter functionality
  *
  * @property int               $version
  * @property int               $versionMin
@@ -76,7 +76,7 @@ trait QROptionsTrait{
 	 *
 	 * `1 ... 40` or `Version::AUTO` (default)
 	 *
-	 * @see \zxf\QRCode\Common\Version
+	 * @see \zxf\QrCode\Common\Version
 	 */
 	protected int $version = Version::AUTO;
 
@@ -106,7 +106,7 @@ trait QROptionsTrait{
 	 *
 	 * alternatively you can just pass the letters L/M/Q/H (case-insensitive) to the magic setter
 	 *
-	 * @see \zxf\QRCode\Common\EccLevel
+	 * @see \zxf\QrCode\Common\EccLevel
 	 * @see https://github.com/chillerlan/php-qrcode/discussions/160
 	 */
 	protected int $eccLevel = EccLevel::L;
@@ -116,7 +116,7 @@ trait QROptionsTrait{
 	 *
 	 * `0 ... 7` or `MaskPattern::PATTERN_AUTO` (default)
 	 *
-	 * @see \zxf\QRCode\Common\MaskPattern
+	 * @see \zxf\QrCode\Common\MaskPattern
 	 */
 	protected int $maskPattern = MaskPattern::AUTO;
 
@@ -154,18 +154,18 @@ trait QROptionsTrait{
 	 * This option overrides/ignores other output settings, such as `QROptions::$cachefile`
 	 * and `QROptions::$outputBase64`. (default: `false`)
 	 *
-	 * @see \zxf\QRCode\Output\QROutputInterface::dump()
+	 * @see \zxf\QrCode\Output\QROutputInterface::dump()
 	 */
 	protected bool $returnResource = false;
 
 	/**
 	 * Optional cache file path `/path/to/cache.file`
 	 *
-	 * Please note that the `$file` parameter in `QRCode::render()` and `QRCode::renderMatrix()`
+	 * Please note that the `$file` parameter in `QrCode::render()` and `QrCode::renderMatrix()`
 	 * takes precedence over the `QROptions::$cachefile` value. (default: `null`)
 	 *
-	 * @see \zxf\QRCode\QRCode::render()
-	 * @see \zxf\QRCode\QRCode::renderMatrix()
+	 * @see \zxf\QrCode\QRCode::render()
+	 * @see \zxf\QrCode\QRCode::renderMatrix()
 	 */
 	protected string|null $cachefile = null;
 
@@ -174,7 +174,7 @@ trait QROptionsTrait{
 	 *
 	 * (default: `true`)
 	 *
-	 * @see \zxf\QRCode\Output\QROutputAbstract::toBase64DataURI()
+	 * @see \zxf\QrCode\Output\QROutputAbstract::toBase64DataURI()
 	 */
 	protected bool $outputBase64 = true;
 
@@ -204,7 +204,7 @@ trait QROptionsTrait{
 	 *
 	 * (default: `false`)
 	 *
-	 * @see \zxf\QRCode\Data\QRMatrix::invert()
+	 * @see \zxf\QrCode\Data\QRMatrix::invert()
 	 */
 	protected bool $invertMatrix = false;
 
@@ -257,8 +257,8 @@ trait QROptionsTrait{
 	 *
 	 * Currentty used in `QREps` and `QRMarkupSVG`.
 	 *
-	 * @see \zxf\QRCode\Output\QROutputAbstract::collectModules()
-	 * @see \zxf\QRCode\QROptionsTrait::$excludeFromConnect
+	 * @see \zxf\QrCode\Output\QROutputAbstract::collectModules()
+	 * @see \zxf\QrCode\QROptionsTrait::$excludeFromConnect
 	 * @see https://github.com/chillerlan/php-qrcode/issues/57
 	 */
 	protected bool $connectPaths = false;
@@ -266,7 +266,7 @@ trait QROptionsTrait{
 	/**
 	 * Specify which paths/patterns to exclude from connecting if `QROptions::$connectPaths` is set to `true`
 	 *
-	 * @see \zxf\QRCode\QROptionsTrait::$connectPaths
+	 * @see \zxf\QrCode\QROptionsTrait::$connectPaths
 	 *
 	 * @var int[]
 	 */
@@ -279,7 +279,7 @@ trait QROptionsTrait{
 	 * - `QREps`, `QRFpdf`, `QRGdImage`: `[R, G, B]` // 0-255
 	 * - `QREps`: `[C, M, Y, K]` // 0-255
 	 *
-	 * @see \zxf\QRCode\Output\QROutputAbstract::setModuleValues()
+	 * @see \zxf\QrCode\Output\QROutputAbstract::setModuleValues()
 	 *
 	 * @var array<int, mixed>
 	 */
@@ -288,8 +288,8 @@ trait QROptionsTrait{
 	/**
 	 * Toggles logo space creation
 	 *
-	 * @see \zxf\QRCode\QRCode::addMatrixModifications()
-	 * @see \zxf\QRCode\Data\QRMatrix::setLogoSpace()
+	 * @see \zxf\QrCode\QRCode::addMatrixModifications()
+	 * @see \zxf\QrCode\Data\QRMatrix::setLogoSpace()
 	 */
 	protected bool $addLogoSpace = false;
 
@@ -377,7 +377,7 @@ trait QROptionsTrait{
 	 * Toggles the usage of internal upscaling when `QROptions::$drawCircularModules` is set to `true` and
 	 * `QROptions::$scale` is less than 20
 	 *
-	 * @see \zxf\QRCode\Output\QRGdImage::createImage()
+	 * @see \zxf\QrCode\Output\QRGdImage::createImage()
 	 * @see https://github.com/chillerlan/php-qrcode/issues/23
 	 */
 	protected bool $gdImageUseUpscale = true;
@@ -523,7 +523,7 @@ trait QROptionsTrait{
 	/**
 	 * sets the ECC level
 	 *
-	 * @throws \zxf\QRCode\QRCodeException
+	 * @throws \zxf\QrCode\QRCodeException
 	 */
 	protected function set_eccLevel(int|string $eccLevel):void{
 

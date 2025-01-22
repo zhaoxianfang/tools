@@ -1,12 +1,12 @@
 <?php
 
-namespace zxf\QRCode\Extend;
+namespace zxf\QrCode\Extend;
 
-use zxf\QRCode\Data\QRMatrix;
-use zxf\QRCode\Output\QRGdImagePNG;
-use zxf\QRCode\QRCode;
-use zxf\QRCode\QROptions;
-use zxf\QRCode\Settings\SettingsContainerInterface;
+use zxf\QrCode\Data\QRMatrix;
+use zxf\QrCode\Output\QRGdImagePNG;
+use zxf\QrCode\QRCode;
+use zxf\QrCode\QROptions;
+use zxf\QrCode\Settings\SettingsContainerInterface;
 
 /**
  * 实现可以在二维码下方携带文本的Trait
@@ -109,7 +109,7 @@ class WithTextOrLogo extends QRGdImagePNG
      *
      * @return \GdImage|string
      * @throws \ErrorException
-     * @throws \zxf\QRCode\Output\QRCodeOutputException
+     * @throws \zxf\QrCode\Output\QRCodeOutputException
      */
     public function dump(string|null $file = null): \GdImage|string
     {
@@ -132,7 +132,7 @@ class WithTextOrLogo extends QRGdImagePNG
 
         // 是否保存文件到指定路径
         if ($this->handleType == self::HANDLE_TYPE_TO_PATH) {
-            if (!empty($file)) {
+            if (empty($file)) {
                 throw new \ErrorException('未设置文件保存路径');
             }
             $this->saveToFile($imageData, $file);

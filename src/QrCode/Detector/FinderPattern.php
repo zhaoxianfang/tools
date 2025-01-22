@@ -10,7 +10,7 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Detector;
+namespace zxf\QrCode\Detector;
 
 use function sqrt;
 
@@ -36,7 +36,7 @@ final class FinderPattern extends ResultPoint{
 	}
 
 	/**
-	 * @param \zxf\QRCode\Detector\FinderPattern $b second pattern
+	 * @param \zxf\QrCode\Detector\FinderPattern $b second pattern
 	 *
 	 * @return float distance between two points
 	 */

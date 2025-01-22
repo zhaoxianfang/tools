@@ -9,9 +9,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Data;
+namespace zxf\QrCode\Data;
 
-use zxf\QRCode\Common\{BitBuffer, Mode};
+use zxf\QrCode\Common\{BitBuffer, Mode};
 use function ceil, intdiv, preg_match, strpos;
 
 /**
@@ -66,7 +66,7 @@ final class AlphaNum extends QRDataModeAbstract{
 	/**
 	 * @inheritDoc
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public static function decodeSegment(BitBuffer $bitBuffer, int $versionNumber):string{
 		$length = $bitBuffer->read(self::getLengthBits($versionNumber));
@@ -97,7 +97,7 @@ final class AlphaNum extends QRDataModeAbstract{
 	}
 
 	/**
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	private function ord(string $chr):int{
 		$ord = strpos(self::CHAR_MAP, $chr);
@@ -110,7 +110,7 @@ final class AlphaNum extends QRDataModeAbstract{
 	}
 
 	/**
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	private static function chr(int $ord):string{
 

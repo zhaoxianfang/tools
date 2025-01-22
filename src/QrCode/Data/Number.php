@@ -9,9 +9,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Data;
+namespace zxf\QrCode\Data;
 
-use zxf\QRCode\Common\{BitBuffer, Mode};
+use zxf\QrCode\Common\{BitBuffer, Mode};
 use function ceil, intdiv, preg_match, substr, unpack;
 
 /**
@@ -67,7 +67,7 @@ final class Number extends QRDataModeAbstract{
 	/**
 	 * get the code for the given numeric string
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	private function parseInt(string $string):int{
 		$num = 0;
@@ -88,7 +88,7 @@ final class Number extends QRDataModeAbstract{
 	/**
 	 * @inheritDoc
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public static function decodeSegment(BitBuffer $bitBuffer, int $versionNumber):string{
 		$length = $bitBuffer->read(self::getLengthBits($versionNumber));

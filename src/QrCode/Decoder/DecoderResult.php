@@ -10,10 +10,10 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Decoder;
+namespace zxf\QrCode\Decoder;
 
-use zxf\QRCode\Common\{BitBuffer, EccLevel, MaskPattern, Version};
-use zxf\QRCode\Data\QRMatrix;
+use zxf\QrCode\Common\{BitBuffer, EccLevel, MaskPattern, Version};
+use zxf\QrCode\Data\QRMatrix;
 use function property_exists;
 
 /**
@@ -21,11 +21,11 @@ use function property_exists;
  * applies to 2D barcode formats. For now, it contains the raw bytes obtained
  * as well as a String interpretation of those bytes, if applicable.
  *
- * @property \zxf\QRCode\Common\BitBuffer   $rawBytes
+ * @property \zxf\QrCode\Common\BitBuffer   $rawBytes
  * @property string                                $data
- * @property \zxf\QRCode\Common\Version     $version
- * @property \zxf\QRCode\Common\EccLevel    $eccLevel
- * @property \zxf\QRCode\Common\MaskPattern $maskPattern
+ * @property \zxf\QrCode\Common\Version     $version
+ * @property \zxf\QrCode\Common\EccLevel    $eccLevel
+ * @property \zxf\QrCode\Common\MaskPattern $maskPattern
  * @property int                                   $structuredAppendParity
  * @property int                                   $structuredAppendSequence
  */

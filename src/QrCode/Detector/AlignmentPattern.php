@@ -10,7 +10,7 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Detector;
+namespace zxf\QrCode\Detector;
 
 /**
  * Encapsulates an alignment pattern, which are the smaller square patterns found in

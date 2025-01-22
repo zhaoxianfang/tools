@@ -9,9 +9,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Common;
+namespace zxf\QrCode\Common;
 
-use zxf\QRCode\QRCodeException;
+use zxf\QrCode\QRCodeException;
 
 /**
  * Version related tables and methods
@@ -21,7 +21,7 @@ final class Version{
 	/**
 	 * Enable version auto detection
 	 *
-	 * @see \zxf\QRCode\QROptionsTrait::$version
+	 * @see \zxf\QrCode\QROptionsTrait::$version
 	 *
 	 * @var int
 	 */
@@ -223,7 +223,7 @@ final class Version{
 	/**
 	 * Version constructor.
 	 *
-	 * @throws \zxf\QRCode\QRCodeException
+	 * @throws \zxf\QrCode\QRCodeException
 	 */
 	public function __construct(int $version){
 

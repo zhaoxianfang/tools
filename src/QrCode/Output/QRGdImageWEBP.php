@@ -11,7 +11,7 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Output;
+namespace zxf\QrCode\Output;
 
 use function imagewebp, max, min;
 
@@ -25,7 +25,7 @@ class QRGdImageWEBP extends QRGdImage{
 	final public const MIME_TYPE = 'image/webp';
 
 	/**
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 */
 	protected function renderImage():void{
 		if(imagewebp(image: $this->image, quality: $this->getQuality()) === false){

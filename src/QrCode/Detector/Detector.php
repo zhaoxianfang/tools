@@ -10,10 +10,10 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Detector;
+namespace zxf\QrCode\Detector;
 
-use zxf\QRCode\Common\{LuminanceSourceInterface, Version};
-use zxf\QRCode\Decoder\{Binarizer, BitMatrix};
+use zxf\QrCode\Common\{LuminanceSourceInterface, Version};
+use zxf\QrCode\Decoder\{Binarizer, BitMatrix};
 use function abs, intdiv, is_nan, max, min, round;
 use const NAN;
 
@@ -77,7 +77,7 @@ final class Detector{
 	 * Computes an average estimated module size based on estimated derived from the positions
 	 * of the three finder patterns.
 	 *
-	 * @throws \zxf\QRCode\Detector\QRCodeDetectorException
+	 * @throws \zxf\QrCode\Detector\QRCodeDetectorException
 	 */
 	private function calculateModuleSize(FinderPattern $topLeft, FinderPattern $topRight, FinderPattern $bottomLeft):float{
 		// Take the average
@@ -234,7 +234,7 @@ final class Detector{
 	 * Computes the dimension (number of modules on a size) of the QR Code based on the position
 	 * of the finder patterns and estimated module size.
 	 *
-	 * @throws \zxf\QRCode\Detector\QRCodeDetectorException
+	 * @throws \zxf\QrCode\Detector\QRCodeDetectorException
 	 */
 	private function computeDimension(FinderPattern $nw, FinderPattern $ne, FinderPattern $sw, float $size):int{
 		$tltrCentersDimension = (int)round($nw->getDistance($ne) / $size);
@@ -269,7 +269,7 @@ final class Detector{
 	 * @param int   $estAlignmentY        y coordinate of above
 	 * @param float $allowanceFactor      number of pixels in all directions to search from the center
 	 *
-	 * @return \zxf\QRCode\Detector\AlignmentPattern|null if found, or null otherwise
+	 * @return \zxf\QrCode\Detector\AlignmentPattern|null if found, or null otherwise
 	 */
 	private function findAlignmentInRegion(
 		float $overallEstModuleSize,

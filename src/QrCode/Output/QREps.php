@@ -9,7 +9,7 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Output;
+namespace zxf\QrCode\Output;
 
 use function array_values, count, date, implode, is_array, is_numeric, max, min, round, sprintf;
 
@@ -72,7 +72,7 @@ class QREps extends QROutputAbstract{
 	 *
 	 * 4 values in the color array will be interpreted as CMYK, 3 as RGB
 	 *
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 *
 	 * @param float[] $values
 	 */

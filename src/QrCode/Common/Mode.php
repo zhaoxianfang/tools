@@ -9,10 +9,10 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Common;
+namespace zxf\QrCode\Common;
 
-use zxf\QRCode\Data\{AlphaNum, Byte, Hanzi, Kanji, Number};
-use zxf\QRCode\QRCodeException;
+use zxf\QrCode\Data\{AlphaNum, Byte, Hanzi, Kanji, Number};
+use zxf\QrCode\QRCodeException;
 
 /**
  * Data mode information - ISO 18004:2006, 6.4.1, Tables 2 and 3
@@ -59,7 +59,7 @@ final class Mode{
 	/**
 	 * Map of data mode => interface (detection order)
 	 *
-	 * @var array<int, (\zxf\QRCode\Data\QRDataModeInterface|string)>
+	 * @var array<int, (\zxf\QrCode\Data\QRDataModeInterface|string)>
 	 */
 	public const INTERFACES = [
 		self::NUMBER   => Number::class,
@@ -72,7 +72,7 @@ final class Mode{
 	/**
 	 * returns the length bits for the version breakpoints 1-9, 10-26 and 27-40
 	 *
-	 * @throws \zxf\QRCode\QRCodeException
+	 * @throws \zxf\QrCode\QRCodeException
 	 */
 	public static function getLengthBitsForVersion(int $mode, int $version):int{
 

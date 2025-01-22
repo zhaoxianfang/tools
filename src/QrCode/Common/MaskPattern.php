@@ -10,10 +10,10 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Common;
+namespace zxf\QrCode\Common;
 
-use zxf\QRCode\QRCodeException;
-use zxf\QRCode\Data\QRMatrix;
+use zxf\QrCode\QRCodeException;
+use zxf\QrCode\Data\QRMatrix;
 use Closure;
 use function abs, array_column, array_search, intdiv, min;
 
@@ -27,7 +27,7 @@ use function abs, array_column, array_search, intdiv, min;
 final class MaskPattern{
 
 	/**
-	 * @see \zxf\QRCode\QROptionsTrait::$maskPattern
+	 * @see \zxf\QrCode\QROptionsTrait::$maskPattern
 	 *
 	 * @var int
 	 */
@@ -74,7 +74,7 @@ final class MaskPattern{
 	/**
 	 * MaskPattern constructor.
 	 *
-	 * @throws \zxf\QRCode\QRCodeException
+	 * @throws \zxf\QrCode\QRCodeException
 	 */
 	public function __construct(int $maskPattern){
 

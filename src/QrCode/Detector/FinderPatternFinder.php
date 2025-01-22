@@ -10,9 +10,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Detector;
+namespace zxf\QrCode\Detector;
 
-use zxf\QRCode\Decoder\BitMatrix;
+use zxf\QrCode\Decoder\BitMatrix;
 use function abs, count, intdiv, usort;
 use const PHP_FLOAT_MAX;
 
@@ -30,7 +30,7 @@ final class FinderPatternFinder{
 	private const MAX_MODULES   = 177; // 1 pixel/module times 3 modules/center
 	private const CENTER_QUORUM = 2; // support up to version 10 for mobile clients
 	private BitMatrix $matrix;
-	/** @var \zxf\QRCode\Detector\FinderPattern[] */
+	/** @var \zxf\QrCode\Detector\FinderPattern[] */
 	private array $possibleCenters;
 	private bool  $hasSkipped = false;
 
@@ -45,7 +45,7 @@ final class FinderPatternFinder{
 	}
 
 	/**
-	 * @return \zxf\QRCode\Detector\FinderPattern[]
+	 * @return \zxf\QrCode\Detector\FinderPattern[]
 	 */
 	public function find():array{
 		$dimension = $this->matrix->getSize();
@@ -621,10 +621,10 @@ final class FinderPatternFinder{
 	}
 
 	/**
-	 * @return \zxf\QRCode\Detector\FinderPattern[] the 3 best FinderPatterns from our list of candidates. The "best" are
+	 * @return \zxf\QrCode\Detector\FinderPattern[] the 3 best FinderPatterns from our list of candidates. The "best" are
 	 *         those that have been detected at least #CENTER_QUORUM times, and whose module
 	 *         size differs from the average among those patterns the least
-	 * @throws \zxf\QRCode\Detector\QRCodeDetectorException if 3 such finder patterns do not exist
+	 * @throws \zxf\QrCode\Detector\QRCodeDetectorException if 3 such finder patterns do not exist
 	 */
 	private function selectBestPatterns():array{
 		$startSize = count($this->possibleCenters);
@@ -725,9 +725,9 @@ final class FinderPatternFinder{
 	 * Orders an array of three ResultPoints in an order [A,B,C] such that AB is less than AC
 	 * and BC is less than AC, and the angle between BC and BA is less than 180 degrees.
 	 *
-	 * @param \zxf\QRCode\Detector\FinderPattern[] $patterns array of three FinderPattern to order
+	 * @param \zxf\QrCode\Detector\FinderPattern[] $patterns array of three FinderPattern to order
 	 *
-	 * @return \zxf\QRCode\Detector\FinderPattern[]
+	 * @return \zxf\QrCode\Detector\FinderPattern[]
 	 */
 	private function orderBestPatterns(array $patterns):array{
 

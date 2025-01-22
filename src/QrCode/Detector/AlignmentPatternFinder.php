@@ -10,9 +10,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Detector;
+namespace zxf\QrCode\Detector;
 
-use zxf\QRCode\Decoder\BitMatrix;
+use zxf\QrCode\Decoder\BitMatrix;
 use function abs, count;
 
 /**
@@ -33,13 +33,13 @@ final class AlignmentPatternFinder{
 
 	private BitMatrix $matrix;
 	private float     $moduleSize;
-	/** @var \zxf\QRCode\Detector\AlignmentPattern[] */
+	/** @var \zxf\QrCode\Detector\AlignmentPattern[] */
 	private array $possibleCenters;
 
 	/**
 	 * Creates a finder that will look in a portion of the whole image.
 	 *
-	 * @param \zxf\QRCode\Decoder\BitMatrix $matrix     image to search
+	 * @param \zxf\QrCode\Decoder\BitMatrix $matrix     image to search
 	 * @param float                                $moduleSize estimated module size so far
 	 */
 	public function __construct(BitMatrix $matrix, float $moduleSize){
@@ -57,7 +57,7 @@ final class AlignmentPatternFinder{
 	 * @param int $width  width of region to search
 	 * @param int $height height of region to search
 	 *
-	 * @return \zxf\QRCode\Detector\AlignmentPattern|null
+	 * @return \zxf\QrCode\Detector\AlignmentPattern|null
 	 */
 	public function find(int $startX, int $startY, int $width, int $height):AlignmentPattern|null{
 		$maxJ       = ($startX + $width);
@@ -173,7 +173,7 @@ final class AlignmentPatternFinder{
 	 * @param int   $i          row where alignment pattern may be found
 	 * @param int   $j          end of possible alignment pattern in row
 	 *
-	 * @return \zxf\QRCode\Detector\AlignmentPattern|null if we have found the same pattern twice, or null if not
+	 * @return \zxf\QrCode\Detector\AlignmentPattern|null if we have found the same pattern twice, or null if not
 	 */
 	private function handlePossibleCenter(array $stateCount, int $i, int $j):AlignmentPattern|null{
 		$stateCountTotal = ($stateCount[0] + $stateCount[1] + $stateCount[2]);

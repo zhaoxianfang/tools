@@ -9,7 +9,7 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Output;
+namespace zxf\QrCode\Output;
 
 /**
  * Abstract for markup types: HTML, SVG, ... XML anyone?

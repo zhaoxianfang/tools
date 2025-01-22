@@ -9,7 +9,7 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode;
+namespace zxf\QrCode;
 
 use Exception;
 

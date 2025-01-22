@@ -9,7 +9,7 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Output;
+namespace zxf\QrCode\Output;
 
 use function array_values, count, intval, is_array, is_numeric, max, min;
 
@@ -19,7 +19,7 @@ use function array_values, count, intval, is_array, is_numeric, max, min;
 trait RGBArrayModuleValueTrait{
 
 	/**
-	 * implements \zxf\QRCode\Output\QROutputInterface::moduleValueIsValid()
+	 * implements \zxf\QrCode\Output\QROutputInterface::moduleValueIsValid()
 	 *
 	 * @param int[] $value
 	 */
@@ -46,12 +46,12 @@ trait RGBArrayModuleValueTrait{
 	}
 
 	/**
-	 * implements \zxf\QRCode\Output\QROutputAbstract::prepareModuleValue()
+	 * implements \zxf\QrCode\Output\QROutputAbstract::prepareModuleValue()
 	 *
 	 * @param  int[] $value
 	 * @return int[]
 	 *
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 */
 	protected function prepareModuleValue(mixed $value):array{
 		$values = [];
@@ -73,7 +73,7 @@ trait RGBArrayModuleValueTrait{
 	}
 
 	/**
-	 * implements \zxf\QRCode\Output\QROutputAbstract::getDefaultModuleValue()
+	 * implements \zxf\QrCode\Output\QROutputAbstract::getDefaultModuleValue()
 	 *
 	 * @return int[]
 	 */

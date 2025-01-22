@@ -9,7 +9,7 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Settings;
+namespace zxf\QrCode\Settings;
 
 use InvalidArgumentException, JsonException, ReflectionClass, ReflectionProperty;
 use function array_keys, get_object_vars, is_object, json_decode, json_encode,
@@ -179,7 +179,7 @@ abstract class SettingsContainerAbstract implements SettingsContainerInterface{
      * Returns a serialized string representation of the object in its current state (except static/readonly properties)
      *
      * @inheritdoc
-     * @see \zxf\QRCode\Settings\SettingsContainerInterface::toArray()
+     * @see \zxf\QrCode\Settings\SettingsContainerInterface::toArray()
      */
     public function serialize():string{
         return serialize($this);
@@ -189,7 +189,7 @@ abstract class SettingsContainerAbstract implements SettingsContainerInterface{
      * Restores the data (except static/readonly properties) from the given serialized object to the current instance
      *
      * @inheritdoc
-     * @see \zxf\QRCode\Settings\SettingsContainerInterface::fromIterable()
+     * @see \zxf\QrCode\Settings\SettingsContainerInterface::fromIterable()
      */
     public function unserialize(string $data):void{
         $obj = unserialize($data);
@@ -216,7 +216,7 @@ abstract class SettingsContainerAbstract implements SettingsContainerInterface{
      * Returns a serialized string representation of the object in its current state (except static/readonly properties)
      *
      * @inheritdoc
-     * @see \zxf\QRCode\Settings\SettingsContainerInterface::toArray()
+     * @see \zxf\QrCode\Settings\SettingsContainerInterface::toArray()
      */
     public function __serialize():array{
 
@@ -237,7 +237,7 @@ abstract class SettingsContainerAbstract implements SettingsContainerInterface{
      * Restores the data from the given array to the current instance
      *
      * @inheritdoc
-     * @see \zxf\QRCode\Settings\SettingsContainerInterface::fromIterable()
+     * @see \zxf\QrCode\Settings\SettingsContainerInterface::fromIterable()
      *
      * @param array<string, mixed> $data
      */

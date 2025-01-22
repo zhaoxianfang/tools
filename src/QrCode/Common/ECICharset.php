@@ -10,9 +10,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Common;
+namespace zxf\QrCode\Common;
 
-use zxf\QRCode\QRCodeException;
+use zxf\QrCode\QRCodeException;
 use function sprintf;
 
 /**
@@ -95,7 +95,7 @@ final class ECICharset{
 	private int $charsetID;
 
 	/**
-	 * @throws \zxf\QRCode\QRCodeException
+	 * @throws \zxf\QrCode\QRCodeException
 	 */
 	public function __construct(int $charsetID){
 

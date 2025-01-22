@@ -9,9 +9,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Data;
+namespace zxf\QrCode\Data;
 
-use zxf\QRCode\Common\BitBuffer;
+use zxf\QrCode\Common\BitBuffer;
 
 /**
  * Specifies the methods reqired for the data modules (Number, Alphanum, Byte and Kanji)
@@ -24,7 +24,7 @@ interface QRDataModeInterface{
 	 * Note: do not call this constant from the interface, but rather from one of the child classes
 	 *
 	 * @var int
-	 * @see \zxf\QRCode\Common\Mode
+	 * @see \zxf\QrCode\Common\Mode
 	 */
 	public const DATAMODE = -1;
 
@@ -36,7 +36,7 @@ interface QRDataModeInterface{
 	/**
 	 * encoding conversion helper
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public static function convertEncoding(string $string):string;
 
@@ -48,7 +48,7 @@ interface QRDataModeInterface{
 	/**
 	 * writes the actual data string to the BitBuffer, uses the given version to determine the length bits
 	 *
-	 * @see \zxf\QRCode\Data\QRData::writeBitBuffer()
+	 * @see \zxf\QrCode\Data\QRData::writeBitBuffer()
 	 */
 	public function write(BitBuffer $bitBuffer, int $versionNumber):static;
 

@@ -1,11 +1,11 @@
 <?php
 
-namespace zxf\QRCode;
+namespace zxf\QrCode;
 
 use GdImage;
-use zxf\QRCode\Common\EccLevel;
-use zxf\QRCode\Extend\WithTextOrLogo;
-use zxf\QRCode\Output\QRCodeOutputException;
+use zxf\QrCode\Common\EccLevel;
+use zxf\QrCode\Extend\WithTextOrLogo;
+use zxf\QrCode\Output\QRCodeOutputException;
 
 class QRCodePlus
 {

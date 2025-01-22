@@ -9,9 +9,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Data;
+namespace zxf\QrCode\Data;
 
-use zxf\QRCode\Common\{BitBuffer, EccLevel, GenericGFPoly, GF256, Version};
+use zxf\QrCode\Common\{BitBuffer, EccLevel, GenericGFPoly, GF256, Version};
 use function array_fill, array_merge, count, max;
 
 /**
@@ -39,7 +39,7 @@ final class ReedSolomonEncoder{
 	 * ECC encoding and interleaving
 	 *
 	 * @return int[]
-	 * @throws \zxf\QRCode\QRCodeException
+	 * @throws \zxf\QrCode\QRCodeException
 	 */
 	public function interleaveEcBytes(BitBuffer $bitBuffer):array{
 		[$numEccCodewords, [[$l1, $b1], [$l2, $b2]]] = $this->version->getRSBlocks($this->eccLevel);

@@ -9,9 +9,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Data;
+namespace zxf\QrCode\Data;
 
-use zxf\QRCode\Common\Mode;
+use zxf\QrCode\Common\Mode;
 
 /**
  * abstract methods for the several data modes
@@ -26,7 +26,7 @@ abstract class QRDataModeAbstract implements QRDataModeInterface{
 	/**
 	 * QRDataModeAbstract constructor.
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public function __construct(string $data){
 		$data = $this::convertEncoding($data);

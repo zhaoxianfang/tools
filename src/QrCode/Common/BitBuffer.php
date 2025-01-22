@@ -9,9 +9,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Common;
+namespace zxf\QrCode\Common;
 
-use zxf\QRCode\QRCodeException;
+use zxf\QrCode\QRCodeException;
 use function count, floor, min;
 
 /**
@@ -113,7 +113,7 @@ final class BitBuffer{
 	 * @param int $numBits number of bits to read
 	 *
 	 * @return int representing the bits read. The bits will appear as the least-significant bits of the int
-	 * @throws \zxf\QRCode\QRCodeException if numBits isn't in [1,32] or more than is available
+	 * @throws \zxf\QrCode\QRCodeException if numBits isn't in [1,32] or more than is available
 	 */
 	public function read(int $numBits):int{
 

@@ -9,7 +9,7 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Output;
+namespace zxf\QrCode\Output;
 
 use function is_string, preg_match, strip_tags, trim;
 
@@ -22,7 +22,7 @@ trait CssColorModuleValueTrait{
 	 * note: we're not necessarily validating the several values, just checking the general syntax
 	 * note: css4 colors are not included
 	 *
-	 * implements \zxf\QRCode\Output\QROutputInterface::moduleValueIsValid()
+	 * implements \zxf\QrCode\Output\QROutputInterface::moduleValueIsValid()
 	 *
 	 * @todo: XSS proof
 	 *
@@ -59,7 +59,7 @@ trait CssColorModuleValueTrait{
 	}
 
 	/**
-	 * implements \zxf\QRCode\Output\QROutputAbstract::prepareModuleValue()
+	 * implements \zxf\QrCode\Output\QROutputAbstract::prepareModuleValue()
 	 *
 	 * @param string $value
 	 */
@@ -68,7 +68,7 @@ trait CssColorModuleValueTrait{
 	}
 
 	/**
-	 * implements \zxf\QRCode\Output\QROutputAbstract::getDefaultModuleValue()
+	 * implements \zxf\QrCode\Output\QROutputAbstract::getDefaultModuleValue()
 	 */
 	protected function getDefaultModuleValue(bool $isDark):string{
 		return ($isDark) ? '#000' : '#fff';

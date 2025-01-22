@@ -9,12 +9,12 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode;
+namespace zxf\QrCode;
 
-use zxf\QRCode\Settings\SettingsContainerAbstract;
+use zxf\QrCode\Settings\SettingsContainerAbstract;
 
 /**
- * The QRCode settings container
+ * The QrCode settings container
  */
 class QROptions extends SettingsContainerAbstract{
 	use QROptionsTrait, QRCodeReaderOptionsTrait;

@@ -10,11 +10,11 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Output;
+namespace zxf\QrCode\Output;
 
-use zxf\QRCode\QROptions;
-use zxf\QRCode\Data\QRMatrix;
-use zxf\QRCode\Settings\SettingsContainerInterface;
+use zxf\QrCode\QROptions;
+use zxf\QrCode\Data\QRMatrix;
+use zxf\QrCode\Settings\SettingsContainerInterface;
 use FPDF;
 
 use function class_exists;
@@ -37,7 +37,7 @@ class QRFpdf extends QROutputAbstract{
 	/**
 	 * QRFpdf constructor.
 	 *
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 */
 	public function __construct(SettingsContainerInterface|QROptions $options, QRMatrix $matrix){
 

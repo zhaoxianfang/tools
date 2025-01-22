@@ -9,11 +9,11 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Data;
+namespace zxf\QrCode\Data;
 
-use zxf\QRCode\QROptions;
-use zxf\QRCode\Common\{BitBuffer, EccLevel, Mode, Version};
-use zxf\QRCode\Settings\SettingsContainerInterface;
+use zxf\QrCode\QROptions;
+use zxf\QrCode\Common\{BitBuffer, EccLevel, Mode, Version};
+use zxf\QrCode\Settings\SettingsContainerInterface;
 use function sprintf;
 
 /**
@@ -42,7 +42,7 @@ final class QRData{
 	private Version $version;
 
 	/**
-	 * @var \zxf\QRCode\Data\QRDataModeInterface[]
+	 * @var \zxf\QrCode\Data\QRDataModeInterface[]
 	 */
 	private array $dataSegments = [];
 
@@ -56,7 +56,7 @@ final class QRData{
 	/**
 	 * QRData constructor.
 	 *
-	 * @param \zxf\QRCode\Data\QRDataModeInterface[] $dataSegments
+	 * @param \zxf\QrCode\Data\QRDataModeInterface[] $dataSegments
 	 */
 	public function __construct(SettingsContainerInterface|QROptions $options, array $dataSegments = []){
 		$this->options       = $options;
@@ -70,9 +70,9 @@ final class QRData{
 	/**
 	 * Sets the data string (internally called by the constructor)
 	 *
-	 * Subsequent calls will overwrite the current state - use the QRCode::add*Segement() method instead
+	 * Subsequent calls will overwrite the current state - use the QrCode::add*Segement() method instead
 	 *
-	 * @param \zxf\QRCode\Data\QRDataModeInterface[] $dataSegments
+	 * @param \zxf\QrCode\Data\QRDataModeInterface[] $dataSegments
 	 */
 	public function setData(array $dataSegments):self{
 		$this->dataSegments = $dataSegments;
@@ -100,7 +100,7 @@ final class QRData{
 	 * The version needs to match the length bits range for the data mode the data has been encoded with,
 	 * additionally the bit array needs to contain enough pad bits.
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public function setBitBuffer(BitBuffer $bitBuffer):self{
 
@@ -132,7 +132,7 @@ final class QRData{
 	/**
 	 * estimates the total length of the several mode segments in order to guess the minimum version
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public function estimateTotalBitLength():int{
 		$length = 0;
@@ -185,7 +185,7 @@ final class QRData{
 	/**
 	 * returns the minimum version number for the given string
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public function getMinimumVersion():Version{
 
@@ -209,7 +209,7 @@ final class QRData{
 	/**
 	 * creates a BitBuffer and writes the string data to it
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException on data overflow
+	 * @throws \zxf\QrCode\Data\QRCodeDataException on data overflow
 	 */
 	private function writeBitBuffer():void{
 		$MAX_BITS = $this->eccLevel->getMaxBitsForVersion($this->version);

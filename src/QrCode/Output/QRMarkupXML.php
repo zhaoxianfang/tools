@@ -11,7 +11,7 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Output;
+namespace zxf\QrCode\Output;
 
 use DOMDocument;
 use DOMElement;
@@ -37,7 +37,7 @@ class QRMarkupXML extends QRMarkup{
 
 	/**
 	 * @inheritDoc
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 */
 	protected function createMarkup(bool $saveToFile):string{
 		/** @noinspection PhpComposerExtensionStubsInspection */

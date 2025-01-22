@@ -11,7 +11,7 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Output;
+namespace zxf\QrCode\Output;
 
 use function imagejpeg, max, min;
 
@@ -30,7 +30,7 @@ class QRGdImageJPEG extends QRGdImage{
 	}
 
 	/**
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 */
 	protected function renderImage():void{
 		if(imagejpeg(image: $this->image, quality: $this->getQuality()) === false){

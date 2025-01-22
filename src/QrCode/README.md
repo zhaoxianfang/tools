@@ -8,7 +8,7 @@
 ## 快速开始
 
 ```php
-use zxf\QRCode\QRCodePlus;
+use zxf\QrCode\QRCodePlus;
 ```
 
 ### 需要自定义处理图片

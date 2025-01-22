@@ -9,9 +9,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Data;
+namespace zxf\QrCode\Data;
 
-use zxf\QRCode\Common\{BitBuffer, ECICharset, Mode};
+use zxf\QrCode\Common\{BitBuffer, ECICharset, Mode};
 use function mb_convert_encoding, mb_detect_encoding, mb_internal_encoding, sprintf;
 
 /**
@@ -19,7 +19,7 @@ use function mb_convert_encoding, mb_detect_encoding, mb_internal_encoding, spri
  *
  * ISO/IEC 18004:2000 8.4.1.1
  *
- * Please note that you have to take care for the correct data encoding when adding with QRCode::add*Segment()
+ * Please note that you have to take care for the correct data encoding when adding with QrCode::add*Segment()
  */
 final class ECI extends QRDataModeAbstract{
 
@@ -32,7 +32,7 @@ final class ECI extends QRDataModeAbstract{
 
 	/**
 	 * @inheritDoc
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 * @noinspection PhpMissingParentConstructorInspection
 	 */
 	public function __construct(int $encoding){
@@ -61,7 +61,7 @@ final class ECI extends QRDataModeAbstract{
 	 * Writes an ECI designator to the bitbuffer
 	 *
 	 * @inheritDoc
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public function write(BitBuffer $bitBuffer, int $versionNumber):static{
 		$bitBuffer->put(self::DATAMODE, 4);
@@ -85,7 +85,7 @@ final class ECI extends QRDataModeAbstract{
 	/**
 	 * Reads and parses the value of an ECI designator
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public static function parseValue(BitBuffer $bitBuffer):ECICharset{
 		$firstByte = $bitBuffer->read(8);
@@ -119,7 +119,7 @@ final class ECI extends QRDataModeAbstract{
 	/**
 	 * Reads and decodes the ECI designator including the following byte sequence
 	 *
-	 * @throws \zxf\QRCode\Data\QRCodeDataException
+	 * @throws \zxf\QrCode\Data\QRCodeDataException
 	 */
 	public static function decodeSegment(BitBuffer $bitBuffer, int $versionNumber):string{
 		$eciCharset = self::parseValue($bitBuffer);

@@ -11,11 +11,11 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Common;
+namespace zxf\QrCode\Common;
 
-use zxf\QRCode\QROptions;
-use zxf\QRCode\Decoder\QRCodeDecoderException;
-use zxf\QRCode\Settings\SettingsContainerInterface;
+use zxf\QrCode\QROptions;
+use zxf\QrCode\Decoder\QRCodeDecoderException;
+use zxf\QrCode\Settings\SettingsContainerInterface;
 use function array_slice, array_splice, file_exists, is_file, is_readable, realpath;
 
 /**
@@ -74,7 +74,7 @@ abstract class LuminanceSourceAbstract implements LuminanceSourceInterface{
 	}
 
 	/**
-	 * @throws \zxf\QRCode\Decoder\QRCodeDecoderException
+	 * @throws \zxf\QrCode\Decoder\QRCodeDecoderException
 	 */
 	protected static function checkFile(string $path):string{
 		$path = trim($path);

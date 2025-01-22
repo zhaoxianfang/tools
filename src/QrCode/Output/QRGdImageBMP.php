@@ -11,7 +11,7 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Output;
+namespace zxf\QrCode\Output;
 
 use function imagebmp;
 
@@ -25,7 +25,7 @@ class QRGdImageBMP extends QRGdImage{
 	final public const MIME_TYPE = 'image/bmp';
 
 	/**
-	 * @throws \zxf\QRCode\Output\QRCodeOutputException
+	 * @throws \zxf\QrCode\Output\QRCodeOutputException
 	 */
 	protected function renderImage():void{
 		// the $compressed parameter is boolean here

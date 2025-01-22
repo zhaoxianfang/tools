@@ -10,9 +10,9 @@
  */
 declare(strict_types=1);
 
-namespace zxf\QRCode\Common;
+namespace zxf\QrCode\Common;
 
-use zxf\QRCode\QRCodeException;
+use zxf\QrCode\QRCodeException;
 use function array_fill, array_slice, array_splice, count;
 
 /**
@@ -33,7 +33,7 @@ final class GenericGFPoly{
 	 * @param int[]      $coefficients array coefficients as ints representing elements of GF(size), arranged
 	 *                                 from most significant (highest-power term) coefficient to the least significant
 	 *
-	 * @throws \zxf\QRCode\QRCodeException if argument is null or empty, or if leading coefficient is 0 and this
+	 * @throws \zxf\QrCode\QRCodeException if argument is null or empty, or if leading coefficient is 0 and this
 	 *                                            is not a constant polynomial (that is, it is not the monomial "0")
 	 */
 	public function __construct(array $coefficients, int|null $degree = null){
@@ -134,8 +134,8 @@ final class GenericGFPoly{
 	}
 
 	/**
-	 * @return \zxf\QRCode\Common\GenericGFPoly[] [quotient, remainder]
-	 * @throws \zxf\QRCode\QRCodeException
+	 * @return \zxf\QrCode\Common\GenericGFPoly[] [quotient, remainder]
+	 * @throws \zxf\QrCode\QRCodeException
 	 */
 	public function divide(GenericGFPoly $other):array{
 
@@ -180,7 +180,7 @@ final class GenericGFPoly{
 	}
 
 	/**
-	 * @throws \zxf\QRCode\QRCodeException
+	 * @throws \zxf\QrCode\QRCodeException
 	 */
 	public function multiplyByMonomial(int $degree, int $coefficient):self{
 

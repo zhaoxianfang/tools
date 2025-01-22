@@ -687,7 +687,7 @@ class Curl
             if ($this->isJson($body)) {
                 // json字符串处理
                 $body = is_array($body) ? $body : json_decode($body, true);
-                $body = $this->objectToArray($body);
+                // $body = $this->objectToArray($body);
             }
         }
         $this->respObjData['body'] = $body;

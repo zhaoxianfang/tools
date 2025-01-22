@@ -2,5 +2,3 @@
 
 pmzdxx 庞门正道细线体
 lishu   隶书
-heiti   方正黑体简体
-fangsong   方正仿宋简体

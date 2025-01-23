@@ -28,7 +28,7 @@ $barcode
 $barcode->toBrowser();
 
 // 保存到文件
-$filePath = $barcode->toFile('/Users/linian/Downloads/barcode.png');
+$filePath = $barcode->toFile('/your/path/barcode.png');
 echo $filePath;
 
 // 返回图片资源

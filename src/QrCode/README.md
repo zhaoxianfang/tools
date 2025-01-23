@@ -74,7 +74,7 @@ $options=[
 ];
 
 // 1、生成带logo 和文字的 二维码
-$qrcode = new QRCodePlus($options);
+$qrcode = new QRCodeGenerate($options);
 $out = $qrcode->content('hello')->toImg();
 
 header('Content-type: image/png');
@@ -90,7 +90,7 @@ exit;
 
 ```php
 // 1、生成带logo 和文字的 二维码
-$qrcode = new QRCodePlus();
+$qrcode = new QRCodeGenerate();
 $qrcode
     ->content('hello')
     ->withText('威四方 QrCode') // 可选
@@ -104,7 +104,7 @@ $qrcode
 ```php
 
 // 1、生成带logo 和文字的 二维码
-$qrcode = new QRCodePlus();
+$qrcode = new QRCodeGenerate();
 $filePath = $qrcode
     ->content('hello')
     ->withText('威四方 QrCode') // 可选
@@ -121,7 +121,7 @@ echo $filePath;
 ```php
 
 // 1、生成带logo 和文字的 二维码
-$qrcode = new QRCodePlus();
+$qrcode = new QRCodeGenerate();
 $filePath = $qrcode
     ->content('hello')
     ->withText('威四方 QrCode') // 可选
@@ -139,7 +139,7 @@ echo '<img src="' . $filePath . '">';
 try {
     // 2、读取二维码
     $filePath = '/your/path/qrcode.png';
-    $result   = (new QRCodePlus)->readFromFile($filePath);
+    $result   = (new QRCodeGenerate)->readFromFile($filePath);
     // 可以使用结果实例...
     $content = $result->data;
     var_dump($content);

@@ -254,4 +254,23 @@ class BarCodeGenerate
     {
         return $this->generateImageResource();
     }
+
+    /**
+     * 转换成base64格式
+     *
+     * @return string
+     * @throws UnknownTypeException
+     */
+    public function toBase64(): string
+    {
+        $image = $this->generateImageResource();
+        // 开始输出缓冲
+        ob_start();
+        // 将图像输出到缓冲区而不是直接输出
+        imagepng($image);
+        // 获取缓冲区的内容
+        $image_data = ob_get_clean();
+        // 将图像数据编码为 base64
+        return 'data:image/png;base64,' . base64_encode($image_data);
+    }
 }

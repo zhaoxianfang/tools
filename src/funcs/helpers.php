@@ -1855,3 +1855,21 @@ if (!function_exists('class_basename')) {
         return basename($fullClassName, '.php'); // 如果类名字符串以 ".php" 结尾，这会移除它
     }
 }
+
+if (!function_exists('relative_path')) {
+    /**
+     * 获取文件相对于项目根目录的相对路径
+     *
+     * @param string $filePath
+     *
+     * @return string
+     */
+    function relative_path(string $filePath): string
+    {
+        // 相对路径
+        $dir        = dirname(__DIR__);
+        $prefixPath = substr($dir, 0, strpos($dir, 'vendor'));
+        $realPath   = realpath($filePath); // 获取真实路径
+        return str_starts_with($realPath, $prefixPath) ? ltrim(substr($realPath, strlen($prefixPath)), 'public/') : $realPath;
+    }
+}

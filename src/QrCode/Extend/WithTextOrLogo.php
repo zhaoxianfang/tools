@@ -140,7 +140,8 @@ class WithTextOrLogo extends QRGdImagePNG
                 throw new ErrorException('未设置文件保存路径');
             }
             $this->saveToFile($imageData, $file);
-            return $file;
+            // 返回文件的相对路径
+            return relative_path($file);
         }
 
         // 直接输出到浏览器

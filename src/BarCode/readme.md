@@ -6,7 +6,36 @@
 
 ## 快速开始
 
+```php
+use zxf\BarCode\BarCodeGenerate;
+```
+
 ### Code128 条码
+
+```php
+$barcode = new BarCodeGenerate();
+
+$barcode
+    ->width(2) // 条码宽度，单位为像素
+    ->height(50) // 条码高度，单位为像素
+    ->padding(8) // 条码安全区，单位为像素
+    // ->text('自定义文本内容!', 12) // 设置底部文本
+    ->content('A01234567890') // 设置条码内容
+    ->format(BarcodeGenerator::TYPE_CODE_128); // 设置条码格式
+;
+
+// 直接输出到浏览器
+$barcode->toBrowser();
+
+// 保存到文件
+$filePath = $barcode->toFile('/Users/linian/Downloads/barcode.png');
+echo $filePath;
+
+// 返回图片资源
+$barcode->toImg();
+```
+
+## 其他方式
 
 ```php
 $barcode = (new zxf\BarCode\Types\TypeCode128())->getBarcode('081231723897');

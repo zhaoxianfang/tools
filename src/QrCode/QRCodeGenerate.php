@@ -8,7 +8,7 @@ use zxf\QrCode\Common\EccLevel;
 use zxf\QrCode\Extend\WithTextOrLogo;
 use zxf\QrCode\Output\QRCodeOutputException;
 
-class QRCodePlus
+class QRCodeGenerate
 {
 
     /** @var QRCode 二维码生成对象 */
@@ -112,8 +112,8 @@ class QRCodePlus
     {
         if (!empty($this->logoPath)) {
             $this->options->addLogoSpace    = true; // 是否在 QR 码中添加 Logo 空间
-            $this->options->logoSpaceWidth  = 16; // Logo 空间的宽度, 如果仅给出 QROptions::$logoSpaceWidth，则徽标空间被假定为该大小的正方形
-            $this->options->logoSpaceHeight = 16; // Logo 空间的高度
+            $this->options->logoSpaceWidth  = 15; // Logo 空间的宽度, 如果仅给出 QROptions::$logoSpaceWidth，则徽标空间被假定为该大小的正方形
+            $this->options->logoSpaceHeight = 15; // Logo 空间的高度
         }
         // 带logo或文字的二维码
         $obj = new WithTextOrLogo($this->options, $this->qrcode->getQRMatrix());

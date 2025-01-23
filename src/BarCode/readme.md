@@ -33,6 +33,9 @@ echo $filePath;
 
 // 返回图片资源
 $barcode->toImg();
+
+// 返回base64图片资源
+$barcode->toBase64();
 ```
 
 ## 其他方式

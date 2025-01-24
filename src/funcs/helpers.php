@@ -484,16 +484,17 @@ if (!function_exists('create_dir_or_filepath')) {
      * 创建文件夹或文件
      *
      * @param string $path 文件夹或者文件路径
+     * @param int    $permissions
      *
      * @return bool
      */
-    function create_dir_or_filepath(string $path = ''): bool
+    function create_dir_or_filepath(string $path = '', int $permissions = 0755): bool
     {
         // 如果路径不存在，则尝试创建它
         if (!file_exists($path)) {
             // 创建目录（如果不存在）
             $dir = dirname($path);
-            if (!is_dir($dir) && !mkdir($dir, 0777, true) && !is_dir($dir)) {
+            if (!is_dir($dir) && !mkdir($dir, $permissions, true) && !is_dir($dir)) {
                 // 创建文件夹失败
                 return false;
             }

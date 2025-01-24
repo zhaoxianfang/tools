@@ -157,7 +157,8 @@ class Curl
     /**
      * 设置cookie文件的保存路径地址或者读取地址
      *
-     * @param string $file
+     * @param string $cookieFile
+     * @param string $cookieJarFile
      *
      * @return $this
      */
@@ -273,19 +274,34 @@ class Curl
     }
 
     /**
-     * 记录调试文件
+     * 开启文件调试
      *
      * @param string $debugFile
      *
      * @return $this
      */
-    public function debug(string $debugFile = '')
+    public function debug(string $debugFile)
     {
+        create_dir_or_filepath($debugFile);
         // 启用调试输出
         curl_setopt($this->ch, CURLOPT_VERBOSE, true);
         // 将调试信息写入文件
-        $debugFile = fopen('curl_debug.log', 'w+');
+        $debugFile = fopen($debugFile, 'w+');
         curl_setopt($this->ch, CURLOPT_STDERR, $debugFile);
+        return $this;
+    }
+
+    /**
+     * 关闭调试
+     *
+     * @return $this
+     */
+    public function closeDebug()
+    {
+        // 关闭调试模式
+        curl_setopt($this->ch, CURLOPT_VERBOSE, false);
+
+        curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
         return $this;
     }
 

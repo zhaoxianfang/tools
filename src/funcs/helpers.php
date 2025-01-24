@@ -479,6 +479,35 @@ if (!function_exists('create_dir')) {
     }
 }
 
+if (!function_exists('create_dir_or_filepath')) {
+    /**
+     * 创建文件夹或文件
+     *
+     * @param string $path 文件夹或者文件路径
+     *
+     * @return bool
+     */
+    function create_dir_or_filepath(string $path = ''): bool
+    {
+        // 如果路径不存在，则尝试创建它
+        if (!file_exists($path)) {
+            // 创建目录（如果不存在）
+            $dir = dirname($path);
+            if (!is_dir($dir) && !mkdir($dir, 0777, true) && !is_dir($dir)) {
+                // 创建文件夹失败
+                return false;
+            }
+            // 如果不是现有目录，则尝试创建文件
+            if (!is_dir($path) && !touch($path)) {
+                // 创建文件失败
+                return false;
+            }
+        }
+        // 路径已存在或成功创建
+        return true;
+    }
+}
+
 if (!function_exists('get_filesize')) {
     /**
      * 获取文件的大小

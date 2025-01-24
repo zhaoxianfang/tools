@@ -11,6 +11,7 @@
 
 namespace zxf\Http;
 
+use CURLFile;
 use Exception;
 use zxf\Tools\Collection;
 
@@ -20,6 +21,7 @@ class Curl
     private $httpParams = null;
     // cookie文件路径地址
     private string $cookieFile = '';
+    private string $cookieJar  = '';
 
     // 发起请求后是否响应Curl对象; true:返回Curl对象,false:直接返回请求结果
     private bool $responseObject = false;
@@ -65,7 +67,7 @@ class Curl
      *                               ]
      * @param bool  $responseObject  发起请求后是否响应对象; true:返回Curl对象,false:直接返回请求结果
      *                               true:返回Curl对象, 后面可以再次调用
-     *                               ->getStatusCode()、->getBody()、->isSuccessful()、->getHeaders()等方法
+     *                               ->getStatusCode()、->getBody()、->isSuccessful()、->getHeader()、->hasRedirect()、->getError()、->getResp()等方法
      *                               false:直接返回请求结果，直接返回html原始网页、json数组、Collection集合等
      *
      * @throws Exception
@@ -80,10 +82,10 @@ class Curl
 
         $this->defaultParams[CURLOPT_HTTPHEADER]  = $this->defaultHeaders;
         $this->defaultParams[CURLINFO_HEADER_OUT] = true;
-
         if ($config) {
             $this->defaultParams = array_merge($this->defaultParams, $config);
         }
+
         $this->initCurl();
     }
 
@@ -101,12 +103,9 @@ class Curl
             $this->ch = curl_init();
             curl_setopt_array($this->ch, $this->defaultParams);
         }
-
-        if (!empty($this->cookieFile)) {
-            // 使用cookie文件
-            curl_setopt($this->ch, CURLOPT_COOKIEJAR, $this->cookieFile);
-            curl_setopt($this->ch, CURLOPT_COOKIEFILE, $this->cookieFile);
-        }
+        // 使用cookie文件
+        !empty($this->cookieJar) && curl_setopt($this->ch, CURLOPT_COOKIEJAR, $this->cookieJar);
+        !empty($this->cookieFile) && curl_setopt($this->ch, CURLOPT_COOKIEFILE, $this->cookieFile);
         $this->respObjData = [];
     }
 
@@ -162,18 +161,26 @@ class Curl
      *
      * @return $this
      */
-    public function setCookieFile(string $file = '')
+    public function setCookieFile(string $cookieFile = '', string $cookieJarFile = '')
     {
-        if ($file) {
-            // 检查cookies文件是否存在
-            if (!file_exists($file)) {
-                // 创建cookies文件
-                touch($file);
-                // 设置文件权限，例如0644，表示文件所有者可读写，同组用户和其他用户可读
-                chmod($file, 0644);
-            }
-            $this->cookieFile = $file;
-        }
+        $cookieFile && create_dir_or_filepath($cookieFile);
+        $cookieJarFile && create_dir_or_filepath($cookieJarFile);
+        $this->cookieFile = $cookieFile;
+        $this->cookieJar  = $cookieJarFile;
+
+        return $this;
+    }
+
+    /**
+     * 设置cookie字符串
+     *
+     * @param string $cookieString
+     *
+     * @return $this
+     */
+    public function setCookieString(string $cookieString)
+    {
+        curl_setopt($this->ch, CURLOPT_COOKIE, $cookieString);
         return $this;
     }
 
@@ -205,7 +212,7 @@ class Curl
      * @return $this
      * @throws Exception
      */
-    public function setProxy($proxy)
+    public function setProxy(string $proxy)
     {
         $this->initCurl();
         if ($proxy) {
@@ -222,12 +229,10 @@ class Curl
      * @return $this
      * @throws Exception
      */
-    public function setProxyPort($port)
+    public function setProxyPort(int $port)
     {
         $this->initCurl();
-        if (is_int($port)) {
-            curl_setopt($this->ch, CURLOPT_PROXYPORT, $port);
-        }
+        curl_setopt($this->ch, CURLOPT_PROXYPORT, $port);
         return $this;
     }
 
@@ -239,7 +244,7 @@ class Curl
      * @return $this
      * @throws Exception
      */
-    public function setReferer($referer = "")
+    public function setReferer(string $referer = "")
     {
         $this->initCurl();
         if (!empty($referer)) {
@@ -264,6 +269,36 @@ class Curl
             // 模拟用户使用的浏览器
             curl_setopt($this->ch, CURLOPT_USERAGENT, $agent);
         }
+        return $this;
+    }
+
+    /**
+     * 记录调试文件
+     *
+     * @param string $debugFile
+     *
+     * @return $this
+     */
+    public function debug(string $debugFile = '')
+    {
+        // 启用调试输出
+        curl_setopt($this->ch, CURLOPT_VERBOSE, true);
+        // 将调试信息写入文件
+        $debugFile = fopen('curl_debug.log', 'w+');
+        curl_setopt($this->ch, CURLOPT_STDERR, $debugFile);
+        return $this;
+    }
+
+    /**
+     * 设置是否返回对象
+     *
+     * @param bool $flag
+     *
+     * @return $this
+     */
+    public function respObj(bool $flag = true)
+    {
+        $this->responseObject = $flag;
         return $this;
     }
 
@@ -331,11 +366,11 @@ class Curl
     /**
      * 设置证书路径
      *
-     * @param $file
+     * @param string $file
      *
      * @throws Exception
      */
-    public function setCaPath($file)
+    public function setCaPath(string $file)
     {
         $this->initCurl();
         curl_setopt($this->ch, CURLOPT_CAINFO, $file);
@@ -389,6 +424,8 @@ class Curl
         curl_setopt($this->ch, CURLOPT_ENCODING, "");
         curl_setopt($this->ch, CURLINFO_HEADER_OUT, true);
 
+        // 设置请求方式为 GET
+        curl_setopt($this->ch, CURLOPT_HTTPGET, true);
         curl_setopt($this->ch, CURLOPT_URL, $url);
         curl_setopt($this->ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
         curl_setopt($this->ch, CURLOPT_USERAGENT, $this->randUserAgent());
@@ -475,22 +512,25 @@ class Curl
      *
      * @param string $url      上传地址
      * @param string $filePath 被上传文件绝对地址
+     * @param string $name     上传字段名称；默认 media，eg: file
      * @param array  $params   上传的附加请求数据 。例如上传视频时候设置 description 等参数
      *
      * @return array|mixed
      * @throws Exception
      */
-    public function upload(string $url = '', string $filePath = '', array $params = [])
+    public function upload(string $url = '', string $filePath = '', string $name = '', array $params = [])
     {
         if (!file_exists($filePath) || !is_readable($filePath)) {
             throw new Exception(sprintf('文件不存在或者不可读: "%s"', $filePath));
         }
         // return "@{$filename};filename={$postname};type={$mimetype}";
 
+        // 上传字段名称；eg: file
+        $name = !empty($name) ? $name : 'media';
         if (class_exists('\CURLFile')) {
-            $data = ['media' => new \CURLFile(realpath($filePath))];
+            $data = [$name => new CURLFile(realpath($filePath))];
         } else {
-            $data = ['media' => '@' . realpath($filePath)];//<=5.5
+            $data = [$name => '@' . realpath($filePath)];//<=5.5
         }
 
         $reqData = !empty($params) ? array_merge($data, $params) : $data;
@@ -522,8 +562,32 @@ class Curl
         return $res;
     }
 
+    /**
+     * 断点续传下载文件
+     *
+     * @param string $url      远程文件地址
+     * @param string $filePath 存在在本地的地址
+     * @param int    $range    下载节点
+     *
+     * @return array|mixed
+     * @throws Exception
+     */
+    public function downloadByRange(string $url = '', string $filePath = '', int $range = 0): mixed
+    {
+        set_time_limit(0);
+        $this->initCurl();
+        // curl_setopt($this->ch, CURLOPT_RANGE, $range.'1000-'); // 从字节 1000 开始继续下载
+        curl_setopt($this->ch, CURLOPT_RANGE, $range . '-'); // 从字节 $range 开始继续下载
+        curl_setopt($this->ch, CURLOPT_URL, $url);
+        $fp = fopen($filePath, 'w+');
+        curl_setopt($this->ch, CURLOPT_FILE, $fp);
+        $res = $this->run();
+        fclose($fp);
+        return $res;
+    }
+
     // 判断远程资源是否存在
-    public function exists($url = '')
+    public function exists(string $url = '')
     {
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_NOBODY, true);          // 不取回数据
@@ -778,18 +842,17 @@ class Curl
     }
 
     //PHP stdClass Object转array
-    protected function objectToArray($array)
+    protected function objToArr($array)
     {
         if (is_object($array)) {
             $array = (array)$array;
         }
         if (is_array($array)) {
             foreach ($array as $key => $value) {
-                $array[$key] = $this->objectToArray($value);
+                $array[$key] = $this->objToArr($value);
             }
         }
         return $array;
-
     }
 
     /**

@@ -121,9 +121,10 @@ class CookieManager
      */
     public static function saveCookiesToFile(array $cookies, string $outputFile): bool
     {
-        usort($cookies, fn($a, $b) => strcmp($a['domain'], $b['domain']) ?: strcmp($a['path'], $b['path']));
+        // usort($cookies, fn($a, $b) => strcmp($a['domain'], $b['domain']) ?: strcmp($a['path'], $b['path']));
 
-        $output = "# Netscape HTTP Cookie File\n# This file was created by PHP\n\n";
+        $date = date('Y-m-d H:i:s');
+        $output = "# Netscape HTTP Cookie File\n# This file was created by PHP\n# date: {$date}\n\n";
 
         foreach ($cookies as $cookie) {
             $output .= sprintf(
@@ -139,5 +140,25 @@ class CookieManager
         }
 
         return file_put_contents($outputFile, $output) !== false;
+    }
+
+
+    /**
+     * 清除 cookie 文件内容
+     *
+     * @param string ...$filePaths cookie 文件路径(如果有多个文件，就传多个参数：eg: cleanUp('cookie1.txt')、 cleanUp('cookie1.txt',
+     *                             'cookie2.txt'))
+     *
+     * @return bool
+     */
+    public static function cleanUp(string ...$filePaths): bool
+    {
+        foreach ($filePaths as $filePath) {
+            $result = file_put_contents($filePath, '');
+            if ($result === false) {
+                return false;
+            }
+        }
+        return true;
     }
 }

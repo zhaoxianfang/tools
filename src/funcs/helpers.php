@@ -1903,3 +1903,151 @@ if (!function_exists('relative_path')) {
         return str_starts_with($realPath, $prefixPath) ? ltrim(substr($realPath, strlen($prefixPath)), 'public/') : $realPath;
     }
 }
+
+if (!function_exists('stream_output')) {
+
+    /**
+     * 数据流 方式操作数据，不用等待操作结束才打印数据
+     *
+     * @param Closure $callback ($next)
+     *                          $next() 执行下一个回调函数
+     *
+     * @return void
+     * @throws Exception
+     * @example     stream_output(function ($next){
+     *                  // 打印或处理数据
+     *                  $next();
+     *                  $next('这是输出的string');
+     *                  $next->info('这是输出的string');
+     *                  $next->error('这是输出的string');
+     *                  $next->warning('这是输出的string');
+     *                  $next->success('这是输出的string');
+     *              });
+     */
+    function stream_output(\Closure $callback): void
+    {
+        // 防止 CLI 进程被 kill
+        if (PHP_SAPI === 'cli') {
+            pcntl_async_signals(true);
+            pcntl_signal(SIGTERM, function () {
+                echo "进程被终止。\n";
+                exit;
+            });
+        } else {
+            if (headers_sent()) {
+                throw new \Exception('在调用「' . __FUNCTION__ . '」函数前，已经发送了HTTP的响应，请删除之前的HTTP响应或者在发送HTTP响应之前添加“ob_start();”代码才能继续运行');
+            }
+
+            // 取消 PHP 超时限制
+            ini_set('max_execution_time', 0);
+            set_time_limit(0);
+            // 允许即使用户断开连接，PHP 仍然运行
+            ignore_user_abort(true);
+
+            // 重新设置 Header
+            // 如果使用的是 Apache 或 Nginx，设置适当的头部信息以避免服务器端缓冲
+            header("Content-Type: text/plain; charset=UTF-8");
+            header("Cache-Control: no-cache");
+            header("Connection: keep-alive");
+            header("X-Accel-Buffering: no"); // 禁用 nginx 的输出缓冲
+        }
+
+        // 关闭 PHP 的输出缓冲
+        while (ob_get_level() > 0) {
+            ob_end_flush();
+        }
+        ob_implicit_flush(true); // 每次输出都自动刷新
+
+        // 方式一：最简实现
+        //$next = function (string ...$outputString) {
+        //    // 换行符号
+        //    $break = (PHP_SAPI === 'cli') ? PHP_EOL : '<br>';
+        //    foreach ($outputString as $output) {
+        //        echo $output . $break;
+        //    }
+        //    // 强制刷新输出缓冲区
+        //    flush();
+        //};
+
+        // 方式二：支持通过 $next->info('hello','hello 2') 等样式调用
+        $next = new class {
+            private bool $isCli = false;
+
+            public function __construct()
+            {
+                $this->isCli = PHP_SAPI === 'cli';
+            }
+
+            // 支持直接调用 $next('hello')
+            public function __invoke(string ...$string): void
+            {
+                foreach ($string as $text) {
+                    $this->isCli && $this->cliPrintColorText($text, "\033[37m", "\033[0m", true);
+                    $this->isCli || $this->browserPrintColorText($text, $color = '#000', true);
+                }
+                // 强制刷新输出缓冲区
+                flush();
+            }
+
+            // 支持通过 $next->info('hello','hello 2') 调用
+            public function __call(string $name, array $args)
+            {
+                $cliColor = match ($name) {
+                    'info'    => "\033[37m", // \033[37m:亮灰色; \033[90m:亮黑色(灰色)
+                    'error'   => "\033[31m", // 红色
+                    'warning' => "\033[33m", // 黄色
+                    'success' => "\033[32m", // 绿色
+                    default   => "\033[90m", // \033[37m:亮灰色; \033[90m:亮黑色(灰色)
+                };
+                $color    = match ($name) {
+                    'info'    => "#000", // 黑色
+                    'error'   => "#FF3300", // 红色
+                    'warning' => "#FFCC00", // 黄色
+                    'success' => "#009900", // 绿色
+                    default   => "#3366FF", // 蓝色
+                };
+
+                foreach ($args as $text) {
+                    $this->isCli && $this->cliPrintColorText($text, $cliColor, "\033[0m", true);
+                    $this->isCli || $this->browserPrintColorText($text, $color, true);
+                }
+                // 强制刷新输出缓冲区
+                flush();
+            }
+
+            /**
+             * cli 打印带有颜色和样式的文本。
+             *
+             * @param string $text     要打印的文本。
+             * @param string $color    颜色代码。
+             * @param string $style    样式代码，默认为重置样式。
+             * @param bool   $needWrap 是否需要换行
+             */
+            public function cliPrintColorText(string $text, string $color, string $style = "\033[0m", bool $needWrap = false): void
+            {
+                echo $style . $color . $text . "\033[0m";
+                if ($needWrap) {
+                    echo "\n";
+                }
+            }
+
+            /**
+             * browser 打印带有颜色的文本。
+             *
+             * @param string $text     要打印的文本。
+             * @param string $color    颜色代码。
+             * @param bool   $needWrap 是否需要换行
+             */
+            public function browserPrintColorText(string $text, string $color = '#c0c0c0', bool $needWrap = false): void
+            {
+                echo '<span style="color: ' . $color . ';">' . $text . '</span>';
+                if ($needWrap) {
+                    echo '<br>';
+                }
+            }
+        };
+        $callback && $callback($next);
+        // 强制刷新输出缓冲区
+        flush();
+    }
+}

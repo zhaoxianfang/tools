@@ -11,6 +11,7 @@
 
 namespace zxf\Http;
 
+use Closure;
 use CURLFile;
 use Exception;
 use zxf\Tools\Collection;
@@ -25,6 +26,10 @@ class Curl
 
     // 发起请求后是否响应Curl对象; true:返回Curl对象,false:直接返回请求结果
     private bool $responseObject = false;
+    // 请求前回调函数
+    private Closure $beforeFunc;
+    // 请求后回调函数
+    private Closure $afterFunc;
 
     // 响应内容
     private array $respObjData   = [];
@@ -43,8 +48,7 @@ class Curl
 
     // 默认请求头信息
     private array $defaultHeaders = [
-        "Content-type:application/x-www-form-urlencoded",
-        "Content-type:application/json;charset='utf-8'",
+        "Content-type: application/x-www-form-urlencoded;application/json;charset='utf-8'",
     ];
 
     /**
@@ -131,24 +135,36 @@ class Curl
     /**
      * 设置http header
      *
-     * @param array $header   设置的请求头
-     * @param bool  $isAppend 是否追加
+     * @param array $header    设置的请求头
+     * @param bool  $isAppend  是否追加
+     * @param bool  $setLength 是否设置 Length
      *
      * @return $this
      * @throws Exception
      */
-    public function setHeader(array $header, bool $isAppend = true)
+    public function setHeader(array $header, bool $isAppend = true, bool $setLength = false)
     {
         $this->initCurl();
 
         $headData = [];
         foreach ($header as $key => $head) {
             if ($head) {
-                $headData[] = is_integer($key) ? $head : ($key . ':' . $head);
+                // 判断 $head 是否为key:value格式的字符串
+                if (str_contains($head, ':')) {
+                    list($key, $head) = explode(':', $head, 2);
+                }
+                $headData[] = is_integer($key) ? $head : ($key . ':' . trim($head));
             }
         }
-        $this->defaultHeaders = $isAppend ? array_merge($this->defaultHeaders, $headData) : $headData;
+        $this->defaultHeaders = $isAppend && !empty($headData) && !empty($this->defaultHeaders)
+            ? array_merge($this->defaultHeaders, $headData)
+            : (!empty($headData) ? $headData : $this->defaultHeaders);
 
+        if ($setLength) {
+            // 设置 Length
+            $length                 = empty($this->httpParams) ? 0 : (is_string($this->httpParams) ? strlen($this->httpParams) : strlen(json_encode($this->httpParams)));
+            $this->defaultHeaders[] = "Content-Length: " . $length;
+        }
         curl_setopt($this->ch, CURLOPT_HTTPHEADER, $this->defaultHeaders);
         curl_setopt($this->ch, CURLINFO_HEADER_OUT, true);
         return $this;
@@ -403,12 +419,38 @@ class Curl
     }
 
     //  闭包方式 注入 Curl
-    //  ...->inject(function($http){
-    //      curl_setopt($http->ch, CURLOPT_SSLCERTTYPE, 'PEM');
+    //  ...->inject(function($http, $ch){
+    //      curl_setopt($ch, CURLOPT_SSLCERTTYPE, 'PEM');
     //  });
-    public function inject(\Closure $func)
+    public function inject(Closure $func)
     {
-        $func($this);
+        $func($this, $this->ch);
+        return $this;
+    }
+
+    /**
+     * 在请求之前调用闭包函数
+     *
+     * @param Closure $func
+     *
+     * @return $this
+     */
+    public function before(Closure $func)
+    {
+        $this->beforeFunc = $func;
+        return $this;
+    }
+
+    /**
+     * 在请求之后调用闭包函数
+     *
+     * @param Closure $func
+     *
+     * @return $this
+     */
+    public function after(Closure $func)
+    {
+        $this->afterFunc = $func;
         return $this;
     }
 
@@ -430,12 +472,13 @@ class Curl
     {
         $this->initCurl();
         // 设置get参数
-        if (!empty($this->httpParams) && is_array($this->httpParams)) {
-            if (strpos($url, '?') !== false) {
-                $url .= http_build_query($this->httpParams);
+        if (!empty($this->httpParams)) {
+            if (is_array($this->httpParams)) {
+                $paramString = str_contains($url, '?') ? http_build_query($this->httpParams) : '?' . http_build_query($this->httpParams);
             } else {
-                $url .= '?' . http_build_query($this->httpParams);
+                $paramString = str_contains($url, '?') ? $this->httpParams : '?' . $this->httpParams;
             }
+            $url .= $paramString;
         }
         curl_setopt($this->ch, CURLOPT_ENCODING, "");
         curl_setopt($this->ch, CURLINFO_HEADER_OUT, true);
@@ -629,12 +672,18 @@ class Curl
      */
     protected function run(string $data_type = 'json')
     {
+        // 请求前处理,回调参数($this 对象，$this->ch 句柄)
+        (($this->beforeFunc) instanceof Closure) && is_callable($this->beforeFunc) && ($this->beforeFunc)($this, $this->ch);
+
         // 解析返回的数据
         $this->parserResponse();
 
         curl_close($this->ch);
 
         $this->ch = null;// 重置
+
+        // 请求后处理,回调参数($this 对象，响应的body)
+        (($this->afterFunc) instanceof Closure) && is_callable($this->afterFunc) && ($this->afterFunc)($this, $this->respObjData['body']);
 
         if ($this->responseObject) {
             // 返回curl对象，以便调用其他方法

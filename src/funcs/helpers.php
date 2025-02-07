@@ -2051,3 +2051,25 @@ if (!function_exists('stream_output')) {
         flush();
     }
 }
+
+if (!function_exists('escape')) {
+    /**
+     * 把字符串转义成 带u格式的 ASCII 字符
+     *
+     * @param string $str 需要转换的字符串，eg:威舍,
+     *
+     * @return string eg:%u5A01%u820D%2C
+     */
+    function escape(string $str)
+    {
+        return implode('', array_map(function ($char) {
+            $ascii = ord($char);
+            if ($ascii <= 0x7F) {
+                return rawurlencode($char);
+            } else {
+                $utf16 = mb_convert_encoding($char, 'UTF-16BE', 'UTF-8');
+                return '%u' . strtoupper(bin2hex($utf16));
+            }
+        }, preg_split('//u', $str, -1, PREG_SPLIT_NO_EMPTY)));
+    }
+}

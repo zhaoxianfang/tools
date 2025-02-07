@@ -18,8 +18,8 @@ use zxf\Tools\Collection;
 
 class Curl
 {
-    private $ch         = null; // curl 句柄
-    private $httpParams = null;
+    private                   $ch         = null; // curl 句柄
+    private array|string|null $httpParams = null;
     // cookie文件路径地址
     private string $cookieFile = '';
     private string $cookieJar  = '';
@@ -38,7 +38,6 @@ class Curl
         CURLOPT_HEADER         => true, // 返回头部信息
         CURLOPT_SSL_VERIFYPEER => false, // 对认证证书来源的检查
         CURLOPT_SSL_VERIFYHOST => false, // 从证书中检查SSL加密算法是否存在
-        CURLOPT_SSLVERSION     => 1, // 选择合适的 SSL 版本
         CURLOPT_TIMEOUT        => 10, // 设置超时限制防止死循环
         CURLOPT_FOLLOWLOCATION => true, // 启用时会将服务器服务器返回的"Location: "放在header中递归的返回给服务器
         CURLOPT_AUTOREFERER    => true, // 自动设置Referer
@@ -373,14 +372,15 @@ class Curl
      * 设置http请求的参数,get或post
      *
      * @param array  $params
-     * @param string $data_type 数据类型 array|json|string
+     * @param string $data_type   数据类型 array|json|string
+     * @param bool   $excludeZhCN 是否排除汉字转义
      *
      * @return $this
      * setParams( array('abc'=>'123', 'file1'=>'@/data/1.jpg'));
      * setParams( {'a'=>'str_a'});
      * @throws Exception
      */
-    public function setParams(array $params, string $data_type = 'array')
+    public function setParams(array $params, string $data_type = 'array', bool $excludeZhCN = false)
     {
         $this->initCurl();
         //支持json数据数据提交
@@ -389,10 +389,56 @@ class Curl
         } elseif ($data_type == 'array') {
             $params = obj2Arr($params);
         } else {
-            $params = http_build_query($params, '', '&');
+            $params = $excludeZhCN ? $this->custom_http_build_query($params) : http_build_query($params, '', '&');
         }
         $this->httpParams = $params;
         return $this;
+    }
+
+    /**
+     * 取消 http_build_query 对中文进行编码 例如处理结果为 [name=张三&age=25] 而不是 [name=%E5%BC%A0%E4%B8%89&age=25]
+     *
+     * @param array  $data
+     * @param string $prefix
+     * @param string $arg_separator
+     * @param bool   $encode_keys
+     * @param bool   $encode_values
+     * @param string $encoding
+     *
+     * @return false|string
+     */
+    private function custom_http_build_query(array $data, string $prefix = '', string $arg_separator = '&', bool $encode_keys = true, bool $encode_values = false, string $encoding = 'UTF-8'): bool|string
+    {
+        $query_parts = [];
+
+        foreach ($data as $key => $value) {
+            // 处理键
+            $encoded_key = $encode_keys ? rawurlencode(mb_convert_encoding((string)$key, $encoding, 'auto')) : (string)$key;
+
+            // 如果有前缀，添加前缀
+            if ($prefix !== '') {
+                $encoded_key = $prefix . '[' . $encoded_key . ']';
+            }
+
+            // 处理值
+            if (is_array($value)) {
+                // 递归处理嵌套数组
+                $nested_query = $this->custom_http_build_query($value, $encoded_key, $arg_separator, $encode_keys, $encode_values, $encoding);
+                if ($nested_query !== false) {
+                    $query_parts[] = $nested_query;
+                }
+            } else {
+                // 对值进行编码或保持原样
+                if ($encode_values) {
+                    $encoded_value = rawurlencode(mb_convert_encoding((string)$value, $encoding, 'auto'));
+                } else {
+                    $encoded_value = (string)$value;
+                }
+                $query_parts[] = $encoded_key . '=' . $encoded_value;
+            }
+        }
+
+        return implode($arg_separator, $query_parts);
     }
 
     /**
@@ -400,12 +446,14 @@ class Curl
      *
      * @param string $file
      *
+     * @return Curl
      * @throws Exception
      */
     public function setCaPath(string $file)
     {
         $this->initCurl();
         curl_setopt($this->ch, CURLOPT_CAINFO, $file);
+        return $this;
     }
 
     /**
@@ -434,6 +482,9 @@ class Curl
      * @param Closure $func
      *
      * @return $this
+     * @example $http->before(function($http, $ch){
+     *          // ...
+     *          })
      */
     public function before(Closure $func)
     {
@@ -447,6 +498,9 @@ class Curl
      * @param Closure $func
      *
      * @return $this
+     * @example $http->after(function($http, $ch, $response){
+     *          // ...
+     *          })
      */
     public function after(Closure $func)
     {
@@ -678,12 +732,12 @@ class Curl
         // 解析返回的数据
         $this->parserResponse();
 
+        // 请求后处理,回调参数($this 对象，响应的body)
+        (($this->afterFunc) instanceof Closure) && is_callable($this->afterFunc) && ($this->afterFunc)($this, $this->ch, $this->respObjData['body']);
+
         curl_close($this->ch);
 
         $this->ch = null;// 重置
-
-        // 请求后处理,回调参数($this 对象，响应的body)
-        (($this->afterFunc) instanceof Closure) && is_callable($this->afterFunc) && ($this->afterFunc)($this, $this->respObjData['body']);
 
         if ($this->responseObject) {
             // 返回curl对象，以便调用其他方法
@@ -904,6 +958,23 @@ class Curl
     public function getResp(): array
     {
         return $this->respObjData;
+    }
+
+    /**
+     * 获取类中的属性
+     *
+     * @param string $attr
+     *
+     * @return void
+     */
+    public function getAttr(string $attr = '')
+    {
+        // 判断此类中是否有属性$attr
+        if (property_exists($this, $attr)) {
+            return $this->$attr;
+        } else {
+            return null;
+        }
     }
 
     //PHP stdClass Object转array

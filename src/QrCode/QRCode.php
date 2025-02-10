@@ -11,12 +11,25 @@ declare(strict_types=1);
 
 namespace zxf\QrCode;
 
-use zxf\QrCode\Common\{
-	ECICharset, GDLuminanceSource, IMagickLuminanceSource, LuminanceSourceInterface, MaskPattern, Mode
-};
-use zxf\QrCode\Data\{AlphaNum, Byte, ECI, Hanzi, Kanji, Number, QRData, QRDataModeInterface, QRMatrix};
-use zxf\QrCode\Decoder\{Decoder, DecoderResult};
-use zxf\QrCode\Output\{QRCodeOutputException, QROutputInterface};
+use zxf\QrCode\Common\ECICharset;
+use zxf\QrCode\Common\GDLuminanceSource;
+use zxf\QrCode\Common\IMagickLuminanceSource;
+use zxf\QrCode\Common\LuminanceSourceInterface;
+use zxf\QrCode\Common\MaskPattern;
+use zxf\QrCode\Common\Mode;
+use zxf\QrCode\Data\AlphaNum;
+use zxf\QrCode\Data\Byte;
+use zxf\QrCode\Data\ECI;
+use zxf\QrCode\Data\Hanzi;
+use zxf\QrCode\Data\Kanji;
+use zxf\QrCode\Data\Number;
+use zxf\QrCode\Data\QRData;
+use zxf\QrCode\Data\QRDataModeInterface;
+use zxf\QrCode\Data\QRMatrix;
+use zxf\QrCode\Decoder\Decoder;
+use zxf\QrCode\Decoder\DecoderResult;
+use zxf\QrCode\Output\QRCodeOutputException;
+use zxf\QrCode\Output\QROutputInterface;
 use zxf\QrCode\Settings\SettingsContainerInterface;
 use function class_exists, class_implements, in_array, is_iterable, mb_convert_encoding, mb_internal_encoding;
 
@@ -53,7 +66,7 @@ class QRCode{
 	 *
 	 * @phpstan-param array<string, mixed> $options
 	 */
-	public function __construct(SettingsContainerInterface|QROptions|iterable $options = new QROptions){
+	public function __construct(SettingsContainerInterface|QROptions|iterable $options = new QROptions()){
 		$this->setOptions($options);
 	}
 

@@ -36,7 +36,8 @@ class QRCodeGenerate
     public function __construct(array $options = [])
     {
         $defaultOptions = [
-            'version'          => 10, // 二维码版本（1-40），数值越大，二维码越复杂
+            // 二维码版本（1-40），数值越大，二维码越复杂
+            'version'          => \zxf\QrCode\Common\Version::AUTO, // 自动调整版本
             'eccLevel'         => EccLevel::H,  // 纠错级别（L:7% (default)、M:15%、Q:25%、H:30%）
             'scale'            => 3,  // 每个模块的像素大小
             'outputBase64'     => false,  // 切换 base64 数据 URI 或原始数据输出（如果适用） 默认true
@@ -49,9 +50,6 @@ class QRCodeGenerate
         $this->opts    = $options ? array_merge($defaultOptions, $options) : $defaultOptions;
         $this->options = new QROptions($this->opts);
         $this->qrcode  = new QRCode($this->options);
-
-        // 默认初始化一个内容
-        $this->content('Hello!');
     }
 
     /**

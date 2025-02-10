@@ -23,7 +23,7 @@ class WithTextOrLogo extends QRGdImagePNG
     protected int $textSize = 10;
 
     /** @var array 文本背景颜色 */
-    protected array $textBG = [200, 200, 200];
+    protected array $textBG = [255, 255, 255];
 
     /** @var array 文本颜色 */
     protected array $textColor = [50, 50, 50];

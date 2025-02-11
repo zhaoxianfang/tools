@@ -218,7 +218,7 @@ class WithTextOrLogo extends QRGdImagePNG
         $fontColor = imagecolorallocate($this->image, ...$textColor);
 
         // 计算文本起始位置
-        $y = $this->length + $lineSpacing + $this->textSize;
+        $y = $this->length + $lineSpacing + $this->textSize - 14;
         foreach ($lines as $line) {
             $lineBox   = imagettfbbox($textSize, 0, $fontPath, $line);
             $lineWidth = $lineBox[2] - $lineBox[0];

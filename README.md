@@ -5,7 +5,7 @@
 > 基于 php 的项目模块开发
 > 调用命名空间 使用 use zxf\…… 例如 use zxf\Http\Curl; use zxf\Tools\Collection;
 
-<a href="http://weisifang.com/docs/2" target="_blank" >在线文档</a>
+<a href="http://weisifang.com/docs/2" target="_blank" >在线文档: http://weisifang.com/docs/2</a>
 
 ## 安装&引用
 
@@ -15,37 +15,36 @@ composer require zxf/tools
 
 ## 涵盖模块
 
-| 模块                   | 需要包含的文件夹/说明                                                                                     |
-|----------------------|-------------------------------------------------------------------------------------------------|
-| zxf\Tools\Collection | <a href="http://www.weisifang.com/docs/doc/2_129" target="_blank">[Collection]</a> 数据集合操作       |
-| QQ登录                 | Qqlogin                                                                                         |
-| 微信                   | WeChat                                                                                          |
-| 支付                   | 支付                                                                                              |
-| 截图                   | ScreenShot                                                                                      |
-| 微博登录                 | sina                                                                                            |
-| zxf\Min\JS           | js 压缩工具(推荐)                                                                                     |
-| zxf\Min\CSS          | css 压缩工具(推荐)                                                                                    |
-| QrCode               | 生成二维码                                                                                           |
-| BarCode              | 生成条形码 (支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce) |
-| Compressor           | 图片压缩类                                                                                           |
-| Cache                | 文件缓存                                                                                            |
-| TextToImg            | 文字转图片                                                                                           |
-| PHPMailer            | 发送邮件                                                                                            |
-| Curl                 | http 网络请求                                                                                       |
-| Sms                  | 发送短信: ali(阿里云)[默认] 或者 tencent（腾讯云）                                                              |
-| Database             | 数据库模型                                                                                           |
-| Img                  | 修改图片尺寸、给图片上添加文字等                                                                                |
-| Pinyin               | 中文转拼音                                                                                           |
-| Menu                 | 生成目录菜单(adminlte、layuiadmin、nazox、inspinia)                                                      |
-| Random               | 生成随机数                                                                                           |
-| ImgToIco             | 图片转ico 格式                                                                                       |
-| Modules              | laravel 多模块应用                                                                                   |
-| Command              | 命令行解析工具                                                                                         |
-| Tree                 | 树形结构化                                                                                           |
-| Dom                  | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                      |
-| Encryption           | AES、RSA加密解密                                                                                     |
-| TnCode               | <a href="https://weisifang.com/docs/doc/2_284" target="_blank">改良版滑动验证码</a>                     |
-| 其他                   | Collection、Tree、Command、图片处理、文件操作等工具类                                                           |
+| 模块                   | 需要包含的文件夹/说明                                                                               |
+|----------------------|-------------------------------------------------------------------------------------------|
+| zxf\Tools\Collection | <a href="http://www.weisifang.com/docs/doc/2_129" target="_blank">[Collection]</a> 数据集合操作 |
+| Qqlogin              | QQ登录                                                                                      |
+| WeChat               | 微信                                                                                        |
+| Pay                  | 支付                                                                                        |
+| 截图                   | ScreenShot                                                                                |
+| 微博登录                 | sina                                                                                      |
+| zxf\Min\JS           | js 压缩工具(推荐)                                                                               |
+| zxf\Min\CSS          | css 压缩工具(推荐)                                                                              |
+| QrCode               | 生成二维码                                                                                     |
+| BarCode              | 生成条形码                                                                                     |
+| Compressor           | 图片压缩类                                                                                     |
+| Cache                | 文件缓存                                                                                      |
+| TextToImg            | 文字转图片                                                                                     |
+| PHPMailer            | 发送邮件                                                                                      |
+| Curl                 | http 网络请求                                                                                 |
+| Sms                  | 发送短信: ali(阿里云)[默认] 或者 tencent（腾讯云）                                                        |
+| Database             | 数据库Orm模型                                                                                  |
+| Pinyin               | 中文转拼音                                                                                     |
+| Menu                 | 生成目录菜单(adminlte、layuiadmin、nazox、inspinia)                                                |
+| Random               | 生成随机数                                                                                     |
+| ImgToIco             | 图片转ico 格式                                                                                 |
+| Modules              | laravel 多模块应用                                                                             |
+| Command              | 命令行解析工具                                                                                   |
+| Tree                 | 树形结构化                                                                                     |
+| Dom                  | 简单快速的 HTML 解析器，此模块来源：https://github.com/Imangazaliev/DiDOM                                |
+| Encryption           | AES、RSA加密解密                                                                               |
+| TnCode               | <a href="https://weisifang.com/docs/doc/2_284" target="_blank">改良版滑动验证码</a>               |
+| 其他                   | Command、Cookie管理、站点文件生成、时区转换文件操作等工具类                                                      |
 
 ### 微信
 
@@ -54,6 +53,9 @@ use zxf\WeChat\xxx;
 ```
 
 ### Curl 网络请求
+
+> 强大且简便的的Http 请求管理
+<a href="https://weisifang.com/docs/doc/2_14" target="_blank" >「Http请求文档」</a>
 
 ``` php
 
@@ -237,135 +239,65 @@ $res = $minifier->minify();
 ### QrCode 创建二维码
 
 ``` php
-use zxf\qrcode\QrCode;
+use zxf\QrCode\QRCodeGenerate;
 
-echo '<p>Example - QrCode</p>';
-$qrCode = new QrCode();
-$qrCode
-    ->setText('http://weisifang.com/docs') // 生成二维码的内容
-    ->setSize(200) // 设置二维码大小
-    ->setPadding(10) // 设置边距
-    ->setErrorCorrection('high') // 设置二维码纠错级别。 分为 high(30%)、quartile(25%)、medium(15%)、low(7%) 几种
-    ->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0)) // 设置颜色
-    ->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0)) // 设置背景色
-    ->setLabel('在线文档|威四方') // 设置图片下面的文字
-    ->setLabelFontSize(16) // 设置文字字体大小
-    ->setImageType(QrCode::IMAGE_TYPE_PNG) // 设置图片类型 ,默认为 png
-echo '<img src="data:' . $qrCode->getContentType() . ';base64,' . $qrCode->generate() . '" />';
-```
+$levelMap = [
+    'high'     => EccLevel::H,
+    'quartile' => EccLevel::Q,
+    'medium'   => EccLevel::M,
+    'low'      => EccLevel::L,
+];
+$qrcode   = new QRCodeGenerate([
+    // 'version'  => $level == 'high' ? min(max(strlen($text) / 10, 10), 35) : 2,
+    // 'version'  => \zxf\QrCode\Common\Version::AUTO,
+    'eccLevel' => !empty($logoPath) ? EccLevel::H : $levelMap[$level],
+    'scale'    => (int)($input['scale'] ?: 2), // 每个模块的像素大小
+]);
 
-如果想直接输出到浏览器上，而不是获取 base64 文件流，可以使用`draw()` 方法输出，例如
-
-```php
-$qrCode = new QrCode(); // 实例化
-$qrCode
-    ->setText('http://weisifang.com/docs') // 生成二维码的内容
-    ->setSize(200) // 设置二维码大小
-    ->setPadding(10) // 设置边距
-    ->setErrorCorrection('high') // 设置二维码纠错级别。 分为 high(30%)、quartile(25%)、medium(15%)、low(7%) 几种
-    ->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0)) // 设置颜色
-    ->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0)) // 设置背景色
-    ->setLabel('在线文档|威四方') // 设置图片下面的文字
-    ->setLabelFontSize(16) // 设置文字字体大小
-    ->setImageType(QrCode::IMAGE_TYPE_PNG) // 设置图片类型 ,默认为 png
-    ->draw() // 把图片直接绘画到浏览器
+$handle = $qrcode
+    ->content($text)
+    ->withText($label ?? '', $fontPath??'', $fontSize??10) // 可选
+    ->withLogo($logoPath) // 可选
     ;
-```
 
-### 设置二维码文字字体
+// 把图片直接输出到浏览器上
+$handle->toBrowser();
 
-#### 使用自定义字体
+// 生成图片保存到文件
+$handle->toFile('/your/path/to/qrcode.png');
 
-```
-$qrCode->setLabelFontPath("你的ttf文件.ttf");
-
-$qrCode->setLabelFontPath(dirname(__DIR__) . "/resource/font/Arial.ttf");
-```
-
-#### 使用内置的字体
-
-```
-$qrCode->useFontFile('字体名称，不带.ttf后缀');
-$qrCode->useFontFile('pmzdxx');
-```
-
-支持的字体
-
-```
-pmzdxx 庞门正道细线体
-lishu   隶书
-heiti   方正黑体简体
-fangsong   方正仿宋简体
+// 生成base64图片字符串
+$base64 = $handle->toBase64();
+echo '<img src="' . $base64 . '">';
 ```
 
 ## BarCode 创建条形码
 
-例如：
-
 ```php
-echo '<p>Example - Isbn</p>';
-$barcode = new BarCode(); // 实例化
-$barcode->setText("0012345678901"); // 设置条形码内容
-$barcode->setFontSize(10); //  设置字体大小
-$barcode->setThickness(25); // 设置条码高度
-$barcode->setType(BarCode::Isbn); // 设置条形码类型,支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce 类型的条形码
-$code = $barcode->generate(); // 生成条形码 base64 文件流
-echo '<img src="data:image/png;base64,' . $code . '" />';
-```
+use zxf\BarCode\BarCodeGenerate;
 
-直接输出条形码到浏览器
-> 可以把`$code = $barcode->generate();` 这行代码用用`$barcode->draw();` 代替就可以直接输出图片到浏览器了，例如
+$barcode = new BarCodeGenerate();
 
-```php
-echo '<p>Example - Isbn</p>';
-$barcode = new BarCode(); // 实例化
-$barcode->setText("0012345678901"); // 设置条形码内容
-$barcode->setFontSize(10); //  设置字体大小
-$barcode->setType(BarCode::Isbn); // 设置条形码类型,支持Code128、Code11、Code39、Code39Extended、Ean128、Gs1128、I25、Isbn、Msi、Postnet、S25、Upca、Upce 类型的条形码
-$barcode->draw(); // 把图片直接绘画到浏览器
-```
+$image = $barcode
+    ->width((int)$bar_width) // 条码宽度，单位为像素
+    ->height((int)$thickness) // 条码高度，单位为像素
+    ->padding(8) // 条码安全区，单位为像素
+    ->text($label, (int)$fontSize) // 设置底部文本
+    ->content($text,$textSize??10,$fontPath??'') // 设置条码内容
+    ->format($codeType) // 设置条码格式
+    ;
 
-### 设置条形码文字字体
+// 直接输出到浏览器
+$barcode->toBrowser();
 
-#### 使用自定义字体
+// 保存到文件
+$filePath = $barcode->toFile('/your/path/barcode.png');
 
-```
-$barcode->setLabelFontPath("你的ttf文件.ttf");
+// 返回图片资源
+$barcode->toImg();
 
-$barcode->setLabelFontPath(dirname(__DIR__) . "/resource/font/Arial.ttf");
-```
-
-#### 使用内置的字体
-
-```
-$barcode->useFontFile('字体名称，不带.ttf后缀');
-$barcode->useFontFile('pmzdxx');
-```
-
-### 其他参数
-
-设置分辨率
-
-```
-$barcode->setScale(2);
-```
-
-设置高度
-
-```
-$barcode->setThickness(25);
-```
-
-`GS1-128`删除 48 个字符的限制
-
-```
-$barcode->setNoLengthLimit(true);
-```
-
-`GS1-128`允许未知标识符
-
-```
-$barcode->setAllowsUnknownIdentifier(true);
+// 返回base64图片资源
+$barcode->toBase64();
 ```
 
 ### Compressor 图片压缩类
@@ -427,13 +359,13 @@ use zxf\tools\TextToImg;
  */
 ```
 
-#### 附 文字转图片 可使用的字体参照
+### 附 包中可使用的字体参照
 
 ```
 pmzdxx 庞门正道细线体
+pmzdbt 庞门正道标题体
 lishu   隶书
-heiti   方正黑体简体
-fangsong   方正仿宋简体
+yishanbei   峄山碑篆体
 ```
 
 ### Sms 发送短信
@@ -486,7 +418,7 @@ if (!$result) {
  // 下载到浏览器
  zxf\tools\ImgToIco::instance()->set($imgurl, 32)->generate();
  // 保存到指定文件夹
- zxf\tools\ImgToIco::instance()->set($imgurl, 32)->generate('E:/www');
+ zxf\tools\ImgToIco::instance()->set($imgurl, 32)->generate('your/path/test.ico');
 ```
 
 ### Tree 树形结构化,
@@ -568,57 +500,8 @@ $res 返回 true|fales 表示是否截图成功
 
 ### Command 命令行参数解析
 
-> 在项目根目录新建一个`command` 脚本，测试内容如下
-
-```
-/**
- * 命令行参数解析工具类
- */
-#!/usr/bin/env php
-<?php
-
-$cmd = new zxf\tools\Command::instance();
-
-// 获取所有参数值
-$cmd->all();
-
-// 解析选项 port
-$cmd->option('port', function ($val) {
-   // $val port选项传入的值
-   echo 'Option port handler=》.$val;
-});
-
-// 解析参数 test
-$cmd->args('test', function ($bool){
-$bool 是否解析到 test true|false
-    if($bool){
-        // 传入了 test
-    }else{
-       //未传入 test
-    }
-});
-
-// 获取所有Opts的值
-$cmd->getOptVal();
-// 获取 port 的值 ，没有则返回null
-$cmd->getOptVal('post');
-
-// 获取所有Args的值
-$cmd->getArgVal();
-// 获取 是否传入 test 的 ，返回true|false
-$cmd->getArgVal('test');
-
-/**
- * 调用 demo:  php command --port 3307 -c 100 -hlocal -g test
- * 传入参数说明：
- *    --opts参数名称 加 空格 加 opts参数值 例如：--port 3307 表示 port 的值为 3307      ; 返回到 opts 中
- *    -opts参数名称 加 空格 加 opts参数值 例如：-c 100 表示 c 的值为 100                ; 返回到 opts 中
- *    -opts参数简称「单字母」 不加空格 接opts参数值 例如：-hlocal 表示  的值为 local      ; 返回到 opts 中
- *    -opts参数简称「单字母」 例如：-g 表示 传入了参数 g                                ; 返回到 opts 中
- *    参数名称 例如：test 表示 传入了参数 test                                         ; 返回到 args 中
- */
-```
+> https://weisifang.com/docs/doc/2_35
 
 ## 更多
 
-<a href="http://weisifang.com/docs/2" target="_blank" >查看更多</a>
+<a href="http://weisifang.com/docs/2" target="_blank" >查看更多教程</a>

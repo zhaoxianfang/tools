@@ -827,9 +827,15 @@ if (!function_exists('show_json')) {
     /*
      * 对json数据格式化输入展示 [转化为json格式，并格式化样式]
      */
-    function show_json(array $array = [])
+    function show_json(string|array $data = []): string
     {
-        return json_encode($array, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        if (empty($data)) {
+            return '';
+        }
+        if (is_string($data)) {
+            $data = is_json($data) ? json_decode($data, true) : [];
+        }
+        return json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 }
 

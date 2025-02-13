@@ -247,7 +247,11 @@ class TextToImg
         // 居中显示
         $x = ($this->width - $textWidth) / 2 + abs($textInfo['min_x']);
         $y = ($this->height - $textHeight) / 2 + abs($textInfo['min_y']);
-
+        if ($x >= $this->width || $y >= $this->height) {
+            $size = max($size - 4, 14);
+            $x    = min($x, $this->width - 20);
+            $y    = min($y, $this->height - 20);
+        }
         // 在图片上添加文字
         imagettftext($this->image, $size, $angle, (int)$x, (int)$y, $foregroundColor, $this->fontFile, $text);
         return $this;

@@ -179,7 +179,7 @@ class Collection implements ArrayAccess, Countable, JsonSerializable, IteratorAg
      */
     public function toJson(): string
     {
-        return json_encode($this->toArray(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        return show_json($this->toArray());
     }
 
     public function toString(): string

@@ -523,13 +523,10 @@ abstract class WeChatBase extends WechatCode
 
         $data = [];
         if ($type == "video") {
-            $data["description"] = json_encode(
-                [
-                    "title"        => $videoTitle,
-                    "introduction" => $videoDescription,
-                ],
-                JSON_UNESCAPED_UNICODE
-            );
+            $data["description"] = show_json([
+                "title"        => $videoTitle,
+                "introduction" => $videoDescription,
+            ]);
         }
         $headers = [
             "Content-Disposition" => "form-data; name='media'; filename='" . basename($filePath) . "'",
@@ -595,13 +592,10 @@ abstract class WeChatBase extends WechatCode
             $type = "video";
         }
         if ($type == "video") {
-            $data["description"] = json_encode(
-                [
-                    "title"        => $videoTitle,
-                    "introduction" => $videoDescription,
-                ],
-                JSON_UNESCAPED_UNICODE
-            );
+            $data["description"] = show_json([
+                "title"        => $videoTitle,
+                "introduction" => $videoDescription,
+            ]);
         }
         $this->url = $this->parseUrl($url, $params);
         $this->setApiUrl($url);

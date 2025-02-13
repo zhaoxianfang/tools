@@ -27,9 +27,9 @@ class Curl
     // 发起请求后是否响应Curl对象; true:返回Curl对象,false:直接返回请求结果
     private bool $responseObject = false;
     // 请求前回调函数
-    private Closure $beforeFunc;
+    private Closure|null $beforeFunc = null;
     // 请求后回调函数
-    private Closure $afterFunc;
+    private Closure|null $afterFunc = null;
 
     // 响应内容
     private array $respObjData   = [];

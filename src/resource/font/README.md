@@ -6,4 +6,5 @@
 |  pmzdbt   | 庞门正道标题体免费版 |
 |   lishu   |     隶书     |
 | yishanbei |   峄山碑篆体    |
+|  xingkai  |    华文行楷    |
 

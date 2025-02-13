@@ -58,7 +58,7 @@ EOT;
                             $html .= "<span class='json-label'>{$item['label']}</span>";
                         }
                         if (is_array($item) && !empty($item)) {
-                            $arrayString = json_encode($item, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                            $arrayString = show_json($item);
                             $html        .= <<<EOT
                     <div class="json-arrow-pre-wrapper">
                       <span class="json-arrow" onclick="toggleJson(this)">▶</span>
@@ -72,7 +72,7 @@ EOT;
                 } else {
                     $html .= "<span class='json-label'>{$k}</span>";
                     if (is_array($item) && !empty($item)) {
-                        $arrayString = empty($item) ? '[]' : json_encode($item, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                        $arrayString = empty($item) ? '[]' : show_json($item);
                         $html        .= <<<EOT
                     <div class="json-arrow-pre-wrapper">
                       <span class="json-arrow" onclick="toggleJson(this)">▶</span>
@@ -110,7 +110,7 @@ EOT;
         $str    = '<span class="json-label"><a href="' . $editor . '://open?file=' . urlencode($data['file_path']) . '&amp;line=' . $data['line'] . '" class="phpdebugbar-link">' . $data['local'] . '</a></span>';
 
         if (is_array($data['var']) && !empty($data['var'])) {
-            $arrayString = json_encode($data['var'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            $arrayString = show_json($data['var']);
             $str         .= <<<EOT
                     <div class="json-arrow-pre-wrapper">
                       <span class="json-arrow" onclick="toggleJson(this)">▶</span>
@@ -149,7 +149,7 @@ EOT;
             } catch (\Exception $e) {
             }
             $content['_debugger'] = $traceContent;
-            $content              = json_encode($content, JSON_UNESCAPED_UNICODE);
+            $content              = show_json($content);
             $response->setContent($content);
             $response->headers->remove('Content-Length');
             return $response;

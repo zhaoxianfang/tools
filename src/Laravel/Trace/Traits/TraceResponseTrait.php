@@ -49,16 +49,31 @@ EOT;
 EOT;
             foreach ($tabs as $k => $item) {
                 $html .= '<li>';
-                if (is_numeric($k)) {
-                    if (!empty($item['type']) && $item['type'] == 'trace') {
-                        // trace 数据跟踪信息打印
-                        $html .= $this->handleTraceData($item);
-                    } else {
-                        if (isset($item['label'])) {
-                            $html .= "<span class='json-label'>{$item['label']}</span>";
+                try {
+                    if (is_numeric($k)) {
+                        if (!empty($item['type']) && $item['type'] == 'trace') {
+                            // trace 数据跟踪信息打印
+                            $html .= $this->handleTraceData($item);
+                        } else {
+                            if (isset($item['label'])) {
+                                $html .= "<span class='json-label'>{$item['label']}</span>";
+                            }
+                            if (is_array($item) && !empty($item)) {
+                                $arrayString = json_encode($item, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                                $html        .= <<<EOT
+                    <div class="json-arrow-pre-wrapper">
+                      <span class="json-arrow" onclick="toggleJson(this)">▶</span>
+                      <pre class="json">{$arrayString}</pre>
+                    </div>
+EOT;
+                            } else {
+                                $html .= "<span class='json-label'>" . (is_array($item) ? 'array[]' : $item) . "</span>";
+                            }
                         }
-                        if (is_array($item) && !empty($item)) {
-                            $arrayString = show_json($item);
+                    } else {
+                        $html .= "<span class='json-label'>{$k}</span>";
+                        if (is_array($item)) {
+                            $arrayString = empty($item) ? '[]' : json_encode($item, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
                             $html        .= <<<EOT
                     <div class="json-arrow-pre-wrapper">
                       <span class="json-arrow" onclick="toggleJson(this)">▶</span>
@@ -66,27 +81,21 @@ EOT;
                     </div>
 EOT;
                         } else {
-                            $html .= "<span class='json-label'>" . (is_array($item) ? 'array[]' : $item) . "</span>";
+                            // 是标量 或者空
+                            if (is_scalar($item) || is_null($item)) {
+                                $html .= "<div class='json-string-content'>" . $item . "</div>";
+                            } else {
+                                $html .= "<div class='json-string-content'>" . (ucfirst(gettype($item)) . ':' . get_class($item)) . "</div>";
+                            }
                         }
                     }
-                } else {
-                    $html .= "<span class='json-label'>{$k}</span>";
-                    if (is_array($item) && !empty($item)) {
-                        $arrayString = empty($item) ? '[]' : show_json($item);
-                        $html        .= <<<EOT
-                    <div class="json-arrow-pre-wrapper">
-                      <span class="json-arrow" onclick="toggleJson(this)">▶</span>
-                      <pre class="json">{$arrayString}</pre>
-                    </div>
-EOT;
+                    if (is_array($item) && !empty($item['right'])) {
+                        $html .= "<span class='json-right'>" . $item['right'] . "</span>";
                     } else {
-                        $html .= "<div class='json-string-content'>" . (is_array($item) ? '[]' : $item) . "</div>";
+                        $html .= "<span class='json-right'></span>";
                     }
-                }
-                if (!empty($item['right'])) {
-                    $html .= "<span class='json-right'>" . $item['right'] . "</span>";
-                } else {
-                    $html .= "<span class='json-right'></span>";
+                } catch (\Exception $e) {
+                    $html .= "<div class='json-string-content'> Unrecognized data </div>";
                 }
                 $html .= '</li>';
             }
@@ -110,7 +119,7 @@ EOT;
         $str    = '<span class="json-label"><a href="' . $editor . '://open?file=' . urlencode($data['file_path']) . '&amp;line=' . $data['line'] . '" class="phpdebugbar-link">' . $data['local'] . '</a></span>';
 
         if (is_array($data['var']) && !empty($data['var'])) {
-            $arrayString = show_json($data['var']);
+            $arrayString = json_encode($data['var'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
             $str         .= <<<EOT
                     <div class="json-arrow-pre-wrapper">
                       <span class="json-arrow" onclick="toggleJson(this)">▶</span>
@@ -149,7 +158,7 @@ EOT;
             } catch (\Exception $e) {
             }
             $content['_debugger'] = $traceContent;
-            $content              = show_json($content);
+            $content              = json_encode($content, JSON_UNESCAPED_UNICODE);
             $response->setContent($content);
             $response->headers->remove('Content-Length');
             return $response;

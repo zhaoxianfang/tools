@@ -239,7 +239,7 @@ if (!function_exists('is_enable_trace')) {
     {
         // return !app()->runningInConsole() && !app()->environment('testing') && request()->isMethod('get') && config('modules.trace');
         // return !app()->runningInConsole() && !app()->environment('production') && config('modules.trace') && !request()->expectsJson();
-        return !app()->runningInConsole() && config('modules.trace');
+        return !app()->runningInConsole() && config('modules.trace') && !is_resource_file(request()->fullUrl(), true);
     }
 }
 
@@ -314,5 +314,58 @@ if (!function_exists('trace')) {
         foreach ($args as $value) {
             $trace->addMessage($value, 'debug');
         }
+    }
+}
+
+if (!function_exists('view_share')) {
+    /**
+     * 与所有视图共享数据
+     *
+     * @param string|array $key
+     * @param mixed        $value
+     *
+     * @return void
+     */
+    function view_share(string|array $key, mixed $value = ''): void
+    {
+        if (is_array($key)) {
+            foreach ($key as $k => $v) {
+                \Illuminate\Support\Facades\View::share($k, $v);
+            }
+        } else {
+            \Illuminate\Support\Facades\View::share($key, $value);
+        }
+    }
+}
+
+if (!function_exists('get_view_share')) {
+    /**
+     * 获取所有视图共享的数据 [仅执行本函数之前共享的数据]
+     *
+     * @param string $key [可选]仅获取某个数据
+     *
+     * @return mixed
+     */
+    function get_view_share(string $key = ''): mixed
+    {
+        $data = \Illuminate\Support\Facades\View::getShared();
+        if (!empty($key)) {
+            return $data[$key] ?? null;
+        }
+        return $data;
+    }
+}
+
+if (!function_exists('view_exists')) {
+    /**
+     * 判断视图文件是否存在
+     *
+     * @param $view
+     *
+     * @return bool
+     */
+    function view_exists($view): bool
+    {
+        return \Illuminate\Support\Facades\View::exists($view);
     }
 }

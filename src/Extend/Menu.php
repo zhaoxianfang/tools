@@ -273,7 +273,7 @@ class Menu
     public function arrayToTree($data = [], $rootId = 0)
     {
         $data = !empty($data) ? $data : $this->arr;
-        $tree = array_to_tree($data, $rootId, $this->pk, $this->pid, $this->childlist);
+        $tree = arr2tree($data, $rootId, $this->pk, $this->pid, $this->childlist);
         //删除无用的非根节点数据
         foreach ($tree as $key => $item) {
             if (!isset($item[$this->pid]) || $item[$this->pid] != $rootId) {

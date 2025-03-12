@@ -4,6 +4,7 @@
  * 常用的一些函数归纳
  */
 
+use JetBrains\PhpStorm\NoReturn;
 use zxf\Tools\Collection;
 
 if (!function_exists('i_session')) {
@@ -24,7 +25,6 @@ if (!function_exists('i_session')) {
         $hasValue = func_num_args() > 1; // 如果参数个数大于1，说明传入了 $value
 
         // ===== 1、获取session  =====
-
         // 获取所有值 : i_session('') or i_session(null)
         if (empty($name) && func_num_args() == 1) {
             return $session->all();
@@ -35,7 +35,6 @@ if (!function_exists('i_session')) {
         }
 
         // ===== 2、设置session =====
-
         // 传递了 $name 和 $value : i_session('name', 'value')
         if (is_string($name) && $hasValue && $value !== null) {
             $session->set($name, $value, $expiry);
@@ -144,6 +143,37 @@ if (!function_exists('truncate')) {
             }
         }
         return $newStr . (($append && $string != $newStr) ? '...' : '');
+    }
+}
+
+if (!function_exists('zxf_substr')) {
+    /**
+     * 字符串截取
+     */
+    function zxf_substr($string, $start = 0, $length = 5): bool|string
+    {
+        $string = str_ireplace(' ', '', $string); // 去除空格
+        if (function_exists('mb_substr')) {
+            $newstr = mb_substr($string, $start, $length, "UTF-8");
+        } elseif (function_exists('iconv_substr')) {
+            $newstr = iconv_substr($string, $start, $length, "UTF-8");
+        } else {
+            for ($i = 0; $i < $length; $i++) {
+                $tempstring = substr($string, $start, 1);
+                if (ord($tempstring) > 127) {
+                    $i++;
+                    if ($i < $length) {
+                        $newstring[] = substr($string, $start, 3);
+                        $string      = substr($string, 3);
+                    }
+                } else {
+                    $newstring[] = substr($string, $start, 1);
+                    $string      = substr($string, 1);
+                }
+            }
+            $newstr = join($newstring);
+        }
+        return $newstr;
     }
 }
 
@@ -333,7 +363,7 @@ if (!function_exists('img_to_gray')) {
      *
      * @return   bool                       [true:成功；false:失败]
      */
-    function img_to_gray($imgFile = '', $saveFile = '')
+    function img_to_gray(string $imgFile = '', string $saveFile = ''): bool
     {
         if (!$imgFile) {
             return false;
@@ -417,27 +447,19 @@ if (!function_exists('del_dir')) {
     /**
      * 删除文件夹及其文件夹下所有文件
      */
-    function del_dir($dir)
+    function del_dir($dir): bool
     {
         //先删除目录下的文件：
         $dh = opendir($dir);
         while ($file = readdir($dh)) {
             if ($file != "." && $file != "..") {
-                $fullpath = $dir . "/" . $file;
-                if (!is_dir($fullpath)) {
-                    unlink($fullpath);
-                } else {
-                    del_dir($fullpath);
-                }
+                $fullPath = $dir . "/" . $file;
+                is_dir($fullPath) ? del_dir($fullPath) : unlink($fullPath);
             }
         }
         closedir($dh);
         //删除当前文件夹：
-        if (rmdir($dir)) {
-            return true;
-        } else {
-            return false;
-        }
+        return rmdir($dir);
     }
 }
 
@@ -561,7 +583,7 @@ if (!function_exists('response_and_continue')) {
      * @demo     ：先以json格式返回$data，然后在后台执行 $this->pushSuggestToJyblSys(array('suggId' => $id))
      *         response_and_continue($data, array($this, "pushSuggestToJyblSys"), array('suggId' => $id));
      */
-    function response_and_continue(array $responseDara, string|array $backendFun, array $backendFunArgs = [], int $setTimeLimit = 0)
+    function response_and_continue(array $responseDara, string|array $backendFun, array $backendFunArgs = [], int $setTimeLimit = 0): void
     {
         ignore_user_abort(true);
         set_time_limit($setTimeLimit);
@@ -750,7 +772,7 @@ if (!function_exists('arr2tree')) {
     function arr2tree(array $array, int $superior_id = 0, string $superior_key = 'pid', string $primary_key = 'id', string $son_key = 'son'): array
     {
         $return = [];
-        foreach ($array as $k => $v) {
+        foreach ($array as $v) {
             if ($v[$superior_key] == $superior_id) {
                 $son = arr2tree($array, $v[$primary_key], $superior_key, $primary_key, $son_key);
                 if ($son) {
@@ -779,13 +801,13 @@ if (!function_exists('tree2arr')) {
         $return = [];
         $level  += 1;
         if (!empty($array)) {
-            foreach ($array as $key => $value) {
+            foreach ($array as $value) {
                 $son = isset($value[$son_key]) ? $value[$son_key] : '';
                 if ($son) {
                     unset($value[$son_key]);
                 }
                 $value['level'] = $level;
-                array_push($return, $value);
+                $return[]       = $value;
                 if ($son) {
                     $return = array_merge($return, tree2arr($son, $son_key, $level));
                 }
@@ -799,30 +821,34 @@ if (!function_exists('show_img')) {
     /*
      * 页面直接输出图片
      */
-    function show_img($imgFile = '')
+    #[NoReturn]
+    function show_img($imgFile = ''): void
     {
         header('Content-type:image/png');
         die(file_get_contents($imgFile));
     }
 }
+
 if (!function_exists('string_to_utf8')) {
     /*
      * 字符串自动转utf8编码
      */
-    function string_to_utf8(string $str = '')
+    function string_to_utf8(string $str = ''): array|bool|string|null
     {
         return mb_convert_encoding($str, "UTF-8", "auto");
     }
 }
+
 if (!function_exists('string_to_gbk')) {
     /*
      * 字符串自动转gbk编码
      */
-    function string_to_gbk(string $str = '')
+    function string_to_gbk(string $str = ''): array|bool|string|null
     {
         return mb_convert_encoding($str, "GBK", "auto");
     }
 }
+
 if (!function_exists('show_json')) {
     /*
      * 对json数据格式化输入展示 [转化为json格式，并格式化样式]
@@ -939,6 +965,7 @@ if (!function_exists('detach_html')) {
         return trim($output);
     }
 }
+
 if (!function_exists('str_rand')) {
     /**
      * 生成随机字符串
@@ -973,7 +1000,7 @@ if (!function_exists('wx_decrypt_data')) {
      *
      * @return array|mixed
      */
-    function wx_decrypt_data($appId, $encryptedData, $iv, $sessionKey)
+    function wx_decrypt_data($appId, $encryptedData, $iv, $sessionKey): mixed
     {
         // $appId = 'wxfd...9ce';
         if (strlen($sessionKey) != 24) {
@@ -1034,7 +1061,7 @@ if (!function_exists('base64_to_image')) {
      * base64图片转文件图片
      * base64_to_image($row['cover'],"./uploads/images")
      */
-    function base64_to_image($base64_image_content, $path)
+    function base64_to_image($base64_image_content, $path): bool|string
     {
         //匹配出图片的格式
         if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $base64_image_content, $result)) {
@@ -1050,9 +1077,8 @@ if (!function_exists('base64_to_image')) {
             } else {
                 return false;
             }
-        } else {
-            return false;
         }
+        return false;
     }
 }
 
@@ -1086,7 +1112,7 @@ if (!function_exists('get_full_path')) {
      *
      * @param string $path 相对路径
      */
-    function get_full_path($path)
+    function get_full_path($path): string
     {
         $info = pathinfo($path);
         return $_SERVER['DOCUMENT_ROOT'] . '/' . $info['dirname'] . '/' . $info['basename'];
@@ -1104,7 +1130,7 @@ if (!function_exists('convert_underline')) {
      *
      * @return array|string|null [type]       [description]
      */
-    function convert_underline(string $str)
+    function convert_underline(string $str): array|string|null
     {
         return preg_replace_callback('/([-_]+([a-z]{1}))/i', function ($matches) {
             return strtoupper($matches[2]);
@@ -1201,7 +1227,7 @@ if (!function_exists('obj2Arr')) {
      *
      * @return array|mixed
      */
-    function obj2Arr($array)
+    function obj2Arr($array): mixed
     {
         if (is_object($array)) {
             $array = (array)$array;
@@ -1229,6 +1255,43 @@ if (!function_exists('uuid')) {
     function uuid(bool $useUpper = false): string
     {
         return \zxf\Tools\Str::uuid($useUpper);
+    }
+}
+
+
+if (!function_exists('from60to10')) {
+    /**
+     * 60进制转10进制
+     */
+    function from60to10($str): string
+    {
+        // (去掉oO)
+        $dict = '0123456789abcdefghijklmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ';
+        $len  = strlen($str);
+        $dec  = 0;
+        for ($i = 0; $i < $len; $i++) {
+            //找到对应字典的下标
+            $pos = strpos($dict, $str[$i]);
+            $dec += $pos * pow(60, $len - $i - 1);
+        }
+        return number_format($dec, 0, '', '');
+    }
+}
+
+if (!function_exists('from10to60')) {
+    /**
+     * 10进制转60进制
+     */
+    function from10to60($dec): string
+    {
+        // (去掉oO,因为和0很像)
+        $dict   = '0123456789abcdefghijklmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ';
+        $result = '';
+        do {
+            $result = $dict[$dec % 60] . $result;
+            $dec    = intval($dec / 60);
+        } while ($dec != 0);
+        return $result;
     }
 }
 
@@ -1289,6 +1352,7 @@ if (!function_exists('download_url_file')) {
     /**
      * 下载url文件
      */
+    #[NoReturn]
     function download_url_file($url = ''): void
     {
         $filename = !empty($url) ? $url : (!empty($_GPC['url']) ? $_GPC['url'] : '');
@@ -1415,13 +1479,13 @@ if (!function_exists('set_protected_value')) {
      * @return void
      * @throws ReflectionException
      */
-    function set_protected_value($obj, $filed, $value)
+    function set_protected_value($obj, $filed, $value): void
     {
-        $reflectionClass    = new ReflectionClass($obj);
-        $reflectionProperty = $reflectionClass->getProperty($filed);
+        $reflectionClass = new ReflectionClass($obj);
         try {
             $reflectionClass->setStaticPropertyValue($filed, $value);
         } catch (\Exception $err) {
+            $reflectionProperty = $reflectionClass->getProperty($filed);
             $reflectionProperty->setAccessible(true);
             $reflectionProperty->setValue($obj, $value);
         }
@@ -1460,7 +1524,7 @@ if (!function_exists('is_mobile')) {
     {
         if (isset($_SERVER['HTTP_VIA']) && stristr($_SERVER['HTTP_VIA'], "wap")) {
             return true;
-        } elseif (isset($_SERVER['HTTP_ACCEPT']) && (strpos(strtolower($_SERVER['HTTP_ACCEPT']), 'vnd.wap.wml') !== false || strpos(strtolower($_SERVER['HTTP_ACCEPT']), 'text/vnd.wap.wml') !== false)) {
+        } elseif (isset($_SERVER['HTTP_ACCEPT']) && (str_contains(strtolower($_SERVER['HTTP_ACCEPT']), 'vnd.wap.wml') || str_contains(strtolower($_SERVER['HTTP_ACCEPT']), 'text/vnd.wap.wml'))) {
             // 判断 HTTP_ACCEPT 是否包含 vnd.wap.wml 或 text/vnd.wap.wml 关键字
             return true;
         } elseif (isset($_SERVER['HTTP_X_WAP_PROFILE']) || isset($_SERVER['HTTP_PROFILE'])) {
@@ -1527,6 +1591,7 @@ if (!function_exists('url_conversion')) {
         return $string;
     }
 }
+
 if (!function_exists('url_conversion_to_prefix_path')) {
     /**
      * 把 $url 中的 相对路径 转换为$prefix前缀路径, 建议调用 url_conversion() 方法
@@ -1569,34 +1634,6 @@ if (!function_exists('url_conversion_to_prefix_path')) {
     }
 }
 
-if (!function_exists('array_to_tree')) {
-    /**
-     * 数组转Tree
-     *
-     * @param array  $array
-     * @param int    $parentId
-     * @param string $keyField
-     * @param string $pidField
-     * @param string $childField
-     *
-     * @return array
-     */
-    function array_to_tree(array $array, int $parentId = 0, string $keyField = 'id', string $pidField = 'pid', string $childField = 'children')
-    {
-        $tree = [];
-        foreach ($array as $item) {
-            if ($item[$pidField] == $parentId) {
-                $children = array_to_tree($array, $item[$keyField], $keyField, $pidField, $childField);
-                if (!empty($children)) {
-                    $item[$childField] = $children;
-                }
-                $tree[] = $item;
-            }
-        }
-        return $tree;
-    }
-}
-
 if (!function_exists('aes_encrypt')) {
     /**
      * AES加密
@@ -1614,6 +1651,7 @@ if (!function_exists('aes_encrypt')) {
         return base64_encode($encrypted);
     }
 }
+
 if (!function_exists('aes_decrypt')) {
     /**
      * AES解密
@@ -1644,9 +1682,9 @@ if (!function_exists('array_keys_search')) {
      * @param array $keys       键名数组
      * @param bool  $onlyExists 是否只返回存在的键名对应的值
      *
-     * @return array
+     * @return mixed
      */
-    function array_keys_search(array $array = [], array $keys = [], bool $onlyExists = false)
+    function array_keys_search(array $array = [], array $keys = [], bool $onlyExists = false): mixed
     {
         $result = [];
         if (empty($array) || empty($keys)) {
@@ -1680,7 +1718,7 @@ if (!function_exists('is_qq_browser')) {
     {
         // 获取所有的header信息
         $headers         = getallheaders();
-        $http_user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+        $http_user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
         return str_contains($http_user_agent, 'MQQBrowser') || str_contains($http_user_agent, 'QQ') || isset($headers['X-QQ-From']);
     }
 }
@@ -1695,7 +1733,7 @@ if (!function_exists('is_wechat_browser')) {
     {
         // 获取所有的header信息
         $headers         = getallheaders();
-        $http_user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+        $http_user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
         return str_contains($http_user_agent, 'MicroMessenger') || str_contains($http_user_agent, 'WeChat') || isset($headers['X-Weixin-From']);
     }
 }
@@ -1710,7 +1748,7 @@ if (!function_exists('is_weibo_browser')) {
     {
         // 获取所有的header信息
         $headers         = getallheaders();
-        $http_user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+        $http_user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
         return str_contains($http_user_agent, 'Weibo') || isset($headers['X-Weibo-From']);
     }
 }
@@ -1725,7 +1763,7 @@ if (!function_exists('is_alipay_browser')) {
     {
         // 获取所有的header信息
         $headers         = getallheaders();
-        $http_user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+        $http_user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
         return str_contains($http_user_agent, 'AlipayClient') || str_contains($http_user_agent, 'Alipay') || isset($headers['X-Weibo-From']);
     }
 }
@@ -1750,38 +1788,6 @@ if (!function_exists('json_array_to_string')) {
     function json_array_to_string($array)
     {
         return is_array($array) ? json_encode($array) : $array;
-    }
-}
-
-
-if (!function_exists('zxf_substr')) {
-    /**
-     * 字符串截取
-     */
-    function zxf_substr($string, $start = 0, $length = 5)
-    {
-        $string = str_ireplace(' ', '', $string); // 去除空格
-        if (function_exists('mb_substr')) {
-            $newstr = mb_substr($string, $start, $length, "UTF-8");
-        } elseif (function_exists('iconv_substr')) {
-            $newstr = iconv_substr($string, $start, $length, "UTF-8");
-        } else {
-            for ($i = 0; $i < $length; $i++) {
-                $tempstring = substr($string, $start, 1);
-                if (ord($tempstring) > 127) {
-                    $i++;
-                    if ($i < $length) {
-                        $newstring[] = substr($string, $start, 3);
-                        $string      = substr($string, 3);
-                    }
-                } else {
-                    $newstring[] = substr($string, $start, 1);
-                    $string      = substr($string, 1);
-                }
-            }
-            $newstr = join($newstring);
-        }
-        return $newstr;
     }
 }
 
@@ -2066,7 +2072,7 @@ if (!function_exists('escape')) {
      *
      * @return string eg:%u5A01%u820D%2C
      */
-    function escape(string $str)
+    function escape(string $str): string
     {
         return implode('', array_map(function ($char) {
             $ascii = ord($char);
@@ -2077,5 +2083,48 @@ if (!function_exists('escape')) {
                 return '%u' . strtoupper(bin2hex($utf16));
             }
         }, preg_split('//u', $str, -1, PREG_SPLIT_NO_EMPTY)));
+    }
+}
+
+if (!function_exists('is_resource_file')) {
+    /**
+     * 判断是否是资源文件[文件后缀判断]
+     *
+     * @param string     $url
+     * @param bool|array $simpleOrCustomExt 仅判断简单的几种资源文件
+     *                                      true(默认): 仅判断简单的几种资源文件
+     *                                      false: 会判断大部分的资源文件
+     *                                      array: 仅判断自定义的这些后缀
+     *
+     * @return bool
+     */
+    function is_resource_file(string $url, bool|array $simpleOrCustomExt = true): bool
+    {
+        // 解析 URL
+        $path = parse_url($url, PHP_URL_PATH);
+        // 获取文件扩展名
+        $ext = pathinfo($path, PATHINFO_EXTENSION);
+        // bool: 使用预定义的后缀和特殊规则进行判断
+        if (is_bool($simpleOrCustomExt)) {
+            // 是否简单判断
+            $resourceExtList = $simpleOrCustomExt
+                ? ['js', 'css', 'ico', 'ttf', 'jpg', 'jpeg', 'png', 'webp']
+                : [
+                    'js', 'css', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'ico', 'webp', 'ttf', 'woff', 'woff2',
+                    'eot', 'otf', 'mp3', 'mp4', 'wav', 'wma', 'wmv', 'avi', 'mpg', 'mpeg', 'rm', 'rmvb', 'flv',
+                    'swf', 'mkv', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip',
+                    'rar', '7z', 'tar', 'gz', 'bz2', 'tgz', 'tbz', 'tbz2', 'tb2', 't7z', 'jar', 'war', 'ear', 'zipx',
+                    'apk', 'ipa', 'exe', 'dmg', 'pkg', 'deb', 'rpm', 'msi', 'md', 'txt', 'log',
+                ];
+            if (!empty($ext)) {
+                // 检查扩展名是否属于资源文件类型
+                return in_array(strtolower($ext), $resourceExtList);
+            }
+            // 或者一些特殊路由前缀资源：captcha/: 验证码；tn_code/: 滑动验证码
+            return str_starts_with(trim($path, '/'), 'captcha/') || str_starts_with(trim($path, '/'), 'tn_code/');
+        }
+        // array: 全部采用自定义传入的扩展名进行判断
+        // 传值不为空?检查扩展名是否属于资源文件类型:false
+        return !empty($ext) && in_array(strtolower($ext), $simpleOrCustomExt);
     }
 }

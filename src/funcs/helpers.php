@@ -769,12 +769,12 @@ if (!function_exists('arr2tree')) {
      *
      * @return array
      */
-    function arr2tree(array $array, int $superior_id = 0, string $superior_key = 'pid', string $primary_key = 'id', string $son_key = 'son'): array
+    function arr2tree(array $array, int $superior_id = 0, string $primary_key = 'id', string $superior_key = 'pid', string $son_key = 'son'): array
     {
         $return = [];
         foreach ($array as $v) {
             if ($v[$superior_key] == $superior_id) {
-                $son = arr2tree($array, $v[$primary_key], $superior_key, $primary_key, $son_key);
+                $son = arr2tree($array, $v[$primary_key], $primary_key, $superior_key, $son_key);
                 if ($son) {
                     $v[$son_key] = $son;
                 }
@@ -817,6 +817,34 @@ if (!function_exists('tree2arr')) {
     }
 }
 
+if (!function_exists('array_to_tree')) {
+    /**
+     * 数组转Tree
+     *
+     * @param array  $array
+     * @param int    $parentId
+     * @param string $keyField
+     * @param string $pidField
+     * @param string $childField
+     *
+     * @return array
+     */
+    function array_to_tree(array $array, int $parentId = 0, string $keyField = 'id', string $pidField = 'pid', string $childField = 'children'): array
+    {
+        $tree = [];
+        foreach ($array as $item) {
+            if ($item[$pidField] == $parentId) {
+                $children = array_to_tree($array, $item[$keyField], $keyField, $pidField, $childField);
+                if (!empty($children)) {
+                    $item[$childField] = $children;
+                }
+                $tree[] = $item;
+            }
+        }
+        return $tree;
+    }
+}
+
 if (!function_exists('show_img')) {
     /*
      * 页面直接输出图片
@@ -853,7 +881,7 @@ if (!function_exists('show_json')) {
     /*
      * 对json数据格式化输入展示 [转化为json格式，并格式化样式]
      */
-    function show_json(string|array $data = []): string
+    function show_json(mixed $data = []): string
     {
         if (empty($data)) {
             return '';
@@ -861,6 +889,7 @@ if (!function_exists('show_json')) {
         if (is_string($data)) {
             $data = is_json($data) ? json_decode($data, true) : [];
         }
+        $data = is_array($data) ? $data : obj2Arr($data);
         return json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 }

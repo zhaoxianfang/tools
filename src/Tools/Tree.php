@@ -175,7 +175,7 @@ class Tree
      */
     public function toTree(): array
     {
-        $treeMap = arr2tree($this->data, $this->rootId, $this->id, $this->pid, $this->childlist);
+        $treeMap = array_to_tree($this->data, $this->rootId, $this->id, $this->pid, $this->childlist);
 
         // $rootNodes = array_filter($treeMap, fn($item) => !$item[$this->pid]); // 找出根节点（父节点为空）
         $rootNodes = array_filter($treeMap, fn($item) => $item[$this->pid] == $this->rootId); // 找出根节点（指定根节点id）

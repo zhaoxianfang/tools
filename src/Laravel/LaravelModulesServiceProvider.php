@@ -133,9 +133,7 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
             $path = $app['config']->get('modules.paths.modules');
             return new Laravel\LaravelFileRepository($app, $path);
         });
-        $this->app->singleton(Contracts\ActivatorInterface::class, function ($app) {
-            return new FileActivator($app);
-        });
+
         $this->app->alias(Contracts\RepositoryInterface::class, 'modules');
 
         // 定义 trace

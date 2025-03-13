@@ -37,7 +37,7 @@ if (!function_exists('laravel_egt_11')) {
 }
 
 if (!is_laravel()) {
-    // 如果不是 laravel 框架 环境就停止向后执行
+    // 如果不是 laravel 框架 环境就停止向后加载
     return false;
 }
 
@@ -65,7 +65,7 @@ if (!function_exists('get_module_name')) {
      *
      * @return mixed|string
      */
-    function get_module_name(?bool $toUnderlineConvert = false)
+    function get_module_name(?bool $toUnderlineConvert = false): mixed
     {
         try {
             if (!app()->runningInConsole()) {

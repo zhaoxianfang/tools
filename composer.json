@@ -2,21 +2,20 @@
   "name": "zxf/tools",
   "description": "第三方登录、条形码Barcode、二维码QrCode、生成菜单、发送短信、图片处理、随机数、字符压缩、文字转图片、生成数据字典、远程截图、Redis、laravel多模块应用和一些常用方法集合等",
   "keywords": [
-    "mysqli",
-    "php",
+    "database",
     "sms",
     "tools",
     "laravel",
     "redis",
     "tree",
-    "js压缩",
-    "css压缩",
-    "命令行参数解析",
-    "类库",
-    "工具"
+    "office",
+    "curl",
+    "tn_code",
+    "dom",
+    "code"
   ],
   "homepage": "https://github.com/zhaoxianfang/",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "support": {
     "source": "https://github.com/zhaoxianfang/tools"
   },
@@ -24,7 +23,7 @@
     {
       "name": "zhaoxianfang",
       "email": "1748331509@qq.com",
-      "homepage": "http://weisifang.com"
+      "homepage": "https://www.weisifang.com"
     }
   ],
   "require": {
@@ -37,7 +36,7 @@
   },
   "autoload": {
     "psr-4": {
-      "zxf\\": "./src"
+      "zxf\\": "src"
     },
     "files": [
       "src/funcs/helpers.php",

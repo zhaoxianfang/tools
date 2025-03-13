@@ -757,75 +757,45 @@ if (!function_exists('num_to_zhCN')) {
     }
 }
 
-if (!function_exists('arr2tree')) {
+if (!function_exists('tree_to_array')) {
     /**
-     * 二维数组 转为 树形结构 和 tree2arr 互逆
+     * 树形结构 转为 二维数组 [tip:和 array_to_tree 可互相转化]
      *
-     * @param array  $array        二维数组
-     * @param int    $superior_id  上级ID
-     * @param string $superior_key 父级键名
-     * @param string $primary_key  主键名
-     * @param string $son_key      子级键名
+     * @param array  $array      树形数据
+     * @param string $childField 子级的键名
+     * @param int    $rootId     定义根ID的值
+     * @param string $keyField   定义主键的字段名
+     * @param string $pidField   定义父级字段名
      *
      * @return array
      */
-    function arr2tree(array $array, int $superior_id = 0, string $primary_key = 'id', string $superior_key = 'pid', string $son_key = 'son'): array
+    function tree_to_array(array $array, string $childField = 'children', int $rootId = 0, string $keyField = 'id', string $pidField = 'pid'): array
     {
-        $return = [];
-        foreach ($array as $v) {
-            if ($v[$superior_key] == $superior_id) {
-                $son = arr2tree($array, $v[$primary_key], $primary_key, $superior_key, $son_key);
-                if ($son) {
-                    $v[$son_key] = $son;
-                }
-                $return[] = $v;
-            }
+        foreach ($array as $tempKey => $tempVal) {
+            $array = is_numeric($tempKey) ? reset($array) : $array;
+            break;
         }
-        return $return;
-    }
-
-}
-
-if (!function_exists('tree2arr')) {
-    /**
-     * 树形结构 转为 二维数组  和 arr2tree 互逆
-     *
-     * @param array  $array   树形数据
-     * @param string $son_key 子级的键名
-     * @param int    $level   层级
-     *
-     * @return array
-     */
-    function tree2arr(array $array, string $son_key = 'son', int $level = 0): array
-    {
-        $return = [];
-        $level  += 1;
-        if (!empty($array)) {
-            foreach ($array as $value) {
-                $son = isset($value[$son_key]) ? $value[$son_key] : '';
-                if ($son) {
-                    unset($value[$son_key]);
-                }
-                $value['level'] = $level;
-                $return[]       = $value;
-                if ($son) {
-                    $return = array_merge($return, tree2arr($son, $son_key, $level));
-                }
-            }
+        // 已经定义指定主键的直接使用，否则使用随机数
+        $array[$keyField] = $array[$keyField] ?? mt_rand(1, 1000) . sprintf("%03d", mt_rand(1, 100));
+        $array[$pidField] = $rootId;
+        $children         = [];
+        if (isset($array[$childField]) && is_array($array[$childField])) {
+            $children = tree_to_array($array[$childField], $childField, $array[$keyField], $keyField, $pidField);
         }
-        return $return;
+        unset($array[$childField]);
+        return !empty($children) ? array_merge([$array], $children) : [$array];
     }
 }
 
 if (!function_exists('array_to_tree')) {
     /**
-     * 数组转Tree
+     * 二维数组 转为 树形结构 [tip:和 tree_to_array 可互相转化]
      *
-     * @param array  $array
-     * @param int    $parentId
-     * @param string $keyField
-     * @param string $pidField
-     * @param string $childField
+     * @param array  $array      二维数组
+     * @param int    $parentId   父级键的值;eg:0
+     * @param string $keyField   父级主键字段名称;eg:id
+     * @param string $pidField   关联父级使用的键名;eg:pid  [使用pid去关联id]
+     * @param string $childField 定义包含子集的键名;eg:children
      *
      * @return array
      */

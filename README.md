@@ -20,7 +20,6 @@ composer require zxf/tools
 | zxf\Tools\Collection | <a href="http://www.weisifang.com/docs/doc/2_129" target="_blank">[Collection]</a> 数据集合操作 |
 | Qqlogin              | QQ登录                                                                                      |
 | WeChat               | 微信                                                                                        |
-| Pay                  | 支付                                                                                        |
 | 截图                   | ScreenShot                                                                                |
 | 微博登录                 | sina                                                                                      |
 | zxf\Min\JS           | js 压缩工具(推荐)                                                                               |
@@ -34,7 +33,6 @@ composer require zxf/tools
 | Curl                 | http 网络请求                                                                                 |
 | Sms                  | 发送短信: ali(阿里云)[默认] 或者 tencent（腾讯云）                                                        |
 | Database             | 数据库Orm模型                                                                                  |
-| Pinyin               | 中文转拼音                                                                                     |
 | Menu                 | 生成目录菜单(adminlte、layuiadmin、nazox、inspinia)                                                |
 | Random               | 生成随机数                                                                                     |
 | ImgToIco             | 图片转ico 格式                                                                                 |
@@ -46,11 +44,7 @@ composer require zxf/tools
 | TnCode               | <a href="https://weisifang.com/docs/doc/2_284" target="_blank">改良版滑动验证码</a>               |
 | 其他                   | Command、Cookie管理、站点文件生成、时区转换文件操作等工具类                                                      |
 
-### 微信
-
-```php
-use zxf\WeChat\xxx;
-```
+## 示例
 
 ### Curl 网络请求
 
@@ -62,116 +56,6 @@ use zxf\WeChat\xxx;
 \zxf\Http\Curl::instance()->setParams(['path'=>'pages/index/index'])->post($url,'json');
 
 ```
-
-### QQ登录
-
-> 说明:不同框架可根据实际修改
-
-``` php
-<?php
-
-use zxf\Login\QqOauth;
-
-/**
- * QQ 互联登录
- */
-class Connect extends Controller
-{
-    /**
-     * qq登录
-     *
-     * 可以在url 中传入 参数 callback_url 用来做通知回调 ； 例如 xxx.com/callback/tencent/login?callback_url=http%3A%2F%2Fwww.a.com%2Fa%2Fb%2Fc%3Fd%3D123
-     * callback_url 参数说明 传入前需要做 urlencode($callback_url) 操作
-     * callback_url 回调地址要求允许跨域或者 csrf
-     */
-    public function login()
-    {
-        $jump_url = request()->get('callback_url', '');
-        $jumpUrl  = $jump_url ? urldecode($jump_url) : '';
-
-        $qq = new QqOauth(config('callback.qq'));
-
-        // $url = $qq->authorization(); // 不传值方式
-        $url = $qq->authorization($jumpUrl); // 传入的数据 $jumpUrl 将会在 qq_callback 回调中返回得到
-
-        // 重定向到外部地址
-        return redirect()->away($url);
-    }
-
-    public function notify()
-    {
-        $auth        = new QqOauth(config('callback.qq'));
-        $userInfo    = $auth->getUserInfo('');
-        $callbackUrl = $auth->getStateParam();
-
-        // 记录用户信息
-        $loginUserInfo = UserServices::instance()->fastLogin('qq', $userInfo);
-        if ($callbackUrl) {
-            return buildRequestFormAndSend($callbackUrl, $loginUserInfo);
-        } else {
-            dump($loginUserInfo);
-        }
-    }
-}
-
-```
-
-> 提示:config('login.qq.default') 中需要包含3个元素 appid、appkey、callbackUrl
-
-### 新浪微博登录
-
-> 说明:不同框架可根据实际修改
-
-``` php
-<?php
-
-use zxf\Login\WeiboOauth;
-
-/**
- * 新浪微博登录
- */
-class Sina extends Controller
-{
-    /**
-     * 微博登录
-     *
-     * 可以在url 中传入 参数 callback_url 用来做通知回调 ； 例如 xxx.com/callback/weibo/login?callback_url=http%3A%2F%2Fwww.a.com%2Fa%2Fb%2Fc%3Fd%3D123
-     * callback_url 参数说明 传入前需要做 urlencode($callback_url) 操作
-     * callback_url 回调地址要求允许跨域或者 csrf
-     */
-    public function login()
-    {
-        $jump_url = request()->get('callback_url', '');
-        $jumpUrl  = $jump_url ? urldecode($jump_url) : '';
-
-        $weibo = new WeiboOauth(config('callback.sina'));
-
-        // $url = $qq->authorization(); // 不传值方式
-        $weibo->authorization($jumpUrl); // 传入的数据 $jumpUrl 将会在 qq_callback 回调中返回得到
-
-    }
-
-    public function notify()
-    {
-        $auth        = new WeiboOauth(config('callback.sina'));
-        $userInfo    = $auth->getUserInfo('');
-        $callbackUrl = $auth->getStateParam();
-
-        // 记录用户信息
-        $loginUserInfo = UserServices::instance()->fastLogin('sina', $userInfo);
-
-        if ($callbackUrl) {
-            return buildRequestFormAndSend($callbackUrl, $loginUserInfo);
-        } else {
-            dump($userInfo);
-        }
-    }
-}
-
-
-```
-
-> 提示:config('login.sina.default') 中需要包含3个元素 wb_akey、wb_skey、wb_callback_url
 
 ### Cache 文件缓存
 
@@ -366,49 +250,6 @@ pmzdxx 庞门正道细线体
 pmzdbt 庞门正道标题体
 lishu   隶书
 yishanbei   峄山碑篆体
-```
-
-### Sms 发送短信
-
-``` php
-use zxf\sms\Sms;
-
-$accessKeyId     = "阿里云或者腾讯云 appid";
-$accessKeySecret = "阿里云或者腾讯云 secret";
-
-// 可发送多个手机号，变量为数组即可，如：[11111111111, 22222222222]
-$mobile   = '18***888';
-$template = '您申请的短信模板';
-$sign     = '您申请的短信签名';
-
-// 短信模板中用到的 参数 模板变量为键值对数组
-$params = [
-    "code"    => rand(1000, 9999),
-    "title"   => '您的标题',
-    "content" => '您的内容',
-];
-
-// 初始化 短信服务（阿里云短信或者腾讯云短信）
-$smsObj = Sms::instance($accessKeyId, $accessKeySecret,'ali或者tencent');
-
-// 若使用的是 腾讯云短信 需要 设置 appid 参数; 阿里云则不用
-// $smsObj = $smsObj->setAppid($appid);
-
-// 发起请求
-// 需要注意，设置配置不分先后顺序，send后也不会清空配置 
-$result    = $aliyunSms->setMobile($mobile)->setParams($params)->setTemplate($template)->setSign($sign)->send();
-/**
- * 返回值为bool，你可获得阿里云响应做出你业务内的处理
- *
- * status bool 此变量是此包用来判断是否发送成功
- * code string 阿里云短信响应代码
- * message string 阿里云短信响应信息
- */
-if (!$result) {
-    $response = $aliyunSms->getResponse();
-    // 做出处理
-}
-
 ```
 
 ### 图片转ICO格式

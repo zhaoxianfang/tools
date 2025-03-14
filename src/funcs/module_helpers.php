@@ -50,7 +50,7 @@ if (!function_exists('modules_name')) {
      */
     function modules_name(): string
     {
-        return app('config')->get('modules.paths.modules');
+        return app('config')->get('modules.namespace');
     }
 }
 

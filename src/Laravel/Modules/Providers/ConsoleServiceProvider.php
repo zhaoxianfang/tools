@@ -14,7 +14,6 @@ class ConsoleServiceProvider extends ServiceProvider
             // 加载 Modules 模块内的 command
             $this->customAddCommands();
             // 运行在命令行下
-            // $this->commands(config('modules.commands', self::defaultCommands()->toArray()));
             $this->commands(self::defaultCommands()->toArray());
         }
     }
@@ -29,39 +28,6 @@ class ConsoleServiceProvider extends ServiceProvider
     }
 
     /**
-     * 自定义 加载/注册 Modules 模块 command
-     * 把 Modules 模块下 Console 目录内的 command 全部加载到命令中
-     *
-     * 创建 模块下的 command : php artisan module:make-command TestCommand Test
-     *
-     * @return void|boolean
-     * @throws \ReflectionException
-     */
-    protected function customAddCommands()
-    {
-        $modulesName = modules_name();
-
-        if (!is_dir(base_path($modulesName))) {
-            return false;
-        }
-        $modules = array_slice(scandir(base_path($modulesName)), 2);
-        foreach ($modules as $module) {
-            $moduleConsolePath = "{$modulesName}/{$module}/Console";
-            if (is_dir($paths = base_path($moduleConsolePath))) {
-                $namespace = '';
-                foreach ((new \Symfony\Component\Finder\Finder)->in($paths)->files() as $command) {
-                    $command = $namespace . str_replace(['/', '.php'], ['\\', ''], \Illuminate\Support\Str::after($command->getRealPath(), realpath(base_path()) . DIRECTORY_SEPARATOR));
-                    if (is_subclass_of($command, \Illuminate\Console\Command::class) && !(new \ReflectionClass($command))->isAbstract()) {
-                        \Illuminate\Console\Application::starting(function ($artisan) use ($command) {
-                            $artisan->resolve($command);
-                        });
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Get the package default commands.
      */
     public static function defaultCommands(): Collection
@@ -70,7 +36,6 @@ class ConsoleServiceProvider extends ServiceProvider
             // Actions Commands
             Commands\Actions\CheckLangCommand::class,
             Commands\Actions\DumpCommand::class,
-            Commands\Actions\InstallCommand::class,
             Commands\Actions\ListCommand::class,
             Commands\Actions\ModelPruneCommand::class,
             Commands\Actions\ModelShowCommand::class,
@@ -136,5 +101,38 @@ class ConsoleServiceProvider extends ServiceProvider
 
             Commands\Database\MigrateFreshCommand::class,
         ]);
+    }
+
+    /**
+     * 自定义 加载/注册 Modules 模块 command
+     * 把 Modules 模块下 Console 目录内的 command 全部加载到命令中
+     *
+     * 创建 模块下的 command : php artisan module:make-command TestCommand Test
+     *
+     * @return void|boolean
+     * @throws \ReflectionException
+     */
+    protected function customAddCommands()
+    {
+        $modulesName = modules_name();
+
+        if (!is_dir(base_path($modulesName))) {
+            return false;
+        }
+        $modules = array_slice(scandir(base_path($modulesName)), 2);
+        foreach ($modules as $module) {
+            $moduleConsolePath = "{$modulesName}/{$module}/Console";
+            if (is_dir($paths = base_path($moduleConsolePath))) {
+                $namespace = '';
+                foreach ((new \Symfony\Component\Finder\Finder)->in($paths)->files() as $command) {
+                    $command = $namespace . str_replace(['/', '.php'], ['\\', ''], \Illuminate\Support\Str::after($command->getRealPath(), realpath(base_path()) . DIRECTORY_SEPARATOR));
+                    if (is_subclass_of($command, \Illuminate\Console\Command::class) && !(new \ReflectionClass($command))->isAbstract()) {
+                        \Illuminate\Console\Application::starting(function ($artisan) use ($command) {
+                            $artisan->resolve($command);
+                        });
+                    }
+                }
+            }
+        }
     }
 }

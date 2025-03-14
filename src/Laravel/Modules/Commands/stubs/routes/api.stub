@@ -20,5 +20,5 @@ Route::prefix('$LOWER_NAME$')->name('api.$LOWER_NAME$.')->group(function () {
     //     return '$LOWER_NAME$ Api';
     //     return $request->user();
     // });
-    Route::apiResource('', Web\$STUDLY_NAME$Controller::class)->names('');
+    // Route::apiResource('', Api\$STUDLY_NAME$Controller::class)->names('');
 });

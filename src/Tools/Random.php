@@ -24,7 +24,7 @@ class Random
      *
      * @return string
      */
-    public static function alnum($len = 6)
+    public static function alnum(int $len = 6)
     {
         return self::build('alnum', $len);
     }
@@ -36,7 +36,7 @@ class Random
      *
      * @return string
      */
-    public static function alpha($len = 6)
+    public static function alpha(int $len = 6)
     {
         return self::build('alpha', $len);
     }
@@ -48,7 +48,7 @@ class Random
      *
      * @return string
      */
-    public static function numeric($len = 4)
+    public static function numeric(int $len = 4)
     {
         return self::build('numeric', $len);
     }
@@ -60,7 +60,7 @@ class Random
      *
      * @return string
      */
-    public static function nozero($len = 4)
+    public static function nozero(int $len = 4)
     {
         return self::build('nozero', $len);
     }
@@ -73,7 +73,7 @@ class Random
      *
      * @return string
      */
-    public static function build($type = 'alnum', $len = 8)
+    public static function build(string $type = 'alnum', int $len = 8)
     {
         switch ($type) {
             case 'alpha':
@@ -98,68 +98,6 @@ class Random
                 $pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         }
         return substr(str_shuffle(str_repeat($pool, ceil($len / strlen($pool)))), 0, $len);
-    }
-
-    /**
-     * 根据数组元素的概率获得键名
-     *
-     * @param array $ps     array('p1'=>20, 'p2'=>30, 'p3'=>50);
-     * @param array $num    默认为1,即随机出来的数量
-     * @param array $unique 默认为true,即当num>1时,随机出的数量是否唯一
-     *
-     * @return mixed 当num为1时返回键名,反之返回一维数组
-     */
-    public function lottery($ps, $num = 1, $unique = true)
-    {
-        if (!$ps) {
-            return $num == 1 ? '' : [];
-        }
-        if ($num >= count($ps) && $unique) {
-            $res = array_keys($ps);
-            return $num == 1 ? $res[0] : $res;
-        }
-        $max_exp = 0;
-        $res     = [];
-        foreach ($ps as $key => $value) {
-            $value = substr($value, 0, stripos($value, ".") + 6);
-            $exp   = strlen(strchr($value, '.')) - 1;
-            if ($exp > $max_exp) {
-                $max_exp = $exp;
-            }
-        }
-        $pow_exp = pow(10, $max_exp);
-        if ($pow_exp > 1) {
-            reset($ps);
-            foreach ($ps as $key => $value) {
-                $ps[$key] = $value * $pow_exp;
-            }
-        }
-        $pro_sum = array_sum($ps);
-        if ($pro_sum < 1) {
-            return $num == 1 ? '' : [];
-        }
-        for ($i = 0; $i < $num; $i++) {
-            $rand_num = mt_rand(1, $pro_sum);
-            reset($ps);
-            foreach ($ps as $key => $value) {
-                if ($rand_num <= $value) {
-                    break;
-                } else {
-                    $rand_num -= $value;
-                }
-            }
-            if ($num == 1) {
-                $res = $key;
-                break;
-            } else {
-                $res[$i] = $key;
-            }
-            if ($unique) {
-                $pro_sum -= $value;
-                unset($ps[$key]);
-            }
-        }
-        return $res;
     }
 
     /**

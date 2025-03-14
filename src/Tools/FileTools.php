@@ -16,7 +16,7 @@ class FileTools
      *
      * @return string
      */
-    public static function dirReplace($path)
+    public static function dirReplace(string $path): string
     {
         return str_replace('//', '/', str_replace('\\', '/', $path));
     }
@@ -28,7 +28,7 @@ class FileTools
      *
      * @return boolean
      */
-    public static function isEmpty(string $dir)
+    public static function isEmpty(string $dir): bool
     {
         if (!is_dir($dir)) {
             return true;
@@ -44,7 +44,6 @@ class FileTools
         return false;
     }
 
-
     /**
      * @desc 文件重命名
      *
@@ -53,13 +52,12 @@ class FileTools
      *
      * @return bool
      */
-    public static function rename(string $old_name, string $new_name)
+    public static function rename(string $old_name, string $new_name): bool
     {
         if (($new_name != $old_name) && is_writable($old_name)) {
             return rename($old_name, $new_name);
         }
     }
-
 
     /**
      * @desc 文件保存路径处理
@@ -73,13 +71,12 @@ class FileTools
         return (preg_match('/\/$/', $path)) ? $path : $path . '/';
     }
 
-
     /**
      * desc 实现文件下载的功能
      *
      * @param string $file_path 绝对路径
      */
-    public static function downloadFile(string $file_path)
+    public static function downloadFile(string $file_path): void
     {
         //判断文件是否存在
         $file_path = iconv('utf-8', 'gb2312', $file_path); //对可能出现的中文名称进行转码
@@ -141,7 +138,7 @@ class FileTools
      *
      * @return boolean 保存成功返回true,否则false
      */
-    public static function saveArrayToFiles($path, $value)
+    public static function saveArrayToFiles(string $path, mixed $value): bool
     {
         return file_put_contents($path, "<?php\treturn " . var_export($value, true) . ";?>");
     }
@@ -159,7 +156,7 @@ class FileTools
      *  'order'=>'post_date desc'
      * )
      */
-    public static function paramLabel(string $tag = '')
+    public static function paramLabel(string $tag = ''): array
     {
 
         $param = array();
@@ -181,7 +178,7 @@ class FileTools
      *
      * @return string
      */
-    public static function getFileExtension(string $filename)
+    public static function getFileExtension(string $filename): string
     {
         $path_info = pathinfo($filename);
         return strtolower($path_info['extension']);
@@ -196,7 +193,7 @@ class FileTools
      *
      * @return    array    返回目录列表
      */
-    public static function getDirTree(string $dir, int $parentid = 0, array $dirs = [])
+    public static function getDirTree(string $dir, int $parentid = 0, array $dirs = []): array
     {
         global $id;
         if ($parentid == 0) {
@@ -220,10 +217,10 @@ class FileTools
      *
      * @return    string    路径
      */
-    public static function dirPath($path)
+    public static function dirPath($path): string
     {
         $path = str_replace('\\', '/', $path);
-        if (substr($path, -1) != '/') {
+        if (!str_ends_with($path, '/')) {
             $path = $path . '/';
         }
         return $path;
@@ -232,12 +229,12 @@ class FileTools
     /**
      * @desc 创建目录
      *
-     * @param string $path 路径
-     * @param string $mode 属性
+     * @param string     $path 路径
+     * @param int|string $mode 属性
      *
-     * @return    string    如果已经存在则返回true，否则为 false
+     * @return bool|string 如果已经存在则返回true，否则为 false
      */
-    public static function dirCreate($path, $mode = 0777)
+    public static function dirCreate(string $path, int|string $mode = 0755): bool|string
     {
         if (is_dir($path)) {
             return true;
@@ -262,10 +259,11 @@ class FileTools
      *
      * @param string $from_dir 原路径
      * @param string $to_dir   目标路径
+     * @param int    $mode
      *
-     * @return    string    如果目标路径不存在则返回false，否则为true
+     * @return bool|string 如果目标路径不存在则返回false，否则为true
      */
-    public static function dirCopy(string $from_dir, string $to_dir, $mode = 0777)
+    public static function dirCopy(string $from_dir, string $to_dir, int $mode = 0755): bool|string
     {
         $from_dir = self::dirPath($from_dir);
         $to_dir   = self::dirPath($to_dir);
@@ -348,7 +346,6 @@ class FileTools
         return fclose($path);
     }
 
-
     /**
      * @desc Base64字符串生成图片文件,自动解析格式
      *
@@ -387,27 +384,6 @@ class FileTools
 
     }
 
-
-    /**
-     * @desc 文件字节转具体大小 array("B", "KB", "MB", "GB", "TB", "PB","EB","ZB","YB")， 默认转成M
-     *
-     * @param int $size 文件字节
-     * @param int $dec
-     *
-     * @return string
-     */
-    public static function byteFormat(int $size, $dec = 2)
-    {
-        $units = array("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB");
-        $pos   = 0;
-        while ($size >= 1024) {
-            $size /= 1024;
-            $pos++;
-        }
-        return round($size, $dec) . " " . $units[$pos];
-    }
-
-
     /**
      * @desc 删除文件
      *
@@ -423,7 +399,6 @@ class FileTools
         }
     }
 
-
     /**
      * @desc 文件操作(复制/移动)
      *
@@ -434,7 +409,7 @@ class FileTools
      *
      * @return boolean
      */
-    public static function handleFile($old_path, $new_path, $type = 'copy', $overWrite = false)
+    public static function handleFile(string $old_path, string $new_path, string $type = 'copy', bool $overWrite = false)
     {
 
         $old_path = self::dirReplace($old_path);
@@ -506,9 +481,7 @@ class FileTools
             closedir($dirHandle);
             return $boolean;
         }
-
     }
-
 
     /**
      * @desc 返回指定文件和目录的信息
@@ -517,7 +490,7 @@ class FileTools
      *
      * @return array
      */
-    public static function listInfo(string $file)
+    public static function listInfo(string $file): array
     {
         $dir = array();
 
@@ -565,7 +538,7 @@ class FileTools
      * 11    blksize     文件系统 IO 的块大小
      * 12    blocks     所占据块的数目
      */
-    public static function openInfo($file)
+    public static function openInfo($file): bool|array
     {
         $file   = fopen($file, "r");
         $result = fstat($file);
@@ -583,8 +556,9 @@ class FileTools
      *
      * @return boolean
      */
-    public static function changeFile($file, $type, $ch_info)
+    public static function changeFile(string $file, string $type, string $ch_info): bool
     {
+        $is_ok = false;
         switch ($type) {
             case 'group' :
                 $is_ok = chgrp($file, $ch_info);//改变文件组。
@@ -607,7 +581,7 @@ class FileTools
      *
      * @return array
      */
-    public static function getUploaFileInfo(string $file)
+    public static function getUploaFileInfo(string $file): array
     {
         $file_info     = $_FILES[$file];//取得上传文件基本信息
         $info          = array();
@@ -620,73 +594,11 @@ class FileTools
         return $info;
     }
 
-
-    /**
-     * @desc: 设置文件命名规则
-     *
-     * @param string $type     命名规则
-     * @param string $filename 文件名
-     *
-     * @return string
-     */
-    public static function setFileName($type)
-    {
-        switch ($type) {
-            case 'hash' :
-                $new_file = md5(uniqid(mt_rand()));//mt_srand()以随机数md5加密来命名
-                break;
-            case 'time' :
-                $new_file = time();
-                break;
-            default :
-                $new_file = date($type, time());//以时间格式来命名
-                break;
-        }
-        return $new_file;
-    }
-
-
-    /**
-     * @desc: 创建指定路径下的指定文件
-     *
-     * @param string  $path       (需要包含文件名和后缀)
-     * @param boolean $over_write 是否覆盖文件
-     * @param int     $time       设置时间。默认是当前系统时间
-     * @param int     $atime      设置访问时间。默认是当前系统时间
-     *
-     * @return boolean
-     */
-    public function createFile($path, $over_write = false, $time = null, $atime = null)
-    {
-        $path  = $this->dirReplace($path);
-        $time  = empty($time) ? time() : $time;
-        $atime = empty($atime) ? time() : $atime;
-        if (file_exists($path) && $over_write) {
-            $this->unlinkFile($path);
-        }
-        $aimDir = dirname($path);
-        $this->dirCreate($aimDir);
-        return touch($path, $time, $atime);
-    }
-
-
-    /**
-     * @desc: 读取文件操作
-     *
-     * @param string $file
-     *
-     * @return boolean
-     */
-    public function readFile($file)
-    {
-        return @file_get_contents($file);
-    }
-
     /**
      * @desc: 确定服务器的最大上传限制（字节数）
      * @return int 服务器允许的最大上传字节数
      */
-    public function allowUploadSize()
+    public function allowUploadSize(): int
     {
         return trim(ini_get('upload_max_filesize'));
     }

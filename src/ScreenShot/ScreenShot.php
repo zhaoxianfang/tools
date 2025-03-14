@@ -6,7 +6,7 @@ use Exception;
 
 /**
  * 网页截图
- * $res = ScreenShot::init('/you-path')->setUrl('http://www.baidu.com')->run(__DIR__.'/img/'.time().'.png');
+ * $res = ScreenShot::init('/your/ScreenShot/path')->setUrl('http://www.baidu.com')->run(__DIR__.'/img/'.time().'.png');
  */
 class ScreenShot
 {

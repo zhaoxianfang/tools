@@ -32,7 +32,7 @@ return [
     | laravel 默认内置了 web 和 api 两个中间件组，如果要使用其他中间件组，需要手动添加到该数组中；eg: ['web', 'api','admin']
     |
     */
-    'allow_automatic_load_middleware_groups' => ['web', 'api'],
+    'allow_automatic_load_middleware_groups' => ['web', 'api', 'admin'],
 
     /*
     |--------------------------------------------------------------------------
@@ -111,6 +111,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | 一个模块下有多个配置文件时(Config文件夹下)，定义配置文件名分隔符
+    |--------------------------------------------------------------------------
+    | config.php 配置文件不使用分割符，直接使用模块名小写读取配置
+    |           eg: Modules/模块/Config/config.php 直接使用 config('模块') 读取 config.php 文件的配置
+    |
+    | 分隔符默认为_,
+    |    Modules/模块/Config/aha.php 使用 config('模块_aha') 读取 aha.php 文件的配置
+    | 若定义分隔符为点(.),
+    |    Modules/模块/Config/aha.php 使用 config('模块.aha') 读取 aha.php 文件的配置
+    |
+    | [特别注意]: 如果使用点号「.」分割符时
+    |    若config.php 文件中定义了 name 配置,又在config.php同级文件夹下定义了 name.php 配置，那么读取
+    |    config('demo模块.name') 时因为config.php文件内的name键会和name.php文件配置冲突导致报错
+    |    因此：配置此项时要避免出现冲突的情况
+    |
+    */
+    'multi_config_delimiter'                 => '_',
+
+    /*
+    |--------------------------------------------------------------------------
     | 代码追踪调试使用的编辑器
     |--------------------------------------------------------------------------
     |
@@ -134,14 +154,17 @@ return [
     */
     'stubs'                                  => [
         'files'        => [
-            'routes/web'         => 'Routes/web.php',
-            'routes/api'         => 'Routes/api.php',
-            'views/index'        => 'Resources/views/index.blade.php',
-            'views/master'       => 'Resources/views/layouts/master.blade.php',
-            'scaffold/config'    => 'Config/config.php',
+            'routes/web'            => 'Routes/web.php',
+            'routes/api'            => 'Routes/api.php',
+            'views/index'           => 'Resources/views/index.blade.php',
+            'views/master'          => 'Resources/views/layouts/master.blade.php',
+            'scaffold/config'       => 'Config/config.php',
             // 自定义本地化
-            'lang/en/messages'   => 'Resources/lang/en/messages.php',
-            'lang/en/validation' => 'Resources/lang/en/validation.php',
+            'lang/en/messages'      => 'Resources/lang/en/messages.php',
+            'lang/en/validation'    => 'Resources/lang/en/validation.php',
+            'lang/zh_CN/messages'   => 'Resources/lang/zh_CN/messages.php',
+            'lang/zh_CN/validation' => 'Resources/lang/zh_CN/validation.php',
+            'lang/zh_CN'            => 'Resources/lang/zh_CN.json',
         ],
         'replacements' => [
             'routes/web'      => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],

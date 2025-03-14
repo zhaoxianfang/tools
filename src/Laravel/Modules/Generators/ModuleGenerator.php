@@ -566,17 +566,7 @@ class ModuleGenerator extends Generator
      */
     private function cleanModuleJsonFile()
     {
-        $path = $this->module->getModulePath($this->getName()).'module.json';
 
-        $content = $this->filesystem->get($path);
-        $namespace = $this->getModuleNamespaceReplacement();
-        $studlyName = $this->getStudlyNameReplacement();
-
-        $provider = '"'.$namespace.'\\\\'.$studlyName.'\\\\Providers\\\\'.$studlyName.'ServiceProvider"';
-
-        $content = str_replace($provider, '', $content);
-
-        $this->filesystem->put($path, $content);
     }
 
     /**

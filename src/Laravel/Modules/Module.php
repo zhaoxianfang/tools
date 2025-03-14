@@ -80,26 +80,7 @@ abstract class Module
      */
     public static function getAssets(): array
     {
-        $paths = [];
-
-        if (file_exists(public_path('build/manifest.json'))) {
-            $files = json_decode(file_get_contents(public_path('build/manifest.json')), true);
-
-            if (is_array($files)) {
-                foreach ($files as $file) {
-                    // Ignore files which aren't entrypoints.
-                    if (empty($file['isEntry'])) {
-                        continue;
-                    }
-
-                    if (isset($file['src'])) {
-                        $paths[] = $file['src'];
-                    }
-                }
-            }
-        }
-
-        return $paths;
+        return [];
     }
 
     /**
@@ -219,13 +200,6 @@ abstract class Module
     public function json($file = null): Collection
     {
         return Collection::make([]);
-//        if ($file === null) {
-//            $file = 'module.json';
-//        }
-//
-//        return Arr::get($this->moduleJson, $file, function () use ($file) {
-//            return $this->moduleJson[$file] = new Json($this->getPath().'/'.$file, $this->files);
-//        });
     }
 
     /**

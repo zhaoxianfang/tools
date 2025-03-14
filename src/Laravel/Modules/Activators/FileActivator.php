@@ -6,9 +6,6 @@ use Illuminate\Container\Container;
 use zxf\Laravel\Modules\Contracts\ActivatorInterface;
 use zxf\Laravel\Modules\Module;
 
-/**
- * @deprecated 废弃
- */
 class FileActivator implements ActivatorInterface
 {
 

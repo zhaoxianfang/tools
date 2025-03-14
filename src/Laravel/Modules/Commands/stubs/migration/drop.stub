@@ -20,7 +20,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::create('$TABLE$', function (Blueprint $table) {
-            $table->id();
+            $table->id(); // $table->bigIncrements('id');
             $FIELDS$
             $table->timestamps();
         });

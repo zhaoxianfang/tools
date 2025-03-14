@@ -50,7 +50,7 @@ if (!function_exists('modules_name')) {
      */
     function modules_name(): string
     {
-        return config('modules.namespace', 'Modules');
+        return app('config')->get('modules.paths.modules');
     }
 }
 
@@ -68,19 +68,18 @@ if (!function_exists('get_module_name')) {
     function get_module_name(?bool $toUnderlineConvert = false): mixed
     {
         try {
-            if (!app()->runningInConsole()) {
-                if (empty($request = request()) || empty($route = $request->route())) {
-                    return $toUnderlineConvert ? 'app' : 'App';
-                }
+            if (app()->runningInConsole()) {
+                return $toUnderlineConvert ? 'command' : 'Command';
+            }
+            if (!empty($request = request()) && !empty($route = $request->route())) {
                 $routeNamespace      = $route->getAction()['namespace'];
                 $modulesNamespaceArr = array_filter(explode('\\', explode('Http\Controllers', $routeNamespace)[0]));
-                if (empty($modulesNamespaceArr) || $modulesNamespaceArr[0] != modules_name()) {
-                    return $toUnderlineConvert ? 'command' : 'Command';
+                // 判断 $route->uri() 字符串中是否包含 无路由回调fallback ||
+                if (!str_contains($route->uri(), 'fallback') && !empty($modulesNamespaceArr) && $modulesNamespaceArr[0] == modules_name()) {
+                    return $toUnderlineConvert ? underline_convert($modulesNamespaceArr[1]) : $modulesNamespaceArr[1];
                 }
-                return $toUnderlineConvert ? underline_convert($modulesNamespaceArr[1]) : $modulesNamespaceArr[1];
-            } else {
-                return $toUnderlineConvert ? 'app' : 'App';
             }
+            return $toUnderlineConvert ? 'app' : 'App';
         } catch (\Exception $err) {
             return get_url_module_name($toUnderlineConvert);
         }

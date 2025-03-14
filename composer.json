@@ -31,7 +31,6 @@
     "ext-pdo": "*",
     "ext-gd": "*",
     "ext-dom": "*",
-    "ext-iconv": "*",
     "ext-curl": "*"
   },
   "autoload": {

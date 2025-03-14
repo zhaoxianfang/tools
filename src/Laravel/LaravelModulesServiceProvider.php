@@ -5,8 +5,8 @@ namespace zxf\Laravel;
 use zxf\Laravel\BuilderQuery\Builder as WhereHasInBuilder;
 use zxf\Laravel\Modules\Contracts;
 use zxf\Laravel\Modules\Laravel;
-use zxf\Laravel\Modules\Activators\FileActivator;
 use zxf\Laravel\Modules\Providers\ConsoleServiceProvider;
+use zxf\Laravel\Modules\Activators\FileActivator;
 use zxf\Laravel\Modules\Providers\ContractsServiceProvider;
 use zxf\Laravel\Modules\Providers\ModulesRouteServiceProvider;
 use zxf\Laravel\Modules\Providers\AutoLoadModulesProviders;
@@ -23,8 +23,6 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
  */
 class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
 {
-    protected $defer = true;
-
     public function __construct($app)
     {
         is_laravel() && !empty(config('modules.enable', true)) && parent::__construct($app);
@@ -93,15 +91,10 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
         $kernel = $this->app[\Illuminate\Foundation\Http\Kernel::class];
         $kernel->pushMiddleware($middleware); // 追加
         // $kernel->prependMiddleware($middleware); // 放在最前面
-        if (isset($kernel->getMiddlewareGroups()['web'])) {
-            $kernel->appendMiddlewareToGroup('web', $middleware); // 追加
-            // $kernel->prependMiddlewareToGroup('web', $middleware);   // 放在最前面
-        }
-    }
-
-    public function provides()
-    {
-        return [Contracts\RepositoryInterface::class, 'modules'];
+        // if (isset($kernel->getMiddlewareGroups()['web'])) {
+        //     $kernel->appendMiddlewareToGroup('web', $middleware); // 追加
+        //     // $kernel->prependMiddlewareToGroup('web', $middleware);   // 放在最前面
+        // }
     }
 
     // 设置数据分页模板
@@ -133,10 +126,13 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
             $path = $app['config']->get('modules.paths.modules');
             return new Laravel\LaravelFileRepository($app, $path);
         });
+        $this->app->singleton(Contracts\ActivatorInterface::class, function ($app) {
+            return new FileActivator($app);
+        });
 
         $this->app->alias(Contracts\RepositoryInterface::class, 'modules');
 
-        // 定义 trace
+        // 定义 app('trace')
         $this->app->singleton(Handle::class, function ($app) {
             return new Handle($app);
         });
@@ -210,7 +206,7 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
 
     /**
      * Register views.
-     * 然后就可以使用 view('apidoc::test') 去访问Apidoc/Resources/views里面的视图文件了
+     * 然后就可以使用 view('demo::test') 去访问 Demo/Resources/views里面的视图文件了
      *
      * @return void
      */
@@ -235,7 +231,7 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
     private function getPublishableViewPaths($module, $moduleLower): array
     {
         $paths = [];
-        foreach (\Config::get('view.paths') as $path) {
+        foreach (app('config')->get('view.paths') as $path) {
             if (is_dir($path . '/modules/' . $moduleLower)) {
                 $paths[] = $path . '/modules/' . $moduleLower;
             }
@@ -244,22 +240,32 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
     }
 
     /**
-     * Register config.
+     * 注册 config.
      *
-     * @return false|void
+     * @return void
      */
     protected function registerConfig($module, $moduleLower)
     {
-        if (is_file(module_path($module, 'Config/config.php'))) {
-            if (config('modules.publishes_config', false)) {
-                $this->publishes([
-                    module_path($module, 'Config/config.php') => config_path($moduleLower . '.php'),
-                ], 'config');
+        if (is_dir(module_path($module, 'Config'))) {
+            $configs = array_slice(scandir(module_path($module, 'Config')), 2); // 2:表示从数组的第[2]项取，即不包含 . 和 ..
+            foreach ($configs as $file) {
+                // 获取完整文件路径
+                $fullPath = module_path($module, 'Config/' . $file);
+                if (is_file($fullPath) && str_ends_with($fullPath, '.php')) {
+                    $filename = pathinfo($fullPath, PATHINFO_FILENAME);
+                    if (config('modules.publishes_config', false)) {
+                        // config.php 文件 发布成 $moduleLower.php ,其他文件 发布成 $moduleLower/$filename.php
+                        $this->publishes([
+                            $fullPath => config_path($moduleLower . ($filename == 'config' ? '' : '/' . $filename) . '.php'),
+                        ], 'config');
+                    }
+                    // 读取配置文件的分隔符(config.php 文件直接使用模块名小写,针对其他文件生效)
+                    $configDelimiter = config('modules.multi_config_delimiter', '_');
+                    $this->mergeConfigFrom(
+                        module_path($module, 'Config/' . $filename . '.php'), $moduleLower . ($filename == 'config' ? '' : $configDelimiter . $filename)
+                    );
+                }
             }
-
-            $this->mergeConfigFrom(
-                module_path($module, 'Config/config.php'), $moduleLower
-            );
         }
     }
 
@@ -272,7 +278,7 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
             echo ' 插    件 | composer require zxf/tools ' . PHP_EOL;
             echo ' 格    言 | 人生在勤，不索何获 ' . PHP_EOL;
             echo ' 模块发布 | php artisan vendor:publish --provider="zxf\Laravel\LaravelModulesServiceProvider" ' . PHP_EOL;
-            echo ' 文档地址 | http://weisifang.com/docs/2 ' . PHP_EOL;
+            echo ' 文档地址 | https://weisifang.com/docs/2 ' . PHP_EOL;
             echo ' github   | https://github.com/zhaoxianfang/tools ' . PHP_EOL;
             echo ' gitee    | https://gitee.com/zhaoxianfang/tools ' . PHP_EOL;
             echo '======================================================================================================' . PHP_EOL;

@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-use $MODULE_NAMESPACE$\$STUDLY_NAME$\$CONTROLLER_NAMESPACE$;
 
 /*
  *--------------------------------------------------------------------------
@@ -20,5 +19,4 @@ Route::prefix('$LOWER_NAME$')->name('api.$LOWER_NAME$.')->group(function () {
     //     return '$LOWER_NAME$ Api';
     //     return $request->user();
     // });
-    // Route::apiResource('', Api\$STUDLY_NAME$Controller::class)->names('');
 });

@@ -1,9 +1,9 @@
 @extends('$LOWER_NAME$::layouts.master')
 
 @section('content')
-    <div class="center">
-        <div class="content">
-            <h1 class="gradient">Module: Module: {!! config('$LOWER_NAME$.name') !!}</h1>
+    <div class="content">
+        <div class="message-box rect">
+            <p class="gradient">模块: {!! config('$LOWER_NAME$.name') !!}</p>
             <p>文档:https://weisifang.com/docs/2</p>
             <p>插件:composer require zxf/tools&nbsp;&nbsp;&nbsp;</p>
         </div>

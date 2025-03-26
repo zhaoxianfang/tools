@@ -110,3 +110,11 @@ class Sina extends Controller
 ```
 
 >提示:config('callback.sina') 中需要包含3个元素 wb_akey、wb_skey、wb_callback_url
+
+
+## OAuth2.0 登录
+```
+来源：https://github.com/majiameng/OAuth2
+tags:v2.2.6
+date:2025-03-24
+```

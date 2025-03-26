@@ -2096,3 +2096,21 @@ if (! function_exists('is_resource_file')) {
         return ! empty($ext) && in_array(strtolower($ext), $simpleOrCustomExt);
     }
 }
+
+if (! function_exists('is_string_value_array')) {
+    /**
+     * 检查是否为['字符串键名'=>'不是数组也不是对象格式类型的值']格式的数组
+     *      eg:['name'=>'foo']:true
+     *         ['name'=>['foo']]:false
+     *         [['name','foo']]:false
+     *         ['name'=>new stdClass()]:false
+     *
+     * @param array $array
+     *
+     * @return bool
+     */
+    function is_string_value_array(array $array): bool
+    {
+        return ! array_is_list($array) && array_reduce($array, fn ($carry, $value) => $carry && is_scalar($value), true);
+    }
+}

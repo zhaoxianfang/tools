@@ -22,12 +22,12 @@ class QqOauth implements Handle
     public function __construct(array $config = [])
     {
         if (function_exists('config') && empty($config)) {
-            $this->config = config('tools_auth.qq.default') ?? [];
+            $this->config = config('tools_oauth.qq.default') ?? [];
         } else {
             $this->config = [
-                'client_id' => $config['client_id'],
-                'client_secret' => $config['client_secret'],
-                'redirect_uri' => $config['redirect_uri'],
+                'app_id'     => $config['app_id'],
+                'app_secret' => $config['app_secret'],
+                'callback'   => $config['callback'],
             ];
         }
         $this->client = new Curl;
@@ -35,16 +35,16 @@ class QqOauth implements Handle
 
     public function authorization($stateSys = '')
     {
-        $state = base64_encode(json_encode(! empty($stateSys) ? $stateSys : 'null'));
+        $state = base64_encode(json_encode(!empty($stateSys) ? $stateSys : 'null'));
         $state = str_en_code($state, 'en');
 
         // -------构造请求参数列表
         $keysArr = [
             'response_type' => 'code',
-            'client_id' => $this->config['client_id'],
-            'redirect_uri' => $this->config['redirect_uri'],
-            'state' => $state,
-            'scope' => 'get_user_info',
+            'client_id'     => $this->config['app_id'],
+            'redirect_uri'  => $this->config['callback'],
+            'state'         => $state,
+            'scope'         => 'get_user_info',
         ];
         i_session('zxf_login_qq_state', $state);
 
@@ -58,15 +58,15 @@ class QqOauth implements Handle
         }
 
         $query = [
-            'grant_type' => 'authorization_code',
-            'client_id' => $this->config['client_id'],
-            'redirect_uri' => urlencode($this->config['redirect_uri']),
-            'client_secret' => $this->config['client_secret'],
-            'code' => $_GET['code'],
+            'grant_type'    => 'authorization_code',
+            'client_id'     => $this->config['app_id'],
+            'redirect_uri'  => urlencode($this->config['callback']),
+            'client_secret' => $this->config['app_secret'],
+            'code'          => $_GET['code'],
         ];
 
         $temp_url = $this->combineURL($this->token_url, $query);
-        $res = $this->client->get($temp_url);
+        $res      = $this->client->get($temp_url);
 
         if (isset($res['access_token'])) {
             return $res['access_token'];
@@ -82,10 +82,10 @@ class QqOauth implements Handle
         }
 
         $openidInfo = $this->getOpenid($access_token);
-        $query = array_filter([
-            'openid' => $openidInfo['openid'],
+        $query      = array_filter([
+            'openid'             => $openidInfo['openid'],
             'oauth_consumer_key' => $openidInfo['client_id'],
-            'access_token' => $access_token,
+            'access_token'       => $access_token,
         ]);
 
         $temp_url = $this->combineURL($this->userinfo_url, $query);
@@ -93,17 +93,17 @@ class QqOauth implements Handle
         if ($userinfo['ret'] != 0) {
             throw new \Exception($userinfo['msg']);
         }
-        $userinfo['unionid'] = ! empty($openidInfo['unionid']) ? $openidInfo['unionid'] : null;
-        $userinfo['openid'] = $openidInfo['openid'];
-        $userinfo['email'] = $openidInfo['openid'].'@open.qq.com';
+        $userinfo['unionid'] = !empty($openidInfo['unionid']) ? $openidInfo['unionid'] : null;
+        $userinfo['openid']  = $openidInfo['openid'];
+        $userinfo['email']   = $openidInfo['openid'] . '@open.qq.com';
 
         return $userinfo;
     }
 
     public function getStateParam()
     {
-        $state = ! empty($_REQUEST['state']) ? $_REQUEST['state'] : i_session('zxf_login_qq_state');
-        if (! empty($state)) {
+        $state = !empty($_REQUEST['state']) ? $_REQUEST['state'] : i_session('zxf_login_qq_state');
+        if (!empty($state)) {
             $state = urldecode($state);
             $state = str_replace(' ', '+', $state);
             // 进行解密 验证是否为本站发出的state
@@ -122,9 +122,9 @@ class QqOauth implements Handle
 
     private function getOpenid($access_token): array
     {
-        $keysArr = [
+        $keysArr  = [
             'access_token' => $access_token,
-            'unionid' => 1, // 获取 UnionID
+            'unionid'      => 1, // 获取 UnionID
         ];
         $temp_url = $this->combineURL($this->union_url, $keysArr);
 
@@ -135,20 +135,21 @@ class QqOauth implements Handle
      * combineURL
      * 拼接url
      *
-     * @param  string  $baseURL  基于的url
-     * @param  array  $keysArr  参数列表数组
+     * @param string $baseURL 基于的url
+     * @param array  $keysArr 参数列表数组
+     *
      * @return string 返回拼接的url
      */
     public function combineURL($baseURL, $keysArr)
     {
-        $combined = $baseURL.'?';
+        $combined = $baseURL . '?';
         $valueArr = [];
 
         foreach ($keysArr as $key => $val) {
             $valueArr[] = "$key=$val";
         }
 
-        $keyStr = implode('&', $valueArr);
+        $keyStr   = implode('&', $valueArr);
         $combined .= ($keyStr);
 
         return $combined;

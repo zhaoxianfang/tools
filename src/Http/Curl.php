@@ -179,6 +179,18 @@ class Curl
     }
 
     /**
+     * 清空整个请求头
+     * @return $this
+     * @throws Exception
+     */
+    public function cleanHeader()
+    {
+        $this->initCurl();
+        curl_setopt($this->ch, CURLOPT_HTTPHEADER, []);
+        return $this;
+    }
+
+    /**
      * 设置cookie文件的保存路径地址或者读取地址
      *
      *

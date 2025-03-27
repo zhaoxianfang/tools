@@ -17,6 +17,8 @@ class Sina extends Gateway
 
     protected $AccessTokenURL = 'https://api.weibo.com/oauth2/access_token';
 
+    protected $AccessGetUidURL = 'https://api.weibo.com/oauth2/get_token_info?access_token=';
+
     /**
      * Description:  得到跳转地址
      *
@@ -29,14 +31,14 @@ class Sina extends Gateway
         // 登录参数
         $this->switchAccessTokenURL();
         $params = [
-            'client_id' => $this->config['app_id'],
+            'client_id'    => $this->config['app_id'],
             'redirect_uri' => $this->config['callback'],
-            'scope' => $this->config['scope'],
-            'state' => $this->config['state'],
-            'display' => $this->display,
+            'scope'        => $this->config['scope'],
+            'state'        => $this->config['state'],
+            'display'      => $this->display,
         ];
 
-        return $this->AuthorizeURL.'?'.http_build_query($params);
+        return $this->AuthorizeURL . '?' . http_build_query($params);
     }
 
     /**
@@ -48,11 +50,20 @@ class Sina extends Gateway
      */
     public function openid()
     {
-        $this->getToken();
+        if (empty($this->token['access_token'])) {
+            $this->getToken();
+        }
 
         if (isset($this->token['openid'])) {
-            return $this->token['openid'];
+            return $this->token['openid']; // 也就是 uid
         } else {
+            $url    = $this->AccessGetUidURL . $this->token['access_token'];
+            $result = $this->post($url);
+            if (isset($result['uid'])) {
+                $this->token['openid'] = $result['uid'];
+                return $this->token['openid'];
+            }
+
             throw new Exception('没有获取到新浪微博用户ID！');
         }
     }
@@ -68,16 +79,16 @@ class Sina extends Gateway
         $result = $this->getUserInfo();
 
         $userInfo = [
-            'open_id' => $this->openid(),
+            'open_id'      => $this->openid(),
             'access_token' => $this->token['access_token'] ?? '',
-            'union_id' => $this->openid(),
-            'channel' => ConstCode::TYPE_SINA,
-            'nickname' => $result['screen_name'],
-            'gender' => $this->getGender($result['gender']),
-            'avatar' => $result['avatar_hd'],
+            'union_id'     => $this->openid(),
+            'channel'      => 'sina', //ConstCode::TYPE_SINA,
+            'nickname'     => $result['screen_name'],
+            'gender_value' => $this->getGender($result['gender']),
+            'avatar'       => $result['avatar_hd'],
         ];
 
-        return $userInfo;
+        return array_merge($result, $userInfo);
     }
 
     /**
@@ -90,15 +101,13 @@ class Sina extends Gateway
     public function getUserInfo()
     {
         if ($this->type == 'app') {// App登录
-            if (! isset($_REQUEST['access_token']) || ! isset($_REQUEST['uid'])) {
+            if (!isset($_REQUEST['access_token']) || !isset($_REQUEST['uid'])) {
                 throw new Exception('Sina APP登录 需要传输access_token和uid参数! ');
             }
             $this->token['access_token'] = $_REQUEST['access_token'];
-            $this->token['openid'] = $_REQUEST['uid'];
+            $this->token['openid']       = $_REQUEST['uid'];
         } else {
-            /** 获取参数 */
-            $params = $this->accessTokenParams();
-            $this->AccessTokenURL = $this->AccessTokenURL.'?'.http_build_query($params); // get传参
+            /** 获取token */
             $this->getToken();
         }
 
@@ -121,8 +130,7 @@ class Sina extends Gateway
         if (isset($this->token['access_token'])) {
             $params['access_token'] = $this->token['access_token'];
         }
-
-        return $this->$method(self::API_BASE.$api, $params);
+        return $this->$method(self::API_BASE . $api, $params);
     }
 
     /**

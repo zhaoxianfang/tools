@@ -2,6 +2,7 @@
 
 namespace zxf\Login\Contracts;
 
+use Exception;
 use zxf\Facade\Curl;
 use zxf\Login\Constants\ConstCode;
 use zxf\Login\Helper\Str;
@@ -34,7 +35,7 @@ abstract class Gateway implements GatewayInterface
     /**
      * AppId
      */
-    protected array $app_id;
+    protected string $app_id;
 
     /**
      * AppSecret
@@ -89,6 +90,16 @@ abstract class Gateway implements GatewayInterface
     protected $checkState = false;
 
     /**
+     * 通过回跳state解析出传入的回调参数
+     *      通过mustCheckState(string|array $callbackState = '')设置需要验证state时
+     *      可传入一个 string|array 类型的参数并进行本地session存储，当第三方授权回调后调
+     *      用 checkState() 方法验证state成功后会解析并返回传入的$callbackState的原始值
+     *
+     * @var string|array
+     */
+    protected string|array $callbackState = '';
+
+    /**
      * 第三方返回的userInfo
      *
      * @var array
@@ -103,31 +114,44 @@ abstract class Gateway implements GatewayInterface
     protected $formatUserInfo = [];
 
     /**
+     * 第三方OAuth的名称(小写)，例如 qq,sina,...
+     *
+     * @var string
+     */
+    protected string $oAuthName = '';
+
+    /**
      * Gateway constructor.
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function __construct($config)
+    public function __construct(array $config = [])
     {
-        if (! $config) {
-            throw new \Exception('传入的配置不能为空');
+        $this->oAuthName = strtolower(basename(str_replace('\\', '/', get_class($this))));
+
+        if (empty($config)) {
+            if (function_exists('config')) {
+                $config = config("tools_oauth.{$this->oAuthName}.default") ?? [];
+            }
+            empty($config) && throw new Exception("「{$this->oAuthName}」的配置不能为空");
         }
         if (isset($_GET['referer']) && $config['callback']) {
-            $config['callback'] .= ((str_contains($config['callback'], '?')) ? '&' : '?').'referer='.$_GET['referer'];
+            $config['callback'] .= ((str_contains($config['callback'], '?')) ? '&' : '?') . 'referer=' . $_GET['referer'];
         }
         // 默认参数
-        $_config = [
-            'app_id' => '',
-            'app_secret' => '',
-            'callback' => '',
+        $_config      = [
+            'app_id'        => '',
+            'app_secret'    => '',
+            'callback'      => '',
             'response_type' => 'code',
-            'grant_type' => 'authorization_code',
-            'proxy' => '',
-            'state' => '',
-            'type' => '',
-            'is_sandbox' => false, // 是否是沙箱环境
+            'grant_type'    => 'authorization_code',
+            'proxy'         => '',
+            'state'         => '',
+            'type'          => '',
+            'is_sandbox'    => false, // 是否是沙箱环境
         ];
-        $this->config = array_merge($_config, $config);
+        $this->config = !empty($config) ? array_merge($_config, $config) : $_config;
+
         foreach ($this->config as $key => $val) {
             if (property_exists($this, $key)) {
                 $this->$key = $val;
@@ -163,12 +187,16 @@ abstract class Gateway implements GatewayInterface
     /**
      * Description:  强制验证回跳地址中的state参数
      *
+     * @param string|array $callbackState 需要验证state时可设置此参数进行本地session存储，
+     *                                    第三方授权回调后可在 checkState() 方法验证state
+     *                                    成功后会解析并返回传入的$callbackState的原始值
+     *
      * @return $this
      */
-    public function mustCheckState()
+    public function mustCheckState(string|array $callbackState = '')
     {
         $this->checkState = true;
-
+        !empty($callbackState) && $this->callbackState = $callbackState;
         return $this;
     }
 
@@ -177,7 +205,7 @@ abstract class Gateway implements GatewayInterface
      *
      * @return array
      */
-    public function getConfig()
+    public function getConfig(): array
     {
         return $this->config;
     }
@@ -200,33 +228,38 @@ abstract class Gateway implements GatewayInterface
     public function saveState()
     {
         if ($this->checkState === true) {
-            // 是否开启session
-            if (session_status() !== PHP_SESSION_ACTIVE) {
-                session_start();
-            }
-            if (empty($this->config['state'])) {
-                $this->config['state'] = Str::random(); // 生成随机state
-            }
-            // 存储到session
-            $_SESSION['tinymeng_oauth_state'] = $this->config['state'];
+            // 都没有时生成一个「随机大小写字母_uuid()」 字符串
+            $this->config['state'] = !empty($this->config['state']) ? $this->config['state'] : chr(rand(0, 1) ? rand(65, 90) : rand(97, 122)) . '_' . uuid();
+            $this->callbackState   = $this->callbackState ?? 'null';
+
+            // 存储到本地 session 文件保存
+            i_session('tools_login_oauth_state', $this->config['state']);
+            i_session('tools_login_oauth_state_callback', $this->callbackState);
         }
     }
 
     /**
      * 验证state
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function checkState()
     {
         if ($this->checkState === true) {
-            if (session_status() !== PHP_SESSION_ACTIVE) {
-                session_start();
+            $state = !empty($_REQUEST['state']) ? $_REQUEST['state'] : '';
+            if (empty($state)) {
+                throw new Exception('非法请求:未携带STATE参数！');
             }
-            if (! isset($_REQUEST['state']) || ! isset($_SESSION['tinymeng_oauth_state']) || $_REQUEST['state'] != $_SESSION['tinymeng_oauth_state']) {
-                throw new \Exception('传递的STATE参数不匹配！');
+            // 验证 state
+            if ($state != i_session('tools_login_oauth_state')) {
+                throw new Exception('非法请求:STATE参数错误！');
             }
+            // 验证通过
+            $this->callbackState = !empty($data = i_session('tools_login_oauth_state_callback')) ? $data : 'null';
+            return $this->callbackState != 'null' ? $this->callbackState : '';
         }
+
+        return '';
     }
 
     /**
@@ -247,11 +280,11 @@ abstract class Gateway implements GatewayInterface
     protected function accessTokenParams()
     {
         $params = [
-            'client_id' => $this->config['app_id'],
+            'client_id'     => $this->config['app_id'],
             'client_secret' => $this->config['app_secret'],
-            'grant_type' => $this->config['grant_type'],
-            'code' => $this->getCode(),
-            'redirect_uri' => $this->config['callback'],
+            'grant_type'    => $this->config['grant_type'],
+            'code'          => $this->getCode(),
+            'redirect_uri'  => $this->config['callback'],
         ];
 
         return $params;
@@ -270,7 +303,23 @@ abstract class Gateway implements GatewayInterface
             $params = $this->accessTokenParams();
 
             /** 获取access_token */
-            $token = $this->post($this->AccessTokenURL, $params);
+            // 不同的OAuth类型不同，获取access_token的请求方式不同,例如：qq 使用 get请求，sina 使用 post请求
+            $method = match ($this->oAuthName) {
+                // 'qq', 'name' => 'get',
+                'qq'    => 'get',
+                'sina'  => 'post',
+                default => null,
+            };
+
+            if ($this->oAuthName == 'qq') {
+                $token = $this->get($this->AccessTokenURL, $params);
+            } elseif ($this->oAuthName == 'sina') {
+                $token = $this->post($this->AccessTokenURL, $params, [], 'string');
+            } else {
+                // 默认使用get请求
+                $token = $this->get($this->AccessTokenURL, $params);
+            }
+
             /** 解析token值(子类实现此方法) */
             $this->token = $this->parseToken($token);
         } else {
@@ -284,9 +333,11 @@ abstract class Gateway implements GatewayInterface
      *
      * @return mixed
      */
-    protected function get($url, array $params = [], array $headers = [])
+    protected function get($url, array $params = [], array $headers = [], string $data_type = 'array')
     {
-        return Curl::setHeader($headers)->setParams($params)->get($url);
+        return Curl::setParams($params, $data_type)->inject(function ($http, $ch) use ($headers) {
+            !empty($headers) ? $http->setHeader($headers, false) : $http->cleanHeader();
+        })->get($url);
     }
 
     /**
@@ -295,12 +346,15 @@ abstract class Gateway implements GatewayInterface
      *
      * @return mixed
      */
-    protected function post($url, array $params = [], array $headers = [])
+    protected function post($url, array $params = [], array $headers = [], string $data_type = 'array')
     {
-        $headers[] = 'Accept: application/json'; // GitHub需要的header
+        if ($this->oAuthName = 'github') {
+            $headers[] = 'Accept: application/json'; // GitHub需要的header
+        }
 
-        return Curl::setHeader($headers)->setParams($params)->post($url);
-        // return \tinymeng\tools\HttpRequest::httpPost($url, $params, $headers);
+        return Curl::setParams($params, $data_type)->inject(function ($http, $ch) use ($headers) {
+            !empty($headers) ? $http->setHeader($headers, false) : $http->cleanHeader();
+        })->post($url);
     }
 
     /**
@@ -315,7 +369,8 @@ abstract class Gateway implements GatewayInterface
     /**
      * 刷新AccessToken续期(未实现)
      *
-     * @param  string  $refreshToken
+     * @param string $refreshToken
+     *
      * @return bool
      */
     public function refreshToken($refreshToken)
@@ -326,7 +381,8 @@ abstract class Gateway implements GatewayInterface
     /**
      * 检验授权凭证AccessToken是否有效(未实现)
      *
-     * @param  string  $accessToken
+     * @param string $accessToken
+     *
      * @return bool
      */
     public function validateAccessToken($accessToken = null)

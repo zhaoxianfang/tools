@@ -50,6 +50,8 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
         if (! is_laravel() || empty(config('modules.enable', true))) {
             return;
         }
+        // 初始化 本地文件 session
+        i_session();
 
         $this->registerMiddleware(ExtendMiddleware::class);
 

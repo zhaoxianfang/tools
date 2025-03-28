@@ -13,8 +13,8 @@ use zxf\Login\Helper\Str;
 /**
  * @method static Gateways\Qq Qq(?array $config = []) QQ
  * @method static Gateways\Sina Sina(?array $config = []) Sina
+ * @method static Gateways\Wechat Wechat(?array $config = []) 微信开放平台登录
  * @method static Gateways\Alipay Alipay(?array $config=[]) 阿里云
- * @method static Gateways\Wechat wechat(?array $config=[]) 微信
  * @method static Gateways\Facebook Facebook(?array $config=[]) Facebook
  * @method static Gateways\Github Github(?array $config=[]) Github
  * @method static Gateways\Google Google(?array $config=[]) Google

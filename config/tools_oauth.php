@@ -29,7 +29,7 @@ return [
     ],
     // 微信
     'wechat'   => [
-        // PC 扫码登录
+        // PC 扫码登录【需要开通微信开放平台应用 open.weixin.qq.com】
         'default' => [
             'app_id'     => env('OAUTH_WECHAT_APP_ID', ''),
             'app_secret' => env('OAUTH_WECHAT_APP_SECRET', ''),

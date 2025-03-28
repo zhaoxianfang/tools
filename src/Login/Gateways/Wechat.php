@@ -7,6 +7,8 @@ use zxf\Login\Constants\ConstCode;
 use zxf\Login\Contracts\Gateway;
 
 /**
+ * 微信扫码登录：【需要开通微信开放平台】
+ *
  * 网站应用微信登录开发 https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&t=resource/res_list&verify=1&id=open1419316505&token=
  * 1.PC登录:微信开放平台创建'网站应用'
  * 2.Mobile登录:微信公众号(服务号/企业号)
@@ -17,6 +19,8 @@ use zxf\Login\Contracts\Gateway;
  *      2、以snsapi_userinfo为scope发起的网页授权，是用来获取用户的基本信息的。但这种授权需要用户手动同意，并且由于用户同意过，所以无须关注，就可在授权后获取该用户的基本信息。(H5页面微信授权获取用户,注册成为用户id,可以做点赞关注等功能)
  *      3、用户管理类接口中的“获取用户基本信息接口”，是在用户和公众号产生消息交互或关注后事件推送后，才能根据用户OpenID来获取用户基本信息。这个接口，包括其他微信接口，都是需要该用户（即openid）关注了公众号后，才能调用成功的。
  * 如想打通unionid的话需要将公众号绑定到同一个微信开放平台
+ *
+ * 网页授权：https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage_authorization.html
  */
 
 /**

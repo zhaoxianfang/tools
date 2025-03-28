@@ -229,7 +229,7 @@ abstract class Gateway implements GatewayInterface
     {
         if ($this->checkState === true) {
             // 都没有时生成一个「随机大小写字母_uuid()」 字符串
-            $this->config['state'] = !empty($this->config['state']) ? $this->config['state'] : chr(rand(0, 1) ? rand(65, 90) : rand(97, 122)) . '_' . uuid();
+            $this->config['state'] = !empty($this->config['state']) ? $this->config['state'] : chr(rand(0, 1) ? rand(65, 90) : rand(97, 122)) . '0' . uuid();
             $this->callbackState   = $this->callbackState ?? 'null';
 
             // 存储到本地 session 文件保存

@@ -8,6 +8,7 @@
  *      2、以 user_info为scope发起的网页授权，是用来获取用户的基本信息的。
  *      3、以 login_id为scope静默授权。
  * 如想打通unionid的话需要将小程序绑定到同一个抖音开放平台
+ * TODO: 未验证
  */
 
 namespace zxf\Login\Gateways;
@@ -16,9 +17,6 @@ use Exception;
 use zxf\Login\Constants\ConstCode;
 use zxf\Login\Contracts\Gateway;
 
-/**
- * Class Douyin
- */
 class Douyin extends Gateway
 {
     protected $ApiBase = 'https://open.douyin.com';

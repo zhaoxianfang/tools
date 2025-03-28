@@ -10,6 +10,8 @@
  * 3.获取用户信息user_gender权限
  * https://developers.facebook.com/apps/你的appid/app-review/permissions/
  * 申请这个权限user_gender
+ *
+ * TODO: 未验证
  */
 
 namespace zxf\Login\Gateways;
@@ -18,9 +20,6 @@ use zxf\Login\Constants\ConstCode;
 use zxf\Login\Contracts\Gateway;
 use zxf\Login\Helper\Str;
 
-/**
- * Class Facebook
- */
 class Facebook extends Gateway
 {
     const API_BASE = 'https://graph.facebook.com/v3.1/';

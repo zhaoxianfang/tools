@@ -16,6 +16,8 @@ use zxf\Login\Helper\Str;
 
 /**
  * Class Naver
+ *
+ * TODO: 未验证
  */
 class Naver extends Gateway
 {

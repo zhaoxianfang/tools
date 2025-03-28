@@ -3,6 +3,8 @@
 /**
  * Gitee
  * api接口文档
+ *
+ * TODO: 未验证
  */
 
 namespace zxf\Login\Gateways;
@@ -11,9 +13,6 @@ use Exception;
 use zxf\Login\Constants\ConstCode;
 use zxf\Login\Contracts\Gateway;
 
-/**
- * Class Gitee
- */
 class Gitee extends Gateway
 {
     protected $AuthorizeURL = 'https://gitee.com/oauth/authorize';

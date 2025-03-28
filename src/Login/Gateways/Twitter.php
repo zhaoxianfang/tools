@@ -9,7 +9,7 @@ use zxf\Login\Helper\Str;
 /**
  * Class Twitter
  *
- * @Created: 2018/11/9
+ * TODO: 未验证
  */
 class Twitter extends Gateway
 {

@@ -3,18 +3,50 @@
 namespace zxf\Xml;
 
 use DOMDocument;
+use DOMElement;
+use DOMException;
 use DOMImplementation;
 use DOMNode;
 use Exception;
 
 /**
- * Array2XML: A class to convert array in PHP to XML
- * It also takes into account attributes names unlike SimpleXML in PHP
- * It returns the XML in form of DOMDocument class for further manipulation.
- * It throws exception if the tag name or attribute name has illegal chars.
+ * 数组转XML字符串
+ *      1、支持普通数组转 XML : createXML
+ *      2、支持数组转微信官方文档中示例的 XML 数据 : createWechatXML
  *
- * Usage:
- *       $xml = Array2XML::createXML( $php_array,'root_node_name', $attr, $docType);
+ * 1、普通数组转XML => createXML 方法
+ *       $array = [
+ *          'Good_guy' => [
+ *              'name' => 'Luke Skywalker',
+ *              'weapon' => 'Lightsaber'
+ *          ],
+ *          'Bad_guy' => [
+ *              'name' => 'Sauron',
+ *              'weapon' => 'Evil Eye'
+ *          ]
+ *      ];
+ *
+ *      $xml = Array2XML::createXML($array,?'root',?[
+ *          'version' => '1.0',
+ *          'encoding' => 'UTF-8',
+ *          'standalone' => true,
+ *          'formatOutput' => true
+ *      ]);
+ *
+ *      echo $xml->saveXML();
+ *
+ * 2、转微信文档中示例的 XML 数据 => createWechatXML 方法
+ *      // 输入数组数据
+ *      $data = [
+ *          'ToUserName' => 'toUser',
+ *          'FromUserName' => 'fromUser',
+ *          'CreateTime' => 12345678, // int 类型的数据 转换后不会携带CDATA
+ *          'MsgType' => 'text',
+ *          'Content' => 'Hello World'
+ *      ];
+ *      $xml = Array2XML::createWechatXML($data);
+ *
+ *      echo $xml; // <?xml version="1.0" encoding="UTF-8"?><xml><ToUserName><![CDATA[toUser]]></ToUserName><FromUserName><![CDATA[fromUser]]></FromUserName><CreateTime>12345678</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[Hello World]]></Content></xml>
  */
 class Array2XML
 {
@@ -23,15 +55,16 @@ class Array2XML
     /**
      * Convert an Array to XML.
      *
+     * @param array  $arr       - array to be converted
      * @param string $node_name - name of the root node to be converted
-     * @param array|null $arr - array to be converted
-     * @param array $docType - optional docType
+     * @param array  $docType   - optional docType
      *
      * @return DomDocument
-     * @throws Exception
+     * @throws DOMException
      */
-    public static function createXML(string $node_name, $arr = [], array $docType = [])
+    public static function createXML(array $arr, string $node_name = 'root', array $docType = [])
     {
+        self::$xml = null;
         $xml = self::getXMLRoot();
 
         // BUG 008 - Support <!DOCTYPE>
@@ -71,17 +104,17 @@ class Array2XML
     /**
      * Convert an Array to XML.
      *
-     * @param string $node_name - name of the root node to be converted
-     * @param array|string|null $arr - array to be converted
+     * @param string            $node_name - name of the root node to be converted
+     * @param array|string|null $arr       - array to be converted
      *
      * @return DOMNode
      *
      * @throws Exception
      */
-    private static function convert(string $node_name, $arr = [])
+    private static function convert(string $node_name, array|string|null $arr = [])
     {
         //print_arr($node_name);
-        $xml = self::getXMLRoot();
+        $xml  = self::getXMLRoot();
         $node = $xml->createElement($node_name);
 
         if (is_array($arr)) {
@@ -89,7 +122,7 @@ class Array2XML
             if (array_key_exists(self::$labelAttributes, $arr) && is_array($arr[self::$labelAttributes])) {
                 foreach ($arr[self::$labelAttributes] as $key => $value) {
                     if (!self::isValidTagName($key)) {
-                        throw new Exception('[Array2XML] Illegal character in attribute name. attribute: '.$key.' in node: '.$node_name);
+                        throw new Exception('[Array2XML] Illegal character in attribute name. attribute: ' . $key . ' in node: ' . $node_name);
                     }
                     $node->setAttribute($key, self::bool2str($value));
                 }
@@ -100,7 +133,7 @@ class Array2XML
             // else check if its directly stored as string
             if (array_key_exists(self::$labelValue, $arr)) {
                 if (!self::isValidValue($arr[self::$labelValue])) {
-                    throw new Exception('[Array2XML] Illegal character in value : '.$arr[self::$labelValue].' in node: '.$node_name);
+                    throw new Exception('[Array2XML] Illegal character in value : ' . $arr[self::$labelValue] . ' in node: ' . $node_name);
                 }
                 $node->appendChild($xml->createTextNode(self::bool2str($arr[self::$labelValue])));
                 unset($arr[self::$labelValue]);    //remove the key from the array once done.
@@ -108,7 +141,7 @@ class Array2XML
                 return $node;
             } elseif (array_key_exists(self::$labelCData, $arr)) {
                 if (!self::isValidValue($arr[self::$labelCData])) {
-                    throw new Exception('[Array2XML] Illegal character in CData : '.$arr[self::$labelCData].' in node: '.$node_name);
+                    throw new Exception('[Array2XML] Illegal character in CData : ' . $arr[self::$labelCData] . ' in node: ' . $node_name);
                 }
                 $node->appendChild($xml->createCDATASection(self::bool2str($arr[self::$labelCData])));
                 unset($arr[self::$labelCData]);    //remove the key from the array once done.
@@ -122,7 +155,7 @@ class Array2XML
             // recurse to get the node for that key
             foreach ($arr as $key => $value) {
                 if (!self::isValidTagName($key)) {
-                    throw new Exception('[Array2XML] Illegal character in tag name. tag: '.$key.' in node: '.$node_name);
+                    throw new Exception('[Array2XML] Illegal character in tag name. tag: ' . $key . ' in node: ' . $node_name);
                 }
                 if (is_array($value) && is_numeric(key($value))) {
                     // MORE THAN ONE NODE OF ITS KIND;
@@ -143,7 +176,7 @@ class Array2XML
         // we check if it has any text value, if yes, append it.
         if (!is_array($arr)) {
             if (!self::isValidValue($arr)) {
-                throw new Exception('[Array2XML] Illegal character : '.$arr.' in node: '.$node_name);
+                throw new Exception('[Array2XML] Illegal character : ' . $arr . ' in node: ' . $node_name);
             }
             $node->appendChild($xml->createTextNode(self::bool2str($arr)));
         }
@@ -185,5 +218,69 @@ class Array2XML
         $pattern = '/^[\x09\x0A\x0D\x20-\x7E\x85\xA0-\x{D7FF}\x{E000}-\x{FFFD}]*$/u';
 
         return is_null($value) || (preg_match($pattern, $value, $matches) && $matches[0] === $value);
+    }
+
+    /**
+     * 将数组转换成 微信官方文档中示例的 XML
+     *
+     * @param array  $data     数组数据
+     * @param string $encoding 编码（默认为 UTF-8）
+     * @param string $version  XML 版本（默认为 1.0）
+     *
+     * @return string 转换后的 XML 字符串
+     * @throws DOMException
+     */
+    public static function createWechatXML(array $data, string $encoding = 'UTF-8', string $version = '1.0'): string
+    {
+        // 创建 DOMDocument 对象并设置编码
+        // $dom = new DOMDocument($version, $encoding);
+        self::$xml = null;
+        $dom = self::getXMLRoot();
+
+        // 创建根节点 <xml>
+        $root = $dom->createElement('xml');
+        $dom->appendChild($root);
+
+        // 递归将数组转换为 XML
+        self::arrayToWechatXML($data, $root, $dom);
+
+        // 格式化输出 XML
+        $dom->formatOutput = true;
+
+        // 返回 XML 字符串
+        return $dom->saveXML();
+    }
+
+    /**
+     * 递归将数组转换为 微信的XML 格式
+     *
+     * @param array       $data 数组数据
+     * @param DOMElement  $xml  根节点
+     * @param DOMDocument $dom  DOMDocument 对象
+     *
+     * @throws DOMException
+     */
+    private static function arrayToWechatXML(array $data, DOMElement $xml, DOMDocument $dom)
+    {
+        foreach ($data as $key => $value) {
+            // 处理 CDATA 标签
+            if (is_array($value)) {
+                // 递归处理数组
+                $subNode = $dom->createElement($key);
+                $xml->appendChild($subNode);
+                self::arrayToWechatXML($value, $subNode, $dom);
+            } else {
+                // 检查是否需要使用 CDATA
+                if (is_string($value)) {
+                    // 使用 DOM 来创建 CDATA 节点
+                    $node = $dom->createElement($key);
+                    $cdata = $dom->createCDATASection($value);
+                    $node->appendChild($cdata);
+                } else {
+                    $node = $dom->createElement($key, $value);
+                }
+                $xml->appendChild($node);
+            }
+        }
     }
 }

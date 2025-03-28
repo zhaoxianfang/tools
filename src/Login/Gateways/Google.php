@@ -8,6 +8,8 @@
  * App开发文档:
  *      https://developers.google.com/identity/sign-in/android/offline-access
  * 1.创建项目->并创建凭证
+ *
+ * TODO: 未验证
  */
 
 namespace zxf\Login\Gateways;
@@ -15,9 +17,6 @@ namespace zxf\Login\Gateways;
 use zxf\Login\Constants\ConstCode;
 use zxf\Login\Contracts\Gateway;
 
-/**
- * Class Google
- */
 class Google extends Gateway
 {
     const API_BASE = 'https://www.googleapis.com/';

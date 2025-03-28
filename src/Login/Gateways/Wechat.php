@@ -25,6 +25,8 @@ use zxf\Login\Contracts\Gateway;
 
 /**
  * Class Wechat
+ *
+ * TODO: 未验证
  */
 class Wechat extends Gateway
 {

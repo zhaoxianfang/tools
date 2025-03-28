@@ -1089,6 +1089,131 @@ if (! function_exists('is_json')) {
         return false;
     }
 }
+if (! function_exists('is_xml')) {
+    // 检查是否是有效的 XML 字符串
+    function is_xml(string $string): bool
+    {
+        try {
+            // 尝试加载字符串为 XML
+            libxml_use_internal_errors(true); // 启用内部错误处理
+            simplexml_load_string($string);
+
+            // 如果发生解析错误，返回 false
+            if (libxml_get_errors()) {
+                libxml_clear_errors(); // 清除错误
+                return false;
+            }
+            return true; // 如果没有错误，返回 true
+        }catch (\Exception $e){
+        }
+        return false;
+    }
+}
+
+if (! function_exists('get_original_content')) {
+    /**
+     * 获取原始请求内容
+     *
+     * @param bool $returnOriginal 是否返回原始数据；默认为 true；
+     *                             true:返回原始数据
+     *                             false:返回解析后的数据；
+     *
+     * @param bool $getDataType 是否获取数据类型；默认为 false；
+     *                          true:返回数据类型；
+     *                          false:只返回请求数据；
+     *
+     * @return array|string|null
+     */
+    function get_original_content(bool $returnOriginal = true, bool $getDataType = false): array|string|null
+    {
+        // 尝试获取原始数据
+        $rawInput = !empty($GLOBALS['HTTP_RAW_POST_DATA'])
+            ? $GLOBALS['HTTP_RAW_POST_DATA']
+            : file_get_contents("php://input");
+
+        // 如果未获取到原始数据，返回 null
+        if (!$rawInput && empty($_GET) && empty($_POST) && empty($_FILES)) {
+            return null;
+        }
+
+        // 默认返回的解析结果
+        $result = [
+            'type' => 'raw',
+            'content' => $rawInput
+        ];
+
+        // 处理 $_GET 数据
+        if (!empty($_GET)) {
+            $result['type'] = 'get';
+            $result['content'] = $_GET;
+        }
+
+        // 处理 $_POST 数据
+        if (!empty($_POST)) {
+            $result['type'] = 'post';
+            $result['content'] = $_POST;
+        }
+
+        // 判断数据类型并进行解析
+        if (is_json($rawInput)) {
+            $result['type'] = 'json';
+            $result['content'] = json_decode($rawInput, true);
+        } elseif (is_xml($rawInput)) {
+            $result['type'] = 'xml';
+            $result['content'] = \zxf\Xml\XML2Array::parse($rawInput);
+        } elseif (!empty($_FILES)) {
+            $result['type'] = 'file';
+            $result['content'] = parse_files($_FILES);
+        }
+
+        // 如果是原始数据，直接返回
+        if ($returnOriginal) {
+            return $rawInput;
+        }
+
+        // 如果需要返回数据类型
+        if ($getDataType) {
+            return [
+                'data' => $result['content'],
+                'type' => $result['type']
+            ];
+        }
+
+        return $result['content'];
+    }
+}
+
+if (! function_exists('parse_files')) {
+// 解析文件上传数据
+    function parse_files(array $files): array
+    {
+        $parsedFiles = [];
+        foreach ($files as $key => $file) {
+            if (is_array($file['name'])) {
+                // 处理多个文件上传
+                foreach ($file['name'] as $index => $filename) {
+                    $parsedFiles[$key][] = [
+                        'name'     => $filename,
+                        'type'     => $file['type'][$index] ?? null,
+                        'tmp_name' => $file['tmp_name'][$index] ?? null,
+                        'error'    => $file['error'][$index] ?? null,
+                        'size'     => $file['size'][$index] ?? null,
+                    ];
+                }
+            } else {
+                // 处理单个文件上传
+                $parsedFiles[$key] = [
+                    'name'     => $file['name'],
+                    'type'     => $file['type'],
+                    'tmp_name' => $file['tmp_name'],
+                    'error'    => $file['error'],
+                    'size'     => $file['size'],
+                ];
+            }
+        }
+        return $parsedFiles;
+    }
+}
 
 if (! function_exists('get_full_path')) {
     /**

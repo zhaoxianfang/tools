@@ -4,6 +4,8 @@
  * Github  https://github.com/settings/developers
  * api接口文档
  *      https://developer.github.com/apps/building-oauth-apps/authorizing-oauth-apps/
+ *
+ * TODO: 未验证
  */
 
 namespace zxf\Login\Gateways;
@@ -11,9 +13,6 @@ namespace zxf\Login\Gateways;
 use zxf\Login\Constants\ConstCode;
 use zxf\Login\Contracts\Gateway;
 
-/**
- * Class Github
- */
 class Github extends Gateway
 {
     const API_BASE = 'https://api.github.com/';

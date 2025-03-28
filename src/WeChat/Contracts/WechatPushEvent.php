@@ -110,6 +110,7 @@ class WechatPushEvent extends WeChatBase
      */
     public function xml2arr(string $xml)
     {
+        return \zxf\Xml\XML2Array::parse($xml);
         if (PHP_VERSION_ID < 80000) {
             $backup = libxml_disable_entity_loader(true);
             $data   = (array)simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA);

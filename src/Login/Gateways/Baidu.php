@@ -3,6 +3,8 @@
 /**
  * 百度
  * api接口文档
+ *
+ * TODO: 未验证
  */
 
 namespace zxf\Login\Gateways;
@@ -11,9 +13,6 @@ use Exception;
 use zxf\Login\Constants\ConstCode;
 use zxf\Login\Contracts\Gateway;
 
-/**
- * Class Baidu
- */
 class Baidu extends Gateway
 {
     const API_BASE = 'https://openapi.baidu.com/';

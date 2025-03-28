@@ -10,13 +10,10 @@ use zxf\Login\Contracts\Gateway;
  * 阿里云
  * api接口文档
  *      https://help.aliyun.com/zh/ram/user-guide/overview-of-oauth-applications
+ *
+ * TODO: 未验证
  */
 
-/**
- * Class Aliyun
- *
- * @Created: 2023/07/09
- */
 class Aliyun extends Gateway
 {
     const API_BASE = 'https://signin.aliyun.com/';

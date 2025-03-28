@@ -9,6 +9,8 @@ use zxf\Login\Helper\Str;
 
 /**
  * Class Line
+ *
+ * TODO: 未验证
  */
 class Line extends Gateway
 {

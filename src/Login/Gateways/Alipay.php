@@ -23,11 +23,10 @@ use zxf\Login\Helper\Str;
  * 2.2.APP登录需要签约:	APP支付宝登录/获取会员信息
  *
  * 网页授权文档：https://opendocs.alipay.com/open/284/web
+ *
+ * TODO: 未验证
  */
 
-/**
- * Class Alipay
- */
 class Alipay extends Gateway
 {
     const RSA_PRIVATE = 1;

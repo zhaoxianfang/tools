@@ -73,7 +73,7 @@ class Request
         // 获取请求的内容类型
         $this->contentType = $_SERVER['CONTENT_TYPE'] ?? ($_SERVER['HTTP_CONTENT_TYPE'] ?? 'text/html');
         // 获取请求的body内容
-        $this->body = file_get_contents('php://input') ?? $GLOBALS['HTTP_RAW_POST_DATA'] ?? [];
+        $this->body = get_original_content() ?? [];
         // 获取重写的参数
         $this->overridden = $_SERVER['REDIRECT_STATUS'] ?? [];
         // 获取GET参数
@@ -93,7 +93,7 @@ class Request
         // 获取服务器参数
         $this->servers = $_SERVER ?? [];
         // 获取协议类型（HTTP或HTTPS）
-        $this->protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : (isset($this->servers['SERVER_PROTOCOL']) ? $this->servers['SERVER_PROTOCOL'] : 'http');
+        $this->protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : ($this->servers['SERVER_PROTOCOL'] ?? 'http');
         // 获取请求方法（GET、POST等）
         $this->method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         // 获取查询字符串参数（URL中"?"后的部分）
@@ -104,16 +104,12 @@ class Request
         // 获取请求的端口号信息（如果是HTTP默认端口80，HTTPS默认端口443）
         $this->port = $this->port();
 
-        if ($this->isXml($this->body)) {
+        if (is_xml($this->body)) {
             // 解析xml
-            // 1、把整个文件读入一个字符串中：(用于接收xml文件)
-            // 2、转换形式良好的 XML 字符串为 SimpleXMLElement 对象，然后输出对象的键和元素：(用于处理接收到的xml数据，将其转换成对象)
-            $xml_object = simplexml_load_string($this->body, 'SimpleXMLElement', LIBXML_NOCDATA);
-            // 3、对象转成json
-            $xml_json = json_encode($xml_object);
+            $body = \zxf\Xml\XML2Array::parse($this->body);
             // 4、json再转成数组
-            $this->post = json_decode($xml_json, true);
-            $this->body = $this->post;
+            $this->post = $body;
+            $this->body = $body;
         }
         $this->input = ! empty($this->post) ? array_merge($this->input, $this->post) : $this->input;
 
@@ -131,12 +127,6 @@ class Request
         }
 
         return $this;
-    }
-
-    // 判断数据是否为 XML 的辅助函数
-    public function isXml($data): bool
-    {
-        return str_starts_with($data, '<');
     }
 
     /**

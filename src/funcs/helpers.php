@@ -629,14 +629,16 @@ if (! function_exists('num_to_cn')) {
         $char = $sim ? ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'] : ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'];
         // 每一个数级的 四个位置
         $twoUnit = $sim ? ['', '十', '百', '千'] : ['', '拾', '佰', '仟'];
-        // 每一个数级的 单位
+        // 每一个数级的 单位; 1古戈尔 = 10¹⁰⁰， 古戈尔也称为 不可说
+        // 1恒河沙 = 10⁵²（佛教用语）
+        // 1不可思议 = 10⁶⁴
+        // 1腾 = 10¹²⁸
         $twoChat = [
-            '', '万', '亿', '兆', '京', '垓', '秭', '穰', '沟', '涧', '正', '载', '极', '恒河沙', '阿僧祇', '那由他', '不可思议', '无量',
-            '大数', '全仕祥', '古戈尔', '频波罗', '矜羯罗', '不可说不可转', '超限数',
-            '绝对无限', '绝对无量', '绝对小数', '绝对大数', '绝对超限数', '绝对恒河沙', '绝对那由他', '绝对不可思议', '绝对古戈尔',
-            '绝对频波罗', '绝对矜羯罗', '绝对有量', '绝对有限', '绝对界限', '绝对有解', '绝对无解', '绝对有量大海', '绝对无量大海', '绝对无限小数', '绝对无限大数',
+            '', '万', '亿', '兆', '京', '垓', '秭', '穰', '沟', '涧', '正', '载', '极', '恒河沙', '阿僧祇', '那由他', '不可思议',
+            '无量','大数', '无量大数', '不可称', '不可量', '不可数', '不可思', '不可议','古戈尔',
+            '不可说数', '无边数', '无等数', '无等无等数', '无限数', '无限无边数', '腾',
         ];
-        $moneyUnit = ['角', '分', '厘', '毫'];
+        $moneyUnit = ['角', '分', '厘', '毫', '丝', '忽', '微', '纤', '沙'];
 
         // 将整数部分和小数部分分开
         [$num, $dec] = (str_contains($number, '.')) ? [substr($number, 0, strpos($number, '.')), substr($number, strpos($number, '.') + 1)] : [$number, ''];
@@ -1127,9 +1129,14 @@ if (! function_exists('get_original_content')) {
     function get_original_content(bool $returnOriginal = true, bool $getDataType = false): array|string|null
     {
         // 尝试获取原始数据
-        $rawInput = !empty($GLOBALS['HTTP_RAW_POST_DATA'])
-            ? $GLOBALS['HTTP_RAW_POST_DATA']
-            : file_get_contents("php://input");
+        // 优先使用
+        $rawInput = file_get_contents("php://input");
+
+        // 如果为空，表示 "php://input" 已经被所处的框架读取过了，而php 中只能读取一次，所以被读取过就无法获取到数据
+        if (empty($rawInput)) {
+            // 从各个框架的从取原始数据
+            $rawInput = get_current_framework_raw_input();
+        }
 
         // 如果未获取到原始数据，返回 null
         if (!$rawInput && empty($_GET) && empty($_POST) && empty($_FILES)) {
@@ -1180,6 +1187,96 @@ if (! function_exists('get_original_content')) {
         }
 
         return $result['content'];
+    }
+
+    /**
+     * 判断当前所处的框架，并通过框架里面内置的方法获取 "php://input" 的数据
+     */
+    function get_current_framework_raw_input()
+    {
+        $content = null;
+
+        // 检测常见PHP框架并获取对应方法
+        switch (true) {
+            // Laravel/Lumen
+            case class_exists(\Illuminate\Http\Request::class):
+                $content = app('request')->getContent();
+                break;
+
+            // Symfony
+            case class_exists(\Symfony\Component\HttpFoundation\Request::class):
+                $content = \Symfony\Component\HttpFoundation\Request::createFromGlobals()->getContent();
+                break;
+
+            // CodeIgniter 4
+            case class_exists(\CodeIgniter\HTTP\IncomingRequest::class):
+                $content = \CodeIgniter\Config\Services::request()->getBody();
+                break;
+
+            // Slim 3/4
+            case class_exists(\Slim\Psr7\Request::class):
+                $content = (string)\Slim\Factory\AppFactory::determineRequestMethod()->getBody();
+                break;
+
+            // Yii2
+            case class_exists(\yii\web\Request::class):
+                $content = \Yii::$app->request->getRawBody();
+                break;
+
+            // ThinkPHP 6+
+            case class_exists(\think\Request::class):
+                $content = \think\facade\Request::instance()->getContent();
+                break;
+
+            // CakePHP
+            case class_exists(\Cake\Http\ServerRequest::class):
+                $content = (string)\Cake\Http\ServerRequestFactory::fromGlobals()->getBody();
+                break;
+
+            // Phalcon
+            case class_exists(\Phalcon\Http\Request::class):
+                $content = \Phalcon\Di\FactoryDefault::getDefault()
+                    ->get('request')->getRawBody();
+                break;
+
+            // Zend Framework / Laminas
+            case class_exists(\Laminas\Diactoros\ServerRequestFactory::class):
+                $content = (string)\Laminas\Diactoros\ServerRequestFactory::fromGlobals()
+                    ->getBody();
+                break;
+
+            // FuelPHP
+            case class_exists(\Fuel\Core\Request::class):
+                $content = \Fuel\Core\Request::active()->getBody();
+                break;
+
+            // FlightPHP
+            case class_exists(\flight\Engine::class):
+                $content = \flight\core\Dispatcher::getInstance()->request()->getBody();
+                break;
+
+            // MedooPHP
+            case class_exists(\Medoo\Medoo::class):
+                $content = $_SERVER['HTTP_RAW_POST_DATA'] ?? file_get_contents('php://input');
+                break;
+
+            // 其他情况
+            default:
+                // 尝试从全局变量获取
+                if (isset($GLOBALS['HTTP_RAW_POST_DATA'])) {
+                    $content = $GLOBALS['HTTP_RAW_POST_DATA'];
+                } elseif (!empty($_POST)) {
+                    $content = http_build_query($_POST);
+                } else {
+                    // 最后尝试通过输入流
+                    $input = fopen('php://input', 'r');
+                    $content = stream_get_contents($input);
+                    fclose($input);
+                    $content = ($content !== false) ? $content : '';
+                }
+        }
+
+        return $content;
     }
 }
 
@@ -2237,5 +2334,21 @@ if (! function_exists('is_string_value_array')) {
     function is_string_value_array(array $array): bool
     {
         return ! array_is_list($array) && array_reduce($array, fn ($carry, $value) => $carry && is_scalar($value), true);
+    }
+}
+
+if (! function_exists('power_tower')) {
+    /**
+     * 幂塔（Power tower）,也称为重幂 或者 超幂(a↑↑b) (共b层)
+     * 形如 ((2²)²)² 表示为 2^2^2^2 也记为 ⁴2 表示 或者2↑↑4 (共4层)
+     * 的表达式被称为 指数塔（Exponential tower） 或 幂塔
+     *
+     * @param string $a 底数
+     * @param int $b 幂塔层数
+     *
+     * @return string
+     */
+    function power_tower(string $a, int $b): string {
+        return \zxf\Tools\BigNumberCalculator::tetration($a, $b);
     }
 }

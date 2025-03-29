@@ -46,7 +46,9 @@ use Exception;
  *      ];
  *      $xml = Array2XML::createWechatXML($data);
  *
- *      echo $xml; // <?xml version="1.0" encoding="UTF-8"?><xml><ToUserName><![CDATA[toUser]]></ToUserName><FromUserName><![CDATA[fromUser]]></FromUserName><CreateTime>12345678</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[Hello World]]></Content></xml>
+ *      echo $xml; // <?xml version="1.0"
+ *      encoding="UTF-8"?><xml><ToUserName><![CDATA[toUser]]></ToUserName><FromUserName><![CDATA[fromUser]]></FromUserName><CreateTime>12345678</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[Hello
+ *      World]]></Content></xml>
  */
 class Array2XML
 {
@@ -65,7 +67,7 @@ class Array2XML
     public static function createXML(array $arr, string $node_name = 'root', array $docType = [])
     {
         self::$xml = null;
-        $xml = self::getXMLRoot();
+        $xml       = self::getXMLRoot();
 
         // BUG 008 - Support <!DOCTYPE>
         if ($docType) {
@@ -154,6 +156,7 @@ class Array2XML
         if (is_array($arr)) {
             // recurse to get the node for that key
             foreach ($arr as $key => $value) {
+                $key = is_numeric($key) ? 'item' : $key;
                 if (!self::isValidTagName($key)) {
                     throw new Exception('[Array2XML] Illegal character in tag name. tag: ' . $key . ' in node: ' . $node_name);
                 }
@@ -263,6 +266,7 @@ class Array2XML
     private static function arrayToWechatXML(array $data, DOMElement $xml, DOMDocument $dom)
     {
         foreach ($data as $key => $value) {
+            $key = is_numeric($key) ? 'item' : $key;
             // 处理 CDATA 标签
             if (is_array($value)) {
                 // 递归处理数组
@@ -273,7 +277,7 @@ class Array2XML
                 // 检查是否需要使用 CDATA
                 if (is_string($value)) {
                     // 使用 DOM 来创建 CDATA 节点
-                    $node = $dom->createElement($key);
+                    $node  = $dom->createElement($key);
                     $cdata = $dom->createCDATASection($value);
                     $node->appendChild($cdata);
                 } else {

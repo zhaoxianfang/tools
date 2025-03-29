@@ -59,7 +59,9 @@ class WechatPushEvent extends WeChatBase
     {
         parent::__construct($key);
         // 参数初始化
-        $this->input = new DataArray($_REQUEST);
+        // $this->input = new DataArray($_REQUEST);
+        $this->input = new DataArray(get_original_content(false));
+
         $this->appid = $this->config->get('appid');
         // 推送消息处理
         $method = !empty($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
@@ -71,14 +73,16 @@ class WechatPushEvent extends WeChatBase
                     return $this->error('Missing Config -- [aes_key]!', 400);
                 }
                 $prpcrypt = new Prpcrypt($this->config->get('aes_key'));
-                $result   = $this->xml2arr($this->postxml);
+                // $result   = $this->xml2arr($this->postxml);
+                $result   = get_original_content(false);
                 $array    = $prpcrypt->decrypt($result['Encrypt']);
                 if (intval($array[0]) > 0) {
                     return $this->error($array[1], $array[0]);
                 }
                 list($this->postxml, $this->appid) = [$array[1], $array[2]];
             }
-            $this->receive = new DataArray($this->xml2arr($this->postxml));
+            // $this->receive = new DataArray($this->xml2arr($this->postxml));
+            $this->receive = $this->input;
         } elseif ($method == "GET" && $this->checkSignature()) {
             @ob_clean();
             exit($this->input->get('echostr'));
@@ -94,11 +98,7 @@ class WechatPushEvent extends WeChatBase
      */
     public function getRawInput()
     {
-        if (empty($GLOBALS['HTTP_RAW_POST_DATA'])) {
-            return file_get_contents('php://input');
-        } else {
-            return $GLOBALS['HTTP_RAW_POST_DATA'];
-        }
+        return get_original_content();
     }
 
     /**
@@ -111,14 +111,6 @@ class WechatPushEvent extends WeChatBase
     public function xml2arr(string $xml)
     {
         return \zxf\Xml\XML2Array::parse($xml);
-        if (PHP_VERSION_ID < 80000) {
-            $backup = libxml_disable_entity_loader(true);
-            $data   = (array)simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA);
-            libxml_disable_entity_loader($backup);
-        } else {
-            $data = (array)simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA);
-        }
-        return json_decode(json_encode($data), true);
     }
 
     /**
@@ -130,33 +122,7 @@ class WechatPushEvent extends WeChatBase
      */
     public function arr2xml(array $data)
     {
-        return "<xml>" . $this->arr2xmlAchieve($data) . "</xml>";
-    }
-
-
-    /**
-     * XML内容生成
-     *
-     * @param array  $data 数据
-     * @param string $content
-     *
-     * @return string
-     */
-    private function arr2xmlAchieve(array $data, string $content = '')
-    {
-        foreach ($data as $key => $val) {
-            is_numeric($key) && $key = 'item';
-            $content .= "<{$key}>";
-            if (is_array($val) || is_object($val)) {
-                $content .= $this->arr2xmlAchieve($val);
-            } elseif (is_string($val)) {
-                $content .= '<![CDATA[' . preg_replace("/[\\x00-\\x08\\x0b-\\x0c\\x0e-\\x1f]/", '', $val) . ']]>';
-            } else {
-                $content .= $val;
-            }
-            $content .= "</{$key}>";
-        }
-        return $content;
+        return \zxf\Xml\Array2XML::createWechatXML($data);
     }
 
     /**

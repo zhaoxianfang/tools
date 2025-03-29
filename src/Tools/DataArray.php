@@ -179,6 +179,9 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
      */
     public function get(mixed $key, mixed $defaultValue = null): mixed
     {
+        if(empty($key)){
+            return $this->toArray();
+        }
         return $this->offsetExists($key) ? $this->offsetGet($key) : $defaultValue;
     }
 

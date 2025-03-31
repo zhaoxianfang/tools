@@ -7,6 +7,7 @@ namespace zxf\Facade;
  * @method static bool isXml($data)                                             数据是否为xml格式
  * @method static string|null getContentType()                                  获取请求类型
  * @method static array body()                                                  返回包含所有输入数据的单个数组
+ * @method static string|array|null getRawInput(bool $returnOriginal = true, bool $getDataType = false)       返回包含所有请求的原始数据或者解析后的原始数据
  * @method static bool overridden()                                             检查请求方法是否已被重写
  * @method static string|array|null get($key = null, $default = null)           获取get请求方式的请求参数($key:指定字段，不传值表示全部，$default:未获取到$key时返回的默认值)
  * @method static string|array|null post($key = null, $default = null)          获取post请求方式的请求参数($key:指定字段，不传值表示获取全部$_POST参数包含xml，$default:未获取到$key时返回的默认值)

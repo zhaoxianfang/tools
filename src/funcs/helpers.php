@@ -1112,7 +1112,7 @@ if (! function_exists('is_xml')) {
     }
 }
 
-if (! function_exists('get_original_content')) {
+if (! function_exists('get_raw_input')) {
     /**
      * 获取原始请求内容
      *
@@ -1126,162 +1126,15 @@ if (! function_exists('get_original_content')) {
      *
      * @return array|string|null
      */
-    function get_original_content(bool $returnOriginal = true, bool $getDataType = false): array|string|null
+    function get_raw_input(bool $returnOriginal = true, bool $getDataType = false): array|string|null
     {
-        // 尝试获取原始数据
-        // 优先使用
-        $rawInput = file_get_contents("php://input");
-
-        // 如果为空，表示 "php://input" 已经被所处的框架读取过了，而php 中只能读取一次，所以被读取过就无法获取到数据
-        if (empty($rawInput)) {
-            // 从各个框架的从取原始数据
-            $rawInput = get_current_framework_raw_input();
-        }
-
-        // 如果未获取到原始数据，返回 null
-        if (!$rawInput && empty($_GET) && empty($_POST) && empty($_FILES)) {
-            return null;
-        }
-
-        // 默认返回的解析结果
-        $result = [
-            'type' => 'raw',
-            'content' => $rawInput
-        ];
-
-        // 处理 $_GET 数据
-        if (!empty($_GET)) {
-            $result['type'] = 'get';
-            $result['content'] = $_GET;
-        }
-
-        // 处理 $_POST 数据
-        if (!empty($_POST)) {
-            $result['type'] = 'post';
-            $result['content'] = $_POST;
-        }
-
-        // 判断数据类型并进行解析
-        if (is_json($rawInput)) {
-            $result['type'] = 'json';
-            $result['content'] = json_decode($rawInput, true);
-        } elseif (is_xml($rawInput)) {
-            $result['type'] = 'xml';
-            $result['content'] = \zxf\Xml\XML2Array::parse($rawInput);
-        } elseif (!empty($_FILES)) {
-            $result['type'] = 'file';
-            $result['content'] = parse_files($_FILES);
-        }
-
-        // 如果是原始数据，直接返回
-        if ($returnOriginal) {
-            return $rawInput;
-        }
-
-        // 如果需要返回数据类型
-        if ($getDataType) {
-            return [
-                'data' => $result['content'],
-                'type' => $result['type']
-            ];
-        }
-
-        return $result['content'];
-    }
-
-    /**
-     * 判断当前所处的框架，并通过框架里面内置的方法获取 "php://input" 的数据
-     */
-    function get_current_framework_raw_input()
-    {
-        $content = null;
-
-        // 检测常见PHP框架并获取对应方法
-        switch (true) {
-            // Laravel/Lumen
-            case class_exists(\Illuminate\Http\Request::class):
-                $content = app('request')->getContent();
-                break;
-
-            // Symfony
-            case class_exists(\Symfony\Component\HttpFoundation\Request::class):
-                $content = \Symfony\Component\HttpFoundation\Request::createFromGlobals()->getContent();
-                break;
-
-            // CodeIgniter 4
-            case class_exists(\CodeIgniter\HTTP\IncomingRequest::class):
-                $content = \CodeIgniter\Config\Services::request()->getBody();
-                break;
-
-            // Slim 3/4
-            case class_exists(\Slim\Psr7\Request::class):
-                $content = (string)\Slim\Factory\AppFactory::determineRequestMethod()->getBody();
-                break;
-
-            // Yii2
-            case class_exists(\yii\web\Request::class):
-                $content = \Yii::$app->request->getRawBody();
-                break;
-
-            // ThinkPHP 6+
-            case class_exists(\think\Request::class):
-                $content = \think\facade\Request::instance()->getContent();
-                break;
-
-            // CakePHP
-            case class_exists(\Cake\Http\ServerRequest::class):
-                $content = (string)\Cake\Http\ServerRequestFactory::fromGlobals()->getBody();
-                break;
-
-            // Phalcon
-            case class_exists(\Phalcon\Http\Request::class):
-                $content = \Phalcon\Di\FactoryDefault::getDefault()
-                    ->get('request')->getRawBody();
-                break;
-
-            // Zend Framework / Laminas
-            case class_exists(\Laminas\Diactoros\ServerRequestFactory::class):
-                $content = (string)\Laminas\Diactoros\ServerRequestFactory::fromGlobals()
-                    ->getBody();
-                break;
-
-            // FuelPHP
-            case class_exists(\Fuel\Core\Request::class):
-                $content = \Fuel\Core\Request::active()->getBody();
-                break;
-
-            // FlightPHP
-            case class_exists(\flight\Engine::class):
-                $content = \flight\core\Dispatcher::getInstance()->request()->getBody();
-                break;
-
-            // MedooPHP
-            case class_exists(\Medoo\Medoo::class):
-                $content = $_SERVER['HTTP_RAW_POST_DATA'] ?? file_get_contents('php://input');
-                break;
-
-            // 其他情况
-            default:
-                // 尝试从全局变量获取
-                if (isset($GLOBALS['HTTP_RAW_POST_DATA'])) {
-                    $content = $GLOBALS['HTTP_RAW_POST_DATA'];
-                } elseif (!empty($_POST)) {
-                    $content = http_build_query($_POST);
-                } else {
-                    // 最后尝试通过输入流
-                    $input = fopen('php://input', 'r');
-                    $content = stream_get_contents($input);
-                    fclose($input);
-                    $content = ($content !== false) ? $content : '';
-                }
-        }
-
-        return $content;
+        // 获取原始数据
+        return \zxf\Http\Request::instance()->getRawInput($returnOriginal, $getDataType);
     }
 }
 
 if (! function_exists('parse_files')) {
-// 解析文件上传数据
+    // 解析文件上传数据
     function parse_files(array $files): array
     {
         $parsedFiles = [];

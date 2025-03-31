@@ -60,7 +60,7 @@ class WechatPushEvent extends WeChatBase
         parent::__construct($key);
         // 参数初始化
         // $this->input = new DataArray($_REQUEST);
-        $this->input = new DataArray(get_original_content(false));
+        $this->input = new DataArray(get_raw_input(false));
 
         $this->appid = $this->config->get('appid');
         // 推送消息处理
@@ -74,7 +74,7 @@ class WechatPushEvent extends WeChatBase
                 }
                 $prpcrypt = new Prpcrypt($this->config->get('aes_key'));
                 // $result   = $this->xml2arr($this->postxml);
-                $result   = get_original_content(false);
+                $result   = get_raw_input(false);
                 $array    = $prpcrypt->decrypt($result['Encrypt']);
                 if (intval($array[0]) > 0) {
                     return $this->error($array[1], $array[0]);
@@ -98,7 +98,7 @@ class WechatPushEvent extends WeChatBase
      */
     public function getRawInput()
     {
-        return get_original_content();
+        return get_raw_input();
     }
 
     /**

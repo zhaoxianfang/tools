@@ -3,15 +3,17 @@
 namespace zxf\Laravel\Modules\Commands\Database;
 
 use ErrorException;
+use Exception;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Str;
+use RuntimeException;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 use zxf\Laravel\Modules\Commands\BaseCommand;
 use zxf\Laravel\Modules\Contracts\RepositoryInterface;
 use zxf\Laravel\Modules\Module;
 use zxf\Laravel\Modules\Support\Config\GenerateConfigReader;
 use zxf\Laravel\Modules\Traits\ModuleCommandTrait;
-use RuntimeException;
-use Symfony\Component\Console\Input\InputOption;
 
 class SeedCommand extends BaseCommand
 {
@@ -44,7 +46,7 @@ class SeedCommand extends BaseCommand
                 $this->renderException($this->getOutput(), $e);
 
                 return false;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->reportException($e);
                 $this->renderException($this->getOutput(), $e);
 
@@ -102,14 +104,14 @@ class SeedCommand extends BaseCommand
                 }
             }
         } else {
-            $class = $this->getSeederName($name); //legacy support
+            $class = $this->getSeederName($name); // legacy support
 
             $class = implode('\\', array_map('ucwords', explode('\\', $class)));
 
             if (class_exists($class)) {
                 $seeders[] = $class;
             } else {
-                //look at other namespaces
+                // look at other namespaces
                 $classes = $this->getSeederNames($name);
                 foreach ($classes as $class) {
                     if (class_exists($class)) {
@@ -174,17 +176,27 @@ class SeedCommand extends BaseCommand
      */
     public function getSeederNames($name)
     {
-        return [];
+        $name = Str::studly($name);
+
+        $seederPath = GenerateConfigReader::read('seeder');
+        $seederPath = str_replace('/', '\\', $seederPath->getPath());
+
+        $foundModules = [];
+        foreach ($this->laravel['modules']->config('scan.paths') as $path) {
+            $namespace = array_slice(explode('/', $path), -1)[0];
+            $foundModules[] = $namespace.'\\'.$name.'\\'.$seederPath.'\\'.$name.'DatabaseSeeder';
+        }
+
+        return $foundModules;
     }
 
     /**
      * Report the exception to the exception handler.
      *
-     * @param  \Symfony\Component\Console\Output\OutputInterface  $output
-     * @param  \Throwable  $e
+     * @param  OutputInterface  $output
      * @return void
      */
-    protected function renderException($output, \Exception $e)
+    protected function renderException($output, Exception $e)
     {
         $this->laravel[ExceptionHandler::class]->renderForConsole($output, $e);
     }
@@ -192,10 +204,10 @@ class SeedCommand extends BaseCommand
     /**
      * Report the exception to the exception handler.
      *
-     * @param  \Throwable  $e
+     *
      * @return void
      */
-    protected function reportException(\Exception $e)
+    protected function reportException(Exception $e)
     {
         $this->laravel[ExceptionHandler::class]->report($e);
     }

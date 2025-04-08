@@ -3,11 +3,12 @@
 namespace zxf\Laravel\Modules\Commands\Database;
 
 use zxf\Laravel\Modules\Commands\BaseCommand;
+use zxf\Laravel\Modules\Contracts\ConfirmableCommand;
 use zxf\Laravel\Modules\Migrations\Migrator;
 use zxf\Laravel\Modules\Traits\MigrationLoaderTrait;
 use Symfony\Component\Console\Input\InputOption;
 
-class MigrateResetCommand extends BaseCommand
+class MigrateResetCommand extends BaseCommand implements ConfirmableCommand
 {
     use MigrationLoaderTrait;
 

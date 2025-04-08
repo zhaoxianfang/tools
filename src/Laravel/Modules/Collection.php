@@ -4,33 +4,25 @@ namespace zxf\Laravel\Modules;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection as BaseCollection;
-use zxf\Laravel\Modules\Module;
 
 class Collection extends BaseCollection
 {
     /**
      * Get items collections.
-     *
-     * @return array
      */
-    public function getItems()
+    public function getItems(): array
     {
         return $this->items;
     }
 
     /**
      * Get the collection of items as a plain array.
-     *
-     * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
         return array_map(function ($value) {
             if ($value instanceof Module) {
-                $attributes = $value->json()->getAttributes();
-                $attributes['path'] = $value->getPath();
-
-                return $attributes;
+                return [];
             }
 
             return $value instanceof Arrayable ? $value->toArray() : $value;

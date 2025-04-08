@@ -219,7 +219,7 @@ class Migrator
             return include $this->getPath().'/'.$file.'.php';
         }
 
-        return new $class();
+        return new $class;
     }
 
     /**
@@ -240,8 +240,7 @@ class Migrator
      */
     public function table()
     {
-        $migrationTable = is_array(config('database.migrations'))?config('database.migrations.table'):config('database.migrations'); // 兼容lv10 和 lv11
-        return $this->laravel['db']->connection($this->database ?: null)->table($migrationTable);
+        return $this->laravel['db']->connection($this->database ?: null)->table(config('database.migrations.table'));
     }
 
     /**

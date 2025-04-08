@@ -10,7 +10,6 @@ return [
     | Default module namespace.
     |
     */
-
     'namespace' => 'Modules',
 
     /*
@@ -31,7 +30,7 @@ return [
     | 默认开启
     |
     */
-    'auto_use_middleware_groups' => true,
+    'auto_use_middleware_groups'             => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -41,7 +40,7 @@ return [
     | 默认['api'] 表示 api.php 里面的路由全部加上`api`前缀和 `api.` 路由命名, 不需要就设置为 []
     |
     */
-    'route_need_add_prefix_and_name' => ['api'],
+    'route_need_add_prefix_and_name'         => ['api'],
 
     /*
     |--------------------------------------------------------------------------
@@ -51,7 +50,7 @@ return [
     | 默认关闭
     |
     */
-    'publishes_config' => false,
+    'publishes_config'                       => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -61,7 +60,7 @@ return [
     | 默认关闭
     |
     */
-    'publishes_views' => false,
+    'publishes_views'                        => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -71,7 +70,8 @@ return [
     | 默认关闭
     |
     */
-    'trace' => (bool) env('APP_DEBUG', false),
+    'trace'                                  => (bool)env('APP_DEBUG', false),
+
 
     /*
     |--------------------------------------------------------------------------
@@ -95,7 +95,7 @@ return [
     |    }
     |
     */
-    'trace_end_handle_class' => '',
+    'trace_end_handle_class'                 => '',
 
     /*
     |--------------------------------------------------------------------------
@@ -115,7 +115,7 @@ return [
     |    因此：配置此项时要避免出现冲突的情况
     |
     */
-    'multi_config_delimiter' => '_',
+    'multi_config_delimiter'                 => '_',
 
     /*
     |--------------------------------------------------------------------------
@@ -130,7 +130,7 @@ return [
     |            "xdebug", "espresso"
     |
     */
-    'editor' => env('TRACE_EDITOR') ?: env('TRACE_EDITOR', 'phpstorm'),
+    'editor'                                 => env('TRACE_EDITOR') ?: env('TRACE_EDITOR', 'phpstorm'),
 
     /*
     |--------------------------------------------------------------------------
@@ -142,11 +142,11 @@ return [
     */
     'stubs' => [
         'files' => [
-            'routes/web' => 'Routes/web.php',
-            'routes/api' => 'Routes/api.php',
-            'views/index' => 'Resources/views/index.blade.php',
-            'views/master' => 'Resources/views/layouts/master.blade.php',
-            'scaffold/config' => 'Config/config.php',
+            'routes/web' => 'routes/web.php',
+            'routes/api' => 'routes/api.php',
+            'views/index' => 'resources/views/index.blade.php',
+            'views/master' => 'resources/views/layouts/master.blade.php',
+            'scaffold/config' => 'config/config.php',
             // 自定义本地化
             'lang/en/messages' => 'Resources/lang/en/messages.php',
             'lang/en/validation' => 'Resources/lang/en/validation.php',
@@ -155,36 +155,40 @@ return [
             'lang/zh_CN' => 'Resources/lang/zh_CN.json',
         ],
         'replacements' => [
-            'routes/web' => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
-            'routes/api' => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
+            /**
+             * Define custom replacements for each section.
+             * You can specify a closure for dynamic values.
+             *
+             * Note: Keys should be in UPPERCASE.
+             */
+            'routes/web' => ['LOWER_NAME', 'STUDLY_NAME', 'PLURAL_LOWER_NAME', 'KEBAB_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
+            'routes/api' => ['LOWER_NAME', 'STUDLY_NAME', 'PLURAL_LOWER_NAME', 'KEBAB_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
             'views/index' => ['LOWER_NAME'],
-            'views/master' => ['LOWER_NAME', 'STUDLY_NAME'],
+            'views/master' => ['LOWER_NAME', 'STUDLY_NAME', 'KEBAB_NAME'],
             'scaffold/config' => ['STUDLY_NAME', 'LOWER_NAME'],
         ],
         'gitkeep' => true,
     ],
-
     'paths' => [
         /*
         |--------------------------------------------------------------------------
         | Modules path
         |--------------------------------------------------------------------------
         |
-        | This path used for save the generated module. This path also will be added
-        | automatically to list of scanned folders.
+        | This path is used to save the generated module.
+        | This path will also be added automatically to the list of scanned folders.
         |
         */
-
         'modules' => base_path('Modules'),
+
         /*
         |--------------------------------------------------------------------------
         | Modules assets path
         |--------------------------------------------------------------------------
         |
-        | Here you may update the modules assets path.
+        | Here you may update the modules' assets path.
         |
         */
-
         'assets' => public_path('modules'),
 
         /*
@@ -196,7 +200,7 @@ return [
         | the migration files?
         |
         */
-        'migration' => base_path('Database/Migrations'),
+        'migration' => base_path('database/migrations'),
 
         /*
         |--------------------------------------------------------------------------
@@ -213,10 +217,13 @@ return [
         | Generator path
         |--------------------------------------------------------------------------
         | Customise the paths where the folders will be generated.
-        | Set the generate key to false to not generate that folder
+        | Setting the generate key to false will not generate that folder
         */
         'generator' => [
             // app/
+            'model' => ['path' => 'Models', 'generate' => true],
+            'provider' => ['path' => 'Providers', 'generate' => true],
+
             'actions' => ['path' => 'Actions', 'generate' => false],
             'casts' => ['path' => 'Casts', 'generate' => false],
             'channels' => ['path' => 'Broadcasting', 'generate' => false],
@@ -231,62 +238,46 @@ return [
             'helpers' => ['path' => 'Helpers', 'generate' => false],
             'interfaces' => ['path' => 'Interfaces', 'generate' => false],
             'listener' => ['path' => 'Listeners', 'generate' => false],
-            'model' => ['path' => 'Models', 'generate' => true],
             'notifications' => ['path' => 'Notifications', 'generate' => false],
             'observer' => ['path' => 'Observers', 'generate' => false],
             'policies' => ['path' => 'Policies', 'generate' => false],
-            'provider' => ['path' => 'Providers', 'generate' => true],
             'repository' => ['path' => 'Repositories', 'generate' => false],
             'resource' => ['path' => 'Transformers', 'generate' => false],
+            'route-provider' => ['path' => 'Providers', 'generate' => false],
             'rules' => ['path' => 'Rules', 'generate' => false],
             'services' => ['path' => 'Services', 'generate' => false],
             'scopes' => ['path' => 'Models/Scopes', 'generate' => false],
             'traits' => ['path' => 'Traits', 'generate' => false],
 
             // app/Http/
-            'controller' => ['path' => 'Http/Controllers/Web', 'generate' => true],
+            'controller' => ['path' => 'Http/Controllers', 'generate' => true],
+
             'filter' => ['path' => 'Http/Middleware', 'generate' => false],
             'request' => ['path' => 'Http/Requests', 'generate' => false],
 
             // config/
-            'config' => ['path' => 'Config', 'generate' => true],
+            'config' => ['path' => 'config', 'generate' => true],
 
             // database/
-            'factory' => ['path' => 'Database/Factories', 'generate' => false],
-            'migration' => ['path' => 'Database/Migrations', 'generate' => true],
-            'seeder' => ['path' => 'Database/Seeders', 'generate' => false],
+            'factory' => ['path' => 'database/factories', 'generate' => true],
+            'migration' => ['path' => 'database/migrations', 'generate' => true],
+            'seeder' => ['path' => 'database/seeders', 'generate' => true],
 
-            // lang/ 本地化
-            'lang' => ['path' => 'Resources/lang', 'generate' => false],
+            // lang/
+            'lang' => ['path' => 'resources/lang', 'generate' => false],
 
             // resource/
-            'assets' => ['path' => 'Resources/assets', 'generate' => true],
-            'component-view' => ['path' => 'Resources/views/components', 'generate' => false],
-            'views' => ['path' => 'Resources/views', 'generate' => true],
+            'assets' => ['path' => 'resources/assets', 'generate' => true],
+            'views' => ['path' => 'resources/views', 'generate' => true],
 
-            // routes/ 路由
-            'routes' => ['path' => 'Routes', 'generate' => true],
+            'component-view' => ['path' => 'resources/views/components', 'generate' => false],
+
+            // routes/
+            'routes' => ['path' => 'routes', 'generate' => true],
 
             // tests/
-            'test-feature' => ['path' => 'Tests/Feature', 'generate' => false],
-            'test-unit' => ['path' => 'Tests/Unit', 'generate' => false],
+            'test-feature' => ['path' => 'tests/Feature', 'generate' => false],
+            'test-unit' => ['path' => 'tests/Unit', 'generate' => false],
         ],
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Caching
-    |--------------------------------------------------------------------------
-    |
-    | Here is the config for setting up caching feature.
-    |
-    */
-    'cache' => [
-        'enabled' => env('MODULES_CACHE_ENABLED', false),
-        'driver' => env('MODULES_CACHE_DRIVER', 'file'),
-        'key' => env('MODULES_CACHE_KEY', 'laravel-modules'),
-        'lifetime' => env('MODULES_CACHE_LIFETIME', 60),
-    ],
-
-    'activator' => 'file',
 ];

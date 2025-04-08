@@ -9,26 +9,57 @@ class $CLASS$ extends ServiceProvider
 {
     use PathNamespace;
 
-    protected string $moduleName = '$MODULE$';
+    protected string $name = '$MODULE$';
 
-    protected string $moduleNameLower = '$LOWER_NAME$';
+    protected string $nameLower = '$LOWER_NAME$';
 
     /**
-     * Boot the application events.
+     * 启动应用程序事件
      */
     public function boot(): void
     {
         // 加载观察者
         $this->bootObservers();
+
+        $this->registerCommands();
+        $this->registerCommandSchedules();
     }
 
     /**
-     * Register the service provider.
+     * 注册服务提供
      */
     public function register(): void
     {
         // 事件注册
         $this->app->register(EventServiceProvider::class);
+    }
+
+    /**
+     * 以以下格式注册命令 Command::class
+     * 主要是针对 不是 config('modules.paths.generator.command.path') 的一级目录的 Command
+     */
+    protected function registerCommands(): void
+    {
+        // $this->commands([]);
+    }
+
+    /**
+     * 注册定时命令计划
+     */
+    protected function registerCommandSchedules(): void
+    {
+        // $this->app->booted(function () {
+        //     $schedule = $this->app->make(Schedule::class);
+        //     $schedule->command('inspire')->hourly();
+        // });
+    }
+
+    /**
+     * 获取提供商提供的服务.
+     */
+    public function provides(): array
+    {
+        return [];
     }
 
     // 加载观察者

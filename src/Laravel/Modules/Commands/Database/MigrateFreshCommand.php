@@ -5,9 +5,10 @@ namespace zxf\Laravel\Modules\Commands\Database;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Collection;
 use zxf\Laravel\Modules\Commands\BaseCommand;
+use zxf\Laravel\Modules\Contracts\ConfirmableCommand;
 use Symfony\Component\Console\Input\InputOption;
 
-class MigrateFreshCommand extends BaseCommand
+class MigrateFreshCommand extends BaseCommand implements ConfirmableCommand
 {
     /**
      * The console command name.
@@ -55,6 +56,7 @@ class MigrateFreshCommand extends BaseCommand
 
         // run migration of root
         $root_paths = $this->migration_paths
+            ->push($this->laravel->databasePath().DIRECTORY_SEPARATOR.'migrations')
             ->reject(fn (string $path) => str_starts_with($path, config('modules.paths.modules')));
 
         if ($root_paths->count() > 0) {

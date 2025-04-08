@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use $MODULE_NAMESPACE$\$STUDLY_NAME$\$CONTROLLER_NAMESPACE$\Api;
 
 /*
  *--------------------------------------------------------------------------
@@ -19,4 +20,11 @@ Route::prefix('$LOWER_NAME$')->name('api.$LOWER_NAME$.')->group(function () {
     //     return '$LOWER_NAME$ Api';
     //     return $request->user();
     // });
+
+    Route::get('', [Api\$STUDLY_NAME$Controller::class, 'index'])->name('list');
 });
+
+// OR 资源路由
+// Route::middleware([])->prefix('v1')->group(function () {
+//     Route::apiResource('$LOWER_NAME$', Api\$STUDLY_NAME$Controller::class)->names('$LOWER_NAME$');
+// });

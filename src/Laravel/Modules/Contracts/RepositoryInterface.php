@@ -2,6 +2,8 @@
 
 namespace zxf\Laravel\Modules\Contracts;
 
+use Illuminate\Filesystem\Filesystem;
+use zxf\Laravel\Modules\Collection;
 use zxf\Laravel\Modules\Exceptions\ModuleNotFoundException;
 use zxf\Laravel\Modules\Module;
 
@@ -9,89 +11,68 @@ interface RepositoryInterface
 {
     /**
      * Get all modules.
-     *
-     * @return mixed
      */
     public function all();
 
     /**
      * Scan & get all available modules.
-     *
-     * @return array
      */
-    public function scan();
+    public function scan(): array;
 
     /**
      * Get modules as modules collection instance.
-     *
-     * @return \zxf\Laravel\Modules\Collection
      */
-    public function toCollection();
+    public function toCollection(): Collection;
 
     /**
      * Get scanned paths.
-     *
-     * @return array
      */
-    public function getScanPaths();
+    public function getScanPaths(): array;
 
     /**
      * Get list of enabled modules.
-     *
-     * @return mixed
      */
     public function allEnabled();
 
     /**
-     * Get count from all modules.
-     *
-     * @return int
+     * Get list of disabled modules.
      */
-    public function count();
+    public function allDisabled();
+
+    /**
+     * Get count from all modules.
+     */
+    public function count(): int;
 
     /**
      * Get all ordered modules.
-     *
-     * @param  string  $direction
-     * @return mixed
      */
-    public function getOrdered($direction = 'asc');
+    public function getOrdered(string $direction = 'asc');
 
     /**
      * Get modules by the given status.
-     *
-     * @param  int  $status
-     * @return mixed
      */
-    public function getByStatus($status);
+    public function getByStatus(int|bool $status);
 
     /**
      * Find a specific module.
-     *
-     * @return Module|null
      */
-    public function find(string $name);
+    public function find(string $name): ?Module;
 
     /**
      * Find a specific module. If there return that, otherwise throw exception.
-     *
-     *
-     * @return mixed
      */
     public function findOrFail(string $name);
 
-    public function getModulePath($moduleName);
+    public function getModulePath(string $moduleName);
 
     /**
-     * @return \Illuminate\Filesystem\Filesystem
+     * Get Files
      */
-    public function getFiles();
+    public function getFiles(): Filesystem;
 
     /**
      * Get a specific config data from a configuration file.
-     *
-     * @param  string|null  $default
-     * @return mixed
      */
     public function config(string $key, $default = null);
 
@@ -122,4 +103,17 @@ interface RepositoryInterface
      */
     public function delete(string $module): bool;
 
+    /**
+     * Determine whether the given module is activated.
+     *
+     * @throws ModuleNotFoundException
+     */
+    public function isEnabled(string $name): bool;
+
+    /**
+     * Determine whether the given module is not activated.
+     *
+     * @throws ModuleNotFoundException
+     */
+    public function isDisabled(string $name): bool;
 }

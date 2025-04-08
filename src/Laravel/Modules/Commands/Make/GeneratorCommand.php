@@ -81,8 +81,7 @@ abstract class GeneratorCommand extends Command
     /**
      * Get class namespace.
      *
-     * @param  \zxf\Laravel\Module $module
-     *
+     * @param  \zxf\Laravel\Modules\Module  $module
      * @return string
      */
     public function getClassNamespace($module)

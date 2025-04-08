@@ -290,16 +290,6 @@ if (! function_exists('public_path')) {
     }
 }
 
-if (! function_exists('module_vite')) {
-    /**
-     * support for vite
-     */
-    function module_vite($module, $asset): Illuminate\Foundation\Vite
-    {
-        return \Illuminate\Support\Facades\Vite::useHotFile(storage_path('vite.hot'))->useBuildDirectory($module)->withEntryPoints([$asset]);
-    }
-}
-
 if (! function_exists('trace')) {
     /**
      * 调试代码

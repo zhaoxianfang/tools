@@ -4,5 +4,5 @@
  *      调用方式：config('$LOWER_NAME$.name')
  */
 return [
-    'name' => '$STUDLY_NAME$'
+    'name' => '$STUDLY_NAME$',
 ];

@@ -6,7 +6,6 @@ use Illuminate\Cache\CacheManager;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Translation\Translator;
 use zxf\Laravel\Modules\Constants\ModuleEvent;
@@ -17,7 +16,7 @@ abstract class Module
     use Macroable;
 
     /**
-     * The laravel application instance.
+     * The laravel|lumen application instance.
      *
      * @var \Illuminate\Contracts\Foundation\Application
      */
@@ -26,44 +25,42 @@ abstract class Module
     /**
      * The module name.
      */
-    protected $name;
+    protected string $name;
 
     /**
      * The module path.
-     *
-     * @var string
      */
-    protected $path;
+    protected string $path;
 
     /**
-     * @var array of cached Json objects, keyed by filename
+     * Array of cached Json objects, keyed by filename
      */
-    protected $moduleJson = [];
+    protected array $moduleJson = [];
 
     /**
-     * @var CacheManager
+     * Cache Manager
      */
-    private $cache;
+    private CacheManager $cache;
 
     /**
-     * @var Filesystem
+     * Filesystem
      */
-    private $files;
+    private Filesystem $files;
 
     /**
-     * @var Translator
+     * Translator
      */
-    private $translator;
+    private Translator $translator;
 
     /**
-     * @var ActivatorInterface
+     * ActivatorInterface
      */
-    private $activator;
+    private ActivatorInterface $activator;
 
     /**
      * The constructor.
      */
-    public function __construct(Container $app, string $name, $path)
+    public function __construct(Container $app, string $name, string $path)
     {
         $this->name = $name;
         $this->path = $path;
@@ -104,6 +101,14 @@ abstract class Module
     public function getStudlyName(): string
     {
         return Str::studly($this->name);
+    }
+
+    /**
+     * Get name in studly case.
+     */
+    public function getKebabName(): string
+    {
+        return Str::kebab($this->name);
     }
 
     /**
@@ -150,11 +155,8 @@ abstract class Module
 
     /**
      * Set path.
-     *
-     * @param  string  $path
-     * @return $this
      */
-    public function setPath($path): Module
+    public function setPath(string $path): self
     {
         $this->path = $path;
 
@@ -166,59 +168,23 @@ abstract class Module
      */
     public function boot(): void
     {
-        if (config('modules.register.translations', true) === true) {
-            $this->registerTranslation();
-        }
-
-        if ($this->isLoadFilesOnBoot()) {
-            $this->registerFiles();
-        }
-
         $this->fireEvent(ModuleEvent::BOOT);
-    }
-
-    /**
-     * Register module's translation.
-     */
-    protected function registerTranslation(): void
-    {
-        $lowerName = $this->getLowerName();
-
-        $langPath = $this->getPath().'/Resources/lang';
-
-        if (is_dir($langPath)) {
-            $this->loadTranslationsFrom($langPath, $lowerName);
-        }
     }
 
     /**
      * Get json contents from the cache, setting as needed.
      */
-    public function json($file = null): Collection
+    public function json(?string $file = null): array
     {
-        return Collection::make([]);
+        return [];
     }
 
     /**
      * Get a specific data from json file by given the key.
-     *
-     * @param  null  $default
-     * @return mixed
      */
     public function get(string $key, $default = null)
     {
-        return $this->json()->get($key, $default);
-    }
-
-    /**
-     * Get a specific data from composer.json file by given the key.
-     *
-     * @param  null  $default
-     * @return mixed
-     */
-    public function getComposerAttr($key, $default = null)
-    {
-        return $this->json('composer.json')->get($key, $default);
+        return '';
     }
 
     /**
@@ -229,10 +195,6 @@ abstract class Module
         $this->registerAliases();
 
         $this->registerProviders();
-
-        if ($this->isLoadFilesOnBoot() === false) {
-            $this->registerFiles();
-        }
 
         $this->fireEvent(ModuleEvent::REGISTER);
     }
@@ -261,23 +223,67 @@ abstract class Module
     abstract public function getCachedServicesPath(): string;
 
     /**
-     * Register the files from this module.
+     * Handle call __toString.
      */
-    protected function registerFiles(): void
+    public function __toString(): string
     {
-        foreach ($this->get('files', []) as $file) {
-            include $this->path.'/'.$file;
-        }
+        return $this->getStudlyName();
     }
 
     /**
-     * Handle call __toString.
-     *
-     * @return string
+     * Determine whether the given status same with the current module status.
      */
-    public function __toString()
+    public function isStatus(bool $status): bool
     {
-        return $this->getStudlyName();
+        return $this->activator->hasStatus($this, $status);
+    }
+
+    /**
+     * Determine whether the current module activated.
+     */
+    public function isEnabled(): bool
+    {
+        return $this->activator->hasStatus($this, true);
+    }
+
+    /**
+     *  Determine whether the current module not disabled.
+     */
+    public function isDisabled(): bool
+    {
+        return ! $this->isEnabled();
+    }
+
+    /**
+     * Set active state for current module.
+     */
+    public function setActive(bool $active): void
+    {
+        $this->activator->setActive($this, $active);
+    }
+
+    /**
+     * Disable the current module.
+     */
+    public function disable(): void
+    {
+        $this->fireEvent(ModuleEvent::DISABLING);
+
+        $this->activator->disable($this);
+
+        $this->fireEvent(ModuleEvent::DISABLED);
+    }
+
+    /**
+     * Enable the current module.
+     */
+    public function enable(): void
+    {
+        $this->fireEvent(ModuleEvent::ENABLING);
+
+        $this->activator->enable($this);
+
+        $this->fireEvent(ModuleEvent::ENABLED);
     }
 
     /**
@@ -299,26 +305,9 @@ abstract class Module
     /**
      * Get extra path.
      */
-    public function getExtraPath(string $path): string
+    public function getExtraPath(?string $path): string
     {
-        return $this->getPath().'/'.$path;
-    }
-
-    /**
-     * Check if can load files of module on boot method.
-     */
-    protected function isLoadFilesOnBoot(): bool
-    {
-        return config('modules.register.files', 'register') === 'boot' &&
-            // force register method if option == boot && app is AsgardCms
-            ! class_exists('\Modules\Core\Foundation\AsgardCms');
-    }
-
-    private function flushCache(): void
-    {
-        if (config('modules.cache.enabled')) {
-            $this->cache->store(config('modules.cache.driver'))->flush();
-        }
+        return $this->getPath().($path ? '/'.$path : '');
     }
 
     /**

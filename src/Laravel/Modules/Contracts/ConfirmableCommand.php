@@ -2,6 +2,4 @@
 
 namespace zxf\Laravel\Modules\Contracts;
 
-interface ConfirmableCommand
-{
-}
+interface ConfirmableCommand {}

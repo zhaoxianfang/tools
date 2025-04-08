@@ -7,16 +7,14 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use zxf\Laravel\Trace\Handle;
 
-class ExtendMiddleware
+class ToolsMiddleware
 {
-    /** @var $handle Handle */
+    /** @var Handle */
     protected $handle;
 
     /**
      * 模块扩展中间件
      *
-     * @param Request  $request
-     * @param \Closure $next
      *
      * @return mixed
      */
@@ -29,7 +27,7 @@ class ExtendMiddleware
         $response = $next($request);
 
         // 检查响应是否为 BinaryFileResponse 类型（表示文件下载） || 不需要trace处理
-        if ($response instanceof BinaryFileResponse || !is_enable_trace()) {
+        if ($response instanceof BinaryFileResponse || ! is_enable_trace()) {
             return $response;
         }
 
@@ -45,9 +43,8 @@ class ExtendMiddleware
     /**
      * 在响应发送到浏览器后处理任务。
      *
-     * @param \Illuminate\Http\Request  $request
-     * @param \Illuminate\Http\Response $response
-     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Response  $response
      * @return void
      */
     public function terminate($request, $response)

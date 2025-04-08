@@ -59,7 +59,9 @@ class ModulesRouteServiceProvider extends RouteServiceProvider
         // 需要自动添加上同名 `xxx`前缀和 `xxx.` 路由命名 的路由文件
         $routeNeedAddPrefixAndName = config('modules.route_need_add_prefix_and_name', ['api']);
 
-        $pathDir = base_path($this->getModulesName()."/{$module}/Routes/");
+        $routePath = config('modules.paths.generator.rules.path');
+
+        $pathDir = base_path($this->getModulesName()."/{$module}/{$routePath}/");
         $routeFiles = $this->findRouteFile($pathDir);
         foreach ($routeFiles as $routeName) {
             $path = $pathDir.$routeName.'.php';

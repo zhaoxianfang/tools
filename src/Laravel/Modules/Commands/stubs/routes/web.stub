@@ -1,8 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
-use $MODULE_NAMESPACE$\$STUDLY_NAME$\$CONTROLLER_NAMESPACE$;
+use $MODULE_NAMESPACE$\$STUDLY_NAME$\$CONTROLLER_NAMESPACE$\Web;
 
 /*
  |--------------------------------------------------------------------------
@@ -19,4 +18,4 @@ Route::prefix('$LOWER_NAME$')->name('$LOWER_NAME$.')->group(function() {
     Route::get('', [Web\$STUDLY_NAME$Controller::class, 'index'])->name('list');
 });
 // 资源路由
-// Route::resource('$LOWER_NAME$', Web\$STUDLY_NAME$Controller::class);
+// Route::resource('$LOWER_NAME$', Web\$STUDLY_NAME$Controller::class)->names('$LOWER_NAME$');

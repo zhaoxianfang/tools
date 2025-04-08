@@ -10,8 +10,16 @@ class $CLASS$ extends Command
 {
     /**
      * The name and signature of the console command.
+     * @example
+     *      php artisan $COMMAND_NAME$ posts 100 --force
+     *      php artisan $COMMAND_NAME$ categories 100 -f --path=public/sitemap
+     *
      */
-    protected $signature = '$COMMAND_NAME$';
+    protected $signature = '$COMMAND_NAME$
+                                {type : 站点地图类型 (posts|categories|all)}
+                                {limit=100 : 生成数量限制，默认100}
+                                {--f|force : 强制重新生成}
+                                {--path=public/sitemap : 自定义生成路径}';
 
     /**
      * The console command description.
@@ -29,28 +37,32 @@ class $CLASS$ extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
-    {
-        //
-    }
+    public function handle() {
+        // do something
 
-    /**
-     * Get the console command arguments.
-     */
-    protected function getArguments(): array
-    {
-        return [
-            ['example', InputArgument::REQUIRED, 'An example argument.'],
-        ];
-    }
+        // 获取参数
+        $type = $this->argument('type');
+        $limit = $this->argument('limit');
 
-    /**
-     * Get the console command options.
-     */
-    protected function getOptions(): array
-    {
-        return [
-            ['example', null, InputOption::VALUE_OPTIONAL, 'An example option.', null],
-        ];
+        // 获取选项
+        $force = $this->option('force');
+        $path = $this->option('path');
+
+        // 参数验证
+        if (!in_array($type, ['posts', 'categories', 'all'])) {
+            $this->error('无效的类型，请使用 posts/categories/all');
+            return Command::FAILURE;
+        }
+        $this->info("开始生成 {$type} 站点地图...");
+
+        if ($force) {
+            $this->warn('强制重新生成模式');
+        }
+
+        // 业务逻辑
+        // ...
+
+        $this->info("成功生成 {$limit} 条记录到 {$path}");
+        return Command::SUCCESS;
     }
 }

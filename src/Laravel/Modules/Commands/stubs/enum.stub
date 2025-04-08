@@ -2,7 +2,22 @@
 
 namespace $CLASS_NAMESPACE$;
 
-enum $CLASS$
+enum $CLASS$ : int|string
 {
-    //
+    // case ONE = 1;
+    // case TWO = 2;
+
+    // /**
+    //  * @example:
+    //  *       $this->type->text();
+    //  *
+    //  * @return string
+    //  */
+    // public function text(): string
+    // {
+    //     return match ($this) {
+    //         self::ONE => '一',
+    //         self::TWO => '二',
+    //     };
+    // }
 }

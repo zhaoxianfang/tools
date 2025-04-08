@@ -3,9 +3,10 @@
 namespace zxf\Laravel\Modules\Commands\Database;
 
 use zxf\Laravel\Modules\Commands\BaseCommand;
+use zxf\Laravel\Modules\Contracts\ConfirmableCommand;
 use Symfony\Component\Console\Input\InputOption;
 
-class MigrateRefreshCommand extends BaseCommand
+class MigrateRefreshCommand extends BaseCommand implements ConfirmableCommand
 {
     /**
      * The console command name.

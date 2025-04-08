@@ -52,15 +52,16 @@ class Curl
         CURLOPT_CONNECTTIMEOUT => 10, // 设置连接等待时间
     ];
 
-    // 默认请求头信息
-    private array $defaultHeaders = [
-        "Content-type: application/x-www-form-urlencoded;application/json;charset='utf-8'",
+    // 请求头信息,会自动处理成 key => value 的形式，避免设置重复
+    private array $headers = [
+        // 'Content-type' => "application/x-www-form-urlencoded;charset='utf-8'",
+        // 'Content-type' => "application/json;charset='utf-8'",
     ];
 
     /**
      * @var object 对象实例
      */
-    protected static $instance;
+    protected static object $instance;
 
     /**
      * @param  array  $config  给curl进行默认配置
@@ -90,7 +91,6 @@ class Curl
         $this->responseObject = $responseObject;
         $this->ch = null;
 
-        $this->defaultParams[CURLOPT_HTTPHEADER] = $this->defaultHeaders;
         $this->defaultParams[CURLINFO_HEADER_OUT] = true;
         if ($config) {
             $this->defaultParams = array_merge($this->defaultParams, $config);
@@ -144,7 +144,11 @@ class Curl
      *
      * @param  array  $header  设置的请求头
      * @param  bool  $isAppend  是否追加
-     * @param  bool  $setLength  是否设置 Length
+     * @param  bool  $setLength  是否设置 Content-Length ; 默认为false,如果为true,请在调用本方法之前 调用 setParams 方法
+     *
+     * @example setHeader(['Content-type' => 'application/json;charset="utf-8"', 'Accept' => 'application/json'])
+     *          setHeader(['Content-type: application/json;charset="utf-8"', 'Accept: application/json'], false)
+     *
      * @return $this
      *
      * @throws Exception
@@ -155,24 +159,25 @@ class Curl
 
         $headData = [];
         foreach ($header as $key => $head) {
-            if ($head) {
-                // 判断 $head 是否为key:value格式的字符串
-                if (str_contains($head, ':')) {
-                    [$key, $head] = explode(':', $head, 2);
-                }
-                $headData[] = is_int($key) ? $head : ($key.':'.trim($head));
+            if (is_numeric($key) && is_string($head) && str_contains($head, ':')) {
+                [$key, $head] = explode(':', $head, 2);
+                $headData[trim($key)] = trim($head);
+            } elseif (is_string($key) && is_string($head)) {
+                $headData[trim($key)] = trim($head);
             }
         }
-        $this->defaultHeaders = $isAppend && ! empty($headData) && ! empty($this->defaultHeaders)
-            ? array_merge($this->defaultHeaders, $headData)
-            : (! empty($headData) ? $headData : $this->defaultHeaders);
+
+        $this->headers = (empty($this->headers) || ! $isAppend) ? $headData : array_merge($this->headers, $headData);
 
         if ($setLength) {
             // 设置 Length
             $length = empty($this->httpParams) ? 0 : (is_string($this->httpParams) ? strlen($this->httpParams) : strlen(json_encode($this->httpParams)));
-            $this->defaultHeaders[] = 'Content-Length: '.$length;
+            $this->headers['Content-Length'] = $length;
         }
-        curl_setopt($this->ch, CURLOPT_HTTPHEADER, $this->defaultHeaders);
+        // 把 $this->headers 处理成 ['key: value'] 的形式给curl使用
+        $curlHeader = array_map(fn ($k, $v) => "$k: $v", array_keys($this->headers), $this->headers);
+
+        curl_setopt($this->ch, CURLOPT_HTTPHEADER, $curlHeader);
         curl_setopt($this->ch, CURLINFO_HEADER_OUT, true);
 
         return $this;
@@ -180,13 +185,16 @@ class Curl
 
     /**
      * 清空整个请求头
+     *
      * @return $this
+     *
      * @throws Exception
      */
     public function cleanHeader()
     {
         $this->initCurl();
         curl_setopt($this->ch, CURLOPT_HTTPHEADER, []);
+
         return $this;
     }
 
@@ -407,7 +415,7 @@ class Curl
      *
      * @throws Exception
      */
-    public function setParams(array $params, string $data_type = 'array', bool $excludeZhCN = false)
+    public function setParams(array $params, string $data_type = 'string', bool $excludeZhCN = false)
     {
         $this->initCurl();
         // 支持json数据数据提交
@@ -608,7 +616,6 @@ class Curl
         $this->initCurl();
         curl_setopt($this->ch, CURLOPT_URL, $url); // 设置请求的URL
         curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'PUT'); // 设置请求方式
-        // curl_setopt($this->ch, CURLOPT_POSTFIELDS, $data); //设置提交的字符串
         curl_setopt($this->ch, CURLOPT_USERAGENT, $this->randUserAgent());
         // 设置post body
         if (! empty($this->httpParams)) {
@@ -919,8 +926,6 @@ class Curl
 
     /**
      * 请求是否成功（响应状态码是否为 2xx ）
-     *
-     * @return mixed
      */
     public function isSuccessful(): mixed
     {

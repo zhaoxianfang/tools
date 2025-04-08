@@ -45,7 +45,7 @@ module_path()
 
 ```
 在 src/Laravel/Modules/Generators/ModuleGenerator.php 中读取 GenerateConfigReader::read('route-provider') 是否需要创建路由服务提供者的外层判断加上 if(!is_null($routeGeneratorConfig->getPath())) 判断;
-把 src/Laravel/Modules/Module.php 的 isEnabled() 方法直接改为 return true;
+
 把 src/Laravel/Modules/Module.php 的 
 public function json($file = null): Json
 {
@@ -56,9 +56,13 @@ public function json($file = null): Collection
 {
     return Collection::make([]);
 }
+把 public function delete() 方法里面的
+$result = $this->json()->getFilesystem()->deleteDirectory($this->getPath());
+改为
+$result = del_dir($this->getPath());
+
 
 把 src/Laravel/Modules/Activators/FileActivator.php 文件：
-    hasStatus() 方法直接改为 return $status;
     getStatusesFilePath() 方法直接删除;
     判断 $this->statusesFile 的方法直接删除;
     $this->modulesStatuses 相关的直接删除;
@@ -147,7 +151,13 @@ php artisan module:update 命令(更新模块下的composer等)
 11、
 
 ```
-在 src/Laravel/Modules/FileRepository.php 里面的 getStubPath 方法上标记废弃 @deprecated 或者直接删除此方法
 把 src/Laravel/Modules/Activators/FileActivator.php 里面的 内容全部注释
 ```
 
+
+把设计到 `src/Laravel/Modules/Contracts/ActivatorInterface.php` 接口里面的方法通通删除 只保留一个 `delete`
+
+`isDisabled`
+`setVendor`
+`setAuthor`
+`src/Contracts/RepositoryInterface.php`

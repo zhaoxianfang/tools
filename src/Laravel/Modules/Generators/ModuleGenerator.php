@@ -8,7 +8,6 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use zxf\Laravel\Modules\Constants\ModuleEvent;
-use zxf\Laravel\Modules\Contracts\ActivatorInterface;
 use zxf\Laravel\Modules\FileRepository;
 use zxf\Laravel\Modules\Support\Config\GenerateConfigReader;
 use zxf\Laravel\Modules\Support\Stub;
@@ -54,13 +53,6 @@ class ModuleGenerator extends Generator
     protected $component;
 
     /**
-     * The activator instance
-     *
-     * @var ActivatorInterface
-     */
-    protected $activator;
-
-    /**
      * The module instance.
      *
      * @var \zxf\Laravel\Module
@@ -80,13 +72,6 @@ class ModuleGenerator extends Generator
      * @var string
      */
     protected $type = 'web';
-
-    /**
-     * Enables the module.
-     *
-     * @var bool
-     */
-    protected $isActive = false;
 
     /**
      * Module author
@@ -109,14 +94,12 @@ class ModuleGenerator extends Generator
         ?Config $config = null,
         ?Filesystem $filesystem = null,
         ?Console $console = null,
-        ?ActivatorInterface $activator = null
     ) {
         $this->name = $name;
         $this->config = $config;
         $this->filesystem = $filesystem;
         $this->console = $console;
         $this->module = $module;
-        $this->activator = $activator;
     }
 
     /**
@@ -128,19 +111,6 @@ class ModuleGenerator extends Generator
     public function setType($type)
     {
         $this->type = $type;
-
-        return $this;
-    }
-
-    /**
-     * Set active flag.
-     *
-     *
-     * @return $this
-     */
-    public function setActive(bool $active)
-    {
-        $this->isActive = $active;
 
         return $this;
     }
@@ -174,19 +144,6 @@ class ModuleGenerator extends Generator
     public function setConfig($config)
     {
         $this->config = $config;
-
-        return $this;
-    }
-
-    /**
-     * Set the modules activator
-     *
-     *
-     * @return $this
-     */
-    public function setActivator(ActivatorInterface $activator)
-    {
-        $this->activator = $activator;
 
         return $this;
     }
@@ -273,31 +230,6 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Setting the author from the command
-     *
-     * @return $this
-     */
-    public function setAuthor(?string $name = null, ?string $email = null)
-    {
-        $this->author['name'] = $name;
-        $this->author['email'] = $email;
-
-        return $this;
-    }
-
-    /**
-     * Installing vendor from the command
-     *
-     * @return $this
-     */
-    public function setVendor(?string $vendor = null)
-    {
-        $this->vendor = $vendor;
-
-        return $this;
-    }
-
-    /**
      * Get the list of folders will created.
      *
      * @return array
@@ -360,8 +292,6 @@ class ModuleGenerator extends Generator
         if ($this->type === 'plain') {
             $this->cleanModuleJsonFile();
         }
-
-        $this->activator->setActiveByName($name, $this->isActive);
 
         $this->console->newLine(1);
 

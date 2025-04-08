@@ -35,10 +35,7 @@ class ConsoleServiceProvider extends ServiceProvider
         return collect([
             // Actions Commands
             Commands\Actions\CheckLangCommand::class,
-            Commands\Actions\DumpCommand::class,
             Commands\Actions\ListCommand::class,
-            Commands\Actions\ModelPruneCommand::class,
-            Commands\Actions\ModelShowCommand::class,
             Commands\Actions\ModuleDeleteCommand::class,
 
             // Database Commands
@@ -95,10 +92,6 @@ class ConsoleServiceProvider extends ServiceProvider
             Commands\Publish\PublishTranslationCommand::class,
 
             // Other Commands
-            Commands\ComposerUpdateCommand::class,
-            Commands\LaravelModulesV6Migrator::class,
-            Commands\SetupCommand::class,
-
             Commands\Database\MigrateFreshCommand::class,
         ]);
     }

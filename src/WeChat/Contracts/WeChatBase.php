@@ -19,10 +19,10 @@ abstract class WeChatBase extends WechatCode
     protected string $originalUrl = "";
 
     //curl 对象
-    protected $http;
+    protected Curl $http;
 
     // 缓存对象
-    protected $cache;
+    protected Cache $cache;
 
     /**
      * @var object 对象实例数组
@@ -36,7 +36,7 @@ abstract class WeChatBase extends WechatCode
     public bool $useToken = true;
 
     // Request 请求对象
-    public $request;
+    public Request $request;
 
     // 需要重新获取token请求的状态码
     private array $tryAgainCode = ["40014", "40001", "41001", "42001"];

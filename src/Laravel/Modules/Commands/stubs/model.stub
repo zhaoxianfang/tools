@@ -5,7 +5,15 @@ namespace $NAMESPACE$;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use $MODULE_NAMESPACE$\$MODULE$\Database\Factories\$NAME$Factory;
+use Illuminate\Support\Carbon;
 
+/**
+ * 模型中的属性
+ *
+ * @property int $id
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ */
 class $CLASS$ extends Model
 {
     use HasFactory;

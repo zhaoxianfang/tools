@@ -15,13 +15,6 @@ interface RepositoryInterface
     public function all();
 
     /**
-     * Get cached modules.
-     *
-     * @return array
-     */
-    public function getCached();
-
-    /**
      * Scan & get all available modules.
      *
      * @return array
@@ -48,13 +41,6 @@ interface RepositoryInterface
      * @return mixed
      */
     public function allEnabled();
-
-    /**
-     * Get list of disabled modules.
-     *
-     * @return mixed
-     */
-    public function allDisabled();
 
     /**
      * Get count from all modules.
@@ -136,17 +122,4 @@ interface RepositoryInterface
      */
     public function delete(string $module): bool;
 
-    /**
-     * Determine whether the given module is activated.
-     *
-     * @throws ModuleNotFoundException
-     */
-    public function isEnabled(string $name): bool;
-
-    /**
-     * Determine whether the given module is not activated.
-     *
-     * @throws ModuleNotFoundException
-     */
-    public function isDisabled(string $name): bool;
 }

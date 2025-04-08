@@ -1,12 +1,32 @@
 <?php
 
+if (! function_exists('laravel_version')) {
+    /**
+     * laravel 版本检测
+     *
+     * @return int|null null:不是laravel, int:laravel版本号
+     */
+    function laravel_version(): ?int
+    {
+        return match (true) {
+            class_exists('Laravel\Routing\Controller') => 3,
+            class_exists('Illuminate\Support\Facades\Facade')
+            && ! class_exists('Illuminate\Foundation\Application') => 4,
+            ! class_exists('Illuminate\Foundation\Application') => null, // Laravel 5+ 共性类
+            method_exists($app = app(), 'version') => (int) explode('.', $app->version())[0],
+            defined('Illuminate\Foundation\Application::VERSION') => (int) explode('.', Illuminate\Foundation\Application::VERSION)[0],
+            default => null
+        };
+    }
+}
+
 if (! function_exists('is_laravel')) {
     /**
      * 检查运行环境是否 在 laravel 之下
      */
     function is_laravel(): bool
     {
-        return class_exists('\Illuminate\Support\Facades\DB');
+        return ! empty(laravel_version());
     }
 }
 
@@ -16,7 +36,7 @@ if (! function_exists('laravel_lt_11')) {
      */
     function laravel_lt_11(): bool
     {
-        return is_laravel() && class_exists(\App\Http\Kernel::class);
+        return (int) laravel_version() < 11;
     }
 }
 
@@ -26,22 +46,36 @@ if (! function_exists('laravel_egt_11')) {
      */
     function laravel_egt_11(): bool
     {
-        return is_laravel() && ! class_exists(\App\Http\Kernel::class);
+        return (int) laravel_version() >= 11;
     }
 }
 
-if (! is_laravel()) {
+if (! function_exists('is_enable_trace')) {
+    /**
+     * 判断是否开启 trace 调试
+     */
+    function is_enable_trace(): bool
+    {
+        // return !app()->runningInConsole() && !app()->environment('testing') && request()->isMethod('get') && config('modules.trace');
+        // return !app()->runningInConsole() && !app()->environment('production') && config('modules.trace') && !request()->expectsJson();
+        return ! app()->runningInConsole() && config('modules.trace') && ! is_resource_file(request()->fullUrl(), true);
+    }
+}
+
+if (empty(laravel_version())) {
     // 如果不是 laravel 框架 环境就停止向后加载
     return false;
 }
 
 if (! function_exists('modules_name')) {
     /**
-     * 获取 多模块(默认：Modules) 的文件夹名称
+     * 获取多模块的文件夹名称（默认：Modules）
+     *
+     * @return string 返回配置的模块命名空间或默认值
      */
     function modules_name(): string
     {
-        return app('config')->get('modules.namespace');
+        return config('modules.namespace', 'Modules');
     }
 }
 
@@ -83,14 +117,9 @@ if (! function_exists('get_url_module_name')) {
      */
     function get_url_module_name(?bool $toUnderlineConvert = false): string
     {
-        try {
-            $path = request()->path();
-            $pathArr = explode('/', $path);
+        $module = str(request()->path())->before('/')->lower()->value() ?: 'app';
 
-            return $toUnderlineConvert ? underline_convert($pathArr[0] ?? 'app') : ($pathArr[0] ?? 'App');
-        } catch (\Exception $err) {
-            return $toUnderlineConvert ? 'app' : 'App';
-        }
+        return $toUnderlineConvert ? $module : \Illuminate\Support\Str::studly($module);
     }
 }
 
@@ -122,18 +151,22 @@ if (! function_exists('get_laravel_route')) {
      */
     function get_laravel_route(): array
     {
-        // 模块名
-        $modules = get_module_name();
-        $hasError = empty($request = request()) || empty($request->route());
-        if (php_sapi_name() !== 'cli' && ! $hasError) {
-            $actionName = request()->route()->getActionName(); // 获取当前的控制器名称(不带Controller) ,闭包返回 Closure
-            $actionMethod = request()->route()->getActionMethod(); // 获取当前方法名称  ,闭包返回 Closure
-        } else {
-            $actionName = 'Closure';
-            $actionMethod = 'Closure';
+        $route = request()?->route();
+
+        // 快速返回闭包或命令行情况
+        if (! $route || $route->action['uses'] instanceof Closure) {
+            return [get_module_name(), 'Closure', 'Closure'];
         }
 
-        return [$modules, $actionName, $actionMethod];
+        // 智能延迟解析（仅在需要时处理）
+        $actionName = $route->getActionName();
+        $actionMethod = $route->getActionMethod();
+
+        return [
+            get_module_name(),
+            str($actionName)->beforeLast('@')->classBasename()->toString(),
+            $actionMethod === $actionName ? 'Closure' : $actionMethod,
+        ];
     }
 }
 
@@ -217,18 +250,6 @@ if (! function_exists('copy_model')) {
     }
 }
 
-if (! function_exists('is_enable_trace')) {
-    /**
-     * 判断是否开启 trace 调试
-     */
-    function is_enable_trace(): bool
-    {
-        // return !app()->runningInConsole() && !app()->environment('testing') && request()->isMethod('get') && config('modules.trace');
-        // return !app()->runningInConsole() && !app()->environment('production') && config('modules.trace') && !request()->expectsJson();
-        return ! app()->runningInConsole() && config('modules.trace') && ! is_resource_file(request()->fullUrl(), true);
-    }
-}
-
 if (! function_exists('module_path')) {
     /**
      * @param  string  $name  模块名称（模块文件夹名称）
@@ -236,7 +257,7 @@ if (! function_exists('module_path')) {
      */
     function module_path(string $name, ?string $path = ''): string
     {
-        $modulePath = base_path(config('modules.namespace').DIRECTORY_SEPARATOR.$name);
+        $modulePath = base_path(modules_name().DIRECTORY_SEPARATOR.$name);
 
         return $modulePath.($path ? DIRECTORY_SEPARATOR.$path : $path);
     }
@@ -259,10 +280,11 @@ if (! function_exists('public_path')) {
     /**
      * Get the path to the public folder.
      *
-     * @param  string  $path
+     * @param string $path
+     *
      * @return string
      */
-    function public_path($path = '')
+    function public_path(string $path = '')
     {
         return app()->make('path.public').($path ? DIRECTORY_SEPARATOR.ltrim($path, DIRECTORY_SEPARATOR) : $path);
     }

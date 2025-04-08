@@ -10,13 +10,9 @@ use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
-use zxf\Laravel\Modules\Module;
-use zxf\Laravel\Modules\Constants\ModuleEvent;
 use zxf\Laravel\Modules\Contracts\RepositoryInterface;
 use zxf\Laravel\Modules\Exceptions\InvalidAssetPath;
 use zxf\Laravel\Modules\Exceptions\ModuleNotFoundException;
-use zxf\Laravel\Modules\Process\Installer;
-use zxf\Laravel\Modules\Process\Updater;
 
 abstract class FileRepository implements Countable, RepositoryInterface
 {
@@ -25,7 +21,7 @@ abstract class FileRepository implements Countable, RepositoryInterface
     /**
      * Application instance.
      *
-     * @var \Illuminate\Contracts\Foundation\Application|\Laravel\Lumen\Application
+     * @var \Illuminate\Contracts\Foundation\Application
      */
     protected $app;
 
@@ -48,15 +44,9 @@ abstract class FileRepository implements Countable, RepositoryInterface
      */
     protected $stubPath;
 
-    /**
-     * @var UrlGenerator
-     */
-    private $url;
+    private UrlGenerator $url;
 
-    /**
-     * @var ConfigRepository
-     */
-    private $config;
+    private ConfigRepository $config;
 
     /**
      * @var Filesystem
@@ -68,12 +58,12 @@ abstract class FileRepository implements Countable, RepositoryInterface
      */
     private $cache;
 
+    private static array $modules = [];
+
     /**
      * The constructor.
-     *
-     * @param  string|null  $path
      */
-    public function __construct(Container $app, $path = null)
+    public function __construct(Container $app, ?string $path = null)
     {
         $this->app = $app;
         $this->path = $path;
@@ -115,11 +105,8 @@ abstract class FileRepository implements Countable, RepositoryInterface
     /**
      * Creates a new Module instance
      *
-     * @param  Container  $app
-     * @param  string  $args
-     * @param  string  $path
-     *
-     * @return \zxf\Laravel\Modules\Module
+     * @param  mixed  ...$args
+     * @return Module
      */
     abstract protected function createModule(...$args);
 
@@ -130,11 +117,15 @@ abstract class FileRepository implements Countable, RepositoryInterface
      */
     public function scan()
     {
+        if (! empty(self::$modules) && ! $this->app->runningUnitTests()) {
+            return self::$modules;
+        }
+
         $modules = [];
         $modulesArr = array_slice(scandir(base_path(modules_name())), 2);
 
         foreach ($modulesArr as $module) {
-            if (is_dir(base_path(modules_name().'/' . $module))) {
+            if (is_dir(base_path(modules_name().'/'.$module))) {
                 $modules[$module] = $this->createModule($this->app, $module, module_path($module));
             }
         }
@@ -147,42 +138,7 @@ abstract class FileRepository implements Countable, RepositoryInterface
      */
     public function all(): array
     {
-        if (! $this->config('cache.enabled')) {
-            return $this->scan();
-        }
-
-        return $this->formatCached($this->getCached());
-    }
-
-    /**
-     * Format the cached data as array of modules.
-     *
-     * @param  array  $cached
-     * @return array
-     */
-    protected function formatCached($cached)
-    {
-        $modules = [];
-
-        foreach ($cached as $name => $module) {
-            $path = $module['path'];
-
-            $modules[$name] = $this->createModule($this->app, $name, $path);
-        }
-
-        return $modules;
-    }
-
-    /**
-     * Get cached modules.
-     *
-     * @return array
-     */
-    public function getCached()
-    {
-        return $this->cache->store($this->config->get('modules.cache.driver'))->remember($this->config('cache.key'), $this->config('cache.lifetime'), function () {
-            return $this->toCollection()->toArray();
-        });
+        return $this->scan();
     }
 
     /**
@@ -202,9 +158,7 @@ abstract class FileRepository implements Countable, RepositoryInterface
 
         /** @var Module $module */
         foreach ($this->all() as $name => $module) {
-            if ($module->isStatus($status)) {
-                $modules[$name] = $module;
-            }
+            $modules[$name] = $module;
         }
 
         return $modules;
@@ -224,14 +178,6 @@ abstract class FileRepository implements Countable, RepositoryInterface
     public function allEnabled(): array
     {
         return $this->getByStatus(true);
-    }
-
-    /**
-     * Get list of disabled modules.
-     */
-    public function allDisabled(): array
-    {
-        return $this->getByStatus(false);
     }
 
     /**
@@ -299,12 +245,7 @@ abstract class FileRepository implements Countable, RepositoryInterface
      */
     public function find(string $name)
     {
-        foreach ($this->all() as $module) {
-            if ($module->getLowerName() === strtolower($name)) {
-                return $module;
-            }
-        }
-
+        return $this->all()[$name] ?? null;
     }
 
     /**
@@ -324,14 +265,6 @@ abstract class FileRepository implements Countable, RepositoryInterface
         }
 
         throw new ModuleNotFoundException("Module [{$name}] does not exist!");
-    }
-
-    /**
-     * Get all modules as laravel collection instance.
-     */
-    public function collections($status = 1): Collection
-    {
-        return new Collection($this->getByStatus($status));
     }
 
     /**
@@ -410,123 +343,10 @@ abstract class FileRepository implements Countable, RepositoryInterface
     }
 
     /**
-     * Get asset url from a specific module.
-     *
-     * @param  string  $asset
-     *
-     * @throws InvalidAssetPath
-     */
-    public function asset($asset): string
-    {
-        if (Str::contains($asset, ':') === false) {
-            throw InvalidAssetPath::missingModuleName($asset);
-        }
-        [$name, $url] = explode(':', $asset);
-
-        $baseUrl = str_replace(public_path().DIRECTORY_SEPARATOR, '', $this->getAssetsPath());
-
-        $url = $this->url->asset($baseUrl."/{$name}/".$url);
-
-        return str_replace(['http://', 'https://'], '//', $url);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function isEnabled(string $name): bool
-    {
-        return $this->findOrFail($name)->isEnabled();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function isDisabled(string $name): bool
-    {
-        return ! $this->isEnabled($name);
-    }
-
-    /**
-     * Enabling a specific module.
-     *
-     * @param  string  $name
-     * @return void
-     *
-     * @throws \zxf\Laravel\Modules\Exceptions\ModuleNotFoundException
-     */
-    public function enable($name)
-    {
-        $this->findOrFail($name)->enable();
-    }
-
-    /**
-     * Disabling a specific module.
-     *
-     * @param  string  $name
-     * @return void
-     *
-     * @throws \zxf\Laravel\Modules\Exceptions\ModuleNotFoundException
-     */
-    public function disable($name)
-    {
-        $this->findOrFail($name)->disable();
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function delete(string $name): bool
     {
         return $this->findOrFail($name)->delete();
-    }
-
-    /**
-     * Update dependencies for the specified module.
-     *
-     * @param  string  $module
-     */
-    public function update($module)
-    {
-        with(new Updater($this))->update($module);
-    }
-
-    /**
-     * Install the specified module.
-     *
-     * @param  string  $name
-     * @param  string  $version
-     * @param  string  $type
-     * @param  bool  $subtree
-     * @return \Symfony\Component\Process\Process
-     */
-    public function install($name, $version = 'dev-master', $type = 'composer', $subtree = false)
-    {
-        $installer = new Installer($name, $version, $type, $subtree);
-
-        return $installer->run();
-    }
-
-    /**
-     * Get stub path.
-     * @deprecated
-     *
-     * @return string|null
-     */
-    public function getStubPath()
-    {
-        return $this->stubPath;
-    }
-
-    /**
-     * Set stub path.
-     *
-     * @param  string  $stubPath
-     * @return $this
-     */
-    public function setStubPath($stubPath)
-    {
-        $this->stubPath = $stubPath;
-
-        return $this;
     }
 }

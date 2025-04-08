@@ -17,8 +17,19 @@ Providers/              // 里面继承了 \Illuminate\Support\ServiceProvider::
 > 优先级高于 Modules 模块
 
 ```
-lang/modules/模块名小写/
+lang/模块名小写/
 views/modules/模块名小写/
+```
+
+### 多语言文件读取
+```
+// 读取 Full 模块下 msg.php 文件的 hello 配置
+__('full::msg.hello');
+{{ __('full::msg.hello') }}
+
+// 读取 任意 模块下 语言(例如：zh_CN 或 en 等).json 文件的 full 配置
+__('full');
+{{ __('full') }}
 ```
 
 ## config 配置

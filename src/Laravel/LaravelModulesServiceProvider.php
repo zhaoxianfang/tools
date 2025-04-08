@@ -2,7 +2,9 @@
 
 namespace zxf\Laravel;
 
+use Composer\InstalledVersions;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Pagination\Paginator;
 use zxf\Laravel\BuilderQuery\Builder as WhereHasInBuilder;
 use zxf\Laravel\Modules\Activators\FileActivator;
@@ -25,29 +27,12 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
 {
     public function __construct($app)
     {
-        is_laravel() && ! empty(config('modules.enable', true)) && parent::__construct($app);
-    }
-
-    public function register()
-    {
-        if (! is_laravel() || empty(config('modules.enable', true))) {
-            return;
-        }
-
-        $this->mergeConfigFrom(__DIR__.'/../../config/modules.php', 'modules');
-
-        // 注册modules 模块服务
-        $this->registerModulesServices();
-
-        $this->registerProviders();
-
-        // 注册 whereHasIn 的几个查询方式来替换 whereHas 查询全表扫描的问题
-        WhereHasInBuilder::register($this);
+        is_laravel() && parent::__construct($app);
     }
 
     public function boot()
     {
-        if (! is_laravel() || empty(config('modules.enable', true))) {
+        if (! is_laravel()) {
             return;
         }
         // 初始化 本地文件 session
@@ -58,7 +43,7 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
         $this->bootPublishes();
 
         // 加载模块boot
-        $this->mapModuleBoot();
+        $this->registerModules();
 
         // 加载debug路由
         $this->loadRoutesFrom(__DIR__.'/Trace/routes/debugger.php');
@@ -74,10 +59,33 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
             return new ToolsParseExceptionHandler($handler);
         });
 
+        // 把 zxf-tools 添加到 about 命令中
+        AboutCommand::add('zxf-tools', [
+            'Version' => fn () => InstalledVersions::getPrettyVersion('zxf/tools'),
+            'Docs' => fn () => 'https://weisifang.com/docs/2',
+        ]);
+
         // 设置数据分页模板
         $this->setPaginationView();
         // 使用提示
         $this->tips();
+    }
+
+    public function register()
+    {
+        if (! is_laravel()) {
+            return;
+        }
+
+        // 注册modules 模块服务
+        $this->registerServices();
+
+        $this->registerProviders();
+
+        $this->mergeConfigFrom(__DIR__.'/../../config/modules.php', 'modules');
+
+        // 注册 whereHasIn 的几个查询方式来替换 whereHas 查询全表扫描的问题
+        WhereHasInBuilder::register($this);
     }
 
     /**
@@ -121,7 +129,7 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
         ], 'modules');
     }
 
-    protected function registerModulesServices()
+    protected function registerServices()
     {
         $this->app->singleton(Contracts\RepositoryInterface::class, function ($app) {
             $path = $app['config']->get('modules.paths.modules');
@@ -132,6 +140,7 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
             return new FileActivator($app);
         });
 
+        // 定义 app('modules');
         $this->app->alias(Contracts\RepositoryInterface::class, 'modules');
 
         // 定义 app('trace')
@@ -151,10 +160,6 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
         }
         $this->app->register(ContractsServiceProvider::class);
 
-        // 注册自定义 中间件 tools_middleware
-        // $this->app->singleton(ExtendMiddleware::class);
-        // $this->app->alias(ExtendMiddleware::class, 'tools_middleware');
-
         // 注册路由
         $this->app->register(ModulesRouteServiceProvider::class);
         // 自动加载 Providers 服务提供者
@@ -167,7 +172,7 @@ class LaravelModulesServiceProvider extends \Illuminate\Support\ServiceProvider
         // set_error_handler('exception_handler');
     }
 
-    protected function mapModuleBoot()
+    protected function registerModules()
     {
         if (! is_dir(base_path(modules_name()))) {
             return false;

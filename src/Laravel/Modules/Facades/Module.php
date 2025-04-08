@@ -6,12 +6,10 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static array all()
- * @method static array getCached()
  * @method static array scan()
  * @method static \zxf\Laravel\Modules\Collection toCollection()
  * @method static array getScanPaths()
  * @method static array allEnabled()
- * @method static array allDisabled()
  * @method static int count()
  * @method static array getOrdered($direction = 'asc')
  * @method static array getByStatus($status)
@@ -25,7 +23,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static void register(): void
  * @method static string assetPath(string $module)
  * @method static bool delete(string $module)
- * @method static bool isEnabled(string $name)
  * @method static bool isDisabled(string $name)
  */
 class Module extends Facade

@@ -5,20 +5,19 @@ namespace zxf\Laravel\Modules;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Translation\Translator;
 use zxf\Laravel\Modules\Constants\ModuleEvent;
 use zxf\Laravel\Modules\Contracts\ActivatorInterface;
-use zxf\Laravel\Modules\Json;
 
 abstract class Module
 {
     use Macroable;
 
     /**
-     * The laravel|lumen application instance.
+     * The laravel application instance.
      *
      * @var \Illuminate\Contracts\Foundation\Application
      */
@@ -194,8 +193,6 @@ abstract class Module
 
     /**
      * Get json contents from the cache, setting as needed.
-     *
-     * @param  string  $file
      */
     public function json($file = null): Collection
     {
@@ -284,65 +281,6 @@ abstract class Module
     }
 
     /**
-     * Determine whether the given status same with the current module status.
-     */
-    public function isStatus(bool $status): bool
-    {
-        return $this->activator->hasStatus($this, $status);
-    }
-
-    /**
-     * Determine whether the current module activated.
-     */
-    public function isEnabled(): bool
-    {
-        // return $this->activator->hasStatus($this, true);
-        return true;
-    }
-
-    /**
-     *  Determine whether the current module not disabled.
-     */
-    public function isDisabled(): bool
-    {
-        return ! $this->isEnabled();
-    }
-
-    /**
-     * Set active state for current module.
-     */
-    public function setActive(bool $active): void
-    {
-        $this->activator->setActive($this, $active);
-    }
-
-    /**
-     * Disable the current module.
-     */
-    public function disable(): void
-    {
-        $this->fireEvent(ModuleEvent::DISABLING);
-
-        $this->activator->disable($this);
-        $this->flushCache();
-
-        $this->fireEvent(ModuleEvent::DISABLED);
-    }
-
-    /**
-     * Enable the current module.
-     */
-    public function enable(): void
-    {
-        $this->fireEvent(ModuleEvent::ENABLING);
-
-        $this->activator->enable($this);
-        $this->flushCache();
-
-        $this->fireEvent(ModuleEvent::ENABLED);
-    }
-
-    /**
      * Delete the current module.
      */
     public function delete(): bool
@@ -351,7 +289,7 @@ abstract class Module
 
         $this->activator->delete($this);
 
-        $result = $this->json()->getFilesystem()->deleteDirectory($this->getPath());
+        $result = del_dir($this->getPath());
 
         $this->fireEvent(ModuleEvent::DELETED);
 

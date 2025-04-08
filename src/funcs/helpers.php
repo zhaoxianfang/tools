@@ -420,14 +420,14 @@ if (! function_exists('img_to_gray')) {
     }
 }
 
-if (! function_exists('del_dirs')) {
+if (! function_exists('del_dir')) {
     /**
      * 删除文件夹
      *
      * @param  string  $dirname  目录
      * @param  bool  $delSelf  是否删除自身
      */
-    function del_dirs(string $dirname, bool $delSelf = true): bool
+    function del_dir(string $dirname, bool $delSelf = true): bool
     {
         if (! is_dir($dirname)) {
             return false;
@@ -444,26 +444,6 @@ if (! function_exists('del_dirs')) {
         }
 
         return true;
-    }
-}
-if (! function_exists('del_dir')) {
-    /**
-     * 删除文件夹及其文件夹下所有文件
-     */
-    function del_dir($dir): bool
-    {
-        // 先删除目录下的文件：
-        $dh = opendir($dir);
-        while ($file = readdir($dh)) {
-            if ($file != '.' && $file != '..') {
-                $fullPath = $dir.'/'.$file;
-                is_dir($fullPath) ? del_dir($fullPath) : unlink($fullPath);
-            }
-        }
-        closedir($dh);
-
-        // 删除当前文件夹：
-        return rmdir($dir);
     }
 }
 

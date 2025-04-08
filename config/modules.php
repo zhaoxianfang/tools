@@ -4,17 +4,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | 是否启用 Modules 1
-    | Enable Modules plugins
-    |--------------------------------------------------------------------------
-    |
-    | Default true
-    |
-    */
-    'enable' => true,
-
-    /*
-    |--------------------------------------------------------------------------
     | Module Namespace
     |--------------------------------------------------------------------------
     |
@@ -22,7 +11,7 @@ return [
     |
     */
 
-    'namespace'                              => 'Modules',
+    'namespace' => 'Modules',
 
     /*
     |--------------------------------------------------------------------------
@@ -42,7 +31,7 @@ return [
     | 默认开启
     |
     */
-    'auto_use_middleware_groups'             => true,
+    'auto_use_middleware_groups' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -52,7 +41,7 @@ return [
     | 默认['api'] 表示 api.php 里面的路由全部加上`api`前缀和 `api.` 路由命名, 不需要就设置为 []
     |
     */
-    'route_need_add_prefix_and_name'         => ['api'],
+    'route_need_add_prefix_and_name' => ['api'],
 
     /*
     |--------------------------------------------------------------------------
@@ -62,7 +51,7 @@ return [
     | 默认关闭
     |
     */
-    'publishes_config'                       => false,
+    'publishes_config' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -72,7 +61,7 @@ return [
     | 默认关闭
     |
     */
-    'publishes_views'                        => false,
+    'publishes_views' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -82,8 +71,7 @@ return [
     | 默认关闭
     |
     */
-    'trace'                                  => (bool)env('APP_DEBUG', false),
-
+    'trace' => (bool) env('APP_DEBUG', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -107,7 +95,7 @@ return [
     |    }
     |
     */
-    'trace_end_handle_class'                 => '',
+    'trace_end_handle_class' => '',
 
     /*
     |--------------------------------------------------------------------------
@@ -127,7 +115,7 @@ return [
     |    因此：配置此项时要避免出现冲突的情况
     |
     */
-    'multi_config_delimiter'                 => '_',
+    'multi_config_delimiter' => '_',
 
     /*
     |--------------------------------------------------------------------------
@@ -142,7 +130,7 @@ return [
     |            "xdebug", "espresso"
     |
     */
-    'editor'                                 => env('TRACE_EDITOR') ?: env('TRACE_EDITOR', 'phpstorm'),
+    'editor' => env('TRACE_EDITOR') ?: env('TRACE_EDITOR', 'phpstorm'),
 
     /*
     |--------------------------------------------------------------------------
@@ -152,34 +140,34 @@ return [
     | Default module stubs.
     |
     */
-    'stubs'                                  => [
-        'files'        => [
-            'routes/web'            => 'Routes/web.php',
-            'routes/api'            => 'Routes/api.php',
-            'views/index'           => 'Resources/views/index.blade.php',
-            'views/master'          => 'Resources/views/layouts/master.blade.php',
-            'scaffold/config'       => 'Config/config.php',
+    'stubs' => [
+        'files' => [
+            'routes/web' => 'Routes/web.php',
+            'routes/api' => 'Routes/api.php',
+            'views/index' => 'Resources/views/index.blade.php',
+            'views/master' => 'Resources/views/layouts/master.blade.php',
+            'scaffold/config' => 'Config/config.php',
             // 自定义本地化
-            'lang/en/messages'      => 'Resources/lang/en/messages.php',
-            'lang/en/validation'    => 'Resources/lang/en/validation.php',
-            'lang/zh_CN/messages'   => 'Resources/lang/zh_CN/messages.php',
+            'lang/en/messages' => 'Resources/lang/en/messages.php',
+            'lang/en/validation' => 'Resources/lang/en/validation.php',
+            'lang/zh_CN/messages' => 'Resources/lang/zh_CN/messages.php',
             'lang/zh_CN/validation' => 'Resources/lang/zh_CN/validation.php',
-            'lang/zh_CN'            => 'Resources/lang/zh_CN.json',
+            'lang/zh_CN' => 'Resources/lang/zh_CN.json',
         ],
         'replacements' => [
-            'routes/web'      => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
-            'routes/api'      => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
-            'views/index'     => ['LOWER_NAME'],
-            'views/master'    => ['LOWER_NAME', 'STUDLY_NAME'],
+            'routes/web' => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
+            'routes/api' => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
+            'views/index' => ['LOWER_NAME'],
+            'views/master' => ['LOWER_NAME', 'STUDLY_NAME'],
             'scaffold/config' => ['STUDLY_NAME', 'LOWER_NAME'],
         ],
-        'gitkeep'      => true,
+        'gitkeep' => true,
     ],
 
     'paths' => [
         /*
         |--------------------------------------------------------------------------
-        | Modules path 1
+        | Modules path
         |--------------------------------------------------------------------------
         |
         | This path used for save the generated module. This path also will be added
@@ -197,7 +185,7 @@ return [
         |
         */
 
-        'assets'     => public_path('modules'),
+        'assets' => public_path('modules'),
 
         /*
         |--------------------------------------------------------------------------
@@ -208,7 +196,7 @@ return [
         | the migration files?
         |
         */
-        'migration'  => base_path('Database/Migrations'),
+        'migration' => base_path('Database/Migrations'),
 
         /*
         |--------------------------------------------------------------------------
@@ -227,61 +215,61 @@ return [
         | Customise the paths where the folders will be generated.
         | Set the generate key to false to not generate that folder
         */
-        'generator'  => [
+        'generator' => [
             // app/
-            'actions'         => ['path' => 'Actions', 'generate' => false],
-            'casts'           => ['path' => 'Casts', 'generate' => false],
-            'channels'        => ['path' => 'Broadcasting', 'generate' => false],
-            'class'           => ['path' => 'Classes', 'generate' => false],
-            'command'         => ['path' => 'Console', 'generate' => false],
+            'actions' => ['path' => 'Actions', 'generate' => false],
+            'casts' => ['path' => 'Casts', 'generate' => false],
+            'channels' => ['path' => 'Broadcasting', 'generate' => false],
+            'class' => ['path' => 'Classes', 'generate' => false],
+            'command' => ['path' => 'Console', 'generate' => false],
             'component-class' => ['path' => 'View/Components', 'generate' => false],
-            'emails'          => ['path' => 'Emails', 'generate' => false],
-            'event'           => ['path' => 'Events', 'generate' => false],
-            'enums'           => ['path' => 'Enums', 'generate' => false],
-            'exceptions'      => ['path' => 'Exceptions', 'generate' => false],
-            'jobs'            => ['path' => 'Jobs', 'generate' => false],
-            'helpers'         => ['path' => 'Helpers', 'generate' => false],
-            'interfaces'      => ['path' => 'Interfaces', 'generate' => false],
-            'listener'        => ['path' => 'Listeners', 'generate' => false],
-            'model'           => ['path' => 'Models', 'generate' => true],
-            'notifications'   => ['path' => 'Notifications', 'generate' => false],
-            'observer'        => ['path' => 'Observers', 'generate' => false],
-            'policies'        => ['path' => 'Policies', 'generate' => false],
-            'provider'        => ['path' => 'Providers', 'generate' => true],
-            'repository'      => ['path' => 'Repositories', 'generate' => false],
-            'resource'        => ['path' => 'Transformers', 'generate' => false],
-            'rules'           => ['path' => 'Rules', 'generate' => false],
-            'services'        => ['path' => 'Services', 'generate' => false],
-            'scopes'          => ['path' => 'Models/Scopes', 'generate' => false],
-            'traits'          => ['path' => 'Traits', 'generate' => false],
+            'emails' => ['path' => 'Emails', 'generate' => false],
+            'event' => ['path' => 'Events', 'generate' => false],
+            'enums' => ['path' => 'Enums', 'generate' => false],
+            'exceptions' => ['path' => 'Exceptions', 'generate' => false],
+            'jobs' => ['path' => 'Jobs', 'generate' => false],
+            'helpers' => ['path' => 'Helpers', 'generate' => false],
+            'interfaces' => ['path' => 'Interfaces', 'generate' => false],
+            'listener' => ['path' => 'Listeners', 'generate' => false],
+            'model' => ['path' => 'Models', 'generate' => true],
+            'notifications' => ['path' => 'Notifications', 'generate' => false],
+            'observer' => ['path' => 'Observers', 'generate' => false],
+            'policies' => ['path' => 'Policies', 'generate' => false],
+            'provider' => ['path' => 'Providers', 'generate' => true],
+            'repository' => ['path' => 'Repositories', 'generate' => false],
+            'resource' => ['path' => 'Transformers', 'generate' => false],
+            'rules' => ['path' => 'Rules', 'generate' => false],
+            'services' => ['path' => 'Services', 'generate' => false],
+            'scopes' => ['path' => 'Models/Scopes', 'generate' => false],
+            'traits' => ['path' => 'Traits', 'generate' => false],
 
             // app/Http/
-            'controller'      => ['path' => 'Http/Controllers/Web', 'generate' => true],
-            'filter'          => ['path' => 'Http/Middleware', 'generate' => false],
-            'request'         => ['path' => 'Http/Requests', 'generate' => false],
+            'controller' => ['path' => 'Http/Controllers/Web', 'generate' => true],
+            'filter' => ['path' => 'Http/Middleware', 'generate' => false],
+            'request' => ['path' => 'Http/Requests', 'generate' => false],
 
             // config/
-            'config'          => ['path' => 'Config', 'generate' => true],
+            'config' => ['path' => 'Config', 'generate' => true],
 
             // database/
-            'factory'         => ['path' => 'Database/Factories', 'generate' => false],
-            'migration'       => ['path' => 'Database/Migrations', 'generate' => true],
-            'seeder'          => ['path' => 'Database/Seeders', 'generate' => false],
+            'factory' => ['path' => 'Database/Factories', 'generate' => false],
+            'migration' => ['path' => 'Database/Migrations', 'generate' => true],
+            'seeder' => ['path' => 'Database/Seeders', 'generate' => false],
 
             // lang/ 本地化
-            'lang'            => ['path' => 'Resources/lang', 'generate' => false],
+            'lang' => ['path' => 'Resources/lang', 'generate' => false],
 
             // resource/
-            'assets'          => ['path' => 'Resources/assets', 'generate' => true],
-            'component-view'  => ['path' => 'Resources/views/components', 'generate' => false],
-            'views'           => ['path' => 'Resources/views', 'generate' => true],
+            'assets' => ['path' => 'Resources/assets', 'generate' => true],
+            'component-view' => ['path' => 'Resources/views/components', 'generate' => false],
+            'views' => ['path' => 'Resources/views', 'generate' => true],
 
             // routes/ 路由
-            'routes'          => ['path' => 'Routes', 'generate' => true],
+            'routes' => ['path' => 'Routes', 'generate' => true],
 
             // tests/
-            'test-feature'    => ['path' => 'Tests/Feature', 'generate' => false],
-            'test-unit'       => ['path' => 'Tests/Unit', 'generate' => false],
+            'test-feature' => ['path' => 'Tests/Feature', 'generate' => false],
+            'test-unit' => ['path' => 'Tests/Unit', 'generate' => false],
         ],
     ],
 
@@ -294,9 +282,9 @@ return [
     |
     */
     'cache' => [
-        'enabled'  => env('MODULES_CACHE_ENABLED', false),
-        'driver'   => env('MODULES_CACHE_DRIVER', 'file'),
-        'key'      => env('MODULES_CACHE_KEY', 'laravel-modules'),
+        'enabled' => env('MODULES_CACHE_ENABLED', false),
+        'driver' => env('MODULES_CACHE_DRIVER', 'file'),
+        'key' => env('MODULES_CACHE_KEY', 'laravel-modules'),
         'lifetime' => env('MODULES_CACHE_LIFETIME', 60),
     ],
 

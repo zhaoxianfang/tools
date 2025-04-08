@@ -29,18 +29,22 @@ abstract class BaseCommand extends Command implements PromptsForMissingInput
     public function __construct()
     {
         parent::__construct();
-        $this->getDefinition()->addOption(new InputOption(
-            strtolower(self::ALL),
-            'a',
-            InputOption::VALUE_NONE,
-            'Check all Modules',
-        ));
+        $this->getDefinition()->addOption(
+            option: new InputOption(
+                name: strtolower(self::ALL),
+                shortcut: 'a',
+                mode: InputOption::VALUE_NONE,
+                description: 'Check all Modules',
+            )
+        );
 
-        $this->getDefinition()->addArgument(new InputArgument(
-            'module',
-            InputArgument::IS_ARRAY,
-            'The name of module will be used.',
-        ));
+        $this->getDefinition()->addArgument(
+            argument: new InputArgument(
+                name: 'module',
+                mode: InputArgument::IS_ARRAY,
+                description: 'The name of module will be used.',
+            )
+        );
 
         if ($this instanceof ConfirmableCommand) {
             $this->configureConfirmable();
@@ -56,7 +60,12 @@ abstract class BaseCommand extends Command implements PromptsForMissingInput
 
     public function getConfirmableLabel(): ?string
     {
-        return 'Warning';
+        return 'Application In Production';
+    }
+
+    public function getConfirmableCallback(): \Closure|bool|null
+    {
+        return null;
     }
 
     /**
@@ -67,8 +76,9 @@ abstract class BaseCommand extends Command implements PromptsForMissingInput
         if ($this instanceof ConfirmableCommand) {
             if (
                 // $this->isProhibited() ||
-                ! $this->confirmToProceed($this->getConfirmableLabel(), fn () => true)) {
-                return 1;
+                // ! $this->confirmToProceed($this->getConfirmableLabel(), fn () => true)) {
+                ! $this->confirmToProceed($this->getConfirmableLabel(), $this->getConfirmableCallback())) {
+                return Command::FAILURE;
             }
         }
 
@@ -126,11 +136,13 @@ abstract class BaseCommand extends Command implements PromptsForMissingInput
     private function configureConfirmable(): void
     {
         $this->getDefinition()
-            ->addOption(new InputOption(
-                'force',
-                null,
-                InputOption::VALUE_NONE,
-                'Force the operation to run without confirmation.',
-            ));
+            ->addOption(
+                option: new InputOption(
+                    name: 'force',
+                    shortcut: null,
+                    mode: InputOption::VALUE_NONE,
+                    description: 'Force the operation to run without confirmation.',
+                )
+            );
     }
 }

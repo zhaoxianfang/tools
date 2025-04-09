@@ -2,12 +2,12 @@
 
 namespace zxf\Laravel\Modules;
 
-use Illuminate\Foundation\Http\Kernel;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use zxf\Laravel\Modules\Providers\AutoLoadModulesServices;
 use zxf\Laravel\Modules\Providers\ConsoleServiceProvider;
 use zxf\Laravel\Modules\Providers\ContractsServiceProvider;
-use Illuminate\Pagination\Paginator;
 use zxf\Laravel\Modules\Providers\ModulesRouteServiceProvider;
 use zxf\TnCode\Providers\TnCodeValidationProviders;
 
@@ -127,7 +127,6 @@ abstract class ModulesServiceProvider extends ServiceProvider
         }
     }
 
-
     /**
      * 注册 views.
      * 然后就可以使用 view('demo::test') 去访问 Demo/Resources/views里面的视图文件了
@@ -187,22 +186,17 @@ abstract class ModulesServiceProvider extends ServiceProvider
     }
 
     /**
-     * 注册中间件
-     *
-     * @param  string  $middleware
+     * 注册中间件 并全局启用
      */
     protected function registerMiddleware($middleware)
     {
-        $this->app['router']->aliasMiddleware('exception.handler', $middleware);
+        $kernel = $this->app->make(Kernel::class);
+        // $kernel->pushMiddleware($middleware); // 追加在后面
+        $kernel->prependMiddleware($middleware); // 放在最前面
 
-        /** @var Kernel $kernel */
-        $kernel = $this->app[Kernel::class];
-        $kernel->pushMiddleware($middleware); // 追加
-        // $kernel->prependMiddleware($middleware); // 放在最前面
-        // if (isset($kernel->getMiddlewareGroups()['web'])) {
-        //     $kernel->appendMiddlewareToGroup('web', $middleware); // 追加
-        //     // $kernel->prependMiddlewareToGroup('web', $middleware);   // 放在最前面
-        // }
+        // 把中间件添加到web组
+        // $kernel->appendMiddlewareToGroup('web', $middleware); // 追加在后面
+        // $kernel->prependMiddlewareToGroup('web', $middleware);   // 放在最前面
     }
 
     // 设置数据分页模板
@@ -212,7 +206,6 @@ abstract class ModulesServiceProvider extends ServiceProvider
         Paginator::defaultView('vendor.pagination.default');
         Paginator::defaultSimpleView('vendor.pagination.simple-default');
     }
-
 
     // 使用多模块提示
     protected function tips()

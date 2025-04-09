@@ -6,17 +6,17 @@
 
 ```
 # 是否开启Trace
-APP_TRACE=true
+APP_DEBUG=true
 ```
 
 ## 参考文档
 
 ```
 '================================================================================'
-| 插    件 | composer require zxf/tools                                           |'
-| 格    言 | 人生在勤，不索何获                                                      |'
-| 模块发布 | php artisan vendor:publish --provider="zxf\Laravel\ServiceProvider"   |'
-| 文档地址 | https://weisifang.com/docs/2                                                 |'
+| 插    件 | composer require zxf/tools                                          |'
+| 格    言 | 人生在勤，不索何获                                                     |'
+| 模块发布 | php artisan vendor:publish --provider="zxf\Laravel\ServiceProvider"  |'
+| 文档地址 | https://weisifang.com/docs/2                                         |'
 =================================================================================='
 ```
 

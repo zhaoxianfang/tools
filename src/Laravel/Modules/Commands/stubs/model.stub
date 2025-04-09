@@ -5,11 +5,13 @@ namespace $NAMESPACE$;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
+// use $MODULE_NAMESPACE$\$STUDLY_NAME$\Enums\StatusEnums;
 
 /**
  * 模型字段属性
  *
  * @property int $id
+ // * @property StatusEnums $status 定义枚举类型状态 [eg:使用 ->status->value 获取值,使用 ->status->text() 获取值对应的描述]
  * @property Carbon $created_at 创建时间
  * @property Carbon $updated_at 更新时间
  */

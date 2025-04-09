@@ -4,20 +4,23 @@ namespace $CLASS_NAMESPACE$;
 
 enum $CLASS$ : int|string
 {
-    // case ONE = 1;
-    // case TWO = 2;
+    // 取值(normal) eg: $CLASS$::STATUS_NORMAL->value
+    // case STATUS_NORMAL = 'normal';
+    // case STATUS_CLOSED = 'closed';
 
     // /**
+    //  * 获取状态文本描述
+    //  *
     //  * @example:
-    //  *       $this->type->text();
+    //  *       在api 资源中可以使用 $this->status->text() 获取状态文本描述
     //  *
     //  * @return string
     //  */
     // public function text(): string
     // {
     //     return match ($this) {
-    //         self::ONE => '一',
-    //         self::TWO => '二',
+    //         self::STATUS_NORMAL => '正常',
+    //         self::STATUS_CLOSED => '已关闭',
     //     };
     // }
 }

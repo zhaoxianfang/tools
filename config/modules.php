@@ -256,28 +256,28 @@ return [
             'request' => ['path' => 'Http/Requests', 'generate' => false],
 
             // config/
-            'config' => ['path' => 'config', 'generate' => true],
+            'config' => ['path' => 'Config', 'generate' => true],
 
             // database/
-            'factory' => ['path' => 'database/factories', 'generate' => true],
-            'migration' => ['path' => 'database/migrations', 'generate' => true],
-            'seeder' => ['path' => 'database/seeders', 'generate' => true],
+            'factory' => ['path' => 'Database/Factories', 'generate' => true],
+            'migration' => ['path' => 'Database/Migrations', 'generate' => true],
+            'seeder' => ['path' => 'Database/Seeders', 'generate' => true],
 
             // lang/
-            'lang' => ['path' => 'resources/lang', 'generate' => false],
+            'lang' => ['path' => 'Resources/lang', 'generate' => false],
 
             // resource/
-            'assets' => ['path' => 'resources/assets', 'generate' => true],
-            'views' => ['path' => 'resources/views', 'generate' => true],
+            'assets' => ['path' => 'Resources/assets', 'generate' => true],
+            'views' => ['path' => 'Resources/views', 'generate' => true],
 
-            'component-view' => ['path' => 'resources/views/components', 'generate' => false],
+            'component-view' => ['path' => 'Resources/views/components', 'generate' => false],
 
             // routes/
-            'routes' => ['path' => 'routes', 'generate' => true],
+            'routes' => ['path' => 'Routes', 'generate' => true],
 
             // tests/
-            'test-feature' => ['path' => 'tests/Feature', 'generate' => false],
-            'test-unit' => ['path' => 'tests/Unit', 'generate' => false],
+            'test-feature' => ['path' => 'Tests/Feature', 'generate' => false],
+            'test-unit' => ['path' => 'Tests/Unit', 'generate' => false],
         ],
     ],
 ];

@@ -1,6 +1,7 @@
 # 多模块自动加载解析的目录和文件
 
 ## Modules模块
+> 大小写和命名请查看 modules.php 配置文件的 paths.generator 配置为准
 
 ```
 Resources/lang/         // 多语言文件

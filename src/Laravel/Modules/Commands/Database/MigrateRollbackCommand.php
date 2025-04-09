@@ -23,7 +23,7 @@ class MigrateRollbackCommand extends BaseCommand
      *
      * @var string
      */
-    protected $description = 'Rollback the modules migrations.';
+    protected $description = '回滚模块迁移 [php artisan module:migrate-rollback Blog | php artisan module:migrate-rollback --subpath="2023_10_17_101427_create_posts_table.php" Blog]';
 
     public function executeAction($name): void
     {

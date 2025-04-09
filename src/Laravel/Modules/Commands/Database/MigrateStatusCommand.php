@@ -20,7 +20,7 @@ class MigrateStatusCommand extends BaseCommand
      *
      * @var string
      */
-    protected $description = 'Status for all module migrations';
+    protected $description = '展示模块迁移的状态 [php artisan module:migrate-status Blog]';
 
     /**
      * @var \zxf\Laravel\Modules\Contracts\RepositoryInterface

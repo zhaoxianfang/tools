@@ -32,7 +32,7 @@ class ControllerMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Generate new restful controller for the specified module.';
+    protected $description = '为指定模块生成新的restful控制器 [php artisan module:make-controller PostsController Blog]';
 
     /**
      * Get controller name.

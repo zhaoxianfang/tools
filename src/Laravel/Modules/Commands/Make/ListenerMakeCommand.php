@@ -28,7 +28,7 @@ class ListenerMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new event listener class for the specified module';
+    protected $description = '为指定模块创建新的事件侦听器类 [php artisan module:make-listener NotifyUsersOfANewPost Blog | php artisan module:make-listener NotifyUsersOfANewPost Blog --event=PostWasCreated --queued]';
 
     /**
      * Get the console command arguments.

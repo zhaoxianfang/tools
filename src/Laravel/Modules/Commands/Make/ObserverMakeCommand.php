@@ -31,7 +31,7 @@ class ObserverMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new observer for the specified module.';
+    protected $description = '为指定模块创建新的观察者 [php artisan module:make-observer PostObserver Blog]';
 
     /**
      * Get the console command arguments.

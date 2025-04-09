@@ -31,7 +31,7 @@ class MiddlewareMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new middleware class for the specified module.';
+    protected $description = '为指定模块创建一个新的中间件类 [php artisan module:make-middleware CanReadPostsMiddleware Blog]';
 
     public function getDefaultNamespace(): string
     {

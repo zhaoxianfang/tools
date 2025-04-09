@@ -32,7 +32,7 @@ class CommandMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Generate new Artisan command for the specified module.';
+    protected $description = '为指定模块生成新的Artisan命令 [php artisan module:make-command CreatePostCommand Blog]';
 
     public function getDefaultNamespace(): string
     {

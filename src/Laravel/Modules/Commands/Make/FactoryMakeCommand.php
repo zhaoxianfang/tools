@@ -31,7 +31,7 @@ class FactoryMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new model factory for the specified module.';
+    protected $description = '为指定模块创建新的模型工厂 [php artisan module:make-factory ModelName Blog]';
 
     /**
      * Get the console command arguments.

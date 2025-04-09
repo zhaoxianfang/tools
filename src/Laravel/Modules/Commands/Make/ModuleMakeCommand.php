@@ -23,7 +23,7 @@ class ModuleMakeCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Create a new module.';
+    protected $description = '创建一个新模块 [php artisan module:make Blog]';
 
     /**
      * Execute the console command.

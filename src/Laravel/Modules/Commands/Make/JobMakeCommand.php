@@ -25,7 +25,7 @@ class JobMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new job class for the specified module';
+    protected $description = '为指定模块创建新作业类 [php artisan module:make-job JobName Blog | php artisan module:make-job JobName Blog --sync # A synchronous job class]';
 
     protected $argumentName = 'name';
 

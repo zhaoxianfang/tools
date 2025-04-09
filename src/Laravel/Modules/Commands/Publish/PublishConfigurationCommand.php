@@ -3,8 +3,8 @@
 namespace zxf\Laravel\Modules\Commands\Publish;
 
 use Illuminate\Support\Str;
-use zxf\Laravel\Modules\Commands\BaseCommand;
 use Symfony\Component\Console\Input\InputOption;
+use zxf\Laravel\Modules\Commands\BaseCommand;
 
 class PublishConfigurationCommand extends BaseCommand
 {
@@ -20,7 +20,7 @@ class PublishConfigurationCommand extends BaseCommand
      *
      * @var string
      */
-    protected $description = "Publish a module's config files to the application";
+    protected $description = '将模块的配置文件发布到应用程序 [php artisan module:publish-config Blog]';
 
     public function executeAction($name): void
     {

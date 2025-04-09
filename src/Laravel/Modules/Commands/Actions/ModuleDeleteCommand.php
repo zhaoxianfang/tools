@@ -9,7 +9,7 @@ class ModuleDeleteCommand extends BaseCommand implements ConfirmableCommand
 {
     protected $name = 'module:delete';
 
-    protected $description = 'Delete a module from the application';
+    protected $description = '从应用程序中删除指定模块 [php artisan module:delete Blog]';
 
     public function executeAction($name): void
     {

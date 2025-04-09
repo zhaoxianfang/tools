@@ -32,7 +32,7 @@ class RuleMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new validation rule for the specified module.';
+    protected $description = '为指定模块创建新的验证规则 [php artisan module:make-rule ValidationRule Blog]';
 
     public function getDefaultNamespace(): string
     {

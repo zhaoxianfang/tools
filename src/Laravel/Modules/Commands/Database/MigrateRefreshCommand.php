@@ -20,7 +20,7 @@ class MigrateRefreshCommand extends BaseCommand implements ConfirmableCommand
      *
      * @var string
      */
-    protected $description = 'Rollback & re-migrate the modules migrations.';
+    protected $description = '回滚并重新迁移模块迁移 [php artisan module:migrate-refresh Blog]';
 
     public function executeAction($name): void
     {

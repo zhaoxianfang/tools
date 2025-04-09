@@ -27,7 +27,7 @@ class MigrationMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new migration for the specified module.';
+    protected $description = '为指定模块创建新的迁移 [php artisan module:make-migration create_posts_table Blog]';
 
     /**
      * Get the console command arguments.

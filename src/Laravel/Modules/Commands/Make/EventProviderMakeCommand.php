@@ -17,7 +17,7 @@ class EventProviderMakeCommand extends GeneratorCommand
 
     protected $name = 'module:make-event-provider';
 
-    protected $description = 'Create a new event service provider class for the specified module.';
+    protected $description = '为指定模块创建新的事件服务提供程序类 [php artisan module:make-event-provider EventServiceProvider Blog]';
 
     public function getDestinationFilePath(): string
     {

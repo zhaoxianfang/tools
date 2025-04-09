@@ -17,7 +17,7 @@ class ViewMakeCommand extends GeneratorCommand
 
     protected $name = 'module:make-view';
 
-    protected $description = 'Create a new view for the specified module.';
+    protected $description = '为指定模块创建新视图 [php artisan module:make-view index Blog]';
 
     protected function getArguments(): array
     {

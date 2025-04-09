@@ -17,7 +17,7 @@ class EnumMakeCommand extends GeneratorCommand
 
     protected $name = 'module:make-enum';
 
-    protected $description = 'Create a new enum class for the specified module.';
+    protected $description = '为指定模块创建新的枚举类 [php artisan module:make-enum PostStatus Blog]';
 
     public function getDestinationFilePath(): string
     {

@@ -17,7 +17,7 @@ class ResourceMakeCommand extends GeneratorCommand
 
     protected $name = 'module:make-resource';
 
-    protected $description = 'Create a new resource class for the specified module.';
+    protected $description = '为指定模块创建新的资源类 [php artisan module:make-resource PostResource Blog | php artisan module:make-resource PostResource Blog --collection]';
 
     public function getDefaultNamespace(): string
     {

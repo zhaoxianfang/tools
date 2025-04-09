@@ -24,7 +24,7 @@ class MigrateResetCommand extends BaseCommand implements ConfirmableCommand
      *
      * @var string
      */
-    protected $description = 'Reset the modules migrations.';
+    protected $description = '重置模块迁移 [php artisan module:migrate-reset Blog]';
 
     public function executeAction($name): void
     {

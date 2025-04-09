@@ -32,7 +32,7 @@ class ModelMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new model for the specified module.';
+    protected $description = '为指定模块创建新模型 [php artisan module:make-model Post Blog]';
 
     public function handle(): int
     {

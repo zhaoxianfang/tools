@@ -26,7 +26,7 @@ final class NotificationMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new notification class for the specified module.';
+    protected $description = '为指定模块创建新的通知类 [php artisan module:make-notification NotifyAdminOfNewComment Blog]';
 
     public function getDefaultNamespace(): string
     {

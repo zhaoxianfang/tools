@@ -31,7 +31,7 @@ class PolicyMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new policy class for the specified module.';
+    protected $description = '为指定模块创建新的策略类 [php artisan module:make-policy PolicyName Blog]';
 
     public function getDefaultNamespace(): string
     {

@@ -17,7 +17,7 @@ class ScopeMakeCommand extends GeneratorCommand
 
     protected $name = 'module:make-scope';
 
-    protected $description = 'Create a new scope class for the specified module.';
+    protected $description = '为指定模块创建新的作用域类 [php artisan module:make-scope ActivePostsScope Blog]';
 
     public function getDestinationFilePath(): string
     {

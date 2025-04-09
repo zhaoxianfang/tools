@@ -31,7 +31,7 @@ class ComponentClassMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new component-class for the specified module.';
+    protected $description = '为指定模块创建新的组件类 [php artisan module:make-component Alert Blog]';
 
     public function handle(): int
     {

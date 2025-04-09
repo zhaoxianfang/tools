@@ -17,7 +17,7 @@ class CastMakeCommand extends GeneratorCommand
 
     protected $name = 'module:make-cast';
 
-    protected $description = 'Create a new Eloquent cast class for the specified module.';
+    protected $description = '为指定模块创建新的Eloquent强制转换类 [php artisan module:make-cast TitleCast Blog]';
 
     public function getDestinationFilePath(): string
     {

@@ -24,7 +24,7 @@ class MailMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new email class for the specified module';
+    protected $description = '为指定模块创建新的电子邮件类 [php artisan module:make-mail SendWeeklyPostsEmail Blog]';
 
     protected $argumentName = 'name';
 

@@ -25,7 +25,7 @@ class SeedMakeCommand extends GeneratorCommand
     /**
      * The console command description.
      */
-    protected $description = 'Create a new seeder for the specified module.';
+    protected $description = '为指定模块创建新的种子程序 [php artisan module:make-seed seed_fake_blog_posts Blog]';
 
     /**
      * Get the console command arguments.

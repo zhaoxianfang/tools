@@ -17,7 +17,7 @@ class RepositoryMakeCommand extends GeneratorCommand
 
     protected $name = 'module:make-repository';
 
-    protected $description = 'Create a new repository class for the specified module.';
+    protected $description = '为指定模块创建新的存储库类 [php artisan module:make-repository PostRepository Blog]';
 
     public function getDestinationFilePath(): string
     {

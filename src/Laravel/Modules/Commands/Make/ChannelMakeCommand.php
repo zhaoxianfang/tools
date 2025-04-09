@@ -26,7 +26,7 @@ final class ChannelMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new channel class for the specified module.';
+    protected $description = '为指定模块创建新的通道类 [php artisan module:make-channel NotificationChannel Blog]';
 
     public function getDefaultNamespace(): string
     {

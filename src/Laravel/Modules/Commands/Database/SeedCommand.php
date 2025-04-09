@@ -31,7 +31,7 @@ class SeedCommand extends BaseCommand
      *
      * @var string
      */
-    protected $description = 'Run database seeder from the specified module or from all modules.';
+    protected $description = '从指定模块或所有模块运行数据库种子程序 [php artisan module:seed Blog]';
 
     public function executeAction($name): void
     {

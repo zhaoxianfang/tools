@@ -4,8 +4,15 @@ namespace $NAMESPACE$;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-// use $MODULE_NAMESPACE$\$MODULE$\Database\Factories\$NAME$Factory;
+use Illuminate\Support\Carbon;
 
+/**
+ * 模型字段属性
+ *
+ * @property int $id
+ * @property Carbon $created_at 创建时间
+ * @property Carbon $updated_at 更新时间
+ */
 class $CLASS$ extends Model
 {
     use HasFactory;
@@ -14,9 +21,4 @@ class $CLASS$ extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = $FILLABLE$;
-
-    // protected static function newFactory(): $NAME$Factory
-    // {
-    //     // return $NAME$Factory::new();
-    // }
 }

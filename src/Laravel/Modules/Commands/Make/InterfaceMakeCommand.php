@@ -17,7 +17,7 @@ class InterfaceMakeCommand extends GeneratorCommand
 
     protected $name = 'module:make-interface';
 
-    protected $description = 'Create a new interface class for the specified module.';
+    protected $description = '为指定模块创建新的接口类 [php artisan module:make-interface PostRepositoryInterface Blog]';
 
     public function getDestinationFilePath(): string
     {

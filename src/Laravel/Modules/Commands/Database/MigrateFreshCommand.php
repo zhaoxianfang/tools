@@ -22,7 +22,7 @@ class MigrateFreshCommand extends BaseCommand implements ConfirmableCommand
      *
      * @var string
      */
-    protected $description = 'Reset all database tables and re-run the modules migrations.';
+    protected $description = '重置模块下的数据库表并重新执行迁移 [php artisan module:migrate-fresh Blog]';
 
     /**
      * The migrator instance.

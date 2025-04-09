@@ -21,7 +21,7 @@ class CheckLangCommand extends BaseCommand
      *
      * @var string
      */
-    protected $description = 'Check missing language keys in the specified module.';
+    protected $description = '检查指定模块中缺少的语言键 [php artisan module:lang Blog]';
 
     public function __construct()
     {

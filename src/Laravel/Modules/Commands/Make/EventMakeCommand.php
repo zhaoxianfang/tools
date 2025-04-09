@@ -26,7 +26,7 @@ class EventMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new event class for the specified module';
+    protected $description = '为指定模块创建新的事件类 [php artisan module:make-event BlogPostWasUpdated Blog]';
 
     public function getTemplateContents()
     {

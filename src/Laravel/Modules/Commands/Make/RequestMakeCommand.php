@@ -31,7 +31,7 @@ class RequestMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new form request class for the specified module.';
+    protected $description = '为指定模块创建新的表单请求类 [php artisan module:make-request CreatePostRequest Blog]';
 
     public function getDefaultNamespace(): string
     {

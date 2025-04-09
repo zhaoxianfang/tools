@@ -19,7 +19,7 @@ class PublishCommand extends BaseCommand
      *
      * @var string
      */
-    protected $description = 'Publish a module\'s assets to the application';
+    protected $description = '将模块的资产发布到应用程序 [php artisan module:publish Blog]';
 
     public function executeAction($name): void
     {

@@ -17,7 +17,7 @@ class ExceptionMakeCommand extends GeneratorCommand
 
     protected $name = 'module:make-exception';
 
-    protected $description = 'Create a new exception class for the specified module.';
+    protected $description = '为指定模块创建新的异常类 [php artisan module:make-exception PostNotFoundException Blog]';
 
     public function getDestinationFilePath(): string
     {

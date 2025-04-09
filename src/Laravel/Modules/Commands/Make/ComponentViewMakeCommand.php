@@ -32,7 +32,7 @@ class ComponentViewMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new component-view for the specified module.';
+    protected $description = '为指定模块创建新的组件视图 [php artisan module:make-component-view Alert Blog]';
 
     /**
      * Get the console command arguments.

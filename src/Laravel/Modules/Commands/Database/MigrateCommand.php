@@ -21,7 +21,7 @@ class MigrateCommand extends BaseCommand
      *
      * @var string
      */
-    protected $description = 'Migrate the migrations from the specified module or from all modules.';
+    protected $description = '执行模块迁移 [php artisan module:migrate Blog]';
 
     /**
      * The migrator instance.

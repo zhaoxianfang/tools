@@ -17,7 +17,7 @@ class ActionMakeCommand extends GeneratorCommand
 
     protected $name = 'module:make-action';
 
-    protected $description = 'Create a new action class for the specified module.';
+    protected $description = '为指定模块创建新的操作类 [php artisan module:make-action PublishPost Blog]';
 
     public function getDestinationFilePath(): string
     {

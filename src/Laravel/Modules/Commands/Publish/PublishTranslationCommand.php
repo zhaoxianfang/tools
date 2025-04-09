@@ -19,7 +19,7 @@ class PublishTranslationCommand extends BaseCommand
      *
      * @var string
      */
-    protected $description = 'Publish a module\'s translations to the application';
+    protected $description = '将模块的翻译发布到应用程序 [php artisan module:publish-translation Blog]';
 
     public function executeAction($name): void
     {

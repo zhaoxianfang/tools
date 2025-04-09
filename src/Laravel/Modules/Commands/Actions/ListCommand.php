@@ -20,7 +20,7 @@ class ListCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Show list of all modules.';
+    protected $description = '显示所有模块的列表 [php artisan module:list]';
 
     /**
      * Execute the console command.

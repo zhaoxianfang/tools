@@ -17,7 +17,7 @@ class TraitMakeCommand extends GeneratorCommand
 
     protected $name = 'module:make-trait';
 
-    protected $description = 'Create a new trait class for the specified module.';
+    protected $description = '为指定模块创建新的trait类 [php artisan module:make-trait Sluggable Blog]';
 
     public function getDestinationFilePath(): string
     {

@@ -33,7 +33,7 @@ class ProviderMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new service provider class for the specified module.';
+    protected $description = '为指定模块创建新的服务提供程序类 [php artisan module:make-provider BlogServiceProvider Blog]';
 
     public function getDefaultNamespace(): string
     {

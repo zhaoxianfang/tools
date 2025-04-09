@@ -20,7 +20,7 @@ class PublishMigrationCommand extends BaseCommand
      *
      * @var string
      */
-    protected $description = "Publish a module's migrations to the application";
+    protected $description = '将模块的迁移发布到应用程序 [php artisan module:publish-migration Blog]';
 
     public function executeAction($name): void
     {

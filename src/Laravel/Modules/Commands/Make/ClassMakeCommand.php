@@ -15,17 +15,17 @@ class ClassMakeCommand extends GeneratorCommand
      * The name and signature of the console command.
      */
     protected $signature = 'module:make-class
-        {--t|type=class : The type of class, e.g. class, service, repository, contract, etc.}
-        {--s|suffix : Create the class without the type suffix}
-        {--i|invokable : Generate a single method, invokable class}
-        {--f|force : Create the class even if the class already exists}
-        {name : The name of the class}
-        {module : The targeted module}';
+        {--t|type=class : 类的类型，例如 class, service, repository, contract, etc.}
+        {--s|suffix : 创建不带类型后缀的类}
+        {--i|invokable : 生成一个可调用的单一方法类}
+        {--f|force : 即使类已经存在，也要创建该类}
+        {name : 类的名称}
+        {module : 目标模块}';
 
     /**
      * The console command description.
      */
-    protected $description = 'Create a new class';
+    protected $description = '创建一个新类 [php artisan module:make-class CustomClass Blog]';
 
     protected $argumentName = 'name';
 

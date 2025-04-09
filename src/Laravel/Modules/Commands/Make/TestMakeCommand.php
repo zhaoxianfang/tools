@@ -17,7 +17,7 @@ class TestMakeCommand extends GeneratorCommand
 
     protected $name = 'module:make-test';
 
-    protected $description = 'Create a new test class for the specified module.';
+    protected $description = '为指定模块创建新的测试类 [php artisan module:make-test EloquentPostRepositoryTest Blog]';
 
     public function getDefaultNamespace(): string
     {

@@ -26,7 +26,7 @@ class RouteProviderMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new route service provider for the specified module.';
+    protected $description = '为指定模块创建新的路由服务提供程序 [php artisan module:route-provider Blog]';
 
     /**
      * The command arguments.

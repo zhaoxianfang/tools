@@ -82,7 +82,7 @@ class LaravelModulesServiceProvider extends ModulesServiceProvider
         // 注册服务
         $this->registerProviders();
 
-        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'modules');
+        $this->mergeConfigFrom(__DIR__.'/../../config/modules.php', 'modules');
 
         // 注册 whereHasIn 的几个查询方式来替换 whereHas 查询全表扫描的问题
         WhereHasInBuilder::register($this);

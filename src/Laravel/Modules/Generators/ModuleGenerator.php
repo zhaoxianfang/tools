@@ -523,11 +523,27 @@ class ModuleGenerator extends Generator
     }
 
     /**
+     * Get the module name in studly case.
+     */
+    protected function getStudlyNameReplacement(): string
+    {
+        return $this->getName();
+    }
+
+    /**
      * Get the module name in plural studly case.
      */
     protected function getPluralStudlyNameReplacement(): string
     {
         return Str::of($this->getName())->pluralStudly();
+    }
+
+    /**
+     * Get replacement for $MODULE_NAMESPACE$.
+     */
+    protected function getModuleNamespaceReplacement(): string
+    {
+        return str_replace('\\', '\\\\', $this->module->config('namespace') ?? $this->path_namespace($this->module->config('paths.modules')));
     }
 
     /**

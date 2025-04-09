@@ -176,7 +176,7 @@ abstract class FileRepository implements Countable, RepositoryInterface
      */
     public function has($name): bool
     {
-        return array_key_exists(strtolower($name), $this->all());
+        return array_key_exists($name, $this->all());
     }
 
     /**
@@ -258,7 +258,7 @@ abstract class FileRepository implements Countable, RepositoryInterface
      */
     public function find(string $name): ?Module
     {
-        return $this->all()[strtolower($name)] ?? null;
+        return $this->all()[$name] ?? null;
     }
 
     /**

@@ -38,12 +38,12 @@ protected function registerNamespaces()
 {
     // 把config 文件夹类的配置文件 发布到 config 文件夹下
     $this->publishes([
-        __DIR__.'/../../config/' => config_path(''),
+        __DIR__.'/../../../config/' => config_path(''),
     ], 'modules');
 
     // 发布Modules模块文件组
     $this->publishes([
-        __DIR__.'/../../publishes/' => base_path(''),
+        __DIR__.'/../../../publishes/' => base_path(''),
     ], 'modules');
 }
 ```
@@ -109,7 +109,7 @@ protected function registerModules()
     if (! is_dir(base_path(modules_name()))) {
         return false;
     }
-    $migrationsDir = config('modules.paths.generator.migration.path');
+    $migrationsPath = config('modules.paths.generator.migration.path');
     $modules = array_slice(scandir(base_path(modules_name())), 2);
     foreach ($modules as $module) {
         $moduleLower = strtolower($module);
@@ -117,8 +117,8 @@ protected function registerModules()
             $this->registerTranslations($module, $moduleLower);
             $this->registerConfig($module, $moduleLower);
             $this->registerViews($module, $moduleLower);
-            if (is_dir(module_path($module, $migrationsDir))) {
-                $this->loadMigrationsFrom(module_path($module, $migrationsDir));
+            if (is_dir(module_path($module, $migrationsPath))) {
+                $this->loadMigrationsFrom(module_path($module, $migrationsPath));
             }
         }
     }
@@ -135,7 +135,8 @@ protected function registerModules()
  */
 public function registerTranslations($module, $moduleLower)
 {
-    $langPath = resource_path('lang/modules/'.$moduleLower);
+    // $langPath = resource_path('lang/modules/'.$moduleLower);
+    $langPath = resource_path('lang/'.$moduleLower);
     if (is_dir($langPath)) {
         $this->loadTranslationsFrom($langPath, $moduleLower);
         $this->loadJsonTranslationsFrom($langPath);
@@ -373,8 +374,6 @@ $result = del_dir($this->getPath());
 删除 module.json 的相关方法
     generateModuleJsonFile
     cleanModuleJsonFile
-    getModuleNamespaceReplacement
-    getStudlyNameReplacement
     generateResources 中涉及 module.json 那段
 ```
 
@@ -393,10 +392,17 @@ if (GenerateConfigReader::read('controller')->generate() === true) {
 更改为
 if (GenerateConfigReader::read('controller')->generate() === true) {
     $options = $this->type == 'api' ? ['--api' => true] : [];
+    // Web 控制器
     $this->console->call('module:make-controller', [
-        'controller' => $this->getName().'Controller',
+        'controller' => 'Web/'.$this->getName().'Controller',
         'module' => $this->getName(),
     ] + $options);
+
+    // Api 控制器
+    $this->console->call('module:make-controller', [
+        'controller' => 'Api/'.$this->getName().'Controller',
+        'module' => $this->getName(),
+    ] + ['--api' => true]);
 }
 ```
 
@@ -474,6 +480,8 @@ public function scan(): array
     return self::$modules;
 }
 ```
+
+把 `has`和`find` 两个方法中的`strtolower`去掉，因为加了之后就判断不了模块了
 
 ### 处理 `Activators/FileActivator.php`
 

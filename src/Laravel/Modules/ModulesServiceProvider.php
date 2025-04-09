@@ -31,7 +31,7 @@ abstract class ModulesServiceProvider extends ServiceProvider
         if (! is_dir(base_path(modules_name()))) {
             return false;
         }
-        $migrationsDir = config('modules.paths.generator.migration.path');
+        $migrationsPath = config('modules.paths.generator.migration.path');
         $modules = array_slice(scandir(base_path(modules_name())), 2);
         foreach ($modules as $module) {
             $moduleLower = strtolower($module);
@@ -39,8 +39,8 @@ abstract class ModulesServiceProvider extends ServiceProvider
                 $this->registerTranslations($module, $moduleLower);
                 $this->registerConfig($module, $moduleLower);
                 $this->registerViews($module, $moduleLower);
-                if (is_dir(module_path($module, $migrationsDir))) {
-                    $this->loadMigrationsFrom(module_path($module, $migrationsDir));
+                if (is_dir(module_path($module, $migrationsPath))) {
+                    $this->loadMigrationsFrom(module_path($module, $migrationsPath));
                 }
             }
         }
@@ -53,12 +53,12 @@ abstract class ModulesServiceProvider extends ServiceProvider
     {
         // 把config 文件夹类的配置文件 发布到 config 文件夹下
         $this->publishes([
-            __DIR__.'/../../config/' => config_path(''),
+            __DIR__.'/../../../config/' => config_path(''),
         ], 'modules');
 
         // 发布Modules模块文件组
         $this->publishes([
-            __DIR__.'/../../publishes/' => base_path(''),
+            __DIR__.'/../../../publishes/' => base_path(''),
         ], 'modules');
     }
 

@@ -1,5 +1,0 @@
-<?php
-
-return [
-    'valid'             => 'The :attribute field is valid.',
-];

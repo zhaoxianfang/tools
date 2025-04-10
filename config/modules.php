@@ -149,23 +149,22 @@ return [
             'scaffold/config' => 'config/config.php',
             // 自定义本地化
             'lang/en/messages' => 'Resources/lang/en/messages.php',
-            'lang/en/validation' => 'Resources/lang/en/validation.php',
             'lang/zh_CN/messages' => 'Resources/lang/zh_CN/messages.php',
-            'lang/zh_CN/validation' => 'Resources/lang/zh_CN/validation.php',
             'lang/zh_CN' => 'Resources/lang/zh_CN.json',
         ],
         'replacements' => [
             /**
-             * Define custom replacements for each section.
-             * You can specify a closure for dynamic values.
+             * 为每个部分定义自定义替换.
              *
-             * Note: Keys should be in UPPERCASE.
+             * 提示: Keys 应该全是大写.
              */
             'routes/web' => ['LOWER_NAME', 'STUDLY_NAME', 'PLURAL_LOWER_NAME', 'KEBAB_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
             'routes/api' => ['LOWER_NAME', 'STUDLY_NAME', 'PLURAL_LOWER_NAME', 'KEBAB_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
             'views/index' => ['LOWER_NAME'],
             'views/master' => ['LOWER_NAME', 'STUDLY_NAME', 'KEBAB_NAME'],
             'scaffold/config' => ['STUDLY_NAME', 'LOWER_NAME'],
+            'lang/en/messages' => ['STUDLY_NAME', 'LOWER_NAME'],
+            'lang/zh_CN/messages' => ['STUDLY_NAME', 'LOWER_NAME'],
         ],
         'gitkeep' => true,
     ],
@@ -267,7 +266,7 @@ return [
             'lang' => ['path' => 'Resources/lang', 'generate' => false],
 
             // resource/
-            'assets' => ['path' => 'Resources/assets', 'generate' => true],
+            'assets' => ['path' => 'Resources/assets', 'generate' => false],
             'views' => ['path' => 'Resources/views', 'generate' => true],
 
             'component-view' => ['path' => 'Resources/views/components', 'generate' => false],

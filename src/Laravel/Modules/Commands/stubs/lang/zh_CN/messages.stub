@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * $STUDLY_NAME$ 模块lang文件
+ *      调用方式：__('$LOWER_NAME$::messages.$LOWER_NAME$')
+ */
 return [
-    'hello' => '您好',
+    '$LOWER_NAME$' => '$STUDLY_NAME$',
 ];

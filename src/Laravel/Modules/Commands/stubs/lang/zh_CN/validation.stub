@@ -1,5 +1,0 @@
-<?php
-
-return [
-    'valid'             => ':attribute 字段有效',
-];

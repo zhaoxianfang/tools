@@ -3,6 +3,7 @@
 namespace $NAMESPACE$;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Console\Scheduling\Schedule;
 use zxf\Laravel\Modules\Traits\PathNamespace;
 
 class $CLASS$ extends ServiceProvider
@@ -50,7 +51,12 @@ class $CLASS$ extends ServiceProvider
     {
         // $this->app->booted(function () {
         //     $schedule = $this->app->make(Schedule::class);
-        //     $schedule->command('inspire')->hourly();
+        //     // 每周一和周四早上5点0分执行 command:test 任务调度
+        //     $schedule->command('custom:command')->cron('0 5 * * 1,4');
+        //     // 每周在周一的下午 1 点运行一次...
+        //     $schedule->call(function () {
+        //         // ...
+        //     })->weekly()->mondays()->at('13:00');
         // });
     }
 

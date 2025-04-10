@@ -15,6 +15,8 @@ if (! function_exists('i_session')) {
      * @param  mixed|null  $value  键值
      * @param  int|null  $expiry  过期时间（秒）
      * @return mixed|null 返回值或者null
+     *
+     * @throws \Random\RandomException
      */
     function i_session(string|array|null $name = null, mixed $value = null, ?int $expiry = null): mixed
     {
@@ -615,7 +617,7 @@ if (! function_exists('num_to_cn')) {
         // 1腾 = 10¹²⁸
         $twoChat = [
             '', '万', '亿', '兆', '京', '垓', '秭', '穰', '沟', '涧', '正', '载', '极', '恒河沙', '阿僧祇', '那由他', '不可思议',
-            '无量','大数', '无量大数', '不可称', '不可量', '不可数', '不可思', '不可议','古戈尔',
+            '无量', '大数', '无量大数', '不可称', '不可量', '不可数', '不可思', '不可议', '古戈尔',
             '不可说数', '无边数', '无等数', '无等无等数', '无限数', '无限无边数', '腾',
         ];
         $moneyUnit = ['角', '分', '厘', '毫', '丝', '忽', '微', '纤', '沙'];
@@ -1083,11 +1085,14 @@ if (! function_exists('is_xml')) {
             // 如果发生解析错误，返回 false
             if (libxml_get_errors()) {
                 libxml_clear_errors(); // 清除错误
+
                 return false;
             }
+
             return true; // 如果没有错误，返回 true
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
         }
+
         return false;
     }
 }
@@ -1096,15 +1101,12 @@ if (! function_exists('get_raw_input')) {
     /**
      * 获取原始请求内容
      *
-     * @param bool $returnOriginal 是否返回原始数据；默认为 true；
-     *                             true:返回原始数据
-     *                             false:返回解析后的数据；
-     *
-     * @param bool $getDataType 是否获取数据类型；默认为 false；
-     *                          true:返回数据类型；
-     *                          false:只返回请求数据；
-     *
-     * @return array|string|null
+     * @param  bool  $returnOriginal  是否返回原始数据；默认为 true；
+     *                                true:返回原始数据
+     *                                false:返回解析后的数据；
+     * @param  bool  $getDataType  是否获取数据类型；默认为 false；
+     *                             true:返回数据类型；
+     *                             false:只返回请求数据；
      */
     function get_raw_input(bool $returnOriginal = true, bool $getDataType = false): array|string|null
     {
@@ -1123,24 +1125,25 @@ if (! function_exists('parse_files')) {
                 // 处理多个文件上传
                 foreach ($file['name'] as $index => $filename) {
                     $parsedFiles[$key][] = [
-                        'name'     => $filename,
-                        'type'     => $file['type'][$index] ?? null,
+                        'name' => $filename,
+                        'type' => $file['type'][$index] ?? null,
                         'tmp_name' => $file['tmp_name'][$index] ?? null,
-                        'error'    => $file['error'][$index] ?? null,
-                        'size'     => $file['size'][$index] ?? null,
+                        'error' => $file['error'][$index] ?? null,
+                        'size' => $file['size'][$index] ?? null,
                     ];
                 }
             } else {
                 // 处理单个文件上传
                 $parsedFiles[$key] = [
-                    'name'     => $file['name'],
-                    'type'     => $file['type'],
+                    'name' => $file['name'],
+                    'type' => $file['type'],
                     'tmp_name' => $file['tmp_name'],
-                    'error'    => $file['error'],
-                    'size'     => $file['size'],
+                    'error' => $file['error'],
+                    'size' => $file['size'],
                 ];
             }
         }
+
         return $parsedFiles;
     }
 }
@@ -2159,10 +2162,6 @@ if (! function_exists('is_string_value_array')) {
      *         ['name'=>['foo']]:false
      *         [['name','foo']]:false
      *         ['name'=>new stdClass()]:false
-     *
-     * @param array $array
-     *
-     * @return bool
      */
     function is_string_value_array(array $array): bool
     {
@@ -2176,12 +2175,11 @@ if (! function_exists('power_tower')) {
      * 形如 ((2²)²)² 表示为 2^2^2^2 也记为 ⁴2 表示 或者2↑↑4 (共4层)
      * 的表达式被称为 指数塔（Exponential tower） 或 幂塔
      *
-     * @param string $a 底数
-     * @param int $b 幂塔层数
-     *
-     * @return string
+     * @param  string  $a  底数
+     * @param  int  $b  幂塔层数
      */
-    function power_tower(string $a, int $b): string {
+    function power_tower(string $a, int $b): string
+    {
         return \zxf\Tools\BigNumberCalculator::tetration($a, $b);
     }
 }

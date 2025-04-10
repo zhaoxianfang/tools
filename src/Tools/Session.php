@@ -2,167 +2,337 @@
 
 namespace zxf\Tools;
 
+use Random\RandomException;
+
 /**
  * Session 操作类
  * 专注于文件存储，支持过期时间控制与复杂数据处理。
  */
 class Session
 {
-    const SESSION_STARTED     = true;
-    const SESSION_NOT_STARTED = false;
+    private string $sessionName = 'TOOLS_SESSION_ID';  // 会话名称
 
-    private bool   $session_state = self::SESSION_NOT_STARTED;
+    private int $lifetime = 7200;                       // 默认会话有效时间，单位秒
+
+    private string $savePath = '';                       // 会话存储路径
+
+    private string $sessionId = '';                      // 会话ID
+
+    private array $expirationTimes = [];                 // 会话数据过期时间
+
+    private bool $isEncrypted = false;                   // 是否启用加密
+
+    private string $encryptionKey = '';                  // 加密密钥
+
+    private array $sessionMetadata = [];                 // 存储会话的元数据（例如用户代理）
+
     private static $instance;
+
+    /**
+     * 构造函数，初始化会话
+     *
+     * @param  array  $options  session配置选项，例如 ['save_path' => '/your/save/path']
+     * @param  bool  $isEncrypted  是否启用加密
+     * @param  string  $encryptionKey  加密密钥
+     *
+     * @throws RandomException
+     */
+    public function __construct(
+        array $options = [],
+        bool $isEncrypted = false,
+        string $encryptionKey = ''
+    ) {
+
+        // 检查是否已经输出过头部
+        if (headers_sent($file, $line)) {
+            throw new \RuntimeException("无法启动 Session，headers 已输出：{$file} 第 {$line} 行");
+        }
+
+        if (! empty($lifetime = $options['cookie_lifetime'])) {
+            $this->lifetime = $lifetime;
+        }
+        if (! empty($savePath = $options['save_path'])) {
+            unset($options['save_path']);
+            $this->savePath = $savePath;
+            // 检查路径是否有效并可写
+            if (! is_dir($savePath) || ! is_writable($savePath)) {
+                throw new \RuntimeException("存储路径不可用或没有写入权限: {$savePath}");
+            }
+        } else {
+            $this->savePath = ini_get('session.save_path') ?? sys_get_temp_dir();
+        }
+        session_save_path($this->savePath); // 设置保存路径
+
+        if (! empty($name = $options['name'])) {
+            unset($options['name']);
+            $this->sessionName = $name;
+        }
+        session_name($this->sessionName); // 设置会话名称
+
+        if ($isEncrypted) {
+            $this->isEncrypted = $isEncrypted;
+        }
+        if ($encryptionKey) {
+            $this->encryptionKey = $encryptionKey;
+        }
+        if (! empty($options)) {
+            foreach ($options as $key => $value) {
+                ini_set('session.'.$key, $value);
+            }
+        }
+
+        // 如果没有启动 session，则启动它
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start(); // 如果没有启动 session，就启动 session
+        }
+
+        // 获取或生成会话ID
+        if (! $this->sessionId()) {
+            if (isset($_COOKIE[$this->sessionName]) && preg_match('/^[a-zA-Z0-9\-]+$/', $_COOKIE[$this->sessionName])) {
+                session_id($_COOKIE[$this->sessionName]);
+            } else {
+                session_id(bin2hex(random_bytes(32)));  // 如果没有则生成一个新的 session ID
+            }
+        }
+
+        // 设置 session_id
+        $this->sessionId = $this->sessionId();
+
+        // 设置 cookie 以支持跨页面保持 session
+        setcookie($this->sessionName, $this->sessionId, time() + $this->lifetime, '/');
+
+        // 检查是否需要过期清理
+        $this->cleanExpiredSessions();
+    }
 
     /**
      * 获取 Session 实例（单例模式）
      *
-     * @param array $options 配置选项，例如 ['name' => 'CUSTOM_SESSION_NAME']
-     *
+     * @param  array  $options  session配置选项，例如 ['save_path' => '/your/save/path']
+     * @param  bool  $isEncrypted  是否启用加密
+     * @param  string  $encryptionKey  加密密钥
      * @return static
+     *
+     * @throws RandomException
      */
-    public static function instance(array $options = []): self
+    public static function instance(array $options = [], bool $isEncrypted = false, string $encryptionKey = ''): self
     {
-        if (!isset(self::$instance)) {
-            self::$instance = new static();
+        if (! isset(self::$instance)) {
+            self::$instance = new static($options,$isEncrypted,$encryptionKey);
         }
-        self::$instance->startSession($options);
 
         return self::$instance;
     }
 
     /**
-     * 启动会话
-     *
-     * @param array $options 配置选项，例如 ['name' => 'CUSTOM_SESSION_NAME']
-     *
-     * @return bool
+     * 检查和清理过期的 session 数据
      */
-    public function startSession(array $options = []): bool
+    private function cleanExpiredSessions(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            if (!empty($options)) {
-                foreach ($options as $key => $value) {
-                    ini_set('session.' . $key, $value);
-                }
+        foreach ($this->expirationTimes as $key => $expirationTime) {
+            // 如果 session 数据已过期
+            if (time() > $expirationTime) {
+                unset($_SESSION[$key]); // 清理过期数据
+                unset($this->expirationTimes[$key]); // 清理过期时间记录
             }
-            session_start();
         }
-
-        $this->session_state = session_status() === PHP_SESSION_ACTIVE;
-
-        return $this->session_state;
+        $this->save();
     }
 
     /**
-     * 设置 Session 值
+     * 设置会话 ID
      *
-     * @param string   $name   键名
-     * @param mixed    $value  键值
-     * @param int|null $expiry 过期时间（秒），默认不设置过期时间
+     * @param  string  $id  会话 ID
      */
-    public function set(string $name, mixed $value, ?int $expiry = null): void
+    public function setSessionId(string $id): self
     {
-        $_SESSION[$name] = [
-            'value'  => $value,
-            'expiry' => $expiry ? time() + $expiry : null,
-        ];
+        $this->sessionId = $id;
+        session_id($id); // 设置 session ID
+
+        return $this;
     }
 
     /**
-     * 获取 Session 值
+     * 设置 session 数据，支持不同的 key 设置不同的过期时间
      *
-     * @param string $name 键名
-     *
-     * @return mixed|null 返回值或 null 如果不存在或已过期
+     * @param  string  $key  键名
+     * @param  mixed  $value  值
+     * @param  int  $expiration  过期时间（秒）
      */
-    public function get(string $name)
+    public function set(string $key, mixed $value, int $expiration = 0): self
     {
-        if (isset($_SESSION[$name])) {
-            $data = $_SESSION[$name];
-            // 检查是否存在且未过期
-            if (!$this->exists($name)) {
-                return null;
-            }
-            $setExpiry = array_key_exists('expiry', $data);
-            $setValue  = array_key_exists('value', $data);
-
-            return $setValue && $setExpiry ? $data['value'] : $data;
+        if ($this->isEncrypted) {
+            $value = $this->encrypt($value); // 加密数据
+        } else {
+            $value = $this->compress($value); // 压缩数据
         }
-        return null;
+
+        $_SESSION[$key] = $value; // 存储到 session
+        if ($expiration > 0) {
+            $this->expirationTimes[$key] = time() + $expiration; // 设置过期时间
+        }
+
+        $this->save(); // 保存 session 数据
+
+        return $this;
+    }
+
+    /**
+     * 获取 session 数据
+     *
+     * @param  string  $key  键名
+     * @param  mixed  $default  默认值（如果不存在）
+     * @return mixed 返回存储的值
+     */
+    public function get(string $key, mixed $default = null): mixed
+    {
+        // 检查是否需要过期清理
+        $this->cleanExpiredSessions();
+        if (! $this->has($key)) {
+            return $default;
+        }
+        $value = $_SESSION[$key] ?? $default;
+
+        return $value ? ($this->isEncrypted ? $this->decrypt($value) : $this->decompress($value)) : $default;
     }
 
     /**
      * 获取所有未过期的 Session 数据
-     *
-     * @return array
      */
     public function all(): array
     {
-        $result = [];
-        foreach ($_SESSION as $name => $data) {
-            $item = $this->get($name);
-            if (!is_null($item)) {
-                $result[$name] = $item;
-            }
+        // 检查是否需要过期清理
+        $this->cleanExpiredSessions();
+        $data = [];
+        foreach ($_SESSION as $key => $value) {
+            $data[$key] = $this->isEncrypted ? $this->decrypt($value) : $this->decompress($value);
         }
-        return $result;
+
+        return $data;
     }
 
     /**
-     * 删除 Session 键
+     * 删除指定的 session 数据
      *
-     * @param string $name 键名
+     * @param  string  $key  键名
      */
-    public function delete(string $name): void
+    public function delete(string $key): self
     {
-        unset($_SESSION[$name]);
+        unset($_SESSION[$key]);
+        unset($this->expirationTimes[$key]);
+        $this->save();
+
+        return $this;
     }
 
     /**
-     * 判断键是否存在且未过期
+     * 判断 session 是否存在或者已经过期
      *
-     * @param string $name 键名
-     *
-     * @return bool
+     * @param  string  $key  键名
+     * @return bool 返回是否存在且未过期
      */
-    public function exists(string $name): bool
+    public function has(string $key): bool
     {
-        if (!isset($_SESSION[$name])) {
-            return false;
-        }
-
-        $data = $_SESSION[$name];
-        // 检查是否过期 并删除过期数据
-        if (isset($data['expiry']) && $data['expiry'] < time()) {
-            $this->delete($name);
-            return false;
-        }
-        return true;
+        return isset($_SESSION[$key]) && (! isset($this->expirationTimes[$key]) || time() <= $this->expirationTimes[$key]);
     }
 
     /**
      * 清空所有 Session 数据
      */
-    public function clear(): void
+    public function clear(): self
     {
         $_SESSION = [];
+        $this->expirationTimes = [];
+        $this->save();
+
+        return $this;
     }
 
     /**
-     * 重新生成session id 并返回新的session id
+     * 保存 session 数据
+     */
+    private function save(): void
+    {
+        // 提交 session 数据
+        session_write_close();
+    }
+
+    /**
+     * 数据加密
+     *
+     * @param  mixed  $data  需要加密的数据
+     * @return string 加密后的数据
+     *
+     * @throws RandomException
+     */
+    private function encrypt(mixed $data): string
+    {
+        if (! $this->encryptionKey) {
+            throw new \RuntimeException('加密密钥为空，请设置加密密钥');
+        }
+
+        $iv = random_bytes(16); // 初始化向量
+        $encryptedData = openssl_encrypt(serialize($data), 'AES-256-CBC', $this->encryptionKey, 0, $iv);
+
+        return base64_encode($iv.$encryptedData); // 存储 IV 和加密数据
+    }
+
+    /**
+     * 数据解密
+     *
+     * @param  string  $data  加密数据
+     * @return mixed 解密后的数据
+     */
+    private function decrypt(string $data): mixed
+    {
+        if (! $this->encryptionKey) {
+            throw new \RuntimeException('加密密钥为空，请设置加密密钥');
+        }
+
+        $data = base64_decode($data);
+        $iv = substr($data, 0, 16);
+        $encryptedData = substr($data, 16);
+
+        $decryptedData = openssl_decrypt($encryptedData, 'AES-256-CBC', $this->encryptionKey, 0, $iv);
+
+        return unserialize($decryptedData);
+    }
+
+    /**
+     * 数据压缩
+     *
+     * @param  mixed  $data  需要压缩的数据
+     * @return string 压缩后的数据
+     */
+    private function compress(mixed $data): string
+    {
+        return gzcompress(serialize($data));
+    }
+
+    /**
+     * 数据解压
+     *
+     * @param  string  $data  压缩数据
+     * @return mixed 解压后的数据
+     */
+    private function decompress(string $data): mixed
+    {
+        return unserialize(gzuncompress($data));
+    }
+
+    /**
+     * 重新生成 session ID
      *
      * @params bool $deleteOldSession 是否删除旧的会话文件
-     *              默认为false，表示保留旧的会话文件
-     *              为true表示删除旧的会话文件
-     *
-     * @return false|string
+     *               默认为false，表示保留旧的会话文件
+     *               为true表示删除旧的会话文件
      */
-    public function regenerate(bool $deleteOldSession = false): bool|string
+    public function regenerateSessionId(bool $deleteOldSession = false): self
     {
-        // 重新生成会话ID，并保留当前会话中的数据
-        session_regenerate_id($deleteOldSession); // 参数为true表示删除旧的会话文件
-        return $this->sessionId();
+        session_regenerate_id($deleteOldSession); // 重新生成 session ID
+        $this->sessionId = $this->sessionId(); // 获取新的 session ID
+
+        return $this;
     }
 
     /**
@@ -177,28 +347,21 @@ class Session
 
     /**
      * 销毁会话
-     *
-     * @return bool
      */
-    public function destroy(): bool
+    public function destroy(): void
     {
-        if ($this->session_state === self::SESSION_STARTED) {
+        // 仅在 session 已初始化时才销毁
+        if ($this->sessionId()) {
+            $this->clear();
+            $_SESSION = [];
             session_unset(); // 清除所有会话数据
             session_destroy();
-            $_SESSION            = [];
-            $this->session_state = self::SESSION_NOT_STARTED;
-
-            return true;
+            setcookie($this->sessionName, '', time() - 3600, '/'); // 删除 cookie
         }
-
-        return false;
     }
 
     /**
      * 魔术方法设置值
-     *
-     * @param string $name
-     * @param mixed  $value
      */
     public function __set(string $name, mixed $value): void
     {
@@ -208,7 +371,6 @@ class Session
     /**
      * 魔术方法获取值
      *
-     * @param string $name
      *
      * @return mixed|null
      */
@@ -219,20 +381,14 @@ class Session
 
     /**
      * 魔术方法判断键是否存在
-     *
-     * @param string $name
-     *
-     * @return bool
      */
     public function __isset(string $name): bool
     {
-        return $this->exists($name);
+        return $this->has($name);
     }
 
     /**
      * 魔术方法删除键
-     *
-     * @param string $name
      */
     public function __unset(string $name): void
     {

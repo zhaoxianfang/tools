@@ -48,24 +48,24 @@ class Session
             throw new \RuntimeException("无法启动 Session，headers 已输出：{$file} 第 {$line} 行");
         }
 
-        if (! empty($lifetime = $options['cookie_lifetime'])) {
-            $this->lifetime = $lifetime;
+        if (! empty($options['cookie_lifetime'])) {
+            $this->lifetime = $options['cookie_lifetime'];
         }
-        if (! empty($savePath = $options['save_path'])) {
-            unset($options['save_path']);
-            $this->savePath = $savePath;
+        if (! empty($options['save_path'])) {
+            $this->savePath = $options['save_path'];
             // 检查路径是否有效并可写
-            if (! is_dir($savePath) || ! is_writable($savePath)) {
-                throw new \RuntimeException("存储路径不可用或没有写入权限: {$savePath}");
+            if (! is_dir($this->savePath) || ! is_writable($this->savePath)) {
+                throw new \RuntimeException("存储路径不可用或没有写入权限: {$this->savePath}");
             }
+            unset($options['save_path']);
         } else {
             $this->savePath = ini_get('session.save_path') ?? sys_get_temp_dir();
         }
         session_save_path($this->savePath); // 设置保存路径
 
-        if (! empty($name = $options['name'])) {
+        if (! empty($options['name'])) {
+            $this->sessionName = $options['name'];
             unset($options['name']);
-            $this->sessionName = $name;
         }
         session_name($this->sessionName); // 设置会话名称
 

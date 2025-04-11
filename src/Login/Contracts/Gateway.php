@@ -228,13 +228,13 @@ abstract class Gateway implements GatewayInterface
     public function saveState()
     {
         if ($this->checkState === true) {
-            // 都没有时生成一个「随机大小写字母_uuid()」 字符串
-            $this->config['state'] = ! empty($this->config['state']) ? $this->config['state'] : chr(rand(0, 1) ? rand(65, 90) : rand(97, 122)).'0'.uuid();
-            $this->callbackState = $this->callbackState ?? 'null';
+            $this->callbackState = $this->callbackState ?? '';
+
+            $stateCode = base64_encode(json_encode($this->callbackState));
+            $this->config['state'] = str_en_code($stateCode, 'en');
 
             // 存储到本地 session 文件保存
             i_session('tools_login_oauth_state', $this->config['state']);
-            i_session('tools_login_oauth_state_callback', $this->callbackState);
         }
     }
 
@@ -246,20 +246,22 @@ abstract class Gateway implements GatewayInterface
     public function checkState()
     {
         if ($this->checkState === true) {
-            $state = ! empty($_REQUEST['state']) ? $_REQUEST['state'] : '';
+            $state = ! empty($_REQUEST['state']) ? $_REQUEST['state'] : i_session('tools_login_oauth_state');
             if (empty($state)) {
                 throw new Exception('非法请求:未携带STATE参数！');
             }
-            // 验证 state
-            if ($state != i_session('tools_login_oauth_state')) {
-                throw new Exception('非法请求:STATE参数错误！');
-            }
-            // 验证通过
-            $this->callbackState = ! empty($data = i_session('tools_login_oauth_state_callback')) ? $data : 'null';
+            $state = urldecode($state);
+            $state = str_replace(' ', '+', $state);
+            // 进行解密 验证是否为本站发出的state
+            $decodeStr = str_en_code($state, 'de');
 
+            try {
+                $this->callbackState = json_decode(base64_decode($decodeStr), true);
+            } catch (\Exception $e) {
+                $this->callbackState = '';
+            }
             return $this->callbackState != 'null' ? $this->callbackState : '';
         }
-
         return '';
     }
 

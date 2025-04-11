@@ -11,50 +11,33 @@ use zxf\Login\Contracts\GatewayInterface;
 use zxf\Login\Helper\Str;
 
 /**
- * @method static Gateways\Qq Qq(?array $config = []) QQ
- * @method static Gateways\Sina Sina(?array $config = []) Sina
- * @method static Gateways\Wechat Wechat(?array $config = []) 微信开放平台登录
- * @method static Gateways\Alipay Alipay(?array $config=[]) 阿里云
- * @method static Gateways\Facebook Facebook(?array $config=[]) Facebook
- * @method static Gateways\Github Github(?array $config=[]) Github
- * @method static Gateways\Google Google(?array $config=[]) Google
- * @method static Gateways\Line Line(?array $config=[]) Line
- * @method static Gateways\Twitter Twitter(?array $config=[]) Twitter
- * @method static Gateways\Douyin Douyin(?array $config=[]) 抖音
+ * @method static Gateways\Qq Qq(string|array|null $config = []) QQ
+ * @method static Gateways\Sina Sina(string|array|null $config = []) Sina
+ * @method static Gateways\Wechat Wechat(string|array|null $config = []) 微信开放平台登录
+ * @method static Gateways\Alipay Alipay(string|array|null $config = []) 阿里云
+ * @method static Gateways\Facebook Facebook(string|array|null $config = []) Facebook
+ * @method static Gateways\Github Github(string|array|null $config = []) Github
+ * @method static Gateways\Google Google(string|array|null $config = []) Google
+ * @method static Gateways\Line Line(string|array|null $config = []) Line
+ * @method static Gateways\Twitter Twitter(string|array|null $config = []) Twitter
+ * @method static Gateways\Douyin Douyin(string|array|null $config = []) 抖音
  */
 abstract class OAuth
 {
     /**
      * Description:  init
      *
-     * @param            $gateway
-     * @param array|null $config
      *
      * @return mixed
      *
      * @throws Exception
      */
-    protected static function init($gateway, ?array $config = [])
+    protected static function init($gateway, string|array|null $config = [])
     {
-        if (empty($config)) {
-            $name = strtolower($gateway);
-            if (function_exists('config')) {
-                $config = config("tools_oauth.{$name}.default") ?? [];
-            }
-            empty($config) && throw new Exception("第三方登录 [$gateway] config配置不能为空");
-        }
-        $baseConfig = [
-            'app_id' => '',
-            'app_secret' => '',
-            'callback' => '',
-            'scope' => '',
-            'type' => '',
-        ];
         $gateway = Str::uFirst($gateway);
         $class = __NAMESPACE__.'\\Gateways\\'.$gateway;
         if (class_exists($class)) {
-            // $config 的值递归替换 $baseConfig的值
-            $app = new $class(array_replace_recursive($baseConfig, $config));
+            $app = new $class($config);
             if ($app instanceof GatewayInterface) {
                 return $app;
             }

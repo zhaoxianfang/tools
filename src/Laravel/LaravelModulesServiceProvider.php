@@ -30,8 +30,6 @@ class LaravelModulesServiceProvider extends ModulesServiceProvider
         if (! is_laravel()) {
             return;
         }
-        // 初始化 本地文件 session
-        i_session();
 
         // 注册中间件
         $this->registerMiddleware(ToolsMiddleware::class);

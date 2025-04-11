@@ -31,14 +31,14 @@ class Sina extends Gateway
         // 登录参数
         $this->switchAccessTokenURL();
         $params = [
-            'client_id'    => $this->config['app_id'],
+            'client_id' => $this->config['app_id'],
             'redirect_uri' => $this->config['callback'],
-            'scope'        => $this->config['scope'],
-            'state'        => $this->config['state'],
-            'display'      => $this->display,
+            'scope' => $this->config['scope'],
+            'state' => $this->config['state'],
+            'display' => $this->display,
         ];
 
-        return $this->AuthorizeURL . '?' . http_build_query($params);
+        return $this->AuthorizeURL.'?'.http_build_query($params);
     }
 
     /**
@@ -57,10 +57,11 @@ class Sina extends Gateway
         if (isset($this->token['openid'])) {
             return $this->token['openid']; // 也就是 uid
         } else {
-            $url    = $this->AccessGetUidURL . $this->token['access_token'];
+            $url = $this->AccessGetUidURL.$this->token['access_token'];
             $result = $this->post($url);
             if (isset($result['uid'])) {
                 $this->token['openid'] = $result['uid'];
+
                 return $this->token['openid'];
             }
 
@@ -72,6 +73,7 @@ class Sina extends Gateway
      * Description:  获取格式化后的用户信息
      *
      * @return array
+     *
      * @throws Exception
      */
     public function userInfo()
@@ -79,13 +81,13 @@ class Sina extends Gateway
         $result = $this->getUserInfo();
 
         $userInfo = [
-            'open_id'      => $this->openid(),
+            'open_id' => $this->openid(),
             'access_token' => $this->token['access_token'] ?? '',
-            'union_id'     => $this->openid(),
-            'channel'      => 'sina', //ConstCode::TYPE_SINA,
-            'nickname'     => $result['screen_name'],
+            'union_id' => $this->openid(),
+            'channel' => 'sina', // ConstCode::TYPE_SINA,
+            'nickname' => $result['screen_name'],
             'gender_value' => $this->getGender($result['gender']),
-            'avatar'       => $result['avatar_hd'],
+            'avatar' => $result['avatar_hd'],
         ];
 
         return array_merge($result, $userInfo);
@@ -101,11 +103,11 @@ class Sina extends Gateway
     public function getUserInfo()
     {
         if ($this->type == 'app') {// App登录
-            if (!isset($_REQUEST['access_token']) || !isset($_REQUEST['uid'])) {
+            if (! isset($_REQUEST['access_token']) || ! isset($_REQUEST['uid'])) {
                 throw new Exception('Sina APP登录 需要传输access_token和uid参数! ');
             }
             $this->token['access_token'] = $_REQUEST['access_token'];
-            $this->token['openid']       = $_REQUEST['uid'];
+            $this->token['openid'] = $_REQUEST['uid'];
         } else {
             /** 获取token */
             $this->getToken();
@@ -117,9 +119,6 @@ class Sina extends Gateway
     /**
      * Description:  发起请求
      *
-     * @param        $api
-     * @param array  $params
-     * @param string $method
      *
      * @return mixed
      */
@@ -130,7 +129,8 @@ class Sina extends Gateway
         if (isset($this->token['access_token'])) {
             $params['access_token'] = $this->token['access_token'];
         }
-        return $this->$method(self::API_BASE . $api, $params);
+
+        return $this->$method(self::API_BASE.$api, $params);
     }
 
     /**

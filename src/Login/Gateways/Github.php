@@ -26,7 +26,7 @@ class Github extends Gateway
     /**
      * @throws \Exception
      */
-    public function __construct($config)
+    public function __construct(string|array|null $config = [])
     {
         parent::__construct($config);
         $this->UserInfoURL = static::API_BASE.$this->UserInfoURL;

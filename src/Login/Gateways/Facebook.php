@@ -31,7 +31,7 @@ class Facebook extends Gateway
     /**
      * @throws \Exception
      */
-    public function __construct($config)
+    public function __construct(string|array|null $config = [])
     {
         parent::__construct($config);
         $this->AccessTokenURL = static::API_BASE.$this->AccessTokenURL;

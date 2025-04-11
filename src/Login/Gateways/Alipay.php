@@ -26,7 +26,6 @@ use zxf\Login\Helper\Str;
  *
  * TODO: 未验证
  */
-
 class Alipay extends Gateway
 {
     const RSA_PRIVATE = 1;
@@ -54,7 +53,7 @@ class Alipay extends Gateway
     /**
      * @throws Exception
      */
-    public function __construct($config)
+    public function __construct(string|array|null $config = [])
     {
         parent::__construct($config);
         $this->AccessTokenURL = static::API_BASE;
@@ -107,6 +106,7 @@ class Alipay extends Gateway
      * Description:  获取格式化后的用户信息
      *
      * @return array
+     *
      * @throws Exception
      */
     public function userInfo()
@@ -170,6 +170,7 @@ class Alipay extends Gateway
      * Description:  重写 获取的AccessToken请求参数
      *
      * @return array
+     *
      * @throws Exception
      */
     protected function accessTokenParams()

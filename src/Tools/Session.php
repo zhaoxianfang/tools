@@ -58,16 +58,14 @@ class Session
                 throw new \RuntimeException("存储路径不可用或没有写入权限: {$this->savePath}");
             }
             unset($options['save_path']);
-        } else {
-            $this->savePath = ini_get('session.save_path') ?? sys_get_temp_dir();
+            session_save_path($this->savePath); // 设置保存路径
         }
-        session_save_path($this->savePath); // 设置保存路径
 
         if (! empty($options['name'])) {
             $this->sessionName = $options['name'];
             unset($options['name']);
+            session_name($this->sessionName); // 设置会话名称
         }
-        session_name($this->sessionName); // 设置会话名称
 
         if ($isEncrypted) {
             $this->isEncrypted = $isEncrypted;
@@ -157,9 +155,11 @@ class Session
      *
      * @param  string  $key  键名
      * @param  mixed  $value  值
-     * @param  int  $expiration  过期时间（秒）
+     * @param  int|null  $expiration  过期时间（秒）
+     *
+     * @throws RandomException
      */
-    public function set(string $key, mixed $value, int $expiration = 0): self
+    public function set(string $key, mixed $value, ?int $expiration = 0): self
     {
         if ($this->isEncrypted) {
             $value = $this->encrypt($value); // 加密数据

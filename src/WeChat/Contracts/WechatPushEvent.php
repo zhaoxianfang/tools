@@ -59,14 +59,14 @@ class WechatPushEvent extends WeChatBase
     {
         parent::__construct($key);
         // 参数初始化
-        // $this->input = new DataArray($_REQUEST);
-        $this->input = new DataArray(get_raw_input(false));
+        $rawInput = get_raw_input(false);
+        $this->input = new DataArray($rawInput);
 
         $this->appid = $this->config->get('appid');
         // 推送消息处理
-        $method = !empty($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
-        if ($method == "POST") {
-            $this->postxml     = $this->getRawInput();
+        $method = ! empty($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
+        if ($method == 'POST') {
+            $this->postxml = $this->getRawInput();
             $this->encryptType = $this->input->get('encrypt_type');
             if ($this->isEncrypt()) {
                 if (empty($options['aes_key'])) {
@@ -74,16 +74,15 @@ class WechatPushEvent extends WeChatBase
                 }
                 $prpcrypt = new Prpcrypt($this->config->get('aes_key'));
                 // $result   = $this->xml2arr($this->postxml);
-                $result   = get_raw_input(false);
-                $array    = $prpcrypt->decrypt($result['Encrypt']);
+                $array = $prpcrypt->decrypt($rawInput['Encrypt']);
                 if (intval($array[0]) > 0) {
                     return $this->error($array[1], $array[0]);
                 }
-                list($this->postxml, $this->appid) = [$array[1], $array[2]];
+                [$this->postxml, $this->appid] = [$array[1], $array[2]];
             }
             // $this->receive = new DataArray($this->xml2arr($this->postxml));
             $this->receive = $this->input;
-        } elseif ($method == "GET" && $this->checkSignature()) {
+        } elseif ($method == 'GET' && $this->checkSignature()) {
             @ob_clean();
             exit($this->input->get('echostr'));
         } else {
@@ -104,7 +103,6 @@ class WechatPushEvent extends WeChatBase
     /**
      * 解析XML内容到数组
      *
-     * @param string $xml
      *
      * @return array
      */
@@ -116,7 +114,6 @@ class WechatPushEvent extends WeChatBase
     /**
      * 数组转XML内容
      *
-     * @param array $data
      *
      * @return string
      */
@@ -128,7 +125,7 @@ class WechatPushEvent extends WeChatBase
     /**
      * 消息是否需要加密
      *
-     * @return boolean
+     * @return bool
      */
     public function isEncrypt()
     {
@@ -138,11 +135,11 @@ class WechatPushEvent extends WeChatBase
     /**
      * 回复消息
      *
-     * @param array   $data      消息内容
-     * @param boolean $return    是否返回XML内容
-     * @param boolean $isEncrypt 是否加密内容
-     *
+     * @param  array  $data  消息内容
+     * @param  bool  $return  是否返回XML内容
+     * @param  bool  $isEncrypt  是否加密内容
      * @return string
+     *
      * @throws Exception
      */
     public function reply(array $data = [], bool $return = false, bool $isEncrypt = false)
@@ -152,18 +149,18 @@ class WechatPushEvent extends WeChatBase
             $prpcrypt = new Prpcrypt($this->config->get('aes_key'));
             // 如果是第三方平台，加密得使用 component_appid
             $component_appid = $this->config->get('component_appid');
-            $appid           = empty($component_appid) ? $this->appid : $component_appid;
-            $array           = $prpcrypt->encrypt($xml, $appid);
+            $appid = empty($component_appid) ? $this->appid : $component_appid;
+            $array = $prpcrypt->encrypt($xml, $appid);
             if ($array[0] > 0) {
                 return $this->error('Encrypt Error.');
             }
-            list($timestamp, $encrypt) = [time(), $array[1]];
-            $nonce  = rand(77, 999) * rand(605, 888) * rand(11, 99);
+            [$timestamp, $encrypt] = [time(), $array[1]];
+            $nonce = rand(77, 999) * rand(605, 888) * rand(11, 99);
             $tmpArr = [$this->config->get('token'), $timestamp, $nonce, $encrypt];
             sort($tmpArr, SORT_STRING);
             $signature = sha1(implode($tmpArr));
-            $format    = "<xml><Encrypt><![CDATA[%s]]></Encrypt><MsgSignature><![CDATA[%s]]></MsgSignature><TimeStamp>%s</TimeStamp><Nonce><![CDATA[%s]]></Nonce></xml>";
-            $xml       = sprintf($format, $encrypt, $signature, $timestamp, $nonce);
+            $format = '<xml><Encrypt><![CDATA[%s]]></Encrypt><MsgSignature><![CDATA[%s]]></MsgSignature><TimeStamp>%s</TimeStamp><Nonce><![CDATA[%s]]></Nonce></xml>';
+            $xml = sprintf($format, $encrypt, $signature, $timestamp, $nonce);
         }
         if ($return) {
             return $xml;
@@ -179,20 +176,20 @@ class WechatPushEvent extends WeChatBase
      */
     private function checkSignature()
     {
-        $nonce         = $this->input->get('nonce');
-        $timestamp     = $this->input->get('timestamp');
+        $nonce = $this->input->get('nonce');
+        $timestamp = $this->input->get('timestamp');
         $msg_signature = $this->input->get('msg_signature');
-        $signature     = empty($msg_signature) ? $this->input->get('signature') : $msg_signature;
-        $tmpArr        = [$this->config->get('token'), $timestamp, $nonce, ''];
+        $signature = empty($msg_signature) ? $this->input->get('signature') : $msg_signature;
+        $tmpArr = [$this->config->get('token'), $timestamp, $nonce, ''];
         sort($tmpArr, SORT_STRING);
+
         return sha1(implode($tmpArr)) === $signature;
     }
 
     /**
      * 获取公众号推送对象
      *
-     * @param null|string $field 指定获取字段
-     *
+     * @param  null|string  $field  指定获取字段
      * @return array
      */
     public function getReceive($field = null)
@@ -233,7 +230,7 @@ class WechatPushEvent extends WeChatBase
     /**
      * 获取当前推送时间
      *
-     * @return integer
+     * @return int
      */
     public function getMsgTime()
     {

@@ -58,7 +58,7 @@ class Request
 
     public static function instance($refresh = false)
     {
-        if (!isset(self::$instance) || empty(self::$instance) || $refresh) {
+        if (! isset(self::$instance) || is_null(self::$instance) || empty(self::$instance) || $refresh) {
             self::$instance = new static;
         }
 
@@ -76,11 +76,11 @@ class Request
         // 获取请求方法（GET、POST等）
         $this->method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
         // 获取请求的内容类型
-        $this->contentType = strtolower($_SERVER['CONTENT_TYPE'] ?? ($_SERVER['HTTP_CONTENT_TYPE'] ?? 'text/html'));
+        $this->contentType = strtolower(! empty($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : (! empty($_SERVER['HTTP_CONTENT_TYPE']) ? $_SERVER['HTTP_CONTENT_TYPE'] : 'text/html'));
         // 获取GET参数
-        $this->get = $_GET ?? [];
+        $this->get = ! empty($_GET) ? $_GET : [];
         // 获取POST参数
-        $this->post = !empty($_POST) ? $_POST : (!empty($GLOBALS['HTTP_RAW_POST_DATA']) ? $GLOBALS['HTTP_RAW_POST_DATA'] : []);
+        $this->post = ! empty($_POST) ? $_POST : (! empty($GLOBALS['HTTP_RAW_POST_DATA']) ? $GLOBALS['HTTP_RAW_POST_DATA'] : []);
         // 获取查询字符串参数（URL中"?"后的部分）
         $this->query = $_SERVER['QUERY_STRING'] ?? '';
         // 获取用户代理（User-Agent）信息
@@ -109,11 +109,11 @@ class Request
         $this->port = $this->port();
 
         // 获取请求头信息
-        if (!function_exists('apache_request_headers')) {
+        if (! function_exists('apache_request_headers')) {
             $headersData = [];
-            $headers     = headers_list();
+            $headers = headers_list();
             foreach ($headers as $header) {
-                $header                            = explode(':', $header);
+                $header = explode(':', $header);
                 $headersData[array_shift($header)] = trim(implode(':', $header));
             }
             $this->headers = array_change_key_case($headersData, CASE_UPPER);
@@ -125,13 +125,26 @@ class Request
     }
 
     /**
+     * 检查一个字符串是否为 key1=value1&key2=value2 格式的字符串
+     */
+    private function isUrlEncodedString(mixed $str): bool
+    {
+        if (empty($str) || ! is_string($str)) {
+            return false;
+        }
+        parse_str($str, $result);
+
+        // 如果解析后数组不为空且原始字符串包含=号，则可能是正确格式
+        return ! empty($result) && str_contains($str, '=');
+    }
+
+    /**
      * 获取请求内容
      *
-     * @param bool $returnOriginal 是否返回原始数据；默认为 true；
-     *                             true:返回原始数据
-     *                             false:返回解析后的数据；
-     *
-     * @param bool $getDataType    是否获取数据类型；默认为 false；
+     * @param  bool  $returnOriginal  是否返回原始数据；默认为 true；
+     *                                true:返回原始数据
+     *                                false:返回解析后的数据；
+     * @param  bool  $getDataType  是否获取数据类型；默认为 false；
      *                             true:返回数据类型；
      *                             false:只返回请求数据；
      */
@@ -143,33 +156,42 @@ class Request
         if ($returnOriginal) {
             return $rawInput;
         }
+        if (! empty($this->input)) {
+            return $this->input;
+        }
 
         // 如果未获取到原始数据，返回 null
         if (empty($rawInput) && empty($this->get) && empty($this->post) && empty($this->files)) {
-            return null;
+            return [];
         }
 
         $data = [];
         // 默认返回的解析结果
         $type = 'raw';
 
+        if ($this->isUrlEncodedString($rawInput)) {
+            // 判断 $rawInput 是否为
+            parse_str($rawInput, $form);
+            $data = is_array($form) ? $form : [];
+        }
+
         // 判断数据类型并进行解析
         if (is_json($rawInput)) {
             $type = 'json';
-            $data = json_decode($rawInput, true);
+            $data = is_array($rawInput) ? $rawInput : json_decode($rawInput, true);
         } elseif (is_xml($rawInput)) {
             $type = 'xml';
             $data = \zxf\Xml\XML2Array::parse($rawInput);
         }
 
         // 处理 get 数据
-        if (!empty($this->get) && !empty($data)) {
+        if (! empty($this->get) && ! empty($data)) {
             $data = array_merge($data, $this->get);
         }
 
         // 处理 POST 数据， multipart/form-data 数据不包含在 $rawInput 中，需要单独处理
-        if ((!empty($this->post) || !empty($this->files)) && !empty($data)) {
-            $data = !empty($this->post) ? array_merge($data, $this->post) : array_merge($data, $this->files);
+        if ((! empty($this->post) || ! empty($this->files)) && ! empty($data)) {
+            $data = ! empty($this->post) ? array_merge($data, $this->post) : array_merge($data, $this->files);
         }
 
         // 如果需要返回数据类型
@@ -179,70 +201,80 @@ class Request
                 'type' => $type,
             ];
         }
-        return $data;
+
+        return (array) $data;
     }
 
     /**
      * 获取PHP原始请求内容
-     *
-     * @return mixed
+     *      提示：如果是混合形式的请求(例如是 $_GET 请求 但是又包含了xml 等请求体)的只返回请求体数据，不返回$_GET 数据
      */
     private function getRequestRawContent(): mixed
     {
-        if (!empty(self::$rawInput)) {
+        if (! empty(self::$rawInput)) {
             if (\is_resource(self::$rawInput)) {
                 rewind(self::$rawInput);
                 $rawInput = stream_get_contents(self::$rawInput);
             } else {
                 $rawInput = self::$rawInput;
             }
+
             return $rawInput;
         }
 
         // 检测常见PHP框架并获取rawInput
         $rawInput = match (true) {
             // Laravel/Lumen
-            class_exists(\Illuminate\Http\Request::class)                  => app('request')->getContent(),
+            class_exists(\Illuminate\Http\Request::class) => (
+                // Laravel 封装方式尝试（优先使用一次）
+                app()->bound('request')
+                    ? app('request')->getContent()
+                    : \Illuminate\Http\Request::capture()->getContent()
+            ),
             // Symfony
             class_exists(\Symfony\Component\HttpFoundation\Request::class) => \Symfony\Component\HttpFoundation\Request::createFromGlobals()->getContent(),
             // CodeIgniter 4
-            class_exists(\CodeIgniter\HTTP\IncomingRequest::class)         => \CodeIgniter\Config\Services::request()->getBody(),
+            class_exists(\CodeIgniter\HTTP\IncomingRequest::class) => \CodeIgniter\Config\Services::request()->getBody(),
             // Slim 3/4
-            class_exists(\Slim\Psr7\Request::class)                        => (string)\Slim\Factory\AppFactory::determineRequestMethod()->getBody(),
+            class_exists(\Slim\Psr7\Request::class) => (string) \Slim\Factory\AppFactory::determineRequestMethod()->getBody(),
             // Yii2
-            class_exists(\yii\web\Request::class)                          => \Yii::$app->request->getRawBody(),
+            class_exists(\yii\web\Request::class) => \Yii::$app->request->getRawBody(),
             // ThinkPHP 6+
-            class_exists(\think\Request::class)                            => \think\facade\Request::instance()->getContent(),
+            class_exists(\think\Request::class) => \think\facade\Request::instance()->getContent(),
             // CakePHP
-            class_exists(\Cake\Http\ServerRequest::class)                  => (string)\Cake\Http\ServerRequestFactory::fromGlobals()->getBody(),
+            class_exists(\Cake\Http\ServerRequest::class) => (string) \Cake\Http\ServerRequestFactory::fromGlobals()->getBody(),
             // Phalcon
-            class_exists(\Phalcon\Http\Request::class)                     => \Phalcon\Di\FactoryDefault::getDefault()->get('request')->getRawBody(),
+            class_exists(\Phalcon\Http\Request::class) => \Phalcon\Di\FactoryDefault::getDefault()->get('request')->getRawBody(),
             // Zend Framework / Laminas
-            class_exists(\Laminas\Diactoros\ServerRequestFactory::class)   => (string)\Laminas\Diactoros\ServerRequestFactory::fromGlobals()->getBody(),
+            class_exists(\Laminas\Diactoros\ServerRequestFactory::class) => (string) \Laminas\Diactoros\ServerRequestFactory::fromGlobals()->getBody(),
             // FuelPHP
-            class_exists(\Fuel\Core\Request::class)                        => \Fuel\Core\Request::active()->getBody(),
+            class_exists(\Fuel\Core\Request::class) => \Fuel\Core\Request::active()->getBody(),
             // FlightPHP
-            class_exists(\flight\Engine::class)                            => \flight\core\Dispatcher::getInstance()->request()->getBody(),
+            class_exists(\flight\Engine::class) => \flight\core\Dispatcher::getInstance()->request()->getBody(),
             // 默认处理
-            default                                                        => $GLOBALS['HTTP_RAW_POST_DATA'] ?? null
+            default => $GLOBALS['HTTP_RAW_POST_DATA'] ?? null
         };
         if (empty($rawInput)) {
             // 尝试获取原始数据 优先使用
-            $rawInput = file_get_contents("php://input");
+            $rawInput = file_get_contents('php://input');
             if (empty($rawInput)) {
-                if (!empty($this->post)) {
+                if (! empty($this->post)) {
                     $rawInput = http_build_query($this->post);
                 } else {
                     // 最后尝试通过输入流
-                    $input    = fopen('php://input', 'r');
+                    $input = fopen('php://input', 'r');
                     $rawInput = stream_get_contents($input);
                     fclose($input);
                     $rawInput = ($rawInput !== false) ? $rawInput : null;
                 }
             }
         }
+        if (empty($rawInput) && ! empty($this->get)) {
+            $rawInput = http_build_query($this->get);
+        }
 
         self::$rawInput = $rawInput;
+
         return $rawInput;
     }
 
@@ -271,7 +303,7 @@ class Request
      */
     public function overridden()
     {
-        return !empty($this->overridden);
+        return ! empty($this->overridden);
     }
 
     private function parseData(array $data, ?string $key = null, mixed $default = null)
@@ -297,9 +329,8 @@ class Request
      *   $input = Request::get();
      * </code>
      *
-     * @param string|null $key     数组的键值
-     * @param mixed       $default 默认值
-     *
+     * @param  string|null  $key  数组的键值
+     * @param  mixed  $default  默认值
      * @return mixed 如果键未定义，则为NULL。
      */
     public function get(?string $key = null, mixed $default = null): mixed
@@ -310,9 +341,8 @@ class Request
     /**
      * 获取$_POST数组中项目的值。
      *
-     * @param string|null $key     数组的键值
-     * @param mixed       $default 默认值
-     *
+     * @param  string|null  $key  数组的键值
+     * @param  mixed  $default  默认值
      * @return mixed 如果键未定义，则为NULL。
      */
     public function post(?string $key = null, mixed $default = null): mixed
@@ -323,9 +353,8 @@ class Request
     /**
      * 追加post数据
      *
-     * @param string|array $keys  需要批量添加时传入二维数组，单个添加时候传入字符串
-     * @param mixed        $value 被追加的值，$keys为字符串时候生效
-     *
+     * @param  string|array  $keys  需要批量添加时传入二维数组，单个添加时候传入字符串
+     * @param  mixed  $value  被追加的值，$keys为字符串时候生效
      * @return $this
      */
     public function addPost(string|array $keys = '', mixed $value = null): static
@@ -346,9 +375,8 @@ class Request
     /**
      * 追加get数据
      *
-     * @param array|string $keys  需要批量添加时传入二维数组，单个添加时候传入字符串
-     * @param mixed|null   $value 被追加的值，$keys为字符串时候生效
-     *
+     * @param  array|string  $keys  需要批量添加时传入二维数组，单个添加时候传入字符串
+     * @param  mixed|null  $value  被追加的值，$keys为字符串时候生效
      * @return $this
      */
     public function addGet(array|string $keys = '', mixed $value = null): static
@@ -370,9 +398,8 @@ class Request
      * 获取通过PUT提交的项的值
      * method (either spoofed or via REST).
      *
-     * @param string|null $key     数组的键值
-     * @param mixed       $default 默认值
-     *
+     * @param  string|null  $key  数组的键值
+     * @param  mixed  $default  默认值
      * @return string
      */
     public function put(?string $key = null, mixed $default = null)
@@ -384,9 +411,8 @@ class Request
      * 获取通过DELETE提交的项目的值
      * method (either spoofed or via REST).
      *
-     * @param string|null $key     数组的键值
-     * @param mixed       $default 默认值
-     *
+     * @param  string|null  $key  数组的键值
+     * @param  mixed  $default  默认值
      * @return string
      */
     public function delete(?string $key = null, mixed $default = null)
@@ -397,9 +423,8 @@ class Request
     /**
      * 获取$_FILES数组中项目的值。
      *
-     * @param string|null $key     数组的键值
-     * @param string      $default 默认值
-     *
+     * @param  string|null  $key  数组的键值
+     * @param  string  $default  默认值
      * @return string
      */
     public function files(?string $key = null, mixed $default = null)
@@ -410,9 +435,8 @@ class Request
     /**
      * 获取$_SESSION数组中项目的值。
      *
-     * @param string|null $key     数组的键值
-     * @param string      $default 默认值
-     *
+     * @param  string|null  $key  数组的键值
+     * @param  string  $default  默认值
      * @return string
      */
     public function session(?string $key = null, mixed $default = null)
@@ -423,9 +447,8 @@ class Request
     /**
      * 获取$_COOKIE数组中项目的值。
      *
-     * @param string|null $key     数组的键值
-     * @param string      $default 默认值
-     *
+     * @param  string|null  $key  数组的键值
+     * @param  string  $default  默认值
      * @return string
      */
     public function cookie(?string $key = null, mixed $default = null)
@@ -436,9 +459,8 @@ class Request
     /**
      * 获取$_ENV数组中项目的值。
      *
-     * @param string|null $key     数组的键值
-     * @param string      $default 默认值
-     *
+     * @param  string|null  $key  数组的键值
+     * @param  string  $default  默认值
      * @return string
      */
     public function env(?string $key = null, mixed $default = null)
@@ -449,9 +471,8 @@ class Request
     /**
      * 获取$_SERVER数组中项的值。
      *
-     * @param string|null $key     数组的键值
-     * @param string      $default 默认值
-     *
+     * @param  string|null  $key  数组的键值
+     * @param  string  $default  默认值
      * @return string
      */
     public function server(?string $key = null, mixed $default = null)
@@ -473,27 +494,25 @@ class Request
     /**
      * 从通过Get、POST、PUT或DELETE提交的输入数据中获取项目的值。
      *
-     * @param string|null $key     数组的键值
-     * @param mixed       $default 默认值
-     *
+     * @param  string|null  $key  数组的键值
+     * @param  mixed  $default  默认值
      * @return string
      */
     public function input(?string $key = null, mixed $default = null)
     {
-        return $this->parseData((array)$this->input, $key, $default);
+        return $this->parseData((array) $this->input, $key, $default);
     }
 
     /**
      * 从通过Get、POST、PUT、DELETE或FILES提交的输入数据中获取项的值。
      *
-     * @param string|null $key     数组的键值
-     * @param string      $default 默认值
-     *
+     * @param  string|null  $key  数组的键值
+     * @param  string  $default  默认值
      * @return string
      */
     public function all(?string $key = null, mixed $default = null)
     {
-        return $this->parseData((array)$this->input + (array)$this->post + (array)$this->get + (array)$this->files, $key, $default);
+        return $this->parseData((array) $this->input + (array) $this->post + (array) $this->get + (array) $this->files, $key, $default);
     }
 
     /**
@@ -507,14 +526,13 @@ class Request
      *   $input = Request::only(array('username', 'email'));
      * </code>
      *
-     * @param array|string $keys The keys to select from the input.
-     *
+     * @param  array|string  $keys  The keys to select from the input.
      * @return array
      */
     public function only(array|string $keys)
     {
         return array_intersect_key(
-            $this->input(), array_flip((array)$keys)
+            $this->input(), array_flip((array) $keys)
         );
     }
 
@@ -529,14 +547,13 @@ class Request
      *   $input = Request::except(array('username', 'email'));
      * </code>
      *
-     * @param array|string $keys 要从输入中忽略的键。
-     *
+     * @param  array|string  $keys  要从输入中忽略的键。
      * @return array
      */
     public function except(array|string $keys)
     {
         return array_diff_key(
-            $this->input(), array_flip((array)$keys)
+            $this->input(), array_flip((array) $keys)
         );
     }
 
@@ -553,13 +570,12 @@ class Request
      *   if (Request::has(array('id', 'name'))) { // do stuff }
      * </code>
      *
-     * @param array|string $keys 输入数据键或键数组。
-     *
+     * @param  array|string  $keys  输入数据键或键数组。
      * @return bool
      */
     public function has(array|string $keys)
     {
-        foreach ((array)$keys as $key) {
+        foreach ((array) $keys as $key) {
             if (trim($this->input($key)) == '') {
                 return false;
             }
@@ -585,8 +601,7 @@ class Request
      *
      * 如果使用TRUE调用该方法，则将返回带有 :// 前缀的scheme
      *
-     * @param bool $decorated 是否添加 :// 前缀.
-     *
+     * @param  bool  $decorated  是否添加 :// 前缀.
      * @return string
      */
     public function scheme(bool $decorated = false)
@@ -607,7 +622,7 @@ class Request
             return true;
         }
 
-        if (!$this->entrusted()) {
+        if (! $this->entrusted()) {
             return false;
         }
 
@@ -640,13 +655,12 @@ class Request
      * 获取当前请求的时间
      *
      *
-     * @param string $format 返回时间格式 默认 'Y-m-d H:i:s'
-     *
+     * @param  string  $format  返回时间格式 默认 'Y-m-d H:i:s'
      * @return int|float
      */
     public function time(string $format = '')
     {
-        $format = (!empty($format) && is_string($format)) ? $format : 'Y-m-d H:i:s';
+        $format = (! empty($format) && is_string($format)) ? $format : 'Y-m-d H:i:s';
 
         return date($format, $this->server('REQUEST_TIME'));
     }
@@ -663,11 +677,11 @@ class Request
      * 当前是否Pjax请求
      *
      *
-     * @param bool $pjax true 获取原始pjax请求
+     * @param  bool  $pjax  true 获取原始pjax请求
      */
     public function isPjax(bool $pjax = false): bool
     {
-        return !empty($val = $this->server('HTTP_X_PJAX')) ? ($pjax ? $val : true) : false;
+        return ! empty($val = $this->server('HTTP_X_PJAX')) ? ($pjax ? $val : true) : false;
     }
 
     public function isPost(): bool
@@ -683,7 +697,7 @@ class Request
     /**
      * 获取网页是从哪个页面链接过来的
      *
-     * @param null $default 默认值
+     * @param  null  $default  默认值
      */
     public function referrer($default = null): array|string|null
     {
@@ -695,21 +709,20 @@ class Request
      *
      * 解析器数组的元素是$_SERVER数组中的键，具有可选的“modifier”函数来调整返回值。
      *
-     * @param array $resolvers URI解析器的优先级排序列表。
-     *
+     * @param  array  $resolvers  URI解析器的优先级排序列表。
      * @return array
      */
     public function resolvers(array $resolvers = [])
     {
         if ($resolvers || empty($this->resolvers)) {
             $this->resolvers = $resolvers + [
-                    'PATH_INFO',
-                    'REQUEST_URI' => function ($uri) {
-                        return parse_url($uri, PHP_URL_PATH);
-                    },
-                    'PHP_SELF',
-                    'REDIRECT_URL',
-                ];
+                'PATH_INFO',
+                'REQUEST_URI' => function ($uri) {
+                    return parse_url($uri, PHP_URL_PATH);
+                },
+                'PHP_SELF',
+                'REDIRECT_URL',
+            ];
         }
 
         return $this->resolvers;
@@ -720,7 +733,7 @@ class Request
      */
     public function fullUrl(): string
     {
-        return $this->scheme(true) . $this->host() . $this->port(true) . $this->uri() . $this->query(true);
+        return $this->scheme(true).$this->host().$this->port(true).$this->uri().$this->query(true);
     }
 
     /**
@@ -730,7 +743,7 @@ class Request
      */
     public function url()
     {
-        return $this->scheme(true) . $this->host() . $this->port(true) . $this->uri() . $this->query(true);
+        return $this->scheme(true).$this->host().$this->port(true).$this->uri().$this->query(true);
     }
 
     /**
@@ -750,8 +763,7 @@ class Request
      *
      * 默认情况下，问号被排除在外。要包含问号，请使用TRUE调用该方法。
      *
-     * @param bool $decorated 添加 ? 前缀.
-     *
+     * @param  bool  $decorated  添加 ? 前缀.
      * @return string
      */
     public function query(bool $decorated = false)
@@ -762,8 +774,7 @@ class Request
     /**
      * 获取请求的URI段。
      *
-     * @param array $default 默认值
-     *
+     * @param  array  $default  默认值
      * @return array
      */
     public function segments(array $default = [])
@@ -776,9 +787,8 @@ class Request
      *
      * 使用负索引以相反顺序检索段。
      *
-     * @param int         $index   A one-based segment index. 基于一的段索引。
-     * @param string|null $default 默认值
-     *
+     * @param  int  $index  A one-based segment index. 基于一的段索引。
+     * @param  string|null  $default  默认值
      * @return string
      */
     public function segment(int $index, ?string $default = null)
@@ -786,7 +796,7 @@ class Request
         $segments = $this->segments();
 
         if ($index < 0) {
-            $index    *= -1;
+            $index *= -1;
             $segments = array_reverse($segments);
         }
 
@@ -796,9 +806,8 @@ class Request
     /**
      * 从HTTP接受标头中获取有序的值数组。
      *
-     * @param string $terms HTTP接受标头。
-     * @param string $regex 用于解析标头的正则表达式。
-     *
+     * @param  string  $terms  HTTP接受标头。
+     * @param  string  $regex  用于解析标头的正则表达式。
      * @return array
      */
     protected function parse(string $terms, string $regex)
@@ -807,7 +816,7 @@ class Request
 
         foreach (array_reverse(explode(',', $terms)) as $part) {
             if (preg_match("/{$regex}/", $part, $m)) {
-                $quality            = $m['quality'] ?? 1;
+                $quality = $m['quality'] ?? 1;
                 $result[$m['term']] = $quality;
             }
         }
@@ -822,8 +831,7 @@ class Request
      *
      * 默认值 'en'.
      *
-     * @param string $default 默认值
-     *
+     * @param  string  $default  默认值
      * @return string
      */
     public function language($default = null)
@@ -862,8 +870,7 @@ class Request
      *
      * 默认 'utf-8'.
      *
-     * @param string|null $default 默认值
-     *
+     * @param  string|null  $default  默认值
      * @return string
      */
     public function charset(?string $default = null)
@@ -886,8 +893,7 @@ class Request
     /**
      * 获取用户代理. e.g. Mozilla/5.0 (Macintosh; ...)
      *
-     * @param string|null $default 默认值
-     *
+     * @param  string|null  $default  默认值
      * @return string
      */
     public function userAgent(?string $default = null)
@@ -902,13 +908,12 @@ class Request
      *
      * 此方法不是累积的。
      *
-     * @param mixed $proxies 受信任代理的IP地址或受信任代理阵列。
-     *
+     * @param  mixed  $proxies  受信任代理的IP地址或受信任代理阵列。
      * @return $this
      */
     public function setProxies($proxies)
     {
-        $this->proxies = (array)$proxies;
+        $this->proxies = (array) $proxies;
 
         return $this;
     }
@@ -929,8 +934,7 @@ class Request
      * 解析顺序是请求的“host”标头，然后是“server name”指令，然后是服务器IP地址。
      * 端口号（如果存在）将被剥离。
      *
-     * @param string|null $default 默认值
-     *
+     * @param  string|null  $default  默认值
      * @return string
      */
     public function host(?string $default = null)
@@ -960,7 +964,7 @@ class Request
      */
     public function domain(): string
     {
-        return $this->scheme() . '://' . $this->host();
+        return $this->scheme().'://'.$this->host();
     }
 
     /**
@@ -972,8 +976,7 @@ class Request
      *
      * 如果无法获得有效的IP地址。 返回 0.0.0.0
      *
-     * @param bool $trusted 信任客户端通过HTTP_client_IP设置的IP地址。
-     *
+     * @param  bool  $trusted  信任客户端通过HTTP_client_IP设置的IP地址。
      * @return string
      */
     public function ip($trusted = true)
@@ -1032,13 +1035,12 @@ class Request
      * 如果使用TRUE调用该方法，则端口号（如果为80或443）将被省略，否则将以冒号作为前缀。
      * 如果未定义SERVER_port，则默认为端口80。
      *
-     * @param bool $decorated 前缀为：
-     *
+     * @param  bool  $decorated  前缀为：
      * @return string
      */
     public function port(bool $decorated = false)
     {
-        $port       = $_SERVER['SERVER_PORT'] ?? ($_SERVER['X_FORWARDED_PORT'] ?? 80);
+        $port = $_SERVER['SERVER_PORT'] ?? ($_SERVER['X_FORWARDED_PORT'] ?? 80);
         $this->port = $port;
 
         return $decorated ? (in_array($port, [80, 443]) ? '' : ":{$port}") : $port;

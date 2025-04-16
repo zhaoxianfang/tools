@@ -19,32 +19,49 @@ use GdImage;
  * 功能：图片压缩类（可改变图片大小和压缩质量以及保留宽高压缩）
  *
  * 调用示例：
- *        # 实例化对象
- *        $compressor = new Compressor();
- *        OR
- *        $compressor = Compressor::instance();
+ *      # 实例化对象
  *
- *        # 使用原始尺寸 仅压缩
- *        $result = $compressor->set('001.jpg')->get();
- *        # 设置压缩率[0~100]; eg:压缩70%
- *        $result = $compressor->set('001.jpg')->compress(70)->get();
- *        # 改变尺寸并保存到指定位置
- *        $result = $compressor->set('001.jpg', './resizeOnly.jpg')->resize(500, 500)->get();
- *        # 压缩且改变尺寸并保存到指定位置
- *        $result = $compressor->set('001.jpg', './resizeAndCompress.png')->resize(0, 500)->compress(70)->get();
- *        #  压缩且按照比例压缩
- *        $result = $compressor->set('001.jpg', './resizeAndCompress.png')->proportion(0.5)->compress(70)->get();
- *        # 在压缩前获取图片信息
- *        $result = $compressor->set($realPath)->proportion($input['proportion'])->get(function($res){ ... });
- *        return $result;
- *  参数说明：
- *        set(原图路径,保存后的路径); // 第二个参数为空表示返回base64，否则表示设置图片保存路径
- *        resize(设置宽度,设置高度);//如果有一个参数为0，则保持宽高比例
- *        proportion(压缩比例);//0.1~1 根据比例压缩
- *        compress(压缩级别);//0~100，压缩级别，级别越高就图片越小也就越模糊
- *        get();//获取生成后的结果
- *  提示：
- *        proportion 方法 回去调用 resize 方法，因此他们两个方法只需要选择调用一个即可
+ *      $compressor = new \zxf\Tools\Compressor();
+ *      OR
+ *      $compressor = \zxf\Tools\Compressor::instance();
+ *
+ *      ## 使用原始尺寸 仅压缩
+ *      > 设置压缩率[0~100]; eg:压缩70%
+ *
+ *      // 默认压缩 70%
+ *      $result = $compressor->set('001.jpg')->get();
+ *      // 指定压缩值80%
+ *      $result = $compressor->set('001.jpg')->compress(80)->get();
+ *
+ *      ## 修改图片尺寸压缩
+ *      // 指定图片宽高
+ *      $result = $compressor->set('001.jpg')->resize(500, 400)->get();
+ *      // 或者按照图片等比例缩放：图片尺寸修改为原图的60%
+ *      $result = $compressor->set('001.jpg')->proportion(0.6)->get();
+ *
+ *      ## 保存到指定位置
+ *      $result = $compressor->set('001.jpg', '/your/save/path/to.jpg')->get();
+ *
+ *      ## 生成base64 字符串图片
+ *      $result = $compressor->set('001.jpg', null)->get();
+ *      // OR
+ *      $result = $compressor->set('001.jpg')->get();
+ *
+ *      ## 返回压缩结果前获取图片压缩信息
+ *      > 包含了原图大小、尺寸信息、压缩后的图片大小、压缩率等信息
+ *
+ *      $result = $compressor->set('001.jpg')->get(function($res){
+ *          // 打印图片信息
+ *      });
+ *
+ * 参数说明：
+ * - `set`(原图路径,保存后的路径); // 如果要直接输出到浏览器则只传第一个参数即可
+ * - `resize`(设置宽度,设置高度);//如果有一个参数为0，则保持宽高比例
+ * - `proportion`(压缩比例);//0.1~1 根据比例压缩
+ * - `compress`(压缩级别);//0~9，压缩级别，级别越高就图片越小也就越模糊
+ * - `get()`;//获取生成后的结果
+ *
+ * 提示： `proportion` 方法 会去调用 `resize` 方法，因此他们两个方法只需要选择调用一个即可
  */
 class Compressor
 {
@@ -274,20 +291,21 @@ class Compressor
                 imagealphablending($this->image, true);
                 imagesavealpha($this->image, true);
 
-                // 分配一个完全透明的颜色，并填充新图像的背景
-                $transparentColor = imagecolorallocatealpha($this->image, 0, 0, 0, 127);
-                imagefill($this->image, 0, 0, $transparentColor);
+                // 如果是透明图片
+                if ($srcImgIsTransparent) {
+                    // 分配一个完全透明的颜色，并填充新图像的背景
+                    $transparentColor = imagecolorallocatealpha($this->image, 0, 0, 0, 127);
+                    imagefill($this->image, 0, 0, $transparentColor);
 
-                // 确保透明色设置正确
-                $transparentIndex = imagecolortransparent($this->image);
-                if ($transparentIndex >= 0) {
-                    // 获取透明色的信息
-                    $transparentColor = imagecolorsforindex($this->image, $transparentIndex);
-                    // 设置透明色
-                    imagecolorset($this->image, $transparentIndex, $transparentColor['red'], $transparentColor['green'], $transparentColor['blue']);
-                    imagecolortransparent($this->image, $transparentIndex);
-                } else {
-                    if ($srcImgIsTransparent) {
+                    // 确保透明色设置正确
+                    $transparentIndex = imagecolortransparent($this->image);
+                    if ($transparentIndex >= 0) {
+                        // 获取透明色的信息
+                        $transparentColor = imagecolorsforindex($this->image, $transparentIndex);
+                        // 设置透明色
+                        imagecolorset($this->image, $transparentIndex, $transparentColor['red'], $transparentColor['green'], $transparentColor['blue']);
+                        imagecolortransparent($this->image, $transparentIndex);
+                    } else {
                         // 如果没有透明色，则尝试找到最接近透明的颜色并设置
                         $transparentColor = imagecolorallocatealpha($this->image, 0, 0, 0, 127);
                         imagecolortransparent($this->image, $transparentColor);

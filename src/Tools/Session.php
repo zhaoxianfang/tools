@@ -253,8 +253,11 @@ class Session
      */
     private function save(): void
     {
-        // 提交 session 数据
-        session_write_close();
+        // 提交 session 数据:
+        // 使用下面的两个方式都会导致关闭session文件锁，那么之后的数据就不能再次写入session文件了
+        // 所以，这个操作是不必要的，也是不应该的
+        // session_write_close();
+        // session_commit();
     }
 
     /**

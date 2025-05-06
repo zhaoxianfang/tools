@@ -181,7 +181,7 @@ class Request
             $data = is_array($rawInput) ? $rawInput : json_decode($rawInput, true);
         } elseif (is_xml($rawInput)) {
             $type = 'xml';
-            $data = \zxf\Xml\XML2Array::parse($rawInput);
+            $data = \zxf\Xml\XML2Array::run($rawInput);
         }
 
         // 处理 get 数据

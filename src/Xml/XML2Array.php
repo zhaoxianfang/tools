@@ -101,10 +101,10 @@ final class XML2Array
     /**
      * 静态调用 解析 XML 字符串为数组
      *
-     * @param  string|DomDocument|DOMElement  $xml  XML 字符串
+     * @param  string|DomDocument  $xml  XML 字符串
      * @param  array  $options  配置选项
      */
-    public static function toArray(string|DomDocument|DOMElement $xml, array $options = []): array
+    public static function toArray(string|DomDocument $xml, array $options = []): array
     {
         $parse = new self($options);
 
@@ -114,9 +114,9 @@ final class XML2Array
     /**
      * 解析XML字符串
      */
-    public function parse(string|DomDocument|DOMElement $xml): array
+    public function parse(string|DomDocument $xml): array
     {
-        if ($xml instanceof DOMDocument || $xml instanceof DOMElement) {
+        if ($xml instanceof DOMDocument) {
             $xml = $xml->saveXML();
         }
         $this->resetStats();

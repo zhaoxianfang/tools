@@ -132,6 +132,9 @@ class WpsHandle implements DriveInterface
     private static function getCellImagesMap(array $cellImagesArr): array
     {
         $map = [];
+        if (empty($cellImagesArr)) {
+            return $map;
+        }
         try {
             foreach ($cellImagesArr['cellImage'] as $key => $xmlItem) {
                 if (! empty($id = $xmlItem['pic']['nvPicPr']['cNvPr']['@name'])) {

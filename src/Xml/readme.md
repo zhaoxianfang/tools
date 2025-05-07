@@ -50,9 +50,21 @@ echo $xml; // <?xml version="1.0" encoding="UTF-8"?><xml><ToUserName><![CDATA[to
 ## XmlToArray
 
 ```
+1、示例化后调用
+  $parser = new XML2Array();
+  // 或者定义配置
+  // $parser = new XML2Array(['preserveRootNode' => false]);
+  // 示例：内存受限环境
+  // $parser = new EnterpriseXMLParser(['memoryLimit' => 1024 * 1024 * 100]); // 100MB限制
+  $result = $parser->parse('<root><item>value</item></root>'); // 解析XML字符串为数组
+  // 获取统计信息
+  $stats = $parser->getStats();
+  print_r($stats);
+
+2、静态调用
 /**
  * @param string $xml  XML字符串 或 DOMDocument对象 或 XML文件路径
  * @return array
  */
-$array = XML2Array::parse($xml);
+$array = XML2Array::toArray($xml);
 ```

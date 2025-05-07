@@ -3,6 +3,7 @@
 namespace zxf\Xml;
 
 use DOMDocument;
+use DOMElement;
 use DOMNode;
 use DOMProcessingInstruction;
 use InvalidArgumentException;
@@ -47,12 +48,14 @@ use XMLReader;
  *          $parser = new XML2Array();
  *          // 或者定义配置
  *          // $parser = new XML2Array(['preserveRootNode' => false]);
+ *          // 示例：内存受限环境
+ *          // $parser = new EnterpriseXMLParser(['memoryLimit' => 1024 * 1024 * 100]); // 100MB限制
  *          $result = $parser->parse('<root><item>value</item></root>'); // 解析XML字符串为数组
  *          // 获取统计信息
  *          $stats = $parser->getStats();
  *          print_r($stats);
  *     2、静态调用
- *         XML2Array::run('<root><item>value</item></root>');
+ *         XML2Array::toArray('<root><item>value</item></root>');
  */
 final class XML2Array
 {
@@ -98,20 +101,24 @@ final class XML2Array
     /**
      * 静态调用 解析 XML 字符串为数组
      *
-     * @param  string|DOMDocument  $xml  XML 字符串
+     * @param  string|DomDocument|DOMElement  $xml  XML 字符串
      * @param  array  $options  配置选项
      */
-    public static function run(string|DomDocument $xml, array $options = []): array
+    public static function toArray(string|DomDocument|DOMElement $xml, array $options = []): array
     {
         $parse = new self($options);
+
         return $parse->parse($xml);
     }
 
     /**
      * 解析XML字符串
      */
-    public function parse(string $xml): array
+    public function parse(string|DomDocument|DOMElement $xml): array
     {
+        if ($xml instanceof DOMDocument || $xml instanceof DOMElement) {
+            $xml = $xml->saveXML();
+        }
         $this->resetStats();
         $this->checkMemoryLimit();
         $this->validateXml($xml);
@@ -523,26 +530,4 @@ final class XML2Array
             'parseTime' => 0,
         ];
     }
-}
-
-// ==============================================
-// 使用示例
-// ==============================================
-
-// 示例1：不保留根节点
-$parser = new EnterpriseXMLParser(['preserveRootNode' => false]);
-$result = $parser->parse('<root><item>value</item></root>');
-// 结果: ['item' => 'value'] 而不是 ['root' => ['item' => 'value']]
-
-// 示例3：包含注释解析
-$parser = new EnterpriseXMLParser(['parseComments' => true]);
-$result = $parser->parse('<!-- comment --><root/>');
-// 结果包含注释节点
-
-// 示例4：内存受限环境
-$parser = new EnterpriseXMLParser(['memoryLimit' => 1024 * 1024 * 100]); // 100MB限制
-try {
-    $result = $parser->parse($largeXml);
-} catch (RuntimeException $e) {
-    // 处理内存不足情况
 }

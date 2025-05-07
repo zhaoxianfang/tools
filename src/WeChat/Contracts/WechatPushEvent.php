@@ -108,7 +108,7 @@ class WechatPushEvent extends WeChatBase
      */
     public function xml2arr(string $xml)
     {
-        return \zxf\Xml\XML2Array::run($xml);
+        return \zxf\Xml\XML2Array::toArray($xml);
     }
 
     /**

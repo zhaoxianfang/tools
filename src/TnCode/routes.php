@@ -1,7 +1,7 @@
 <?php
 
 use zxf\TnCode\AssetController;
-use Illuminate\Support\Str;
+use zxf\Tools\Str;
 use zxf\TnCode\Http\TnCodeController;
 
 app('router')->prefix('tn_code')->name('tn_code.')->group(function ($router) {

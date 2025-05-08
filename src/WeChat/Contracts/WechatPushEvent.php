@@ -119,7 +119,10 @@ class WechatPushEvent extends WeChatBase
      */
     public function arr2xml(array $data)
     {
-        return \zxf\Xml\Array2XML::createWechatXML($data);
+        return \zxf\Xml\Array2XML::toXML($data, [
+            'autoCData' => true,
+            'rootName' => 'xml',
+        ]);
     }
 
     /**

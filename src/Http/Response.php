@@ -22,13 +22,13 @@ class Response
 
     public function __construct($body = null, $statusCode = 200)
     {
-        $this->body       = $body;
+        $this->body = $body;
         $this->statusCode = $statusCode;
     }
 
     public static function instance($refresh = false)
     {
-        if (!isset(self::$instance) || is_null(self::$instance) || $refresh) {
+        if (! isset(self::$instance) || is_null(self::$instance) || $refresh) {
             self::$instance = new static;
         }
 
@@ -88,14 +88,13 @@ class Response
     //  获取状态码
     public function getStatusCode()
     {
-        return (int)$this->statusCode;
+        return (int) $this->statusCode;
     }
 
     /**
      * 重定向
      *
-     * @param bool $permanent 是否永久重定向
-     *
+     * @param  bool  $permanent  是否永久重定向
      * @return $this
      */
     public function redirect(string $url, bool $permanent = false)
@@ -113,7 +112,7 @@ class Response
     //  下载文件
     public function download(string $file = '', mixed $filename = null)
     {
-        if (!$filename) {
+        if (! $filename) {
             $filename = basename($file);
         }
         // 检查文件是否存在
@@ -121,12 +120,12 @@ class Response
             // 设置头信息，告诉浏览器该文件为下载文件
             header('Content-Description: File Transfer');
             header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename=' . $filename);
+            header('Content-Disposition: attachment; filename='.$filename);
             header('Content-Transfer-Encoding: binary');
             header('Expires: 0');
             header('Cache-Control: must-revalidate');
             header('Pragma: public');
-            header('Content-Length: ' . filesize($file));
+            header('Content-Length: '.filesize($file));
             ob_clean();
             flush();
             readfile($file);
@@ -168,7 +167,7 @@ class Response
     // $response->setCharset('UTF-8');
     public function setCharset(string $charset = 'UTF-8')
     {
-        $this->setHeader('Content-Type', 'text/html; charset=' . $charset);
+        $this->setHeader('Content-Type', 'text/html; charset='.$charset);
 
         return $this;
     }
@@ -184,9 +183,9 @@ class Response
     }
 
     // 将数据对象转换为 SimpleXMLElement 对象
-    private function arrayToXml($array, $rootElement = 'root', array $docType = [])
+    private function arrayToXml($array, $rootElement = 'root')
     {
-        return \zxf\Xml\Array2XML::createXML($array, $rootElement, $docType)->saveXML();
+        return \zxf\Xml\Array2XML::toXML($array, ['rootName' => $rootElement]);
     }
 
     //  发送空白响应（空内容响应）
@@ -204,7 +203,7 @@ class Response
         // 设置响应标头，告诉浏览器要下载的文件类型是CSV
         // 设置响应标头，告诉浏览器要下载的文件类型是CSV
         header('Content-Type: text/csv');
-        header('Content-Disposition: attachment; filename="' . $filename . '.csv"');
+        header('Content-Disposition: attachment; filename="'.$filename.'.csv"');
         // 创建一个文件句柄，选择一个输出流
         $output = fopen('php://output', 'w');
 
@@ -242,11 +241,11 @@ class Response
         // 检查文件是否存在
         if (file_exists($imagePath)) {
             // 获取文件信息
-            $finfo     = finfo_open(FILEINFO_MIME_TYPE);
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
             $mediaType = finfo_file($finfo, $imagePath);
             finfo_close($finfo);
             // 设置正确的头信息
-            header('Content-Type: ' . $mediaType);
+            header('Content-Type: '.$mediaType);
             ob_clean();
             flush();
             // 将图片内容发送到浏览器
@@ -277,10 +276,10 @@ class Response
     //  设置响应的身份验证信息
     public function setAuthentication($username, $password = null)
     {
-        if (!$password) {
+        if (! $password) {
             $this->setHeader('WWW-Authenticate', 'Basic');
         } else {
-            $this->setHeader('WWW-Authenticate', 'Basic realm="' . $username . '"');
+            $this->setHeader('WWW-Authenticate', 'Basic realm="'.$username.'"');
         }
 
         return $this;
@@ -307,10 +306,10 @@ class Response
     //  设置响应的代理认证信息
     public function setProxyAuthentication($username, $password = null)
     {
-        if (!$password) {
+        if (! $password) {
             $this->setHeader('Proxy-Authenticate', 'Basic');
         } else {
-            $this->setHeader('Proxy-Authenticate', 'Basic realm="' . $username . '"');
+            $this->setHeader('Proxy-Authenticate', 'Basic realm="'.$username.'"');
         }
 
         return $this;
@@ -319,12 +318,12 @@ class Response
     //  发送 JSONP 响应
     public function jsonp($data, $callback = null)
     {
-        if (!$callback) {
+        if (! $callback) {
             return $this->json($data);
         }
 
         $this->setHeader('Content-Type', 'application/javascript');
-        $this->setBody($callback . '(' . json_encode($data) . ');');
+        $this->setBody($callback.'('.json_encode($data).');');
 
         return $this;
     }
@@ -344,7 +343,7 @@ class Response
     {
         $this->setHeader('Server', $serverName);
         if ($serverVersion) {
-            $this->setHeader('Server', $serverName . '/' . $serverVersion);
+            $this->setHeader('Server', $serverName.'/'.$serverVersion);
         }
 
         return $this;
@@ -356,7 +355,7 @@ class Response
     {
         $this->setHeader('X-Interface', $interfaceName);
         if ($version) {
-            $this->setHeader('X-Interface', $interfaceName . '/' . $version);
+            $this->setHeader('X-Interface', $interfaceName.'/'.$version);
         }
 
         return $this;
@@ -365,7 +364,7 @@ class Response
     //  发送包含会话ID的响应
     public function sessionId($sessionId)
     {
-        $this->setHeader('Cookie', 'PHPSESSID=' . $sessionId);
+        $this->setHeader('Cookie', 'PHPSESSID='.$sessionId);
 
         return $this;
     }
@@ -387,7 +386,7 @@ class Response
         // 设置响应头
         empty($this->headers) || $this->headers = ['Content-Type' => 'text/html; charset=UTF-8'];
         foreach ($this->headers as $header => $value) {
-            header($header . ': ' . $value);
+            header($header.': '.$value);
         }
 
         // 设置响应状态码

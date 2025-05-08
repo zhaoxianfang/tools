@@ -138,6 +138,25 @@ $export->validate(function () {
 // 是否使用Excel列名作为数组的键名,默认为false，如果调用了setColumnMapping()方法，会自动设置为true
 $export->useExcelColumnName(true);
 
+// 设置保存路径
+$export->setMediaSavePathOrFunc('/Users/linian/Desktop/test_save');
+
+// OR 使用闭包函数 自定义接管保存文件处理
+/**
+ * @param  string  $fileStream  二进制文件流数据
+ * @param  string  $fileName  文件名称
+ * @param  string  $columnIndex  列索引
+ * @param  int  $rowIndex  行索引
+ * @param  string  $sheetName  工作表名称
+ * @param  int  $sheetIndex  工作表索引
+ */
+// $export->setMediaSavePathOrFunc(function ($fileStream, $fileName, $columnIndex, $rowIndex, $sheetName, $sheetIndex) {
+//     dump($fileName, $columnIndex, $rowIndex, $sheetName, $sheetIndex);
+//    $filePath = 'test_save/'.$columnIndex.'_'.$rowIndex.'_'.Str::random(6).basename($fileName);
+//    Storage::disk('public')->put($filePath, $fileStream);
+//    dd(Storage::disk('public')->url($filePath));
+// });
+        
 // 使用列名映射 把A列映射为name，B列映射为email, 使用字段映射时没有设置映射的列会被忽略
 $export->setColumnMapping([
     'A' => 'name', 

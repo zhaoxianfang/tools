@@ -3,7 +3,6 @@
 namespace zxf\Xml;
 
 use DOMDocument;
-use DOMElement;
 use DOMNode;
 use DOMProcessingInstruction;
 use InvalidArgumentException;
@@ -22,40 +21,9 @@ use XMLReader;
  */
 
 /**
- * @example
+ * @example 用法详见 readme.md 文件
  *      1、支持解析微信官方文档中示例的 XML 数据
- *      <xml>
- *          <ToUserName><![CDATA[toUser]]></ToUserName>
- *          <FromUserName><![CDATA[fromUser]]></FromUserName>
- *          <CreateTime>12345678</CreateTime>
- *          <MsgType><![CDATA[text]]></MsgType>
- *          <Content><![CDATA[Hello World]]></Content>
- *      </xml>
- *
  *      2、支持解析普通的xml 字符串
- *      <catalog>
- *          <book>
- *              <title>PHP 手册</title>
- *              <author>张三</author>
- *          </book>
- *          <book>
- *              <title>Laravel 高级开发</title>
- *              <author>李四</author>
- *          </book>
- *      </catalog>
- *
- *     1、示例化后调用
- *          $parser = new XML2Array();
- *          // 或者定义配置
- *          // $parser = new XML2Array(['preserveRootNode' => false]);
- *          // 示例：内存受限环境
- *          // $parser = new EnterpriseXMLParser(['memoryLimit' => 1024 * 1024 * 100]); // 100MB限制
- *          $result = $parser->parse('<root><item>value</item></root>'); // 解析XML字符串为数组
- *          // 获取统计信息
- *          $stats = $parser->getStats();
- *          print_r($stats);
- *     2、静态调用
- *         XML2Array::toArray('<root><item>value</item></root>');
  */
 final class XML2Array
 {
@@ -73,7 +41,7 @@ final class XML2Array
         'encoding' => 'UTF-8',      // 默认编码
         'preserveRootNode' => false,         // 是否保留根节点
         'removeXmlDeclaration' => true,         // 是否移除XML声明
-        'libxmlOptions' => LIBXML_NOCDATA | LIBXML_NOBLANKS | LIBXML_NONET | LIBXML_COMPACT | LIBXML_PARSEHUGE,
+        'libxmlOptions' => LIBXML_NOCDATA | LIBXML_NOBLANKS | LIBXML_NONET | LIBXML_COMPACT | LIBXML_PARSEHUGE, // libxml解析选项
         'maxDepth' => 50,           // 最大递归深度
         'validateOnParse' => false,        // 启用XML验证
         'schemaValidation' => false,        // 使用XSD验证

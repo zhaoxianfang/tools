@@ -98,14 +98,14 @@ class Import
     }
 
     /**
+     * @deprecated 废弃
      * 是否使用Excel列名
-     *
      *
      * @return $this
      */
     public function useExcelColumnName(bool $status = true): static
     {
-        $this->useExcelColumnName = $status;
+        // $this->useExcelColumnName = $status;
 
         return $this;
     }
@@ -267,6 +267,10 @@ class Import
         $import = new ExcelToArray;
 
         $results = Excel::toArray($import, $this->file);
+
+        // 初始化媒体文件处理
+        $mediaHandle = MediaHandle::init()->initFile($this->getFilePath(), $this->mediaSavePathOrFunc);
+
         $mergedData = [];
         foreach ($results as $sheetIndex => $sheetData) {
             $sheetTableData = []; // 每个工作表的数据
@@ -285,21 +289,21 @@ class Import
                 }
                 $items = [];
                 // 使用A、B、C...列名
-                if ($this->useExcelColumnName) {
-                    foreach ($row as $key => $item) {
-                        $columnName = $this->getExcelColumnName($key); // 列名
-                        if (! empty($this->columnMapping)) {
-                            if (isset($this->columnMapping[$columnName])) {
-                                $columnName = $this->columnMapping[$columnName];
-                                $items[$columnName] = $item;
-                            }
-                        } else {
+                // if ($this->useExcelColumnName) {
+                foreach ($row as $key => $item) {
+                    $columnName = $this->getExcelColumnName($key); // 列名
+                    if (! empty($this->columnMapping)) {
+                        if (isset($this->columnMapping[$columnName])) {
+                            $columnName = $this->columnMapping[$columnName];
                             $items[$columnName] = $item;
                         }
+                    } else {
+                        $items[$columnName] = $item;
                     }
-                } else {
-                    $items = $row;
                 }
+                // } else {
+                //     $items = $row;
+                // }
                 // 自定义验证每行的数据
                 if ($this->validateRowFunc && is_callable($customCallback = $this->validateRowFunc)) {
                     $callRes = $customCallback($items, $rowIndex, $sheetIndex, $sheetName);
@@ -324,7 +328,7 @@ class Import
                 $sheetTableData[] = $items;
             }
             // 处理 xlsx 单元格中的图片数据
-            MediaHandle::handleCellMediaFile($this->getFilePath(), $sheetTableData, $this->mediaSavePathOrFunc, $sheetName, $sheetIndex);
+            $mediaHandle->handleCellMediaFile($sheetTableData, $sheetName, $sheetIndex + 1);
 
             $mergedData[] = [
                 'sheet_index' => $sheetIndex,

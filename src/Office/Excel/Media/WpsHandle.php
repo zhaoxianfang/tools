@@ -14,54 +14,62 @@ class WpsHandle implements DriveInterface
     // id => imgPath
     private static array $idToImgMap = [];
 
+    private static ZipArchive $zip;
+
+    // 图片保存路径或闭包处理
+    private static string|Closure $mediaSavePathOrFunc;
+
     // 处理wps 里面的 ID_xxx 和 图片路径的映射关系
-    public static function handleIdPathMap(ZipArchive $zip): array
+    public static function handleIdPathMap(ZipArchive $zip, string|Closure $mediaSavePathOrFunc): array
     {
-        try {
-            $imgsXml = $zip->getFromName('xl/cellimages.xml');
-            if (! $imgsXml) {
-                // 没有图片
-                self::$idToImgMap = [];
+        self::$zip = $zip;
+        self::$mediaSavePathOrFunc = $mediaSavePathOrFunc;
+
+        $imgsXml = $zip->getFromName('xl/cellimages.xml');
+        if (! $imgsXml) {
+            // 没有图片
+            self::$idToImgMap = [];
+            return [];
+        }
+        // id => rid
+        $xmlImgArray = XML2Array::toArray($imgsXml);
+        $xmlImgMaps = self::getCellImagesMap($xmlImgArray);
+
+        if (empty($xmlImgArray) || empty($xmlImgMaps)) {
+            // 没有图片
+            self::$idToImgMap = [];
+        } else {
+            //
+            $imgsXmlRels = $zip->getFromName('xl/_rels/cellimages.xml.rels');
+            if (! $imgsXmlRels) {
+                throw new Exception('文件解析失败~');
             }
-            // id => rid
-            $xmlImgArray = XML2Array::toArray($imgsXml);
-            $xmlImgMaps = self::getCellImagesMap($xmlImgArray);
+            $dom = new DOMDocument;
+            $dom->loadXML($imgsXmlRels);
 
-            if (empty($xmlImgArray) || empty($xmlImgMaps)) {
-                // 没有图片
-                self::$idToImgMap = [];
-            } else {
-                //
-                $imgsXmlRels = $zip->getFromName('xl/_rels/cellimages.xml.rels');
-                if (! $imgsXmlRels) {
-                    throw new Exception('文件解析失败~');
-                }
-                $dom = new DOMDocument;
-                $dom->loadXML($imgsXmlRels);
+            $xmlArr = XML2Array::toArray($dom->saveXML($dom->documentElement));
 
-                $xmlArr = XML2Array::toArray($dom->saveXML($dom->documentElement));
+            $ridMap = [];
+            foreach ($xmlArr['Relationship'] as $item) {
+                $ridMap[$item['@Id']] = $item['@Target'];
+            }
 
-                $ridMap = [];
-                foreach ($xmlArr['Relationship'] as $item) {
-                    $ridMap[$item['@Id']] = $item['@Target'];
-                }
-
-                // 遍历 $xmlImgMaps 和 $ridMap，将 $ridMap 的值赋给 $idToImgMap
-                foreach ($xmlImgMaps as $id => $rid) {
+            // 遍历 $xmlImgMaps 和 $ridMap，将 $ridMap 的值赋给 $idToImgMap
+            foreach ($xmlImgMaps as $id => $rid) {
+                if (! empty($ridMap[$rid])) {
                     self::$idToImgMap[$id] = $ridMap[$rid];
                 }
             }
-
-            return self::$idToImgMap;
-        } catch (Exception $e) {
-            throw $e;
         }
+
+        return self::$idToImgMap;
     }
 
     // 处理图片，并替换图片路径
-    public static function saveMediaAndReplaceImgPath(ZipArchive $zip, array &$sheetData, string|Closure $savePath, string $sheetName = 'sheet1', int $sheetIndex = 0): void
+    public function saveMediaAndReplaceImgPath(array &$sheetData, string $sheetName = 'sheet1', int $sheetIndex = 1): void
     {
-        $savePath = is_string($savePath) ? rtrim($savePath, '/').'/' : $savePath;
+        $zip = self::$zip;
+        $savePath = self::$mediaSavePathOrFunc;
 
         foreach ($sheetData as $line => $rowData) {
             foreach ($rowData as $colKey => $colData) {
@@ -89,7 +97,7 @@ class WpsHandle implements DriveInterface
 
                         if (is_string($savePath)) {
                             // 直接保存文件
-                            $sourceImage = $savePath.$colKey.$line.'_'.Str::random(6).basename($mediaPath);
+                            $sourceImage = $savePath.$colKey.$line.'_'.Str::random(6).'_'.basename($mediaPath);
                             file_put_contents($sourceImage, $imageData);
                             $sourceImage = realpath($sourceImage); // 真实路径
                         } elseif (is_callable($savePath)) {

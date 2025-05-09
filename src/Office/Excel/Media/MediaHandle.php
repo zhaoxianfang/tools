@@ -105,24 +105,16 @@ class MediaHandle
         // return $zip->locateName('xl/cellimages.xml') !== false;
 
         $ContentTypes = XML2Array::toArray($zip->getFromName('[Content_Types].xml'));
-        // 判断 $ContentTypes['Override'][0]['@ContentType'] 字符串中是否包含 "extended-properties+xml" 字符串
-        if (! empty($firstContentType = $ContentTypes['Override'][0]['@ContentType']) && str_contains($firstContentType, 'extended-properties+xml')) {
-            return true;
-        }
-
-        return false;
+        // 判断 $firstContentType 字符串中是否包含 "extended-properties+xml" 字符串
+        return ! empty($firstContentType = $ContentTypes['Override'][0]['@ContentType']) && str_contains($firstContentType, 'extended-properties+xml');
     }
 
     // 判断是否为Microsoft：Office格式的Excel文件
     public function isOffice(ZipArchive $zip)
     {
         $ContentTypes = XML2Array::toArray($zip->getFromName('[Content_Types].xml'));
-        // 判断 $ContentTypes['Override'][0]['@ContentType'] 字符串中是否包含 "spreadsheetml.sheet.main+xml" 字符串
-        if (! empty($firstContentType = $ContentTypes['Override'][0]['@ContentType']) && str_contains($firstContentType, 'spreadsheetml.sheet.main+xml')) {
-            return true;
-        }
-
-        return false;
+        // 判断 $firstContentType 字符串中是否包含 "spreadsheetml.sheet.main+xml" 字符串
+        return ! empty($firstContentType = $ContentTypes['Override'][0]['@ContentType']) && str_contains($firstContentType, 'spreadsheetml.sheet.main+xml');
     }
 
     public function __destruct()

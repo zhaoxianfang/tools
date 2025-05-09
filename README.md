@@ -20,6 +20,7 @@ composer require zxf/tools
 | zxf\Tools\Collection | <a href="http://www.weisifang.com/docs/doc/2_129" target="_blank">[Collection]</a> 数据集合操作 |
 | Qqlogin              | QQ登录                                                                                      |
 | WeChat               | 微信                                                                                        |
+| Office               | 读写Word、读写Excel(支持自动提取金山WPS和微软Office 表格中的图片)                                               |
 | 截图                   | ScreenShot                                                                                |
 | 微博登录                 | sina                                                                                      |
 | zxf\Min\JS           | js 压缩工具(推荐)                                                                               |

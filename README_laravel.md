@@ -265,6 +265,26 @@ php artisan module:make-test EloquentPostRepositoryTest Blog
 php artisan module:make-command TestCommand Test 
 ```
 
+## 扩展 where 条件查询
+
+
+### random
+
+> 随机查询多少条数据<br>
+> @param int $limit 查询条数<br>
+> @param string $primaryKey 主键字段，默认为id<br>
+> random(int $limit = 10, string $primaryKey = 'id')
+
+
+### whereHasIn
+```php
+whereHasIn(string $relation, ?\Closure $callable = null)
+orWhereHasIn(string $relation, ?\Closure $callable = null)
+whereHasJoin(string $relation, ?\Closure $callable = null)
+
+// ...更多方法...
+```
+
 ## 更多
 
 请移步查看

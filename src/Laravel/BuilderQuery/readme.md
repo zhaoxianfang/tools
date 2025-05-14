@@ -2,7 +2,17 @@
 
 > 来源：https://gitee.com/yjshop/laravel-builder
 
+> 新增随机数据查询方法 `random`
+
 ## 使用
+
+### random
+
+> 随机查询多少条数据
+> @param int $limit 查询条数
+> @param string $primaryKey 主键字段，默认为id
+> random(int $limit = 10, string $primaryKey = 'id')
+
 
 ### whereHasIn
 

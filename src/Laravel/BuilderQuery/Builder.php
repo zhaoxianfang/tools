@@ -38,16 +38,6 @@ use Illuminate\Support\ServiceProvider;
  * @method $this mainOrderByDesc(string $relation, ?\Closure $callable = null)
  * @method $this mainSelect(string $relation, ?\Closure $callable = null)
  */
-
-// 公共函数：生成缓存键
-function buildQueryCacheKey(Eloquent\Builder $builder, string $method, array $args = []): string
-{
-    $sql = $builder->toSql();
-    $bindings = $builder->getBindings();
-
-    return 'query_cache:'.md5($sql.serialize($bindings).$method.serialize($args));
-}
-
 class Builder extends Eloquent\Builder
 {
     // 注册宏指令

@@ -32,20 +32,20 @@ class RandomMacro
          */
         Builder::macro('replicateQuery', function (QueryBuilder $source, QueryBuilder $dest) {
             // 复制基础属性
-            //            $dest->bindings = $source->bindings;
-            //            $dest->columns = $source->columns;
-            //            $dest->distinct = $source->distinct;
-            //            $dest->from = $source->from;
-            //            $dest->joins = $source->joins;
-            //            $dest->wheres = $source->wheres;
-            //            $dest->groups = $source->groups;
-            //            $dest->havings = $source->havings;
-            //            $dest->orders = $source->orders;
-            //            $dest->limit = $source->limit;
-            //            $dest->offset = $source->offset;
-            //            $dest->unions = $source->unions;
-            //            $dest->unionLimit = $source->unionLimit;
-            //            $dest->unionOrders = $source->unionOrders;
+            //    $dest->bindings = $source->bindings;
+            //    $dest->columns = $source->columns;
+            //    $dest->distinct = $source->distinct;
+            //    $dest->from = $source->from;
+            //    $dest->joins = $source->joins;
+            //    $dest->wheres = $source->wheres;
+            //    $dest->groups = $source->groups;
+            //    $dest->havings = $source->havings;
+            //    $dest->orders = $source->orders;
+            //    $dest->limit = $source->limit;
+            //    $dest->offset = $source->offset;
+            //    $dest->unions = $source->unions;
+            //    $dest->unionLimit = $source->unionLimit;
+            //    $dest->unionOrders = $source->unionOrders;
 
             // 定义需要复制的属性列表
             $properties = [
@@ -185,6 +185,9 @@ class RandomMacro
 
             // 构建主查询
             return $model->newQuery()
+                ->when(property_exists($this->getQuery(), 'columns'), function ($query) {
+                    $query->select($this->getQuery()->columns ?? '*');
+                })
                 ->whereIn("$table.$primaryKey", function ($query) use ($subQuery, $limit, $primaryKey) {
                     $query->select($primaryKey)
                         ->from(DB::raw("({$subQuery->toSql()}) AS ranked"))
@@ -228,6 +231,9 @@ class RandomMacro
 
             // 构建主查询
             return $model->newQuery()
+                ->when(property_exists($this->getQuery(), 'columns'), function ($query) {
+                    $query->select($this->getQuery()->columns ?? '*');
+                })
                 ->whereIn("$table.$primaryKey", function ($query) use ($subQuery, $limit, $primaryKey) {
                     $query->select($primaryKey)
                         ->from(DB::raw("({$subQuery->toSql()}) AS grouped_ranked"))

@@ -10,16 +10,20 @@ use zxf\Laravel\BuilderQuery\Macros\RandomMacro;
 /**
  * Macros 宏定义
  *
- * 随机数查询
- *
+ * 随机查询出$limit条数据
  * @method $this random(int $limit = 10, string $primaryKey = 'id')
+ *
+ * 根据$groupColumn进行分组，然后每组中随机取出$limit条数据
+ * @method $this groupRandom(string $groupColumn, int $limit = 10, string $primaryKey = 'id')
  *
  * 缓存查询
  * @method $this cache(int $cacheTts = 3600, bool $deleteCache = false)
  *
  * groupSort(分组排序查询) 宏函数
+ *
  * @example Article::query()->groupSort('classify_id', [1,3],'read','desc')->get(); // 查询每个文章分组下read最高的第1到3名文章
  *          Article::query()->groupSort('classify_id', 9,'read','desc')->get(); // 获取每个文章分组下read第9名文章
+ *
  * @method $this groupSort(string $groupBy, int|array $ranks, string $orderBy = 'read', string $direction = 'desc')
  *
  * 子数据查询

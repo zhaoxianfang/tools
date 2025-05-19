@@ -3,8 +3,8 @@
 namespace zxf\Laravel\BuilderQuery\Macros;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\Facades\DB;
 
 class RandomMacro
 {
@@ -16,67 +16,13 @@ class RandomMacro
      */
     public static function register()
     {
-        Builder::macro('random', function (int $limit = 10, string $primaryKey = 'id') {
-            /** @var Builder $this */
-            $model = $this->getModel();
-            $table = $model->getTable();
-
-            // 获取当前查询的基础 SQL 构建器（保留作用域）
-            $subQuery = $this->toBase()->select(
-                "$table.$primaryKey",
-                DB::raw('ROW_NUMBER() OVER (ORDER BY RAND()) as rnd_rank')
-            );
-
-            // 使用子查询随机排序后选出前 $limit 条记录
-            return $model->newQuery()
-                ->whereIn("$table.$primaryKey", function ($query) use ($subQuery, $limit, $primaryKey) {
-                    $query->select($primaryKey)
-                        ->from(DB::raw("({$subQuery->toSql()}) as ranked"))
-                        ->mergeBindings($subQuery)
-                        ->where('rnd_rank', '<=', $limit);
-                });
-        });
+        self::randomBaseHandle();
+        self::randomHandle();
+        self::groupRandomHandle();
     }
 
-    // 另一种实现方式
-    public function randomTwo()
+    public static function randomBaseHandle()
     {
-        /**
-         * 随机查询宏
-         *
-         * @param  int  $limit  返回记录数，默认10
-         * @param  string  $primaryKey  主键名，默认'id'
-         * @return Builder
-         */
-        Builder::macro('random', function (int $limit = 10, string $primaryKey = 'id') {
-            $model = $this->getModel();
-            $table = $model->getTable();
-
-            // 创建全新的查询构建器
-            $baseQuery = $model->newQuery()->getQuery();
-
-            // 复制完整的查询条件（包括所有where类型）
-            $this->replicateQuery($this->getQuery(), $baseQuery);
-
-            // 构建窗口函数子查询
-            $subQuery = DB::table($table)
-                ->select(
-                    $primaryKey,
-                    DB::raw('ROW_NUMBER() OVER (ORDER BY RAND()) AS rnd_rank')
-                );
-
-            // 复制所有where条件到子查询
-            $this->replicateWheres($this->getQuery(), $subQuery);
-
-            // 构建主查询
-            return $model->newQuery()
-                ->whereIn("$table.$primaryKey", function ($query) use ($subQuery, $limit, $primaryKey) {
-                    $query->select($primaryKey)
-                        ->from(DB::raw("({$subQuery->toSql()}) AS ranked"))
-                        ->mergeBindings($subQuery)
-                        ->where('rnd_rank', '<=', $limit);
-                });
-        });
 
         /**
          * 完整复制查询条件
@@ -86,20 +32,42 @@ class RandomMacro
          */
         Builder::macro('replicateQuery', function (QueryBuilder $source, QueryBuilder $dest) {
             // 复制基础属性
-            $dest->bindings = $source->bindings;
-            $dest->columns = $source->columns;
-            $dest->distinct = $source->distinct;
-            $dest->from = $source->from;
-            $dest->joins = $source->joins;
-            $dest->wheres = $source->wheres;
-            $dest->groups = $source->groups;
-            $dest->havings = $source->havings;
-            $dest->orders = $source->orders;
-            $dest->limit = $source->limit;
-            $dest->offset = $source->offset;
-            $dest->unions = $source->unions;
-            $dest->unionLimit = $source->unionLimit;
-            $dest->unionOrders = $source->unionOrders;
+            //            $dest->bindings = $source->bindings;
+            //            $dest->columns = $source->columns;
+            //            $dest->distinct = $source->distinct;
+            //            $dest->from = $source->from;
+            //            $dest->joins = $source->joins;
+            //            $dest->wheres = $source->wheres;
+            //            $dest->groups = $source->groups;
+            //            $dest->havings = $source->havings;
+            //            $dest->orders = $source->orders;
+            //            $dest->limit = $source->limit;
+            //            $dest->offset = $source->offset;
+            //            $dest->unions = $source->unions;
+            //            $dest->unionLimit = $source->unionLimit;
+            //            $dest->unionOrders = $source->unionOrders;
+
+            // 定义需要复制的属性列表
+            $properties = [
+                'bindings', 'columns', 'distinct', 'from', 'joins',
+                'wheres', 'groups', 'havings', 'orders', 'limit',
+                'offset', 'unions', 'unionLimit', 'unionOrders',
+                'lock', 'operators', 'useWritePdo',
+            ];
+
+            foreach ($properties as $property) {
+                if (property_exists($source, $property)) {
+                    // 使用克隆方式复制数组/对象属性，避免引用问题
+                    $value = $source->{$property};
+                    $dest->{$property} = is_object($value) ? clone $value : (is_array($value) ? unserialize(serialize($value)) : $value);
+                }
+            }
+
+            // 特殊处理聚合函数
+            if (! empty($source->aggregate)) {
+                $dest->aggregate = $source->aggregate;
+                $dest->aggregate['column'] = $source->aggregate['column'] ?? '*';
+            }
         });
 
         /**
@@ -142,15 +110,20 @@ class RandomMacro
                         $dest->whereNotExists($where['query'], $boolean);
                         break;
                     case 'Raw':
-                        $dest->whereRaw($where['sql'], $where['bindings'], $boolean);
+                        $dest->whereRaw($where['sql'], (array) ($where['bindings'] ?? []), $boolean);
                         break;
                     case 'Nested':
                         $dest->whereNested(function ($query) use ($where) {
-                            $this->replicateWheres($where['query'], $query);
+                            $this->replicateWheres($where['query'], $query, $where['boolean'] ?? 'and');
                         }, $boolean);
                         break;
                     case 'Column':
-                        $dest->whereColumn($where['first'], $where['operator'], $where['second'], $boolean);
+                        $dest->whereColumn(
+                            $where['first'],
+                            $where['operator'],
+                            $where['second'] ?? null,
+                            $boolean
+                        );
                         break;
                     case 'Date':
                         $dest->whereDate($where['column'], $where['operator'], $where['value'], $boolean);
@@ -167,8 +140,100 @@ class RandomMacro
                     case 'Year':
                         $dest->whereYear($where['column'], $where['operator'], $where['value'], $boolean);
                         break;
+                    case 'JsonContains':
+                        $dest->whereJsonContains($where['column'], $where['value'], $boolean, $where['not'] ?? false);
+                        break;
+                    case 'JsonLength':
+                        $dest->whereJsonLength($where['column'], $where['operator'], $where['value'], $boolean);
+                        break;
+                    default:
+                        throw new \InvalidArgumentException("不支持的where类型: {$method}");
                 }
             }
+        });
+    }
+
+    // 另一种实现方式
+    public static function randomHandle()
+    {
+        /**
+         * 随机查询宏
+         *
+         * @param  int  $limit  返回记录数，默认10
+         * @param  string  $primaryKey  主键名，默认'id'
+         * @return Builder
+         */
+        Builder::macro('random', function (int $limit = 10, string $primaryKey = 'id') {
+            $model = $this->getModel();
+            $table = $model->getTable();
+
+            // 创建全新的查询构建器
+            $baseQuery = $model->newQuery()->getQuery();
+
+            // 复制完整的查询条件（包括所有where类型）
+            $this->replicateQuery($this->getQuery(), $baseQuery);
+
+            // 构建窗口函数子查询
+            $subQuery = DB::table($table)
+                ->select(
+                    $primaryKey,
+                    DB::raw('ROW_NUMBER() OVER (ORDER BY RAND()) AS rnd_rank')
+                );
+
+            // 复制所有where条件到子查询
+            $this->replicateWheres($this->getQuery(), $subQuery);
+
+            // 构建主查询
+            return $model->newQuery()
+                ->whereIn("$table.$primaryKey", function ($query) use ($subQuery, $limit, $primaryKey) {
+                    $query->select($primaryKey)
+                        ->from(DB::raw("({$subQuery->toSql()}) AS ranked"))
+                        ->mergeBindings($subQuery)
+                        ->where('rnd_rank', '<=', $limit);
+                });
+        });
+    }
+
+    public static function groupRandomHandle()
+    {
+
+        /**
+         * 分组随机查询宏
+         *
+         * @param  string  $groupColumn  分组字段名
+         * @param  int  $limit  每组返回记录数，默认10
+         * @param  string  $primaryKey  主键名，默认'id'
+         * @return Builder
+         */
+        Builder::macro('groupRandom', function (string $groupColumn, int $limit = 10, string $primaryKey = 'id') {
+            $model = $this->getModel();
+            $table = $model->getTable();
+
+            // 创建全新的查询构建器
+            $baseQuery = $model->newQuery()->getQuery();
+
+            // 复制完整的查询条件（包括所有where类型）
+            $this->replicateQuery($this->getQuery(), $baseQuery);
+
+            // 构建窗口函数子查询 - 按分组随机排序
+            $subQuery = DB::table($table)
+                ->select(
+                    $primaryKey,
+                    $groupColumn,
+                    DB::raw("ROW_NUMBER() OVER (PARTITION BY {$groupColumn} ORDER BY RAND()) AS group_rnd_rank")
+                );
+
+            // 复制所有where条件到子查询
+            $this->replicateWheres($this->getQuery(), $subQuery);
+
+            // 构建主查询
+            return $model->newQuery()
+                ->whereIn("$table.$primaryKey", function ($query) use ($subQuery, $limit, $primaryKey) {
+                    $query->select($primaryKey)
+                        ->from(DB::raw("({$subQuery->toSql()}) AS grouped_ranked"))
+                        ->mergeBindings($subQuery)
+                        ->where('group_rnd_rank', '<=', $limit);
+                });
         });
     }
 }

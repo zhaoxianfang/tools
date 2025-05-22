@@ -159,8 +159,12 @@ class RandomMacro
         /**
          * 随机查询宏
          *
+         * 随机选择5名学生
+         * Student::where('class_id', 101)->random(5);
+         *
          * @param  int  $limit  返回记录数，默认10
          * @param  string  $primaryKey  主键名，默认'id'
+         *
          * @return Builder
          */
         Builder::macro('random', function (int $limit = 10, string $primaryKey = 'id') {
@@ -203,9 +207,13 @@ class RandomMacro
         /**
          * 分组随机查询宏
          *
+         *  每个班级随机选择2名学生
+         *  Student::groupRandom('class_id', 2);
+         *
          * @param  string  $groupColumn  分组字段名
          * @param  int  $limit  每组返回记录数，默认10
          * @param  string  $primaryKey  主键名，默认'id'
+         *
          * @return Builder
          */
         Builder::macro('groupRandom', function (string $groupColumn, int $limit = 10, string $primaryKey = 'id') {

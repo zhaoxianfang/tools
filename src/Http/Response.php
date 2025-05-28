@@ -173,19 +173,19 @@ class Response
     }
 
     //  发送 XML 响应
-    public function xml(array $data)
+    public function xml(array $data, array $config = [])
     {
         $this->headers = [];
         $this->setHeader('Content-Type', 'text/xml');
-        $this->setBody($this->arrayToXml($data));
+        $this->setBody($this->arrayToXml($data, $config));
 
         return $this;
     }
 
     // 将数据对象转换为 SimpleXMLElement 对象
-    private function arrayToXml($array, $rootElement = 'root')
+    private function arrayToXml($array, array $config = [])
     {
-        return \zxf\Xml\Array2XML::toXML($array, ['rootName' => $rootElement]);
+        return \zxf\Xml\Array2XML::toXML($array, $config);
     }
 
     //  发送空白响应（空内容响应）
@@ -384,7 +384,7 @@ class Response
     public function send()
     {
         // 设置响应头
-        empty($this->headers) || $this->headers = ['Content-Type' => 'text/html; charset=UTF-8'];
+        empty($this->headers) && $this->headers = ['Content-Type' => 'text/html; charset=UTF-8'];
         foreach ($this->headers as $header => $value) {
             header($header.': '.$value);
         }

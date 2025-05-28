@@ -16,7 +16,7 @@ namespace zxf\Facade;
  * @method static mixed text(string $text = '')                                     响应文本数据
  * @method static mixed html(string $html = '')                                     响应html数据
  * @method static mixed setCharset(string $charset = 'UTF-8')                       设置编码
- * @method static mixed xml(array $data)                                            发送xml数据
+ * @method static mixed xml(array $data, array $config = [])                        发送xml数据
  * @method static mixed emptyResponse()                                             发送空白数据
  * @method static mixed setLength(int $length = 0)                                  设置响应的长度
  * @method static mixed setEtag($etag)                                              设置 ETag

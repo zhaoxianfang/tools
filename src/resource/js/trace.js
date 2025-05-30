@@ -1,9 +1,12 @@
 var isClickAllowed = true; // 初始允许点击
 function trace_reset_allowed_value() {
     isClickAllowed = false; // 禁止后续点击
-    setTimeout(() => { isClickAllowed = true;}, 500); // 500ms 后恢复
+    setTimeout(() => {
+        isClickAllowed = true;
+    }, 500); // 500ms 后恢复
 }
-document.addEventListener('click', function(e) {
+
+document.addEventListener('click', function (e) {
     const tabsLogoEvent = e.target.closest("#tools_trace .trace-logo");
     const closeButton = e.target.closest("#tools_trace .tabs-close");
     const tabsContainerDom = document.querySelector("#tools_trace .tabs-container");
@@ -20,7 +23,7 @@ document.addEventListener('click', function(e) {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const tabItems = document.querySelectorAll("#tools_trace .tabs-item");
     const tabContents = document.querySelectorAll("#tools_trace .tabs-content");
 
@@ -45,17 +48,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化 JSON 显示
     function initializeJsonDisplay(jsonElement, arrowElement, labelElement) {
         try {
-            const jsonText = jsonElement.textContent.trim();
+            let jsonText = jsonElement.textContent.trim();
+            jsonText = extractJson(jsonText)
+            // 移除jsonText 中非json 字符串的部分
             const jsonData = JSON.parse(jsonText);
-
             // 计算 JSON 对象的长度
             const arrayLength = Array.isArray(jsonData) ? jsonData.length : Object.keys(jsonData).length;
-
             // 格式化 JSON 数据 为 带缩进的 JSON 字符串
             jsonElement.textContent = JSON.stringify(jsonData, null, 4);
 
             // 设置箭头的初始文本
-
             arrowElement.textContent = `▶ array:${arrayLength}`;
             // labelElement.textContent += ` array:${arrayLength}`;
         } catch (e) {
@@ -69,11 +71,45 @@ document.addEventListener('DOMContentLoaded', function() {
     const labelElements = document.querySelectorAll("#tools_trace .json-label");
 
     jsonElements.forEach((jsonElement, index) => {
-        const jsonText = jsonElement.textContent.trim();
+        let jsonText = jsonElement.textContent.trim();
+        jsonText = extractJson(jsonText);
+        if ( !jsonText) {
+            jsonText = '[]';
+        }
+
         jsonElement.setAttribute("data-original", jsonText);
         initializeJsonDisplay(jsonElement, arrowElements[index], labelElements[index]);
     });
 });
+
+// 提取最外层的 {} 或 [] 内容, 防止 dom 里面包含非json 的dom; eg:<pre class="json">[]<button class="copy-code-btn">复制</button></pre>
+function extractJson(text) {
+    let stack = [];
+    let start = - 1;
+
+    for (let i = 0; i < text.length; i ++) {
+        const char = text[i];
+        if (char === '{' || char === '[') {
+            if (stack.length === 0) {
+                start = i; // 开始位置
+            }
+            stack.push(char);
+        } else if (char === '}' || char === ']') {
+            if (stack.length === 0) continue;
+            const open = stack.pop();
+            // 检查括号是否匹配
+            if ((open === '{' && char !== '}') || (open === '[' && char !== ']')) {
+                return null; // 不匹配，无效
+            }
+
+            if (stack.length === 0) {
+                // 成功找到一个完整的 JSON 字符串
+                return text.slice(start, i + 1);
+            }
+        }
+    }
+    return null; // 没有找到有效 JSON
+}
 
 // 展开/收起 JSON , 在 html 中指定触发
 function toggleJson(arrowElement) {

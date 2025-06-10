@@ -1365,29 +1365,81 @@ if (! function_exists('base_convert_any')) {
      *
      * @throws Exception
      */
-    function base_convert_any(string $number, int $fromBase = 10, int $toBase = 62): string|int
+    function base_convert_any(string $number, int $fromBase = 10, int $toBase = 62): string
     {
-        // 判断是否是小数
-        $isDecimal = (str_contains($number, '.'));
-        if ($isDecimal) {
-            throw new \Exception('暂不支持小数转换');
+        // 常量字符集
+        static $digits = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+        // 校验进制合法性
+        if ($fromBase < 2 || $fromBase > 62 || $toBase < 2 || $toBase > 62) {
+            throw new InvalidArgumentException('Bases must be in range 2–62.');
         }
-        // 处理负数符号
-        $isNegative = ($number[0] === '-');
+
+        // 快速路径（相同进制）
+        if ($fromBase === $toBase) {
+            return $number;
+        }
+
+        // 处理负数
+        $isNegative = $number[0] === '-';
         if ($isNegative) {
-            $number = substr($number, 1); // 去除负号
+            $number = substr($number, 1);
         }
 
-        // 使用 base_convert 进行转换
-        $convertedNumber = base_convert($number, $fromBase, $toBase);
-
-        // 重新添加负数符号
-        if ($isNegative) {
-            $convertedNumber = '-'.$convertedNumber;
+        // 去除前导 0
+        $number = ltrim($number, '0');
+        if ($number === '') {
+            return '0';
         }
 
-        return $convertedNumber;
+        // 尝试使用 GMP（如可用）
+        if (extension_loaded('gmp')) {
+            // GMP 内部使用高效 C 实现，速度远超 BCMath
+            $decimal = gmp_init($number, $fromBase);
+            $converted = gmp_strval($decimal, $toBase);
+
+            return $isNegative ? '-'.$converted : $converted;
+        }
+
+        // fallback to BCMath：构造字符映射表
+        static $charMap = null;
+        if ($charMap === null) {
+            $charMap = [];
+            for ($i = 0; $i < 62; $i++) {
+                $charMap[$digits[$i]] = $i;
+            }
+        }
+
+        // === Step 1: 任意进制转 10 进制（字符串）
+        $decimal = '0';
+        $baseStr = (string) $fromBase;
+        $len = strlen($number);
+
+        for ($i = 0; $i < $len; $i++) {
+            $char = $number[$i];
+            $value = $charMap[$char] ?? null;
+            if ($value === null || $value >= $fromBase) {
+                throw new InvalidArgumentException("Invalid character '$char' for base $fromBase.");
+            }
+            $decimal = bcadd(bcmul($decimal, $baseStr), (string) $value, 0);
+        }
+
+        // === Step 2: 十进制转目标进制
+        if ($toBase === 10) {
+            $result = $decimal;
+        } else {
+            $result = '';
+            $toBaseStr = (string) $toBase;
+            while (bccomp($decimal, '0') > 0) {
+                $mod = bcmod($decimal, $toBaseStr);
+                $result = $digits[(int) $mod].$result;
+                $decimal = bcdiv($decimal, $toBaseStr, 0);
+            }
+        }
+
+        return $isNegative ? '-'.$result : $result;
     }
+
 }
 
 if (! function_exists('download_url_file')) {

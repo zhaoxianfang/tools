@@ -103,6 +103,12 @@ if (! function_exists('get_module_name')) {
                     return $toUnderlineConvert ? underline_convert($modulesNamespaceArr[1]) : $modulesNamespaceArr[1];
                 }
             }
+            if (! empty($request = request())) {
+                // 获取 $request->path() 中第一个 / 之前的字符串
+                if ($res = strstr(trim($request->path(), '/'), '/', true)) {
+                    return $res;
+                }
+            }
 
             return $toUnderlineConvert ? 'app' : 'App';
         } catch (\Exception $err) {
@@ -280,7 +286,6 @@ if (! function_exists('public_path')) {
     /**
      * Get the path to the public folder.
      *
-     * @param string $path
      *
      * @return string
      */

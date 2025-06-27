@@ -320,11 +320,15 @@ $subTree = ArticleClassify::withTree(
 // 自定义递归查询
 $customQuery = ArticleClassify::recursiveQuery(
     function ($query, $withTable) {
-        return "SELECT *, 0 AS depth FROM `article_classifies` WHERE `pid` = 1";
+        /** @var Builder $query */
+        $table = $query->getModel()->getTable();
+        return "SELECT *, 0 AS depth FROM `{$table}` WHERE `pid` = 1";
     },
     function ($query, $withTable) {
+        /** @var Builder $query */
+        $table = $query->getModel()->getTable();
         return "SELECT t.*, r.depth + 1 AS depth 
-                FROM `article_classifies` t
+                FROM `{$table}` t
                 JOIN `{$withTable}` r ON t.`pid` = r.`id`";
     },
     ['id', 'name', 'pid'],

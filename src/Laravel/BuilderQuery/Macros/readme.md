@@ -80,6 +80,7 @@ Article::query()->groupSort('classify_id', -1,'read','desc')->get();
 > 7.withSiblings 查找同级节点
 > 8.withTree 获取树形结构
 > 9.recursiveQuery 通用递归查询
+> 10.resetRecursive 重置递归查询
 
 ### 1、withAllChildren 查找某个节点的所有子节点
 
@@ -342,4 +343,26 @@ $customQuery = ArticleClassify::recursiveQuery(
     10,
     'level'
 )->get();
+```
+
+### 10、resetRecursive 重置递归查询（清除所有递归条件）
+
+参数:
+```php
+/**
+ * 重置递归查询（清除所有递归条件）
+ * @return Builder
+ */
+```
+
+示例:
+```php
+// 先执行递归查询
+$query = ArticleClassify::query()
+    ->withAllChildren(1);
+
+// 然后重置递归条件，继续普通查询
+$normalQuery = $query->resetRecursive()
+    ->where('status', 1)
+    ->get();
 ```

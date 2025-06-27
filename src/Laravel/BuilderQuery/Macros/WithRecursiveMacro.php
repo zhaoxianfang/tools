@@ -14,58 +14,71 @@ class WithRecursiveMacro
      */
     public static function register(): void
     {
-        // 1、查找某个节点的所有子节点
+        // 1. 查找某个节点的所有子节点
         Builder::macro('withAllChildren', function (int $id, string $pidColumn = 'pid', int $maxDepth = 100): Builder {
             /** @var Builder $this */
             return WithRecursiveMacro::buildRecursiveQuery($this, $id, $pidColumn, 'children', $maxDepth);
         });
 
-        // 2、查找某个节点的所有父节点
+        // 2. 查找某个节点的所有父节点
         Builder::macro('withAllParents', function (int $id, string $pidColumn = 'pid', int $maxDepth = 100): Builder {
             /** @var Builder $this */
             return WithRecursiveMacro::buildRecursiveQuery($this, $id, $pidColumn, 'parents', $maxDepth);
         });
 
-        // 3、查找某个节点的第N级父节点（自己算0级）
+        // 3. 查找某个节点的第N级父节点（自己算0级）
         Builder::macro('withNthParent', function (int $id, int $n, string $pidColumn = 'pid'): Builder {
             /** @var Builder $this */
             return WithRecursiveMacro::findNthLevelRelation($this, $id, $pidColumn, 'parents', $n);
         });
 
-        // 4、查找某个节点的第N级所有子节点（自己算0级）
+        // 4. 查找某个节点的第N级所有子节点（自己算0级）
         Builder::macro('withNthChildren', function (int $id, int $n, string $pidColumn = 'pid'): Builder {
             /** @var Builder $this */
             return WithRecursiveMacro::findNthLevelRelation($this, $id, $pidColumn, 'children', $n);
         });
 
-        // 5、查找节点的完整路径（包含absolute_path字段）
+        // 5. 查找节点的完整路径（包含absolute_path字段）
         Builder::macro('withFullPath', function (array $ids = [], array $conditions = [], string $pidColumn = 'pid', string $nameColumn = 'name', string $pathSeparator = ' > '): Builder {
             /** @var Builder $this */
             return WithRecursiveMacro::findNodePaths($this, $ids, $conditions, $pidColumn, $nameColumn, $pathSeparator);
         });
 
-        // 6、检查第一个节点是否是第二个节点的父节点
+        // 6. 检查第一个节点是否是第二个节点的父节点
         Builder::macro('isParentOf', function (int $parentId, int $childId, string $pidColumn = 'pid'): bool {
             /** @var Builder $this */
             return WithRecursiveMacro::checkIsParent($this, $parentId, $childId, $pidColumn);
         });
 
-        // 7、查找某个节点的所有同级节点
+        // 7. 查找某个节点的所有同级节点
         Builder::macro('withSiblings', function (int $id, string $pidColumn = 'pid', bool $includeSelf = false): Builder {
             /** @var Builder $this */
             return WithRecursiveMacro::findSiblings($this, $id, $pidColumn, $includeSelf);
         });
 
-        // 8、查找从指定节点id(默认为0)开始的树形结构数据
+        // 8. 查找从指定节点id(默认为0)开始的树形结构数据
         Builder::macro('withTree', function (?int $pid = null, string $pidColumn = 'pid', string $nameColumn = 'name', int $maxDepth = 100, string $pathSeparator = ' > '): Builder {
             /** @var Builder $this */
             return WithRecursiveMacro::buildTreeQuery($this, $pid, $pidColumn, $nameColumn, $maxDepth, $pathSeparator);
         });
 
-        // 9、通用递归查询（高级用法）
+        // 9. 通用递归查询（高级用法）
         Builder::macro('recursiveQuery', function (callable $baseQuery, callable $recursiveQuery, array $columns = ['*'], int $maxDepth = 100, string $depthColumn = 'depth'): Builder {
             /** @var Builder $this */
             return WithRecursiveMacro::buildGenericRecursiveQuery($this, $baseQuery, $recursiveQuery, $columns, $maxDepth, $depthColumn);
+        });
+
+        // 10. 重置递归查询（清除所有递归条件）
+        Builder::macro('resetRecursive', function (): Builder {
+            /** @var Builder $this */
+            $query = $this->getQuery();
+
+            // 重置所有可能影响递归查询的属性
+            $query->expressions = [];
+            $query->bindings['from'] = [];
+            $query->from = $this->getModel()->getTable();
+
+            return $this;
         });
     }
 
@@ -73,10 +86,11 @@ class WithRecursiveMacro
      * 构建递归查询基础方法
      *
      * @param  Builder  $query  查询构造器
-     * @param  int  $id  起始ID
+     * @param  int  $id  起始节点ID
      * @param  string  $pidColumn  父ID字段名
      * @param  string  $direction  查询方向 (children|parents)
      * @param  int  $maxDepth  最大递归深度
+     * @return Builder 新的查询构造器实例
      */
     public static function buildRecursiveQuery(Builder $query, int $id, string $pidColumn, string $direction, int $maxDepth): Builder
     {
@@ -84,8 +98,10 @@ class WithRecursiveMacro
         $primaryKey = $query->getModel()->getKeyName();
         $withTable = 'recursive_'.Str::random(8);
 
-        // 获取原始查询的列选择
-        $columns = empty($query->getQuery()->columns) ? ['*'] : $query->getQuery()->columns;
+        // 保存原始查询的列选择和绑定
+        $originalColumns = $query->getQuery()->columns;
+        $originalBindings = $query->getQuery()->bindings;
+        $columns = empty($originalColumns) ? ['*'] : $originalColumns;
 
         // 构建递归CTE查询
         $recursiveQuery = "
@@ -111,21 +127,29 @@ class WithRecursiveMacro
             SELECT * FROM `{$withTable}` WHERE `{$primaryKey}` != ?
         ";
 
-        // 添加递归查询到原始查询
-        $query->getQuery()->from(new Expression("({$recursiveQuery}) as `{$withTable}`"))
+        // 创建新的查询构造器实例
+        $newQuery = $query->getModel()->newQuery();
+        $newQuery->getQuery()->from(new Expression("({$recursiveQuery}) as `{$withTable}`"))
             ->addBinding([$id, $maxDepth, $id], 'from');
 
-        return $query;
+        // 恢复原始查询的列选择和绑定
+        if ($originalColumns) {
+            $newQuery->select($originalColumns);
+        }
+        $newQuery->addBinding($originalBindings['where'] ?? [], 'where');
+
+        return $newQuery;
     }
 
     /**
      * 查找第N级关系节点
      *
      * @param  Builder  $query  查询构造器
-     * @param  int  $id  起始ID
+     * @param  int  $id  起始节点ID
      * @param  string  $pidColumn  父ID字段名
      * @param  string  $direction  查询方向 (children|parents)
-     * @param  int  $n  层级
+     * @param  int  $n  要查询的层级
+     * @return Builder 新的查询构造器实例
      */
     public static function findNthLevelRelation(Builder $query, int $id, string $pidColumn, string $direction, int $n): Builder
     {
@@ -133,8 +157,10 @@ class WithRecursiveMacro
         $primaryKey = $query->getModel()->getKeyName();
         $withTable = 'recursive_'.Str::random(8);
 
-        // 获取原始查询的列选择
-        $columns = empty($query->getQuery()->columns) ? ['*'] : $query->getQuery()->columns;
+        // 保存原始查询的列选择和绑定
+        $originalColumns = $query->getQuery()->columns;
+        $originalBindings = $query->getQuery()->bindings;
+        $columns = empty($originalColumns) ? ['*'] : $originalColumns;
 
         // 构建递归CTE查询
         $recursiveQuery = "
@@ -157,25 +183,34 @@ class WithRecursiveMacro
                           ($direction === 'children' ? "t.`{$pidColumn}` = r.`{$primaryKey}`" : "t.`{$primaryKey}` = r.`{$pidColumn}`")."
                 WHERE r.relative_level < ?
             )
+            -- 筛选特定层级的节点
             SELECT * FROM `{$withTable}` WHERE relative_level = ?
         ";
 
-        // 添加递归查询到原始查询
-        $query->getQuery()->from(new Expression("({$recursiveQuery}) as `{$withTable}`"))
+        // 创建新的查询构造器实例
+        $newQuery = $query->getModel()->newQuery();
+        $newQuery->getQuery()->from(new Expression("({$recursiveQuery}) as `{$withTable}`"))
             ->addBinding([$id, $n, $n], 'from');
 
-        return $query;
+        // 恢复原始查询的列选择和绑定
+        if ($originalColumns) {
+            $newQuery->select($originalColumns);
+        }
+        $newQuery->addBinding($originalBindings['where'] ?? [], 'where');
+
+        return $newQuery;
     }
 
     /**
-     * 查找节点的完整路径（彻底修复版）
+     * 查找节点的完整路径
      *
      * @param  Builder  $query  查询构造器
-     * @param  array  $ids  要查询的ID数组
+     * @param  array  $ids  要查询路径的节点ID数组
      * @param  array  $conditions  额外查询条件
      * @param  string  $pidColumn  父ID字段名
      * @param  string  $nameColumn  名称字段名
      * @param  string  $pathSeparator  路径分隔符
+     * @return Builder 新的查询构造器实例
      */
     public static function findNodePaths(Builder $query, array $ids = [], array $conditions = [], string $pidColumn = 'pid', string $nameColumn = 'name', string $pathSeparator = ' > '): Builder
     {
@@ -183,8 +218,10 @@ class WithRecursiveMacro
         $primaryKey = $query->getModel()->getKeyName();
         $withTable = 'recursive_'.Str::random(8);
 
-        // 获取原始查询的列选择
-        $columns = empty($query->getQuery()->columns) ? ['*'] : $query->getQuery()->columns;
+        // 保存原始查询的列选择和绑定
+        $originalColumns = $query->getQuery()->columns;
+        $originalBindings = $query->getQuery()->bindings;
+        $columns = empty($originalColumns) ? ['*'] : $originalColumns;
         $columnList = implode(', ', array_map(function ($col) use ($table) {
             return $col === '*' ? '`'.$table.'`.*' : "`{$table}`.`{$col}`";
         }, $columns));
@@ -197,14 +234,10 @@ class WithRecursiveMacro
             $tempBindings = [];
             foreach ($conditions as $key => $value) {
                 $whereParts[] = "`{$table}`.`{$key}` = ?";
-                // $bindings[] = $value;
                 $tempBindings[] = $value;
             }
-            // 后面使用了2次$whereConditions，所以此处要操作2次$bindings
             for ($i = 0; $i < 2; $i++) {
-                foreach ($tempBindings as $tempBinding) {
-                    $bindings[] = $tempBinding;
-                }
+                $bindings = array_merge($bindings, $tempBindings);
             }
             $whereConditions = implode(' AND ', $whereParts);
         }
@@ -244,34 +277,38 @@ class WithRecursiveMacro
                 JOIN `{$withTable}` r ON t.`{$pidColumn}` = r.`{$primaryKey}`
                 ".(! empty($whereConditions) ? ' WHERE '.str_replace("`{$table}`.", 't.', $whereConditions) : '')."
             )
-            SELECT 
-                `{$withTable}`.*
-                -- , COALESCE(absolute_path, `{$withTable}`.`{$nameColumn}`) AS absolute_path
-                -- , depth
-                -- , path_ids
-            FROM `{$withTable}`
+            -- 结果查询：返回路径信息
+            SELECT `{$withTable}`.* FROM `{$withTable}`
             ".(! empty($idCondition) ? $idCondition : '').'
             ORDER BY path_ids
         ';
 
-        // 添加递归查询到原始查询
-        $query->getQuery()->from(new Expression("({$recursiveQuery}) as `{$withTable}`"));
+        // 创建新的查询构造器实例
+        $newQuery = $query->getModel()->newQuery();
+        $newQuery->getQuery()->from(new Expression("({$recursiveQuery}) as `{$withTable}`"));
 
         // 添加绑定参数
         if (! empty($bindings)) {
-            $query->addBinding($bindings, 'from');
+            $newQuery->addBinding($bindings, 'from');
         }
 
-        return $query;
+        // 恢复原始查询的列选择和绑定
+        if ($originalColumns) {
+            $newQuery->select($originalColumns);
+        }
+        $newQuery->addBinding($originalBindings['where'] ?? [], 'where');
+
+        return $newQuery;
     }
 
     /**
      * 检查第一个节点是否是第二个节点的父节点
      *
      * @param  Builder  $query  查询构造器
-     * @param  int  $parentId  父ID
-     * @param  int  $childId  子ID
+     * @param  int  $parentId  父节点ID
+     * @param  int  $childId  子节点ID
      * @param  string  $pidColumn  父ID字段名
+     * @return bool 是否是父子关系
      */
     public static function checkIsParent(Builder $query, int $parentId, int $childId, string $pidColumn): bool
     {
@@ -293,6 +330,7 @@ class WithRecursiveMacro
                 JOIN `{$withTable}` r ON t.`{$primaryKey}` = r.`{$pidColumn}`
                 WHERE t.`{$primaryKey}` != r.`{$primaryKey}`  -- 防止自引用
             )
+            -- 检查父节点是否存在
             SELECT COUNT(*) AS count FROM `{$withTable}` WHERE `{$primaryKey}` = ?
         ";
 
@@ -308,6 +346,7 @@ class WithRecursiveMacro
      * @param  int  $id  节点ID
      * @param  string  $pidColumn  父ID字段名
      * @param  bool  $includeSelf  是否包含自己
+     * @return Builder 新的查询构造器实例
      */
     public static function findSiblings(Builder $query, int $id, string $pidColumn, bool $includeSelf = false): Builder
     {
@@ -320,14 +359,23 @@ class WithRecursiveMacro
             ->where($primaryKey, $id)
             ->value($pidColumn);
 
+        // 创建新的查询构造器实例
+        $newQuery = $query->getModel()->newQuery();
+
         // 查询所有具有相同父ID的节点
-        $query = $query->where($pidColumn, $parentId ?? 0);
+        $newQuery = $newQuery->where($pidColumn, $parentId ?? 0);
 
         if (! $includeSelf) {
-            $query = $query->where($primaryKey, '!=', $id);
+            $newQuery = $newQuery->where($primaryKey, '!=', $id);
         }
 
-        return $query;
+        // 保留原始查询的列选择和绑定
+        if (! empty($query->getQuery()->columns)) {
+            $newQuery->select($query->getQuery()->columns);
+        }
+        $newQuery->addBinding($query->getQuery()->bindings['where'] ?? [], 'where');
+
+        return $newQuery;
     }
 
     /**
@@ -339,6 +387,7 @@ class WithRecursiveMacro
      * @param  string  $nameColumn  名称字段名
      * @param  int  $maxDepth  最大深度
      * @param  string  $pathSeparator  路径分隔符
+     * @return Builder 新的查询构造器实例
      */
     public static function buildTreeQuery(Builder $query, ?int $pid, string $pidColumn, string $nameColumn, int $maxDepth, string $pathSeparator = ' > '): Builder
     {
@@ -346,8 +395,10 @@ class WithRecursiveMacro
         $primaryKey = $query->getModel()->getKeyName();
         $withTable = 'recursive_'.Str::random(8);
 
-        // 获取原始查询的列选择
-        $columns = empty($query->getQuery()->columns) ? ['*'] : $query->getQuery()->columns;
+        // 保存原始查询的列选择和绑定
+        $originalColumns = $query->getQuery()->columns;
+        $originalBindings = $query->getQuery()->bindings;
+        $columns = empty($originalColumns) ? ['*'] : $originalColumns;
         $columnList = implode(', ', array_map(function ($col) use ($table) {
             return $col === '*' ? '`'.$table.'`.*' : "`{$table}`.`{$col}`";
         }, $columns));
@@ -380,18 +431,26 @@ class WithRecursiveMacro
                 JOIN `{$withTable}` r ON t.`{$pidColumn}` = r.`{$primaryKey}`
                 WHERE r.depth < ?
             )
+            -- 返回树形结构数据
             SELECT *, tree_path AS absolute_path FROM `{$withTable}` ORDER BY path_ids
         ";
 
-        // 添加递归查询到原始查询
-        $query->getQuery()->from(new Expression("({$recursiveQuery}) as `{$withTable}`"))
+        // 创建新的查询构造器实例
+        $newQuery = $query->getModel()->newQuery();
+        $newQuery->getQuery()->from(new Expression("({$recursiveQuery}) as `{$withTable}`"))
             ->addBinding([$pid ?? 0, $maxDepth], 'from');
 
-        return $query;
+        // 恢复原始查询的列选择和绑定
+        if ($originalColumns) {
+            $newQuery->select($originalColumns);
+        }
+        $newQuery->addBinding($originalBindings['where'] ?? [], 'where');
+
+        return $newQuery;
     }
 
     /**
-     * 通用递归查询（彻底修复版）
+     * 通用递归查询
      *
      * @param  Builder  $query  查询构造器
      * @param  callable  $baseQuery  基础查询回调
@@ -399,6 +458,7 @@ class WithRecursiveMacro
      * @param  array  $columns  查询列
      * @param  int  $maxDepth  最大深度
      * @param  string  $depthColumn  深度字段名
+     * @return Builder 新的查询构造器实例
      *
      * @throws InvalidArgumentException
      */
@@ -411,6 +471,10 @@ class WithRecursiveMacro
         if (! is_callable($baseQuery) || ! is_callable($recursiveQuery)) {
             throw new InvalidArgumentException('Base query and recursive query must be callable');
         }
+
+        // 保存原始查询的列选择和绑定
+        $originalColumns = $query->getQuery()->columns;
+        $originalBindings = $query->getQuery()->bindings;
 
         // 获取列选择
         $columnList = implode(', ', array_map(function ($col) use ($withTable) {
@@ -448,16 +512,22 @@ class WithRecursiveMacro
                 
                 -- 递归查询部分
                 {$recursiveQuerySql}
-                -- WHERE `{$withTable}`.`{$depthColumn}` < ?
                 WHERE r.`{$depthColumn}` < ?
             )
             SELECT {$columnList} FROM `{$withTable}`
         ";
 
-        // 添加递归查询到原始查询
-        $query->getQuery()->from(new Expression("({$recursiveQuery}) as `{$withTable}`"))
+        // 创建新的查询构造器实例
+        $newQuery = $query->getModel()->newQuery();
+        $newQuery->getQuery()->from(new Expression("({$recursiveQuery}) as `{$withTable}`"))
             ->addBinding([$maxDepth], 'from');
 
-        return $query;
+        // 恢复原始查询的列选择和绑定
+        if ($originalColumns) {
+            $newQuery->select($originalColumns);
+        }
+        $newQuery->addBinding($originalBindings['where'] ?? [], 'where');
+
+        return $newQuery;
     }
 }

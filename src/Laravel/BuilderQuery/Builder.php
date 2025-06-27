@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent;
 use Illuminate\Support\ServiceProvider;
 use zxf\Laravel\BuilderQuery\Macros\GroupSortMacro;
 use zxf\Laravel\BuilderQuery\Macros\RandomMacro;
+use zxf\Laravel\BuilderQuery\Macros\WithRecursiveMacro;
 
 /**
  * Macros 宏定义
@@ -64,6 +65,8 @@ class Builder extends Eloquent\Builder
         GroupSortMacro::register();
         // 注册查询缓存功能
         self::registerCacheQuery($provider);
+        // 注册递归查询宏
+        WithRecursiveMacro::register();
 
     }
 

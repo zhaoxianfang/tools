@@ -1064,6 +1064,9 @@ if (! function_exists('is_json')) {
     {
         try {
             $data = json_decode_plus($string);
+            if (is_null($data)) {
+                return false;
+            }
             if ((! empty($data) && is_object($data)) || (is_array($data) && ! empty($data))) {
                 return true;
             }
@@ -1616,6 +1619,7 @@ if (! function_exists('json_decode_plus')) {
                 $data = null;
             }
         }
+
         return $data;
     }
 }

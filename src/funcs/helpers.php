@@ -1063,7 +1063,7 @@ if (! function_exists('is_json')) {
     function is_json($string): bool
     {
         try {
-            $data = json_decode_plus($string, false);
+            $data = json_decode_plus($string);
             if ((! empty($data) && is_object($data)) || (is_array($data) && ! empty($data))) {
                 return true;
             }
@@ -1578,24 +1578,45 @@ if (! function_exists('set_protected_value')) {
 
 if (! function_exists('json_decode_plus')) {
     /**
-     * json_decode 加强版， 主要是为了了处理 json 字符串中包含了 \\" 和 \\ 转义字符导致无法解析的问题
+     * 增强型 JSON 解码 (PHP 8+)
      *
-     * @param  array|string|null  $jsonStr  json 字符串
-     * @param  null  $assoc
+     * @param  array|string|null  $json  JSON字符串
+     * @param  bool  $assoc  是否返回关联数组
+     * @param  int  $depth  最大递归深度
+     * @param  int  $flags  json_decode 标志
+     * @return mixed 解码后的数据
      */
-    function json_decode_plus(array|string|null $jsonStr, $assoc = null): mixed
+    function json_decode_plus(array|string|null $json, bool $assoc = true, int $depth = 512, int $flags = JSON_THROW_ON_ERROR): mixed
     {
-        if (empty($jsonStr) || is_array($jsonStr) || (json_last_error() !== JSON_ERROR_NONE)) {
-            return $jsonStr;
+        if (empty($json) || is_array($json)) {
+            return $json;
         }
-        try {
-            $jsonStr = preg_replace('/\\"/', '"', $jsonStr);
-            $jsonStr = str_replace('\\', '', $jsonStr);
+        // 预处理: 去除BOM头(如果有)
+        $json = preg_replace('/^\xEF\xBB\xBF/', '', $json);
 
-            return json_decode($jsonStr, $assoc);
-        } catch (\Exception $e) {
-            return json_decode($jsonStr, $assoc);
+        try {
+            $data = json_decode($json, $assoc, $depth, $flags);
+        } catch (\JsonException $e) {
+            // 尝试去除多余转义
+            $cleaned = stripslashes($json);
+            // 尝试修复未转义的控制字符
+            $cleaned = preg_replace('/[\x00-\x1F]/', '', $cleaned);
+            // 尝试修复单引号(非标准JSON)
+            $cleaned = str_replace("'", '"', $cleaned);
+            // 尝试修复未转义的换行
+            $cleaned = str_replace(["\r", "\n"], ['\r', '\n'], $cleaned);
+
+            $cleaned = preg_replace('/\\"/', '"', $cleaned);
+            $cleaned = str_replace('\\', '', $cleaned);
+
+            try {
+                $data = json_decode($cleaned, $assoc, $depth, $flags);
+            } catch (\JsonException $e) {
+                // 处理解析失败的情况
+                $data = null;
+            }
         }
+        return $data;
     }
 }
 

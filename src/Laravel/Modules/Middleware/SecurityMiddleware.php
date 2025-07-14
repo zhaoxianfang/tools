@@ -838,6 +838,9 @@ class SecurityMiddleware
             'referer' => $request->header('referer'),
         ], $context);
 
+        // 标记日志已经被记录过了，防止重复记录；其他地方可以通过 $request->has('log_already_recorded') 来判断
+        $request->merge(['log_already_recorded' => true]);
+
         // 使用独立的安全日志通道
         Log::error("安全拦截: {$title}", $logData);
     }

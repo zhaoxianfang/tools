@@ -45,7 +45,7 @@ class SecurityMiddleware
         '/javascript\s*:/i',                           // JavaScript伪协议
         '/on\w+\s*=\s*["\'].*?["\']/i',                // 事件处理器
         '/(data|vbscript):/i',                         // 其他危险协议
-        '/(%3C|<).*script.*(%3E|>)/i',                 // XSS
+        // '/(%3C|<).*script.*(%3E|>)/i',                 // XSS
 
         // SQL注入
         '/\b(union\s+select|select\s+\*.*from)\b/is',  // 联合查询
@@ -55,21 +55,21 @@ class SecurityMiddleware
         '/\b(exec\s*\(|execute\s*\(|sp_executesql)/i', // SQL执行
         '/(or\s+\d=\d|and\s+\d=\d)/i',                 // SQL 注入
         '/delete\s+from/i',                            // SQL 删除
-        '/(benchmark\(|sleep\(|load_file\(|xp_cmdshell)/i', // SQL 时间盲注与命令注入
+        // '/(benchmark\(|sleep\(|load_file\(|xp_cmdshell)/i', // SQL 时间盲注与命令注入
         '/(?:\'|"|%22|%27).*(or|and).*(=|>|<|>=|<=)/i', // 匹配更复杂的 SQL 注入模式
 
         // 命令注入
         '/\b(system|exec|shell_exec|passthru)\s*\(/i', // 系统命令执行
         '/`.*`/',                                      // 反引号命令执行
-        '/\|\s*\w+/',                                  // 管道符号
-        '/\&\s*\w+/',                                  // 后台执行
+        // '/\|\s*\w+/',                                  // 管道符号
+        // '/\&\s*\w+/',                                  // 后台执行
 
         // 文件操作
         '/\.\.\//',                                    // 目录遍历
         '/(\.\.\/|\.\.\\\\)/',                         // 目录遍历
         '/\b(file_get_contents|fopen|fwrite)\s*\(/i',  // 文件操作
         '/php\s*:\/\/filter/i',                       // PHP过滤器
-        '/\b(load_file|outfile|dumpfile)\b/i',              // 文件操作
+        // '/\b(load_file|outfile|dumpfile)\b/i',              // 文件操作
 
         // 已知漏洞文件
         '/phpmyadmin/',              // 匹配 phpMyAdmin 目录
@@ -456,7 +456,7 @@ class SecurityMiddleware
                 $value = json_encode($value);
             }
 
-            if (is_string($value)) {
+            if (is_string($value) || ! $this->checkIsHtml($value)) {
                 // 判断提交内容是否为 markdown
                 if ($this->checkIsMarkdown($value)) {
                     // 1. 移除代码块内容（代码块中的内容不进行安全检测）
@@ -548,7 +548,7 @@ class SecurityMiddleware
      * 获取 func 执行类型 的执行对象类
      * 静态方法(字符串) \Modules\Test\Services\TestService::init   或
      * 普通方法(字符串) ['\Modules\Test\Services\TestService','test']
-     * 或(数组) ['\Modules\Test\Services\TestService','test']
+     * 或PHP8+类(数组) [\Modules\Test\Services\TestService::class,'test']
      */
     private function getFuncClass(string|array $classOrFunc = ''): array|string
     {
@@ -594,6 +594,53 @@ class SecurityMiddleware
     }
 
     /**
+     * 判断字符串是否为HTML格式
+     *
+     * @param  string  $content  要检查的内容
+     */
+    private function checkIsHtml(string $content): bool
+    {
+        $content = trim($content);
+
+        // 快速检查：空内容或缺少基本HTML特征
+        if ($content === '' ||
+            ! preg_match('/<[a-z][a-z0-9]*[\/\s>]/i', $content)) {
+            return false;
+        }
+
+        // 检查是否已经是完整HTML文档
+        $isFullDocument = preg_match('/^\s*<!DOCTYPE\s+html/i', $content) ||
+                          preg_match('/^\s*<html[^>]*>/i', $content);
+
+        $doc = new \DOMDocument;
+        libxml_use_internal_errors(true);
+
+        // 对于HTML片段，包装成完整文档
+        $htmlToLoad = $isFullDocument ? $content : sprintf(
+            '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>%s</body></html>',
+            $content
+        );
+
+        // 尝试加载HTML
+        $loaded = @$doc->loadHTML($htmlToLoad, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+
+        // 检查是否有严重错误
+        $hasCriticalErrors = false;
+        foreach (libxml_get_errors() as $error) {
+            // 忽略无害的HTML警告(如HTML5标签在旧规范中的警告)
+            if ($error->level >= LIBXML_ERR_ERROR && ! in_array($error->code, [801, 800])) {
+                $hasCriticalErrors = true;
+                break;
+            }
+        }
+
+        libxml_clear_errors();
+        libxml_use_internal_errors(false);
+
+        return $loaded && ! $hasCriticalErrors;
+    }
+
+    /**
      * 删除Markdown中的代码块和行内代码
      */
     public function pruneMarkdownCode(string $content): string
@@ -604,7 +651,7 @@ class SecurityMiddleware
         $processed = preg_replace('/`[^`]+`/', '', $processed);
 
         // 清理多余空行（保留最多两个连续换行）
-        $processed = preg_replace("/\n{3,}/", "\n\n", $processed);
+        // $processed = preg_replace("/\n{3,}/", "\n\n", $processed);
 
         return trim($processed);
     }

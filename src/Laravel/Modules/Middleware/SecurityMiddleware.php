@@ -5,7 +5,7 @@ namespace zxf\Laravel\Modules\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use zxf\Laravel\Trace\Traits\ExceptionCodeTrait;
 use zxf\Laravel\Trace\Traits\ExceptionShowDebugHtmlTrait;
@@ -33,18 +33,13 @@ class SecurityMiddleware
      */
     protected string $errorCode = '';
 
-    /**
-     * 允许的尝试次数，超过此次数将触发拦截
-     */
-    protected static int $allowAttemptsNum = 4;
-
     // ==================== 安全模式定义 ====================
 
     /**
-     * 恶意请求检测模式（正则表达式）
+     * 对body进行恶意请求检测模式（正则表达式）
      * 包含XSS、SQL注入、命令注入等常见攻击模式
      */
-    protected const MALICIOUS_PATTERNS = [
+    protected const MALICIOUS_BODY_PATTERNS = [
         // XSS攻击
         '/<script\b[^>]*>(.*?)<\/script>/is',          // 基本脚本标签
         '/javascript\s*:/i',                           // JavaScript伪协议
@@ -194,17 +189,19 @@ class SecurityMiddleware
      *
      * @param  Request  $request  当前HTTP请求对象
      * @param  Closure  $next  下一个中间件闭包
+     * @param  string|null  $encodedConfig  传入进来的配置字符串(已经经过 base64_encode(json_encode($config)) 处理过)
      * @return mixed 返回响应或继续处理
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next, ?string $encodedConfig = null)
     {
+        // 预处理参数
+        $this->handleSecurityParams($request, $encodedConfig);
+
         // 1. 预处理检查：爬虫和IP黑名单
         $this->preCheckSecurity($request);
 
         // 2. 获取请求基本信息
         $ip = $this->getClientRealIp($request);
-        $isLocalIp = $this->isLocalIp($ip);
-        $userId = $this->getCurrentUserId();
 
         // 3. 深度安全检测
         $securityCheckResult = $this->performDeepSecurityCheck($request, $ip);
@@ -218,8 +215,60 @@ class SecurityMiddleware
             );
         }
 
+        // 4. 检查黑名单
+        $blackInfo = $this->checkBlacklist($request, $ip);
+        if ($blackInfo['block']) {
+            return $blackInfo['response'];
+        }
+
+        // 5. 开发者自定义处理逻辑
+        $this->handleCustomLogic($request);
+
         // 6. 请求正常，继续处理
         return $next($request);
+    }
+
+    // 开发者自定义处理逻辑
+    protected function handleCustomLogic(Request $request): void
+    {
+        try {
+            $customHandle = $this->getMiddlewareConfig($request, 'custom_handle');
+            if (empty($customHandle)) {
+                return;
+            }
+            $call_class = $this->getFuncClass($customHandle);
+            // 要求返回结构 [
+            // "type"=>"拦截类型",
+            // "title"=>"拦截标题",
+            // "message"=>"拦截提示信息",
+            // "context"=>"拦截附加信息",
+            // ]
+            $res = call_user_func_array($call_class, [$request]);
+            if (! empty($res) && is_array($res) && ! empty($res['message'])) {
+                $this->handleSecurityViolation(
+                    $request,
+                    ! empty($res['type']) ? $res['type'] : '请求拦截',
+                    ! empty($res['title']) ? $res['title'] : '操作拦截',
+                    $res['message'],
+                    ! empty($res['context']) ? $res['context'] : [],
+                );
+            }
+        } catch (\Exception $e) {
+        }
+    }
+
+    // ==================== 参数处理方法 ====================
+    protected function handleSecurityParams(Request $request, ?string $encodedConfig = null): void
+    {
+        if (! empty($encodedConfig)) {
+            try {
+                $config = json_decode(base64_decode($encodedConfig), true, 512, JSON_THROW_ON_ERROR);
+                // 将配置存入请求对象以便后续使用
+                // $request->attributes->set('security_middleware_config', $config);
+                $request->merge(['security_middleware_config' => $config]);
+            } catch (\Exception $e) {
+            }
+        }
     }
 
     // ==================== 安全检测方法 ====================
@@ -232,11 +281,13 @@ class SecurityMiddleware
      */
     protected function preCheckSecurity(Request $request): void
     {
+        $userAgent = $request->userAgent();
+
         // 1. 检查禁止的爬虫
-        $this->checkBannedSpiders($request);
+        $this->checkBannedSpiders($request, $userAgent);
 
         // 2. 检查可疑User-Agent
-        $this->checkSuspiciousUserAgent($request);
+        $this->checkSuspiciousUserAgent($request, $userAgent);
     }
 
     /**
@@ -306,9 +357,8 @@ class SecurityMiddleware
      *
      * @param  Request  $request  当前请求对象
      */
-    protected function checkBannedSpiders(Request $request): void
+    protected function checkBannedSpiders(Request $request, ?string $userAgent = null): void
     {
-        $userAgent = $request->userAgent();
         if (empty($userAgent)) {
             $this->handleSecurityViolation(
                 $request,
@@ -327,14 +377,21 @@ class SecurityMiddleware
      *
      * @param  Request  $request  当前请求对象
      */
-    protected function checkSuspiciousUserAgent(Request $request): void
+    protected function checkSuspiciousUserAgent(Request $request, ?string $userAgent = null): void
     {
-        $userAgent = $request->userAgent();
         if (empty($userAgent)) {
             return;
         }
 
-        foreach (self::SUSPICIOUS_USER_AGENTS as $pattern) {
+        // 不允许包含的 User-Agent
+        $banUserAgent = $this->getMiddlewareConfig($request, 'forbid_user_agent');
+
+        $banUserAgent = is_array($banUserAgent) ? $banUserAgent : self::SUSPICIOUS_USER_AGENTS;
+        if (empty($banUserAgent)) {
+            return;
+        }
+
+        foreach ($banUserAgent as $pattern) {
             if (preg_match($pattern, $userAgent)) {
                 $this->handleSecurityViolation(
                     $request,
@@ -361,7 +418,7 @@ class SecurityMiddleware
         }
 
         // 2. 检查危险URL
-        if (! $this->isSafeUrl(urldecode($request->fullUrl()))) {
+        if (! $this->isSafeUrl($request, urldecode($request->fullUrl()))) {
             return true;
         }
 
@@ -386,13 +443,14 @@ class SecurityMiddleware
      */
     protected function isMaliciousRequest(Request $request): bool
     {
-        // 合并所有输入数据，包括URL
-        $input = array_merge(
-            $request->input(),
-            ['url' => urldecode($request->fullUrl())],
-            // $request->headers->all()
-        );
+        $input = $request->input(); // 只对请求body参数 进行检查
 
+        $bodyRegExp = $this->getMiddlewareConfig($request, 'reg_exp_body');
+
+        $regExp = is_array($bodyRegExp) && ! empty($bodyRegExp) ? $bodyRegExp : self::MALICIOUS_BODY_PATTERNS;
+        if (empty($regExp)) {
+            return false;
+        }
         foreach ($input as $key => $value) {
             if (is_array($value)) {
                 $value = json_encode($value);
@@ -405,8 +463,8 @@ class SecurityMiddleware
                     $value = $this->pruneMarkdownCode($value);
                 }
 
-                // 2. 对剩余内容进行安全检测
-                foreach (self::MALICIOUS_PATTERNS as $pattern) {
+                // 2. 对剩余内容进行正则安全检测
+                foreach ($regExp as $pattern) {
                     // 排除某些特殊情况（如文章内容）
                     if (preg_match($pattern, $value) && ! $this->isFalsePositive($request, $key, $value)) {
                         $this->errorCode = substr($value, 0, 100);
@@ -418,6 +476,103 @@ class SecurityMiddleware
         }
 
         return false;
+    }
+
+    /**
+     * 黑名单ip 处理
+     *
+     * @return array|false[]
+     */
+    public function checkBlacklist(Request $request, string $ip)
+    {
+        if ($this->isLocalIp($ip)) {
+            return [
+                'block' => false,
+            ];
+        }
+        try {
+            $customBlacklistHandle = $this->getMiddlewareConfig($request, 'blacklist_handle');
+            if (empty($customBlacklistHandle)) {
+                return ['block' => false];
+            }
+            $call_class = $this->getFuncClass($customBlacklistHandle);
+            // 要求返回结构 [bool(是否拦截),'拦截信息']
+            $res = call_user_func_array($call_class, [$ip]);
+            if (! empty($res) && is_array($res) && $res[0] === true && ! empty($res[1])) {
+                return [
+                    'block' => true,
+                    'response' => $this->handleSecurityViolation(
+                        $request,
+                        'Blacklist',
+                        '黑名单/Ip拦截',
+                        $res[1],
+                        ['ip' => $ip],
+                    ),
+                ];
+            }
+        } catch (\Exception $e) {
+        }
+
+        return ['block' => false];
+    }
+
+    /**
+     * 获取中间件配置项
+     */
+    protected function getMiddlewareConfig(Request $request, string $name): mixed
+    {
+        if (! $request->has('security_middleware_config')) {
+            return null;
+        }
+        $config = $request->input('security_middleware_config');
+
+        return $config[$name] ?? null;
+    }
+
+    /**
+     * 去除 $string 两边的空格、单引号和双引号
+     */
+    private function enhancedTrim(string $string): string
+    {
+        // 去除字符串两边的空格和引号
+        $trimmed = trim($string, " \t\n\r\0\x0B'\"");
+
+        // 使用正则表达式移除开头和结尾的多重引号（嵌套引号情况）
+        $trimmed = preg_replace('/^(["\']+)(.*?)(\1)+$/', '$2', $trimmed);
+
+        // 再次清理两边空格（确保清理完正则后的残余空格）
+        return trim($trimmed);
+    }
+
+    /**
+     * 获取 func 执行类型 的执行对象类
+     * 静态方法(字符串) \Modules\Test\Services\TestService::init   或
+     * 普通方法(字符串) ['\Modules\Test\Services\TestService','test']
+     * 或(数组) ['\Modules\Test\Services\TestService','test']
+     */
+    private function getFuncClass(string|array $classOrFunc = ''): array|string
+    {
+        if (is_array($classOrFunc)) {
+            if (count($classOrFunc) == 2) {
+                return [App::make($classOrFunc[0]), $classOrFunc[1]];
+            }
+
+            return [];
+        }
+        // 判断 $classOrFunc 里面是否包含逗号
+        // 判断 $classOrFunc 是否是 [ 开头且 ]结尾
+        if (str_contains($classOrFunc, ',') && preg_match('/^\[(.*)\]$/', $classOrFunc, $matches)) {
+            $class_or_func = $matches[1];
+            // 使用,分割$class_or_func，第一个参数是类名，第二个参数是方法名
+            [$class, $method] = explode(',', $class_or_func);
+            // 去除 $class 和 $method 两边的空格、单引号和双引号
+            $class = $this->enhancedTrim($class);
+            $method = $this->enhancedTrim($method);
+
+            return [App::make(trim($class)), trim($method)];
+        } else {
+            return $this->enhancedTrim($classOrFunc);
+        }
     }
 
     /**
@@ -463,36 +618,7 @@ class SecurityMiddleware
     protected function hasAnomalousParameters(Request $request): bool
     {
         // 1. 检查参数名中的可疑关键词
-        $suspiciousKeys = ['cmd', 'exec', 'union', 'select', 'delete', 'update'];
-        foreach ($request->keys() as $key) {
-            foreach ($suspiciousKeys as $suspicious) {
-                if (stripos($key, $suspicious) !== false) {
-                    $this->errorList['suspicious_key'] = $key;
-
-                    return true;
-                }
-            }
-        }
-
         // 2. 检查参数值的异常长度或编码
-        foreach ($request->all() as $value) {
-            if (is_string($value)) {
-                // 异常长的参数值
-                if (strlen($value) > 1024) {
-                    $this->errorList['long_value'] = strlen($value);
-
-                    return true;
-                }
-
-                // 异常编码
-                if (preg_match('/%[0-9a-f]{2}/i', $value) &&
-                    urldecode($value) !== $value) {
-                    $this->errorList['encoded_value'] = substr($value, 0, 50);
-
-                    return true;
-                }
-            }
-        }
 
         return false;
     }
@@ -506,30 +632,8 @@ class SecurityMiddleware
     protected function hasSuspiciousFingerprint(Request $request): bool
     {
         // 1. 缺少常见头
-        $commonHeaders = ['Accept', 'Accept-Language', 'Accept-Encoding'];
-        foreach ($commonHeaders as $header) {
-            if (! $request->headers->has($header)) {
-                $this->errorList['missing_header'] = $header;
-
-                return true;
-            }
-        }
-
         // 2. 异常的头顺序
-        $headers = array_keys($request->headers->all());
-        if (count($headers) < 3) {
-            $this->errorList['few_headers'] = count($headers);
-
-            return true;
-        }
-
         // 3. 自动化工具特征
-        $ua = $request->userAgent();
-        if (empty($ua) || strlen($ua) < 20) {
-            $this->errorList['suspicious_ua'] = $ua;
-
-            return true;
-        }
 
         return false;
     }
@@ -557,42 +661,6 @@ class SecurityMiddleware
     }
 
     /**
-     * 获取当前用户ID
-     *
-     * @return int|null 用户ID或null
-     */
-    protected function getCurrentUserId(): ?int
-    {
-        return auth()->id();
-        //        if (! auth('web')->guest()) {
-        //            return auth('web')->id();
-        //        }
-        //
-        //        if (! auth('api')->guest()) {
-        //            return auth('api')->id();
-        //        }
-        //
-        //        return null;
-    }
-
-    /**
-     * 获取当前请求速率
-     *
-     * @param  string  $ip  客户端IP
-     * @return array 速率信息
-     */
-    protected function getCurrentRate(string $ip): array
-    {
-        $key = 'rate_limit:'.$ip.':*';
-        $keys = Cache::getStore()->getRedis()->keys($key);
-
-        return [
-            'count' => count($keys),
-            'details' => array_slice($keys, 0, 10),
-        ];
-    }
-
-    /**
      * 检查是否有危险文件上传
      *
      * @param  Request  $request  当前请求对象
@@ -601,7 +669,7 @@ class SecurityMiddleware
     protected function hasDangerousUploads(Request $request): bool
     {
         foreach ($request->allFiles() as $file) {
-            if (! $this->isSafeFile($file)) {
+            if (! $this->isSafeFile($request, $file)) {
                 $this->errorList['dangerous_file'] = [
                     'name' => $file->getClientOriginalName(),
                     'type' => $file->getClientMimeType(),
@@ -621,34 +689,22 @@ class SecurityMiddleware
      * @param  mixed  $file  文件对象
      * @return bool 是否安全
      */
-    protected function isSafeFile($file): bool
+    protected function isSafeFile(Request $request, $file): bool
     {
         if (! $file instanceof UploadedFile) {
+            return true;
+        }
+        // 禁止上传的文件扩展名后缀
+        $banFileExt = $this->getMiddlewareConfig($request, 'forbid_upload_file_ext');
+
+        $banExp = is_array($banFileExt) ? $banFileExt : self::DISALLOWED_EXTENSIONS;
+        if (empty($banExp)) {
             return true;
         }
 
         // 检查扩展名
         $extension = strtolower($file->getClientOriginalExtension());
-        if (in_array($extension, self::DISALLOWED_EXTENSIONS)) {
-            return false;
-        }
-
-        // 检查MIME类型
-        $mime = strtolower($file->getClientMimeType());
-        $dangerousMimes = [
-            'application/x-php',
-            'application/x-httpd-php',
-            'text/x-php',
-            'application/x-javascript',
-            'application/x-msdownload',
-        ];
-        if (in_array($mime, $dangerousMimes)) {
-            return false;
-        }
-
-        // 检查文件内容（前100字节）
-        $content = file_get_contents($file->getRealPath(), false, null, 0, 100);
-        if (preg_match('/<\?php|<\?=|script|eval\(/i', $content)) {
+        if (in_array($extension, $banExp)) {
             return false;
         }
 
@@ -661,10 +717,17 @@ class SecurityMiddleware
      * @param  string  $url  完整URL
      * @return bool 是否安全
      */
-    protected function isSafeUrl(string $url): bool
+    protected function isSafeUrl(Request $request, string $url): bool
     {
+        $urlRegExp = $this->getMiddlewareConfig($request, 'reg_exp_url');
+
+        $regExp = is_array($urlRegExp) ? $urlRegExp : self::ILLEGAL_URL_PATTERNS;
+        if (empty($regExp)) {
+            return true;
+        }
+
         // 检查非法URL模式
-        foreach (self::ILLEGAL_URL_PATTERNS as $pattern) {
+        foreach ($regExp as $pattern) {
             try {
                 if (preg_match($pattern, $url)) {
                     return false;
@@ -672,12 +735,6 @@ class SecurityMiddleware
             } catch (\Exception $e) {
                 continue;
             }
-
-        }
-
-        // 检查异常编码
-        if (preg_match('/%[0-9a-f]{2,}/i', $url) && urldecode($url) !== $url) {
-            return false;
         }
 
         return true;
@@ -691,25 +748,6 @@ class SecurityMiddleware
      */
     protected function hasSuspiciousHeaders(Request $request): bool
     {
-        $suspiciousHeaders = [
-            'X-Forwarded-For' => '/^[\d\.\,\s]+$/',  // 应只包含IP和逗号
-            'User-Agent' => '/.+/',                  // 不应为空
-            'Accept' => '/.+\/.+/',                  // 应包含类型/子类型
-            'Referer' => '/^https?:\/\/.+/',          // 应包含协议
-        ];
-
-        foreach ($suspiciousHeaders as $header => $pattern) {
-            if ($request->headers->has($header) &&
-                ! preg_match($pattern, $request->header($header))) {
-                $this->errorList['suspicious_header'] = [
-                    'header' => $header,
-                    'value' => substr($request->header($header), 0, 100),
-                ];
-
-                return true;
-            }
-        }
-
         return false;
     }
 
@@ -727,13 +765,6 @@ class SecurityMiddleware
         // 非常规方法
         if (! in_array($method, $normalMethods)) {
             $this->errorList['suspicious_method'] = $method;
-
-            return true;
-        }
-
-        // GET请求但有body内容
-        if ($method === 'GET' && $request->getContent()) {
-            $this->errorList['get_with_body'] = strlen($request->getContent());
 
             return true;
         }
@@ -807,19 +838,19 @@ class SecurityMiddleware
         string $message,
         array $context = []
     ) {
-        // 标记请求已被拦截
-        $request->merge(['security_blocked' => true]);
-
         // 记录安全事件
         $this->logSecurityEvent($request, $type, $title, $context);
 
         // 发送安全警报（如果需要）
         if ($this->shouldSendAlert($type)) {
-            // $this->sendSecurityAlert($request, $type, $title, $context);
+            try {
+                $this->sendSecurityAlert($request, $type, $title, $context);
+            } catch (\Exception $e) {
+            }
         }
 
         // 返回适当的响应
-        return $this->createSecurityResponse($request, $type, $title, $message);
+        return $this->createSecurityResponse($request, $type, $title, $message, $context);
     }
 
     /**
@@ -840,7 +871,6 @@ class SecurityMiddleware
             'type' => $type,
             'title' => $title,
             'ip' => $request->ip(),
-            'user_id' => $this->getCurrentUserId(),
             'method' => $request->method(),
             'path' => $request->path(),
             'user_agent' => $request->userAgent(),
@@ -904,18 +934,13 @@ class SecurityMiddleware
      * @param  string  $title  警报标题
      * @param  array  $context  上下文信息
      */
-    protected function sendSecurityAlert(
-        Request $request,
-        string $type,
-        string $title,
-        array $context
-    ): void {
+    protected function sendSecurityAlert(Request $request, string $type, string $title, array $context): void
+    {
         try {
             $data = [
                 'title' => "安全警报: {$title}",
                 'type' => $type,
                 'ip' => $request->ip(),
-                'user_id' => $this->getCurrentUserId(),
                 'url' => $request->fullUrl(),
                 'method' => $request->method(),
                 'user_agent' => $request->userAgent(),
@@ -923,16 +948,14 @@ class SecurityMiddleware
                 'context' => $context,
             ];
 
-            // 渲染邮件内容
-            // $html = view('emails.security_alert', $data)->render();
-
-            // 发送邮件给安全团队
-            // send_email(
-            //     SystemEmails::$securityTeam,
-            //     "安全警报: {$title}",
-            //     $html,
-            //     'high'
-            // );
+            $securityAlarmHandle = $this->getMiddlewareConfig($request, 'send_security_alarm_handle');
+            if (empty($securityAlarmHandle)) {
+                return;
+            }
+            $call_class = $this->getFuncClass($securityAlarmHandle);
+            // 不需要返回数据
+            call_user_func_array($call_class, [$data]);
+            Log::warning('已经发送安全警报', $data);
         } catch (\Exception $e) {
             Log::error("发送安全警报失败: {$e->getMessage()}");
         }
@@ -947,23 +970,39 @@ class SecurityMiddleware
      * @param  string  $message  消息
      * @return mixed HTTP响应
      */
-    protected function createSecurityResponse(
-        Request $request,
-        string $type,
-        string $title,
-        string $message
-    ) {
+    protected function createSecurityResponse(Request $request, string $type, string $title, string $message, ?array $context = [])
+    {
         $statusCode = $this->getStatusCode($type);
+
         $responseData = [
             'title' => $title,
             'message' => $message,
             'type' => $type,
             'status' => $statusCode,
+            'context' => $context,
         ];
 
         // API请求返回JSON
         if ($request->expectsJson() || $request->is('api/*')) {
-            return response()->json($responseData, $statusCode);
+            $respFormat = [
+                'code' => 'code',
+                'message' => 'message',
+                'data' => 'data',
+            ];
+            $ajaxRespFormat = $this->getMiddlewareConfig($request, 'ajax_resp_format');
+            if (! empty($ajaxRespFormat)) {
+                $respFormat = array_merge($respFormat, $ajaxRespFormat);
+            }
+            $response = [
+                $respFormat['code'] => $statusCode,
+                $respFormat['message'] => $message,
+                $respFormat['data'] => [
+                    'title' => $title,
+                    'type' => $type,
+                ],
+            ];
+
+            return response()->json($response, $statusCode);
         }
 
         if (config('app.debug')) {
@@ -971,18 +1010,10 @@ class SecurityMiddleware
         }
 
         // Web请求返回视图
-        if (view()->exists("errors.{$statusCode}")) {
-            return response()->view(
-                "errors.{$statusCode}",
-                $responseData,
-                $statusCode
-            );
-        }
-
-        return $this->respView('[异常拦截]'.$message, $statusCode);
+        return $this->respView('[异常拦截]'.$message, $statusCode)->send();
 
         // 默认纯文本响应
-        // return response('<h3>'.$statusCode.':'.$message.'</h3>', $statusCode);
+        // return response('<h3>'.$statusCode.':'.$message.'</h3>', $statusCode)->send();
     }
 
     /**

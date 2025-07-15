@@ -14,10 +14,11 @@ trait ExceptionShowDebugHtmlTrait
         $newList = [];
         if (! $this->isValidMultiDimensionalArray($list)) {
             foreach ($list as $key => $value) {
+                $type = is_array($value) ? 'code' : 'string';
                 $newList[] = [
-                    'type' => 'string',
+                    'type' => $type,
                     'label' => $key,
-                    'value' => (string) $value,
+                    'value' => $type == 'code' ? json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : $value,
                 ];
             }
         } else {
@@ -190,6 +191,7 @@ HTML;
                 return false;
             }
         }
+
         return ! empty($array);
     }
 }

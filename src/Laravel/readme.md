@@ -10,3 +10,13 @@ trace('this is a test string');
 trace(['this is a test array1']);
 trace('string',['array1'],['array2'],'string2');
 ```
+
+## 输出
+```php
+// 输出 调试html
+app('trace')->outputDebugHtml($list, $title);
+// 响应输出json
+app('trace')->respJson($message, $code)->send();
+// 响应输出视图
+app('trace')->respView($message, $code)->send();
+```

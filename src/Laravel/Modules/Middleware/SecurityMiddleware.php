@@ -48,9 +48,9 @@ class SecurityMiddleware
         // XSS攻击
         '/<script\b[^>]*>(.*?)<\/script>/is',          // 基本脚本标签
         '/javascript\s*:/i',                           // JavaScript伪协议
-        '/on\w+\s*=\s*["\'].*?["\']/i',               // 事件处理器
+        '/on\w+\s*=\s*["\'].*?["\']/i',                // 事件处理器
         '/(data|vbscript):/i',                         // 其他危险协议
-        '/(%3C|<).*script.*(%3E|>)/i',                      // XSS
+        '/(%3C|<).*script.*(%3E|>)/i',                 // XSS
 
         // SQL注入
         '/\b(union\s+select|select\s+\*.*from)\b/is',  // 联合查询
@@ -100,65 +100,35 @@ class SecurityMiddleware
      */
     protected const ILLEGAL_URL_PATTERNS = [
         // 配置文件
-        '/\.env$/i',                                   // 环境文件
-        '/\.(ini|conf|cfg|config|settings)$/i',        // 各种配置文件
+        '~/(\.+[^/]*)(?=/|$)~',      // 匹配所有点(.)开头的文件或文件夹
         '/\.config(\.php)?$/',       // 匹配 .config 和 .config.php 文件
         '/composer\.(json|lock)$/',  // 匹配 composer.json 或 composer.lock 文件
         '/package\.json$/',          // 匹配 package.json 文件
-        '/\.y(a)?ml$/',              // 匹配 .yaml 和 .yml 文件
 
         // 源代码文件
         '/\.(php|jsp|asp|aspx|pl|py|rb|sh|cgi|cfm|bash|c|cpp|java|cfm|sql)$/i', // 脚本文件
-
         '/\.(js|css|html|htm|xml|json|yaml|yml)$/i',   // 可解析文件
-
-        // 版本控制
-        '/\.(git|svn|hg|bzr|cvs)/i',                  // 版本控制目录
 
         // 数据库文件
         '/\.(sql|db|db3|mdb|accdb|sqlite|sqlite3|dbf)$/i',        // 数据库文件
 
-        // 备份文件
-        '/\.(bak|old|save|backup|orig|temp|tmp|sdk|debug|sample|secret|private)$/i',   // 备份文件
+        // 备份和日志文件
+        '/\.(bak|old|save|backup|orig|temp|tmp|sdk|debug|sample|secret|private|log)$/i',   // 备份文件
 
         // 系统文件
-        '/\.(htaccess|htpasswd|gitignore|gitmodules)/i', // 系统文件
         '/^(readme|license|changelog)\.(md|txt)$/i',   // 说明文件
 
         // 压缩和归档文件
         // '/\.(zip|rar|tar|gz|7z)$/',  // 匹配常见压缩文件格式
 
         // 敏感目录
-        '/(config|setup|install|backup|log|node_modules|vendor)/i', // 敏感目录
+        // '/(config|setup|install|backup|log|node_modules|vendor)/i', // 敏感目录
+        '/(backup|node_modules|vendor)/i', // 敏感目录
         // 通用敏感路径
-        '/\.idea/',                  // 匹配 IDE 配置文件夹
         // '/uploads/',                 // 匹配上传目录，可能需要额外保护
 
-        // 备份和日志文件
-        '/\.bak$/',                  // 匹配 .bak 文件（备份文件）
-        // 站点爬虫规则会使用 robots.txt
-        // '/\.(log|txt)$/',         // 匹配 .log 和 .txt 文件（日志文件）
-        '/\.log/',                   // 匹配 .log文件
-        '/\.(old|orig)$/',           // 匹配 .old 和 .orig 旧文件或备份文件
-        '/\.save$/',                 // 匹配 .save 备份文件
-
-        // 安全相关文件
-        '/\.htaccess$/',             // 匹配 .htaccess 文件
-        '/\.htpasswd$/',             // 匹配 .htpasswd 文件
-        '/web\.config$/',            // 匹配 web.config 文件
-        '/app\.config$/',            // 匹配 app.config 文件
-        '/global\.asax$/',           // 匹配 global.asax 文件
-
         // 其他临时和系统文件
-        '#/(\.[^/]+)#',              // 匹配 . 开头的文件
-        '/\.tmp$/',                  // 匹配 .tmp 文件
-        '/\._/',                     // 匹配 ._ 前缀的文件（macOS 临时文件）
-        '/Thumbs\.db$/',             // 匹配 Thumbs.db 文件
-        '/desktop\.ini$/',           // 匹配 desktop.ini 文件
-        '/\$RECYCLE\.BIN/',          // 匹配 Windows 回收站目录
         '/System Volume Information/', // 匹配 Windows 系统信息目录
-        '/\.(DS_Store|AppleDouble)$/', // 匹配 macOS 系统文件
-
     ];
 
     /**
@@ -167,10 +137,10 @@ class SecurityMiddleware
      */
     protected const DISALLOWED_EXTENSIONS = [
         // 可执行文件
-        'exe', 'bat', 'cmd', 'com', 'msi', 'dll', 'so',
+        'exe', 'bat', 'cmd', 'com', 'msi', 'dll', 'so', 'bin', 'run',
 
         // 脚本文件
-        'php', 'phtml',
+        'php', 'phtml', 'java', 'elf', 'out',
         'jsp', 'jspx', 'asp', 'aspx', 'pl', 'py', 'rb',
         'sh', 'bash', 'csh', 'ksh', 'zsh', 'cgi',
 
@@ -210,11 +180,11 @@ class SecurityMiddleware
         '/appscan/i',      // IBM安全扫描器
         '/webscarab/i',    // OWASP WebScarab
         '/beef/i',         // 浏览器攻击框架
-        '/curl/i',         // 可疑的curl请求
-        '/wget/i',         // 可疑的wget请求
-        '/libwww-perl/i',  // Perl LWP请求
-        '/winhttp/i',      // Windows HTTP请求
-        '/python-urllib/i', // Python URL库
+        // '/curl/i',         // 可疑的curl请求
+        // '/wget/i',         // 可疑的wget请求
+        // '/libwww-perl/i',  // Perl LWP请求
+        // '/winhttp/i',      // Windows HTTP请求
+        // '/python-urllib/i', // Python URL库
     ];
 
     // ==================== 主处理方法 ====================
@@ -305,26 +275,26 @@ class SecurityMiddleware
         }
 
         // 3. 检查异常参数（非常规参数组合）
-        if ($this->hasAnomalousParameters($request)) {
-            return [
-                'block' => true,
-                'type' => 'Anomalous',
-                'title' => '异常参数拦截',
-                'message' => '请求包含异常参数组合',
-                'context' => ['params' => $request->all()],
-            ];
-        }
+        // if ($this->hasAnomalousParameters($request)) {
+        //     return [
+        //         'block' => true,
+        //         'type' => 'Anomalous',
+        //         'title' => '异常参数拦截',
+        //         'message' => '请求包含异常参数组合',
+        //         'context' => ['params' => $request->all()],
+        //     ];
+        // }
 
         // 4. 检查请求指纹（识别自动化工具）
-        if ($this->hasSuspiciousFingerprint($request)) {
-            return [
-                'block' => true,
-                'type' => 'Automation',
-                'title' => '自动化工具拦截',
-                'message' => '检测到自动化工具访问',
-                'context' => ['fingerprint' => $this->getRequestFingerprint($request)],
-            ];
-        }
+        // if ($this->hasSuspiciousFingerprint($request)) {
+        //     return [
+        //         'block' => true,
+        //         'type' => 'Automation',
+        //         'title' => '自动化工具拦截',
+        //         'message' => '检测到自动化工具访问',
+        //         'context' => ['fingerprint' => $this->getRequestFingerprint($request)],
+        //     ];
+        // }
 
         return ['block' => false];
     }
@@ -348,6 +318,8 @@ class SecurityMiddleware
                 ['ip' => $request->ip()]
             );
         }
+
+        // 2. database 检查禁止的爬虫
     }
 
     /**
@@ -427,8 +399,14 @@ class SecurityMiddleware
             }
 
             if (is_string($value)) {
-                foreach (self::MALICIOUS_PATTERNS as $pattern) {
+                // 判断提交内容是否为 markdown
+                if ($this->checkIsMarkdown($value)) {
+                    // 1. 移除代码块内容（代码块中的内容不进行安全检测）
+                    $value = $this->pruneMarkdownCode($value);
+                }
 
+                // 2. 对剩余内容进行安全检测
+                foreach (self::MALICIOUS_PATTERNS as $pattern) {
                     // 排除某些特殊情况（如文章内容）
                     if (preg_match($pattern, $value) && ! $this->isFalsePositive($request, $key, $value)) {
                         $this->errorCode = substr($value, 0, 100);
@@ -440,6 +418,40 @@ class SecurityMiddleware
         }
 
         return false;
+    }
+
+    /**
+     * Markdown检测函数
+     * 要求必须包含#标题 AND (```代码块 OR `行内代码`)
+     *
+     * @param  string  $content  要检查的内容
+     * @return bool 如果是符合严格条件的Markdown返回true
+     */
+    public function checkIsMarkdown(string $content): bool
+    {
+        $trimmed = trim($content);
+        if (empty($trimmed)) {
+            return false;
+        }
+
+        // 1. 检测是否是Markdown（必须同时包含标题和代码）
+        return preg_match('/^#{1,6}\s+\w+/m', $trimmed) && preg_match('/(^```[a-z]*\s*[\s\S]+?^```$|`[^`]+`)/m', $trimmed);
+    }
+
+    /**
+     * 删除Markdown中的代码块和行内代码
+     */
+    public function pruneMarkdownCode(string $content): string
+    {
+        // 删除代码块（严格模式匹配）
+        $processed = preg_replace('/^```[a-z]*\s*[\s\S]+?^```$/m', '', $content);
+        // 删除行内代码（严格模式匹配）
+        $processed = preg_replace('/`[^`]+`/', '', $processed);
+
+        // 清理多余空行（保留最多两个连续换行）
+        $processed = preg_replace("/\n{3,}/", "\n\n", $processed);
+
+        return trim($processed);
     }
 
     /**
@@ -740,10 +752,10 @@ class SecurityMiddleware
     protected function isFalsePositive(Request $request, string $key, string $value): bool
     {
         // 排除某些特殊路由
-        $excludedRoutes = ['api/comments', 'api/posts', 'api/articles'];
-        if (in_array($request->path(), $excludedRoutes)) {
-            return true;
-        }
+        // $excludedRoutes = ['api/comments', 'api/posts', 'api/articles'];
+        // if (in_array($request->path(), $excludedRoutes)) {
+        //     return true;
+        // }
 
         // 排除某些参数名
         $excludedKeys = ['content', 'body', 'description', 'markdown'];
@@ -752,10 +764,7 @@ class SecurityMiddleware
         }
 
         // 排除某些内容类型
-        //        $excludedContentTypes = ['application/json', 'text/markdown'];
-        //        if (in_array($request->getContentType(), $excludedContentTypes)) {
-        //            return true;
-        //        }
+        // $excludedContentTypes = ['application/json', 'text/markdown'];
 
         return false;
     }

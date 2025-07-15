@@ -7,12 +7,16 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use zxf\Laravel\Trace\Traits\AppEndTrait;
+use zxf\Laravel\Trace\Traits\ExceptionCodeTrait;
+use zxf\Laravel\Trace\Traits\ExceptionShowDebugHtmlTrait;
 use zxf\Laravel\Trace\Traits\TraceResponseTrait;
 
 class Handle
 {
     use AppEndTrait;
     use TraceResponseTrait;
+    use ExceptionShowDebugHtmlTrait;
+    use ExceptionCodeTrait;
 
     /**
      * @var \Illuminate\Foundation\Application

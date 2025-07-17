@@ -2,6 +2,7 @@
 
 namespace zxf\Laravel\Trace;
 
+use Closure;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Http\JsonResponse;
@@ -15,6 +16,11 @@ class LaravelCommonException // extends Handler
 {
     use ExceptionShowDebugHtmlTrait,ExceptionTrait;
 
+    private static ?Closure $customHandleCallback = null;
+
+    // 需要自定义回调处理的错误码；空表示由本类处理，不为空表示接管指定的错误码回调处理；eg: [401], [401,403]
+    private static array $customHandleCode = [];
+
     // 定义不需要被报告的异常类
     public function getDontReport(): array
     {
@@ -25,9 +31,18 @@ class LaravelCommonException // extends Handler
 
     /**
      * 初始化 Laravel 11+ 异常处理类
+     *
+     * @param  Exceptions  $exceptions  lv11 + 异常类
+     * @param  Closure|null  $customHandleCallback  想要自定义处理的回调函数(参数3不为空时有效)：回调 ($code, $message);
+     * @param  array  $customHandleCode  需要自定义回调处理的错误码；空表示由本类处理，不为空表示接管指定的错误码回调处理；eg: [401], [401,403]
      */
-    public static function initLaravelException(Exceptions $exceptions): void
+    public static function initLaravelException(Exceptions $exceptions, ?Closure $customHandleCallback = null, array $customHandleCode = []): void
     {
+        // 初始化赋值
+        self::$customHandleCallback = $customHandleCallback;
+        self::$customHandleCode = $customHandleCode;
+
+        // 实例化
         $customException = new static;
 
         // 去重复报告的异常,确保单个实例的异常只被报告一次
@@ -62,13 +77,21 @@ class LaravelCommonException // extends Handler
     /**
      * 渲染异常为 HTTP 响应：负责显示异常（用户可见的响应）
      */
-    public function render($request, Throwable $e): Response|JsonResponse
+    public function render($request, Throwable $e): Response|JsonResponse|\Illuminate\View\View|\Illuminate\Http\RedirectResponse
     {
         if (self::$message == '出错啦!') {
             // 可能部分异常不会走 report，例如：abort(401,'...');
             // 手动重新调用  report报告
             $this->report($e);
         }
+
+        if (! empty(self::$customHandleCode) && ! empty(self::$customHandleCallback)) {
+            if (in_array(self::$code, self::$customHandleCode)) {
+                // 调用自定义处理闭包函数
+                return call_user_func(self::$customHandleCallback, self::$code, self::$message);
+            }
+        }
+
         // 如果模块下定义了自定义的异常接管类 Handler，则交由模块下的异常类自己处理
         if ($this->hasModuleCustomException()) {
             return $this->handleModulesCustomException($e, $request);

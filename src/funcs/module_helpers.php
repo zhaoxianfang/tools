@@ -356,3 +356,128 @@ if (! function_exists('view_exists')) {
         return \Illuminate\Support\Facades\View::exists($view);
     }
 }
+
+if (! function_exists('to_full_text_search_str')) {
+    /**
+     * 把搜索字符串 组装 成 mysql 全文索引布尔模式搜索 FullText 的搜索关键字字符串
+     *
+     * @param  string  $string  搜索的关键字
+     * @return string 处理后的字符串
+     */
+    function to_full_text_search_str(string $string): string
+    {
+        // 清理多余空格和符号，末尾加空格用于处理最后一个词
+        $input = preg_replace(['/\s+/', '/\++/', '/\-+/', '/\~+/', '/\*+/'], [' ', '+', '-', '~', '*'], trim($string)).' ';
+        if ($input === ' ' || empty(trim($input))) {
+            return '';
+        }
+
+        // 初始化变量
+        $result = [];           // 保存最终结果
+        $word = '';             // 当前正在构建的词
+        $operator = '';         // 当前词前的操作符
+        $inQuote = false;       // 是否处于双引号短语中
+        $len = mb_strlen($input); // 字符串长度
+
+        // 遍历输入字符串字符
+        for ($i = 0; $i < $len; $i++) {
+            $char = mb_substr($input, $i, 1); // 当前字符
+
+            if ($char === '"') {
+                // 如果结束短语，加入带引号短语
+                if ($inQuote && $word !== '') {
+                    $result[] = $operator.'*"'.$word.'"*';
+                    $word = '';
+                    $operator = '';
+                }
+                $inQuote = ! $inQuote; // 切换引号状态
+
+                continue;
+            }
+            if ($inQuote) {
+                $word .= $char; // 引号内字符直接拼接
+
+                continue;
+            }
+            if (in_array($char, ['+', '-', '~', '>', '<']) && $word === '') {
+                $operator = $char; // 设置操作符（必须在词前）
+
+                continue;
+            }
+            if ($char === '(') {
+                $result[] = $operator.'('; // 左括号也带上操作符
+                $operator = '';
+
+                continue;
+            }
+            if ($char === ')') {
+                // 如果括号内有词，处理该词
+                if ($word !== '') {
+                    $result[] = $operator.'*'.$word.'*';
+                }
+                $result[] = ')';
+                $word = '';
+                $operator = '';
+
+                continue;
+            }
+            if ($char === ' ') {
+                // 空格表示一个词结束
+                if ($word !== '') {
+                    $result[] = $operator.'*'.$word.'*';
+                }
+                $word = '';
+                $operator = '';
+
+                continue;
+            }
+            $word .= $char; // 累加普通字符
+        }
+        // 处理最后的单词（没有被空格分隔）
+        if ($word !== '') {
+            $result[] = $operator.'*'.$word.'*';
+        }
+
+        // 合并最终结果，返回处理过的字符串
+        return implode(' ', $result);
+    }
+
+    // 全文搜索使用说明：
+    // 布尔模式操作符:
+    //      +:必须包含； -:必须排除；     >:提高相关性；  <:降低相关性；   ~:负相关性(包含该词会降低文档相关性)；
+    //      *:通配符;   @distance:距离； "":精确短语；  ():将条件分组；  [空格]:可选包含
+    //
+    // 例子:
+    //     +Laravel -Vue                              => 必须包含Laravel，排除Vue;
+    //                                                      解释:查找包含"Laravel"但不包含"Vue"的所有文档
+    //     >PHP <Java                                 => 提高PHP的权重，降低Java的权重 ;
+    //                                                      解释:查找包含PHP和Java的文档，但PHP匹配的文档排名更高
+    //     +PHP -"end of life"                        => 必须包含PHP，排除"end of life"
+    //     +(Laravel PHP) +MySQL                      => 必须包含(Laravel或PHP)，且必须包含MySQL;
+    //                                                      解释:查找包含MySQL以及Laravel或PHP的文档
+    //     "Laravel PHP"@5                            => "Laravel"和"PHP"相距不超过5个词 ;
+    //                                                      解释:查找Laravel和PHP两个词相邻不超过5个词的文档
+    //     Larav* +framework                          => 搜索以Larav开头的词 ;
+    //                                                      解释:查找包含framework以及以Larav开头的词(如Laravel)的文档
+    //     +(MySQL PostgreSQL) -Oracle >performance   => 必须包含(MySQL或PostgreSQL)，排除Oracle，提高performance的权重;
+    //                                                      解释:查找包含MySQL或PostgreSQL、不包含Oracle、且performance匹配项排名更高的文档
+    //     +PHP ~legacy                                =>包含PHP，但包含legacy会降低排名;
+    //                                                      解释:查找必须包含PHP的文档，但如果文档包含legacy则会降低其排名
+    //     +"web development" tutorial                 => 必须包含"web development"，可选包含tutorial ;
+    //                                                      解释:查找必须包含完整短语"web development"和可能包含tutorial的文档
+    //     +((React Vue) (Laravel Django)) +"最佳实践"  => 必须包含(前端技术)或(后端技术)，且必须包含最佳实践;
+    //                                                      解释：查找包含(React或Vue)或(Laravel或Django)且必须包含"最佳实践"的文档
+    //     +(数据库 DB) -Oracle >MySQL "性能 优化"@4     => 必须包含(数据库或DB)，排除Oracle，提高MySQL权重，邻近搜索"性能优化";
+    //                                                      解释：必须包含"数据库"或"DB",不能包含"Oracle",包含"MySQL"的文档排名更高,"性能"和"优化"两词相距不超过4个词
+
+    // 自然语言模式
+    // return self::query()->whereFullText('title', $string)->orWhereFullText('content', $string)->get();
+    // 布尔模式
+    // return self::query()->whereFullText(['title', 'content'], '+测试 -公司', ['mode' => 'boolean'])->count();
+    // 自然扩展模式
+    // return self::query()->whereFullText('content', '测试', ['expanded' => true])->paginate(10);
+    // 模型使用
+    // return self::query()->whereFullText('content', '测试')->get();
+
+    // return self::query()->whereFullText(['title', 'content'], to_full_text_search_str($string), ['mode' => 'boolean'])->get();
+}

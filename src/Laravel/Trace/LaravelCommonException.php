@@ -92,9 +92,13 @@ class LaravelCommonException // extends Handler
             }
         }
 
-        // 如果模块下定义了自定义的异常接管类 Handler，则交由模块下的异常类自己处理
-        if ($this->hasModuleCustomException()) {
-            return $this->handleModulesCustomException($e, $request);
+        try {
+            // 如果模块下定义了自定义的异常接管类 Handler，则交由模块下的异常类自己处理
+            if ($this->hasModuleCustomException()) {
+                return $this->handleModulesCustomException($e, $request);
+            }
+        } catch (Throwable $e) {
+            // 可能自定义接管的异常类也有异常
         }
 
         // 调试模式

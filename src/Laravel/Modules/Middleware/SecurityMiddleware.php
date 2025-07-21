@@ -102,7 +102,7 @@ class SecurityMiddleware
 
         // 源代码文件
         '/\.(php|jsp|asp|aspx|pl|py|rb|sh|cgi|cfm|bash|c|cpp|java|cfm|sql)$/i', // 脚本文件
-        '/\.(js|css|html|htm|xml|json|yaml|yml)$/i',   // 可解析文件
+        '/\.(yaml|yml)$/i',   // 可解析文件
 
         // 数据库文件
         '/\.(sql|db|db3|mdb|accdb|sqlite|sqlite3|dbf)$/i',        // 数据库文件
@@ -456,7 +456,7 @@ class SecurityMiddleware
                 $value = json_encode($value);
             }
 
-            if (is_string($value) || ! $this->checkIsHtml($value)) {
+            if (is_string($value) && ! $this->checkIsHtml($value)) {
                 // 判断提交内容是否为 markdown
                 if ($this->checkIsMarkdown($value)) {
                     // 1. 移除代码块内容（代码块中的内容不进行安全检测）
@@ -579,10 +579,10 @@ class SecurityMiddleware
      * Markdown检测函数
      * 要求必须包含#标题 AND (```代码块 OR `行内代码`)
      *
-     * @param  string  $content  要检查的内容
+     * @param  string|null  $content  要检查的内容
      * @return bool 如果是符合严格条件的Markdown返回true
      */
-    public function checkIsMarkdown(string $content): bool
+    public function checkIsMarkdown(?string $content = ''): bool
     {
         $trimmed = trim($content);
         if (empty($trimmed)) {
@@ -596,14 +596,14 @@ class SecurityMiddleware
     /**
      * 判断字符串是否为HTML格式
      *
-     * @param  string  $content  要检查的内容
+     * @param  string|null  $content  要检查的内容
      */
-    private function checkIsHtml(string $content): bool
+    private function checkIsHtml(?string $content = ''): bool
     {
         $content = trim($content);
 
         // 快速检查：空内容或缺少基本HTML特征
-        if ($content === '' ||
+        if (empty($content) ||
             ! preg_match('/<[a-z][a-z0-9]*[\/\s>]/i', $content)) {
             return false;
         }

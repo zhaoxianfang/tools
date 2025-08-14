@@ -486,6 +486,9 @@ class Handle
 
         $sqlTimes = 0;
         foreach ($this->sqlList as &$item) {
+            if(!isset($item['time'])){
+                continue;
+            }
             $sqlTimes = bcadd($sqlTimes, $item['time'], 3);
 
             if ($item['type'] == 'transaction') {

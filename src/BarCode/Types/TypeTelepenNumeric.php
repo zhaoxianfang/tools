@@ -1,8 +1,9 @@
 <?php
+
 /**
  * Adapted by Darren Stephens <darren.stephens@durham.ac.uk>
- * from Java implementation of Telepen by <rstuart114@gmail.com> Robin Stuart 
- * at https://github.com/woo-j/OkapiBarcode which uses the 
+ * from Java implementation of Telepen by <rstuart114@gmail.com> Robin Stuart
+ * at https://github.com/woo-j/OkapiBarcode which uses the
  * Apache License 2.0 http://www.apache.org/licenses/LICENSE-2.0
  *
  * Implements Telepen (also known as Telepen Alpha), and Telepen Numeric.

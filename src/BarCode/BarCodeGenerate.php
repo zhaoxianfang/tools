@@ -9,14 +9,22 @@ use zxf\BarCode\Exceptions\UnknownTypeException;
 class BarCodeGenerate
 {
     protected BarcodeGenerator $generator; // 条形码生成器实例
-    protected int              $padding  = 10; // 条形码外部安全边距
-    protected int              $width    = 2; // 条形码单条宽度
-    protected int              $height   = 50; // 条形码高度
-    protected string           $format   = BarcodeGenerator::TYPE_CODE_128; // 默认编码格式
-    protected string           $text     = ''; // 底部文本
-    protected string           $content  = '0123456789'; // 条码内容
-    protected string           $fontPath = ''; // 默认字体路径
-    protected int              $fontSize = 10; // 默认字体大小
+
+    protected int $padding = 10; // 条形码外部安全边距
+
+    protected int $width = 2; // 条形码单条宽度
+
+    protected int $height = 50; // 条形码高度
+
+    protected string $format = BarcodeGenerator::TYPE_CODE_128; // 默认编码格式
+
+    protected string $text = ''; // 底部文本
+
+    protected string $content = '0123456789'; // 条码内容
+
+    protected string $fontPath = ''; // 默认字体路径
+
+    protected int $fontSize = 10; // 默认字体大小
 
     // 条形码格式
     protected array $generatorMaps = [
@@ -30,69 +38,66 @@ class BarCodeGenerate
     public function __construct(string $generatorType = 'png')
     {
         if (empty($this->generatorMaps[$generatorType])) {
-            throw new UnknownTypeException('Unknown type: ' . $generatorType);
+            throw new UnknownTypeException('Unknown type: '.$generatorType);
         }
-        $this->generator = new $this->generatorMaps[$generatorType]();
+        $this->generator = new $this->generatorMaps[$generatorType];
     }
 
     /**
      * 设置条形码的外部安全边距
      *
-     * @param int $padding
      *
      * @return $this
      */
     public function padding(int $padding = 10)
     {
         $this->padding = max(0, $padding);
+
         return $this;
     }
 
     /**
      * 设置条形码宽度
      *
-     * @param int $width
      *
      * @return $this
      */
     public function width(int $width = 2)
     {
         $this->width = max(1, $width);
+
         return $this;
     }
 
     /**
      * 设置条形码高度
      *
-     * @param int $height
      *
      * @return $this
      */
     public function height(int $height = 50)
     {
         $this->height = max(10, $height);
+
         return $this;
     }
 
     /**
      * 设置条形码编码格式
      *
-     * @param string $format
      *
      * @return $this
      */
     public function format(string $format)
     {
         $this->format = $format;
+
         return $this;
     }
 
     /**
      * 设置底部文本内容
      *
-     * @param string $text
-     * @param string $fontPath
-     * @param int    $textSize
      *
      * @return $this
      */
@@ -101,11 +106,11 @@ class BarCodeGenerate
         $this->text = $text;
 
         // 设置字体路径
-        $fontDir = dirname(__DIR__, 1) . '/resource/font/';
+        $fontDir = dirname(__DIR__, 1).'/resource/font/';
         if ($fontPath) {
-            $this->fontPath = file_exists($fontPath) ? $fontPath : $fontDir . $fontPath . '.ttf';
+            $this->fontPath = file_exists($fontPath) ? $fontPath : $fontDir.$fontPath.'.ttf';
         } else {
-            $this->fontPath = $fontDir . 'pmzdxx.ttf';
+            $this->fontPath = $fontDir.'pmzdxx.ttf';
         }
 
         if ($textSize > 0) {
@@ -118,28 +123,28 @@ class BarCodeGenerate
     /**
      * 设置条形码内容
      *
-     * @param string $string
      *
      * @return $this
      */
     public function content(string $string = '0123456789')
     {
         $this->content = $string;
+
         return $this;
     }
 
     /**
      * 生成条形码并返回图像资源
      *
-     * @param string $text
-     *
+     * @param  string  $text
      * @return resource|false
+     *
      * @throws UnknownTypeException
      */
     public function generateImageResource()
     {
         $barcodeData = $this->generator->getBarcode($this->content, $this->format, $this->width, $this->height);
-        $image       = imagecreatefromstring($barcodeData);
+        $image = imagecreatefromstring($barcodeData);
 
         // 显示底部文本
         $image = $this->addTextBelow($image);
@@ -147,6 +152,7 @@ class BarCodeGenerate
         if ($this->padding > 0) {
             $paddedImage = $this->addPadding($image);
             imagedestroy($image);
+
             return $paddedImage;
         }
 
@@ -156,19 +162,18 @@ class BarCodeGenerate
     /**
      * 添加外部边距
      *
-     * @param resource $image
-     *
+     * @param  resource  $image
      * @return resource
      */
     protected function addPadding($image)
     {
-        $width     = imagesx($image);
-        $height    = imagesy($image);
-        $newWidth  = $width + ($this->padding * 2);
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $newWidth = $width + ($this->padding * 2);
         $newHeight = $height + ($this->padding * 2);
 
         $paddedImage = imagecreatetruecolor($newWidth, $newHeight);
-        $white       = imagecolorallocate($paddedImage, 255, 255, 255);
+        $white = imagecolorallocate($paddedImage, 255, 255, 255);
         imagefill($paddedImage, 0, 0, $white);
 
         imagecopy($paddedImage, $image, $this->padding, $this->padding, 0, 0, $width, $height);
@@ -179,7 +184,6 @@ class BarCodeGenerate
     /**
      * 在条形码下方添加文本内容，居中显示
      *
-     * @param $image
      *
      * @return false|GdImage|resource
      */
@@ -192,22 +196,22 @@ class BarCodeGenerate
             $this->text($this->content);
         }
 
-        $width     = imagesx($image);
-        $height    = imagesy($image);
-        $offset    = 6;
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $offset = 6;
         $newHeight = $height + $this->fontSize + $offset;
 
         $imageWithText = imagecreatetruecolor($width, $newHeight);
-        $white         = imagecolorallocate($imageWithText, 255, 255, 255);
-        $black         = imagecolorallocate($imageWithText, 0, 0, 0);
+        $white = imagecolorallocate($imageWithText, 255, 255, 255);
+        $black = imagecolorallocate($imageWithText, 0, 0, 0);
         imagefill($imageWithText, 0, 0, $white);
 
         imagecopy($imageWithText, $image, 0, 0, 0, 0, $width, $height);
 
-        $textBox   = imagettfbbox($this->fontSize, 0, $this->fontPath, $this->text);
+        $textBox = imagettfbbox($this->fontSize, 0, $this->fontPath, $this->text);
         $textWidth = $textBox[2] - $textBox[0];
-        $textX     = ($width - $textWidth) / 2;
-        $textY     = $newHeight - $offset / 2;
+        $textX = ($width - $textWidth) / 2;
+        $textY = $newHeight - $offset / 2;
 
         imagettftext($imageWithText, $this->fontSize, 0, $textX, $textY, $black, $this->fontPath, $this->text);
 
@@ -224,15 +228,15 @@ class BarCodeGenerate
         $image = $this->generateImageResource();
         imagepng($image);
         imagedestroy($image);
-        die;
+        exit;
     }
 
     /**
      * 保存条形码到指定路径
      *
-     * @param string $filePath
      *
      * @return string 文件的相对路径
+     *
      * @throws UnknownTypeException
      */
     public function toFile(string $filePath): string
@@ -240,6 +244,7 @@ class BarCodeGenerate
         $image = $this->generateImageResource();
         imagepng($image, $filePath);
         imagedestroy($image);
+
         // 返回文件的相对路径
         return relative_path($filePath);
     }
@@ -248,6 +253,7 @@ class BarCodeGenerate
      * 返回图片资源
      *
      * @return false|GdImage|resource
+     *
      * @throws UnknownTypeException
      */
     public function toImg()
@@ -258,7 +264,6 @@ class BarCodeGenerate
     /**
      * 转换成base64格式
      *
-     * @return string
      * @throws UnknownTypeException
      */
     public function toBase64(): string
@@ -270,7 +275,8 @@ class BarCodeGenerate
         imagepng($image);
         // 获取缓冲区的内容
         $image_data = ob_get_clean();
+
         // 将图像数据编码为 base64
-        return 'data:image/png;base64,' . base64_encode($image_data);
+        return 'data:image/png;base64,'.base64_encode($image_data);
     }
 }

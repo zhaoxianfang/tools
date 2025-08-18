@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class QROptions
  *
  * @created      08.12.2015
+ *
  * @author       Smiley <smiley@chillerlan.net>
  * @copyright    2015 Smiley
  * @license      MIT
@@ -16,6 +18,7 @@ use zxf\QrCode\Settings\SettingsContainerAbstract;
 /**
  * The QrCode settings container
  */
-class QROptions extends SettingsContainerAbstract{
-	use QROptionsTrait, QRCodeReaderOptionsTrait;
+class QROptions extends SettingsContainerAbstract
+{
+    use QRCodeReaderOptionsTrait, QROptionsTrait;
 }

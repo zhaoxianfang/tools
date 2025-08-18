@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Interface SettingsContainerInterface
  *
  * @created      28.08.2018
+ *
  * @author       Smiley <smiley@chillerlan.net>
  * @copyright    2018 Smiley
  * @license      MIT
@@ -11,39 +13,40 @@ declare(strict_types=1);
 
 namespace zxf\QrCode\Settings;
 
-use JsonSerializable, Serializable;
+use JsonSerializable;
+use Serializable;
 
 /**
  * a generic container with magic getter and setter
  */
-interface SettingsContainerInterface extends JsonSerializable, Serializable{
-
+interface SettingsContainerInterface extends JsonSerializable, Serializable
+{
     /**
      * Retrieve the value of $property
      *
      * @return mixed|null
      */
-    public function __get(string $property):mixed;
+    public function __get(string $property): mixed;
 
     /**
      * Set $property to $value while avoiding private and non-existing properties
      */
-    public function __set(string $property, mixed $value):void;
+    public function __set(string $property, mixed $value): void;
 
     /**
      * Checks if $property is set (aka. not null), excluding private properties
      */
-    public function __isset(string $property):bool;
+    public function __isset(string $property): bool;
 
     /**
      * Unsets $property while avoiding private and non-existing properties
      */
-    public function __unset(string $property):void;
+    public function __unset(string $property): void;
 
     /**
      * @see \zxf\QrCode\Settings\SettingsContainerInterface::toJSON()
      */
-    public function __toString():string;
+    public function __toString(): string;
 
     /**
      * Returns an array representation of the settings object
@@ -52,7 +55,7 @@ interface SettingsContainerInterface extends JsonSerializable, Serializable{
      *
      * @return array<string, mixed>
      */
-    public function toArray():array;
+    public function toArray(): array;
 
     /**
      * Sets properties from a given iterable
@@ -61,7 +64,7 @@ interface SettingsContainerInterface extends JsonSerializable, Serializable{
      *
      *  @phpstan-param array<string, mixed> $properties
      */
-    public function fromIterable(iterable $properties):static;
+    public function fromIterable(iterable $properties): static;
 
     /**
      * Returns a JSON representation of the settings object
@@ -71,7 +74,7 @@ interface SettingsContainerInterface extends JsonSerializable, Serializable{
      *
      * @throws \JsonException
      */
-    public function toJSON(int|null $jsonOptions = null):string;
+    public function toJSON(?int $jsonOptions = null): string;
 
     /**
      * Sets properties from a given JSON string
@@ -81,6 +84,5 @@ interface SettingsContainerInterface extends JsonSerializable, Serializable{
      * @throws \Exception
      * @throws \JsonException
      */
-    public function fromJSON(string $json):static;
-
+    public function fromJSON(string $json): static;
 }

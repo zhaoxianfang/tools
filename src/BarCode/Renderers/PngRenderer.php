@@ -12,6 +12,7 @@ use zxf\BarCode\Exceptions\BarcodeException;
 class PngRenderer implements RendererInterface
 {
     protected array $foregroundColor = [0, 0, 0];
+
     protected ?array $backgroundColor = null;
 
     protected bool $useImagick;
@@ -37,6 +38,7 @@ class PngRenderer implements RendererInterface
     public function useImagick(): self
     {
         $this->useImagick = true;
+
         return $this;
     }
 
@@ -46,6 +48,7 @@ class PngRenderer implements RendererInterface
     public function useGd(): self
     {
         $this->useImagick = false;
+
         return $this;
     }
 
@@ -54,15 +57,15 @@ class PngRenderer implements RendererInterface
     // Example: $width = $barcode->getWidth() * 3
     public function render(Barcode $barcode, float $width = 200, float $height = 30): string
     {
-        $width = (int)round($width);
-        $height = (int)round($height);
+        $width = (int) round($width);
+        $height = (int) round($height);
 
         $widthFactor = $width / $barcode->getWidth();
 
         if ($this->useImagick) {
             $image = $this->createImagickImageObject($width, $height);
-            $imagickBarsShape = new ImagickDraw();
-            $imagickBarsShape->setFillColor(new ImagickPixel('rgb(' . implode(',', $this->foregroundColor) .')'));
+            $imagickBarsShape = new ImagickDraw;
+            $imagickBarsShape->setFillColor(new ImagickPixel('rgb('.implode(',', $this->foregroundColor).')'));
         } else {
             $image = $this->createGdImageObject($width, $height);
             $gdForegroundColor = \imagecolorallocate($image, $this->foregroundColor[0], $this->foregroundColor[1], $this->foregroundColor[2]);
@@ -75,14 +78,14 @@ class PngRenderer implements RendererInterface
             $barWidth = $bar->getWidth() * $widthFactor;
 
             if ($bar->isBar() && $barWidth > 0) {
-                $y = (int)round(($bar->getPositionVertical() * $height / $barcode->getHeight()));
-                $barHeight = (int)round(($bar->getHeight() * $height / $barcode->getHeight()));
+                $y = (int) round(($bar->getPositionVertical() * $height / $barcode->getHeight()));
+                $barHeight = (int) round(($bar->getHeight() * $height / $barcode->getHeight()));
 
                 // draw a vertical bar
                 if ($this->useImagick) {
-                    $imagickBarsShape->rectangle((int)round($positionHorizontal), $y, (int)round($positionHorizontal + $barWidth - 1), ($y + $barHeight));
+                    $imagickBarsShape->rectangle((int) round($positionHorizontal), $y, (int) round($positionHorizontal + $barWidth - 1), ($y + $barHeight));
                 } else {
-                    \imagefilledrectangle($image, (int)round($positionHorizontal), $y, (int)round($positionHorizontal + $barWidth - 1), ($y + $barHeight), $gdForegroundColor);
+                    \imagefilledrectangle($image, (int) round($positionHorizontal), $y, (int) round($positionHorizontal + $barWidth - 1), ($y + $barHeight), $gdForegroundColor);
                 }
             }
             $positionHorizontal += $barWidth;
@@ -90,10 +93,12 @@ class PngRenderer implements RendererInterface
 
         if ($this->useImagick) {
             $image->drawImage($imagickBarsShape);
+
             return $image->getImageBlob();
         } else {
             ob_start();
             $this->generateGdImage($image);
+
             return ob_get_clean();
         }
     }
@@ -102,6 +107,7 @@ class PngRenderer implements RendererInterface
     public function setForegroundColor(array $color): self
     {
         $this->foregroundColor = $color;
+
         return $this;
     }
 
@@ -110,6 +116,7 @@ class PngRenderer implements RendererInterface
     public function setBackgroundColor(?array $color): self
     {
         $this->backgroundColor = $color;
+
         return $this;
     }
 
@@ -132,10 +139,10 @@ class PngRenderer implements RendererInterface
 
     protected function createImagickImageObject(int $width, int $height): Imagick
     {
-        $image = new Imagick();
+        $image = new Imagick;
         if ($this->backgroundColor !== null) {
             // Colored background
-            $backgroundColor = new ImagickPixel('rgb(' . implode(',', $this->backgroundColor) . ')');
+            $backgroundColor = new ImagickPixel('rgb('.implode(',', $this->backgroundColor).')');
         } else {
             // Use transparent background
             $backgroundColor = new ImagickPixel('none');

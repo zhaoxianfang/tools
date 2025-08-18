@@ -10,22 +10,22 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Facades\Excel;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-
-// 展示数字
 use PhpOffice\PhpSpreadsheet\Cell\Cell;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
+// 展示数字
 use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
  * Excel 导出
  */
-class ExportHandle extends DefaultValueBinder implements WithHeadings, WithMapping, FromArray, ShouldAutoSize, WithTitle, WithStyles
+class ExportHandle extends DefaultValueBinder implements FromArray, ShouldAutoSize, WithHeadings, WithMapping, WithStyles, WithTitle
 {
+    private array $list = [];
 
-    private array $list      = [];
-    private array $headings  = [];
+    private array $headings = [];
+
     public string $sheetName = '表1';
 
     /**
@@ -35,10 +35,10 @@ class ExportHandle extends DefaultValueBinder implements WithHeadings, WithMappi
 
     public function __construct(array $data, array $head = [])
     {
-        if (!class_exists(Excel::class)) {
+        if (! class_exists(Excel::class)) {
             throw new Exception('依赖于excel，请先安装「composer require maatwebsite/excel」后再使用');
         }
-        $this->list     = $data;
+        $this->list = $data;
         $this->headings = $head;
     }
 
@@ -50,32 +50,25 @@ class ExportHandle extends DefaultValueBinder implements WithHeadings, WithMappi
         // 展示数字，特别是数字0在表格中不显示的情况
         if (is_numeric($value)) {
             $cell->setValueExplicit($value, DataType::TYPE_NUMERIC);
+
             return true;
         }
 
         return parent::bindValue($cell, $value);
     }
 
-    /**
-     * @return array
-     */
     public function array(): array
     {
         return $this->list;
     }
 
-    /**
-     * @return array
-     */
     public function headings(): array
     {
         return $this->headings;
     }
 
     /**
-     * @param mixed $row
-     *
-     * @return array
+     * @param  mixed  $row
      */
     public function map($row): array
     {
@@ -84,8 +77,6 @@ class ExportHandle extends DefaultValueBinder implements WithHeadings, WithMappi
 
     /**
      * sheet名称
-     *
-     * @return string
      */
     public function title(): string
     {
@@ -102,7 +93,7 @@ class ExportHandle extends DefaultValueBinder implements WithHeadings, WithMappi
         // =============================
         // 获取最大列号和最大行号
         $highestColumn = $sheet->getHighestColumn();
-        $highestRow    = $sheet->getHighestRow();
+        $highestRow = $sheet->getHighestRow();
 
         // 设置整个工作表为文本格式（从左上角A1 到最大的右下角）
         $sheet->getStyle("A1:{$highestColumn}{$highestRow}")->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
@@ -118,16 +109,15 @@ class ExportHandle extends DefaultValueBinder implements WithHeadings, WithMappi
         // 返回默认样式
         return [];
 
-//        // 合并单元格 A1 到 C1
-//        $sheet->mergeCells('A1:C1');
-//
-//        // 设置单元格样式，例如水平居中
-//        $sheet->getStyle('A1:C1')->getAlignment()->setHorizontal('center');
-//
-//        return [
-//            // 设置 A1 单元格的样式
-//            1 => ['font' => ['bold' => true, 'size' => 14]],
-//        ];
+        //        // 合并单元格 A1 到 C1
+        //        $sheet->mergeCells('A1:C1');
+        //
+        //        // 设置单元格样式，例如水平居中
+        //        $sheet->getStyle('A1:C1')->getAlignment()->setHorizontal('center');
+        //
+        //        return [
+        //            // 设置 A1 单元格的样式
+        //            1 => ['font' => ['bold' => true, 'size' => 14]],
+        //        ];
     }
-
 }

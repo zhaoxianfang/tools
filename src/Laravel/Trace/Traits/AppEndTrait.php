@@ -3,7 +3,6 @@
 namespace zxf\Laravel\Trace\Traits;
 
 use Illuminate\Support\Facades\Response;
-use ReflectionException;
 use zxf\Laravel\Trace\Handle;
 
 /**
@@ -18,7 +17,7 @@ trait AppEndTrait
     {
         // 注册 shutdown 函数（只注册一次）
         static $registered = false;
-        if (!$registered) {
+        if (! $registered) {
             $registered = true;
 
             register_shutdown_function(function () use ($request) {
@@ -29,7 +28,7 @@ trait AppEndTrait
                 $response = Response::make($output, 200);
                 /** @var $trace Handle */
                 $trace = app('trace');
-                $resp  = $trace->renderTraceStyleAndScript($request, $response);
+                $resp = $trace->renderTraceStyleAndScript($request, $response);
 
                 // 输出响应内容
                 echo $resp->getContent();
@@ -42,24 +41,22 @@ trait AppEndTrait
     /**
      * trace 调试 结束时的处理
      *
-     * @param array $traceData trace调试产生的数据
-     *
-     * @return void
+     * @param  array  $traceData  trace调试产生的数据
      */
     public function traceEndHandle(array $traceData = []): void
     {
         try {
-            if (!empty($handleClass = config('modules.trace_end_handle_class'))) {
+            if (! empty($handleClass = config('modules.trace_end_handle_class'))) {
                 // 检查类是否存在
-                if (!class_exists($handleClass)) {
+                if (! class_exists($handleClass)) {
                     return;
                 }
                 // 检查 $handleClass 类中是否存在 handle 方法
-                if (!method_exists($handleClass, 'handle')) {
+                if (! method_exists($handleClass, 'handle')) {
                     return;
                 }
-                $callClass = is_string($handleClass) ? new $handleClass() : $handleClass;
-                if (!is_callable([$callClass, 'handle'])) {
+                $callClass = is_string($handleClass) ? new $handleClass : $handleClass;
+                if (! is_callable([$callClass, 'handle'])) {
                     return;
                 }
                 $callClass->handle($traceData);

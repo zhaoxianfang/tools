@@ -3,9 +3,9 @@
 namespace zxf\Tools;
 
 use ArrayAccess;
+use ArrayIterator;
 use Countable;
 use Generator;
-use ArrayIterator;
 use IteratorAggregate;
 use JsonSerializable;
 
@@ -20,16 +20,15 @@ use JsonSerializable;
  * var_dump($data['a']);
  * 2、使用对象的方式调用
  * var_dump($data->get('a'));
- *
  */
-class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAggregate
+class DataArray implements ArrayAccess, Countable, IteratorAggregate, JsonSerializable
 {
     private array $data;
 
     /**
      * 构造函数
      *
-     * @param array $data 初始数组数据
+     * @param  array  $data  初始数组数据
      */
     public function __construct(array $data = [])
     {
@@ -39,8 +38,7 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
     /**
      * 实现 ArrayAccess 接口的 offsetExists 方法
      *
-     * @param mixed $offset 偏移量
-     *
+     * @param  mixed  $offset  偏移量
      * @return bool 是否存在该偏移量
      */
     public function offsetExists(mixed $offset): bool
@@ -51,8 +49,7 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
     /**
      * 实现 ArrayAccess 接口的 offsetGet 方法
      *
-     * @param mixed $offset 偏移量
-     *
+     * @param  mixed  $offset  偏移量
      * @return mixed 偏移量对应的值
      */
     public function offsetGet(mixed $offset): mixed
@@ -63,8 +60,8 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
     /**
      * 实现 ArrayAccess 接口的 offsetSet 方法
      *
-     * @param mixed $offset 偏移量
-     * @param mixed $value  对应的值
+     * @param  mixed  $offset  偏移量
+     * @param  mixed  $value  对应的值
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
@@ -78,7 +75,7 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
     /**
      * 实现 ArrayAccess 接口的 offsetUnset 方法
      *
-     * @param mixed $offset 偏移量
+     * @param  mixed  $offset  偏移量
      */
     public function offsetUnset(mixed $offset): void
     {
@@ -172,23 +169,23 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
     /**
      * 获取数组中某个键的值，如果不存在则返回默认值
      *
-     * @param mixed $key          要获取的键
-     * @param mixed $defaultValue 如果键不存在时返回的默认值
-     *
+     * @param  mixed  $key  要获取的键
+     * @param  mixed  $defaultValue  如果键不存在时返回的默认值
      * @return mixed 键对应的值或默认值
      */
     public function get(mixed $key, mixed $defaultValue = null): mixed
     {
-        if(empty($key)){
+        if (empty($key)) {
             return $this->toArray();
         }
+
         return $this->offsetExists($key) ? $this->offsetGet($key) : $defaultValue;
     }
 
     /**
      * 合并另一个数组到当前数组对象中
      *
-     * @param array $array 要合并的数组
+     * @param  array  $array  要合并的数组
      */
     public function merge(array $array): void
     {
@@ -198,9 +195,8 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
     /**
      * 在数组中搜索给定的值，并返回键
      *
-     * @param mixed $value  要搜索的值
-     * @param bool  $strict 是否使用严格比较
-     *
+     * @param  mixed  $value  要搜索的值
+     * @param  bool  $strict  是否使用严格比较
      * @return string|int|bool 如果找到则返回键，否则返回 null
      */
     public function search(mixed $value, bool $strict = true): string|int|bool
@@ -211,7 +207,7 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
     /**
      * 对数组进行排序
      *
-     * @param int $flags 可选的排序标志，如 SORT_ASC、SORT_DESC、SORT_NUMERIC 等
+     * @param  int  $flags  可选的排序标志，如 SORT_ASC、SORT_DESC、SORT_NUMERIC 等
      */
     public function sort(int $flags = SORT_REGULAR): void
     {
@@ -221,7 +217,7 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
     /**
      * 逆序排序数组并保持索引关联
      *
-     * @param int $flags 可选的排序标志，如 SORT_ASC、SORT_DESC、SORT_NUMERIC 等
+     * @param  int  $flags  可选的排序标志，如 SORT_ASC、SORT_DESC、SORT_NUMERIC 等
      */
     public function rsort(int $flags = SORT_REGULAR): void
     {
@@ -231,12 +227,11 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
     /**
      * 返回数组的一个片段
      *
-     * @param int      $offset 开始的偏移量
-     * @param int|null $length 返回的元素个数
-     *
+     * @param  int  $offset  开始的偏移量
+     * @param  int|null  $length  返回的元素个数
      * @return array 返回数组片段
      */
-    public function slice(int $offset, int $length = null): array
+    public function slice(int $offset, ?int $length = null): array
     {
         return array_slice($this->data, $offset, $length, true);
     }
@@ -244,8 +239,7 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
     /**
      * 使用回调函数对数组的每个元素进行操作，并返回新数组
      *
-     * @param callable $callback 回调函数
-     *
+     * @param  callable  $callback  回调函数
      * @return array 返回新数组
      */
     public function map(callable $callback): array
@@ -256,8 +250,7 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
     /**
      * 使用回调函数过滤数组中的元素
      *
-     * @param callable $callback 回调函数
-     *
+     * @param  callable  $callback  回调函数
      * @return array 返回过滤后的新数组
      */
     public function filter(callable $callback): array
@@ -268,7 +261,7 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
     /**
      * 设置多个值
      *
-     * @param array $values 键值对数组
+     * @param  array  $values  键值对数组
      */
     public function add(array $values): void
     {
@@ -282,5 +275,4 @@ class DataArray implements ArrayAccess, Countable, JsonSerializable, IteratorAgg
     {
         return new ArrayIterator($this->data);
     }
-
 }

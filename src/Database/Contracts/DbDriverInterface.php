@@ -6,7 +6,6 @@ use Exception;
 
 interface DbDriverInterface
 {
-
     // ================================================
     // 以下是数据库驱动的方法
     // ================================================
@@ -21,8 +20,8 @@ interface DbDriverInterface
     /**
      * 配置 驱动连接数据库的实现
      *
-     * @param array  $options        连接参数, 包含 host、db_name、username、password 等
-     * @param string $connectionName 连接名称, 主要针对框架
+     * @param  array  $options  连接参数, 包含 host、db_name、username、password 等
+     * @param  string  $connectionName  连接名称, 主要针对框架
      *
      * @throws Exception
      */
@@ -36,8 +35,7 @@ interface DbDriverInterface
     /**
      * 执行$sql直接 「查询」
      *
-     * @param string $sql sql语句
-     *
+     * @param  string  $sql  sql语句
      * @return array
      */
     public function query(string $sql);
@@ -45,20 +43,17 @@ interface DbDriverInterface
     /**
      * 直接执行$sql语句的实现
      *
-     * @param string     $sql        sql语句
-     * @param array|null $bindParams 绑定参数
+     * @param  string  $sql  sql语句
+     * @param  array|null  $bindParams  绑定参数
      *
-     * @return mixed
      * @throws Exception
      */
-    public function runSql(string $sql = '', array|null $bindParams = null): mixed;
+    public function runSql(string $sql = '', ?array $bindParams = null): mixed;
 
     /**
      * 各个驱动实现自己的数据处理
      *
-     * @param mixed $resource 资源
-     *
-     * @return array
+     * @param  mixed  $resource  资源
      */
     public function dataProcessing(mixed $resource): array;
 
@@ -113,14 +108,13 @@ interface DbDriverInterface
      *          3、【强烈建议】$uniqueColumn 和 $updateColumn 的字段合在一起刚好是 $data 中的「所有」字段
      *
      *
-     * @param array $data         需要更新或插入的数据； eg: [
-     *                            ['column1'=>'val_1_0', 'column2'=>'val_2_0', 'unique_column'=>'unique_val_0'],
-     *                            ['column1'=>'val_1_1','column2'=>'val_2_1', 'unique_column'=>'unique_val_1']
-     *                            ]
-     * @param array $uniqueColumn 根据$uniqueColumn里的字段组合的值进行判断，如果存在则更新$updateColumn里的字段，否则创建一条新数据 eg:  ['unique_column']
-     *                            或 ['column1', 'column2']
-     * @param array $updateColumn 需要更新的字段 eg: ['column1', 'column2'] 或 ['column2']
-     *
+     * @param  array  $data  需要更新或插入的数据； eg: [
+     *                       ['column1'=>'val_1_0', 'column2'=>'val_2_0', 'unique_column'=>'unique_val_0'],
+     *                       ['column1'=>'val_1_1','column2'=>'val_2_1', 'unique_column'=>'unique_val_1']
+     *                       ]
+     * @param  array  $uniqueColumn  根据$uniqueColumn里的字段组合的值进行判断，如果存在则更新$updateColumn里的字段，否则创建一条新数据 eg:  ['unique_column']
+     *                               或 ['column1', 'column2']
+     * @param  array  $updateColumn  需要更新的字段 eg: ['column1', 'column2'] 或 ['column2']
      */
     public function upsert(array $data = [], array $uniqueColumn = [], array $updateColumn = []);
 

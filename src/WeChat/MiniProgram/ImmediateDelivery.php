@@ -17,14 +17,12 @@ class ImmediateDelivery extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/immediate-delivery/deliver-by-provider/updateOrder.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function updateOrder(array $data)
     {
         return $this->post('cgi-bin/express/local/delivery/update_order', $data);
     }
-
 }

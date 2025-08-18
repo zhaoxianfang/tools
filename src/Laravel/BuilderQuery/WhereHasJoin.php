@@ -47,7 +47,7 @@ class WhereHasJoin
      */
     public function execute()
     {
-        if (!$this->relation) {
+        if (! $this->relation) {
             return $this->builder;
         }
 
@@ -57,8 +57,7 @@ class WhereHasJoin
     }
 
     /**
-     * @param Relations\Relation $relation
-     *
+     * @param  Relations\Relation  $relation
      * @return Eloquent\Builder
      *
      * @throws \Exception
@@ -77,14 +76,15 @@ class WhereHasJoin
                 $first = $relation->getQualifiedForeignKeyName();
                 $second = $relation->getQualifiedOwnerKeyName();
             } else {
-                $first = $relationTable . '.' . $relation->getForeignKeyName();
+                $first = $relationTable.'.'.$relation->getForeignKeyName();
                 $secTable = $this->builder->getModel()->getTable();
-                $second = $secTable . '.' . $relation->getLocalKeyName();
+                $second = $secTable.'.'.$relation->getLocalKeyName();
             }
 
             if (collect($this->builder->getQuery()->joins)->where('table', $relationTable)->count() == 0) {
                 $this->builder->{$method}($relationTable, $first, $second);
             }
+
             return $this->builder->where($this->withRelationQueryCallback($relationQuery));
         }
 
@@ -92,8 +92,7 @@ class WhereHasJoin
     }
 
     /**
-     * @param Relations\Relation $relation
-     *
+     * @param  Relations\Relation  $relation
      * @return \Illuminate\Database\Eloquent\Builder
      */
     protected function getRelationQuery($relation)
@@ -104,7 +103,7 @@ class WhereHasJoin
             $databaseName = $this->getRelationDatabaseName($q);
             $table = $q->getModel()->getTable();
 
-            if (!Str::contains($table, ["`$databaseName`.", "{$databaseName}."])) {
+            if (! Str::contains($table, ["`$databaseName`.", "{$databaseName}."])) {
                 $q->from("{$databaseName}.{$table}");
             }
         }
@@ -114,7 +113,7 @@ class WhereHasJoin
 
     protected function getRelationDatabaseName($q)
     {
-        return config('database.connections.' . $q->getModel()->getConnectionName() . '.database');
+        return config('database.connections.'.$q->getModel()->getConnectionName().'.database');
     }
 
     protected function getRelationQualifiedForeignKeyName($relation)
@@ -142,21 +141,22 @@ class WhereHasJoin
             $relation = Relations\Relation::noConstraints(function () use ($currentRelationMethod) {
                 return $this->builder->getRelation($currentRelationMethod);
 
-//                return $this->builder->getModel()->$method();
+                //                return $this->builder->getModel()->$method();
             });
-//            dd($relation->getRelated());
+            //            dd($relation->getRelated());
         }
+
         return $relation;
     }
 
     /**
-     * @param Eloquent\Builder $relation
-     *
+     * @param  Eloquent\Builder  $relation
      * @return Eloquent\Builder
      */
     protected function withRelationQueryCallback($relationQuery)
     {
         $callback = $this->callback;
+
         return function ($query) use ($callback, $relationQuery) {
             $callback($query, $relationQuery);
         };

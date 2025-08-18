@@ -101,7 +101,7 @@ class TypeIntelligentMailBarcode implements TypeInterface
             1,
             9,
             5,
-            8
+            8,
         ];
         $dsc_chr = [
             7,
@@ -168,7 +168,7 @@ class TypeIntelligentMailBarcode implements TypeInterface
             0,
             2,
             6,
-            3
+            3,
         ];
         $asc_pos = [
             3,
@@ -235,7 +235,7 @@ class TypeIntelligentMailBarcode implements TypeInterface
             11,
             0,
             3,
-            2
+            2,
         ];
         $dsc_pos = [
             2,
@@ -302,7 +302,7 @@ class TypeIntelligentMailBarcode implements TypeInterface
             12,
             9,
             8,
-            10
+            10,
         ];
         $code_arr = explode('-', $code);
         $tracking_number = $code_arr[0];
@@ -355,14 +355,14 @@ class TypeIntelligentMailBarcode implements TypeInterface
 
         // exclude first 2 bits from first byte
         $first_byte = sprintf('%2s', dechex((hexdec($binary_code_arr[0]) << 2) >> 2));
-        $binary_code_102bit = $first_byte . substr($binary_code, 2);
+        $binary_code_102bit = $first_byte.substr($binary_code, 2);
 
         // convert binary data to codewords
         $codewords = [];
         $data = $this->hex_to_dec($binary_code_102bit);
         $codewords[0] = bcmod($data, strval(636)) * 2;
         $data = bcdiv($data, strval(636));
-        for ($i = 1; $i < 9; ++$i) {
+        for ($i = 1; $i < 9; $i++) {
             $codewords[$i] = bcmod($data, strval(1365));
             $data = bcdiv($data, strval(1365));
         }
@@ -380,9 +380,9 @@ class TypeIntelligentMailBarcode implements TypeInterface
         $bitmask = 512;
         foreach ($codewords as $val) {
             if ($val <= 1286) {
-                $chrcode = (int)$table5of13[$val];
+                $chrcode = (int) $table5of13[$val];
             } else {
-                $chrcode = (int)$table2of13[($val - 1287)];
+                $chrcode = (int) $table2of13[($val - 1287)];
             }
             if (($fcs & $bitmask) > 0) {
                 // bitwise invert
@@ -395,10 +395,10 @@ class TypeIntelligentMailBarcode implements TypeInterface
 
         // build bars
         $barcode = new Barcode($code);
-        for ($i = 0; $i < 65; ++$i) {
+        for ($i = 0; $i < 65; $i++) {
             $asc = (($characters[$asc_chr[$i]] & pow(2, $asc_pos[$i])) > 0);
             $dsc = (($characters[$dsc_chr[$i]] & pow(2, $dsc_pos[$i])) > 0);
-            if ($asc AND $dsc) {
+            if ($asc and $dsc) {
                 // full bar (F)
                 $p = 0;
                 $h = 3;
@@ -428,7 +428,7 @@ class TypeIntelligentMailBarcode implements TypeInterface
      * Convert large integer number to hexadecimal representation.
      * (requires PHP bcmath extension)
      *
-     * @param $number (string) number to convert specified as a string
+     * @param  $number  (string) number to convert specified as a string
      * @return string hexadecimal representation
      */
     protected function dec_to_hex($number)
@@ -448,12 +448,12 @@ class TypeIntelligentMailBarcode implements TypeInterface
         return implode($hex);
     }
 
-
     /**
      * Intelligent Mail Barcode calculation of Frame Check Sequence
      *
-     * @param $code_arr (string) array of hexadecimal values (13 bytes holding 102 bits right justified).
+     * @param  $code_arr  (string) array of hexadecimal values (13 bytes holding 102 bits right justified).
      * @return int 11 bit Frame Check Sequence as integer (decimal base)
+     *
      * @protected
      */
     protected function imb_crc11fcs($code_arr)
@@ -462,7 +462,7 @@ class TypeIntelligentMailBarcode implements TypeInterface
         $fcs = 0x07FF; // Frame Check Sequence
         // do most significant byte skipping the 2 most significant bits
         $data = hexdec($code_arr[0]) << 5;
-        for ($bit = 2; $bit < 8; ++$bit) {
+        for ($bit = 2; $bit < 8; $bit++) {
             if (($fcs ^ $data) & 0x400) {
                 $fcs = ($fcs << 1) ^ $genpoly;
             } else {
@@ -472,9 +472,9 @@ class TypeIntelligentMailBarcode implements TypeInterface
             $data <<= 1;
         }
         // do rest of bytes
-        for ($byte = 1; $byte < 13; ++$byte) {
+        for ($byte = 1; $byte < 13; $byte++) {
             $data = hexdec($code_arr[$byte]) << 3;
-            for ($bit = 0; $bit < 8; ++$bit) {
+            for ($bit = 0; $bit < 8; $bit++) {
                 if (($fcs ^ $data) & 0x400) {
                     $fcs = ($fcs << 1) ^ $genpoly;
                 } else {
@@ -492,7 +492,7 @@ class TypeIntelligentMailBarcode implements TypeInterface
      * Convert large hexadecimal number to decimal representation (string).
      * (requires PHP bcmath extension)
      *
-     * @param $hex (string) hexadecimal number to convert specified as a string
+     * @param  $hex  (string) hexadecimal number to convert specified as a string
      * @return string hexadecimal representation
      */
     protected function hex_to_dec($hex)
@@ -500,7 +500,7 @@ class TypeIntelligentMailBarcode implements TypeInterface
         $dec = 0;
         $bitval = 1;
         $len = strlen($hex);
-        for ($pos = ($len - 1); $pos >= 0; --$pos) {
+        for ($pos = ($len - 1); $pos >= 0; $pos--) {
             $dec = bcadd($dec, bcmul(strval(hexdec($hex[$pos])), strval($bitval)));
             $bitval = bcmul($bitval, '16');
         }
@@ -508,13 +508,13 @@ class TypeIntelligentMailBarcode implements TypeInterface
         return $dec;
     }
 
-
     /**
      * generate Nof13 tables used for Intelligent Mail Barcode
      *
-     * @param $n (int) is the type of table: 2 for 2of13 table, 5 for 5of13table
-     * @param $size (int) size of table (78 for n=2 and 1287 for n=5)
+     * @param  $n  (int) is the type of table: 2 for 2of13 table, 5 for 5of13table
+     * @param  $size  (int) size of table (78 for n=2 and 1287 for n=5)
      * @return array requested table
+     *
      * @protected
      */
     protected function imb_tables(int $n, int $size): array
@@ -522,9 +522,9 @@ class TypeIntelligentMailBarcode implements TypeInterface
         $table = [];
         $lli = 0; // LUT lower index
         $lui = $size - 1; // LUT upper index
-        for ($count = 0; $count < 8192; ++$count) {
+        for ($count = 0; $count < 8192; $count++) {
             $bit_count = 0;
-            for ($bit_index = 0; $bit_index < 13; ++$bit_index) {
+            for ($bit_index = 0; $bit_index < 13; $bit_index++) {
                 $bit_count += intval(($count & (1 << $bit_index)) != 0);
             }
             // if we don't have the right number of bits on, go on to the next value
@@ -536,12 +536,12 @@ class TypeIntelligentMailBarcode implements TypeInterface
                     // Otherwise, place it at the first free slot from the beginning of the list AND place $reverse ath the next free slot from the beginning of the list
                     if ($reverse == $count) {
                         $table[$lui] = $count;
-                        --$lui;
+                        $lui--;
                     } else {
                         $table[$lli] = $count;
-                        ++$lli;
+                        $lli++;
                         $table[$lli] = $reverse;
-                        ++$lli;
+                        $lli++;
                     }
                 }
             }
@@ -553,14 +553,15 @@ class TypeIntelligentMailBarcode implements TypeInterface
     /**
      * Reverse unsigned short value
      *
-     * @param $num (int) value to reversr
+     * @param  $num  (int) value to reversr
      * @return int reversed value
+     *
      * @protected
      */
     protected function imb_reverse_us($num)
     {
         $rev = 0;
-        for ($i = 0; $i < 16; ++$i) {
+        for ($i = 0; $i < 16; $i++) {
             $rev <<= 1;
             $rev |= ($num & 1);
             $num >>= 1;

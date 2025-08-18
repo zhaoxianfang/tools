@@ -60,7 +60,7 @@ class TypeRms4cc implements TypeInterface
             'W' => [1, 2, 4, 3],
             'X' => [2, 1, 3, 4],
             'Y' => [2, 1, 4, 3],
-            'Z' => [2, 2, 3, 3]
+            'Z' => [2, 2, 3, 3],
         ];
 
         $code = strtoupper($code);
@@ -106,12 +106,12 @@ class TypeRms4cc implements TypeInterface
                 'W' => [0, 3],
                 'X' => [0, 4],
                 'Y' => [0, 5],
-                'Z' => [0, 0]
+                'Z' => [0, 0],
             ];
 
             $row = 0;
             $col = 0;
-            for ($i = 0; $i < $len; ++$i) {
+            for ($i = 0; $i < $len; $i++) {
                 $row += $checktable[$code[$i]][0];
                 $col += $checktable[$code[$i]][1];
             }
@@ -119,15 +119,15 @@ class TypeRms4cc implements TypeInterface
             $col %= 6;
             $chk = array_keys($checktable, [$row, $col]);
             $code .= $chk[0];
-            ++$len;
+            $len++;
 
             // start bar
             $barcode->addBar(new BarcodeBar(1, 2, true));
             $barcode->addBar(new BarcodeBar(1, 2, false));
         }
 
-        for ($i = 0; $i < $len; ++$i) {
-            for ($j = 0; $j < 4; ++$j) {
+        for ($i = 0; $i < $len; $i++) {
+            for ($j = 0; $j < 4; $j++) {
                 switch ($barmode[$code[$i]][$j]) {
                     case 1:
                         $p = 0;

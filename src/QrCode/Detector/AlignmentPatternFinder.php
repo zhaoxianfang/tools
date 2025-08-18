@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class AlignmentPatternFinder
  *
  * @created      17.01.2021
+ *
  * @author       ZXing Authors
  * @author       Smiley <smiley@chillerlan.net>
  * @copyright    2021 Smiley
@@ -13,7 +15,9 @@ declare(strict_types=1);
 namespace zxf\QrCode\Detector;
 
 use zxf\QrCode\Decoder\BitMatrix;
-use function abs, count;
+
+use function abs;
+use function count;
 
 /**
  * This class attempts to find alignment patterns in a QR Code. Alignment patterns look like finder
@@ -29,254 +33,256 @@ use function abs, count;
  *
  * @author Sean Owen
  */
-final class AlignmentPatternFinder{
+final class AlignmentPatternFinder
+{
+    private BitMatrix $matrix;
 
-	private BitMatrix $matrix;
-	private float     $moduleSize;
-	/** @var \zxf\QrCode\Detector\AlignmentPattern[] */
-	private array $possibleCenters;
+    private float $moduleSize;
 
-	/**
-	 * Creates a finder that will look in a portion of the whole image.
-	 *
-	 * @param \zxf\QrCode\Decoder\BitMatrix $matrix     image to search
-	 * @param float                                $moduleSize estimated module size so far
-	 */
-	public function __construct(BitMatrix $matrix, float $moduleSize){
-		$this->matrix          = $matrix;
-		$this->moduleSize      = $moduleSize;
-		$this->possibleCenters = [];
-	}
+    /** @var \zxf\QrCode\Detector\AlignmentPattern[] */
+    private array $possibleCenters;
 
-	/**
-	 * This method attempts to find the bottom-right alignment pattern in the image. It is a bit messy since
-	 * it's pretty performance-critical and so is written to be fast foremost.
-	 *
-	 * @param int $startX left column from which to start searching
-	 * @param int $startY top row from which to start searching
-	 * @param int $width  width of region to search
-	 * @param int $height height of region to search
-	 *
-	 * @return \zxf\QrCode\Detector\AlignmentPattern|null
-	 */
-	public function find(int $startX, int $startY, int $width, int $height):AlignmentPattern|null{
-		$maxJ       = ($startX + $width);
-		$middleI    = ($startY + ($height / 2));
-		/** @var int[] $stateCount */
-		$stateCount = [];
+    /**
+     * Creates a finder that will look in a portion of the whole image.
+     *
+     * @param  \zxf\QrCode\Decoder\BitMatrix  $matrix  image to search
+     * @param  float  $moduleSize  estimated module size so far
+     */
+    public function __construct(BitMatrix $matrix, float $moduleSize)
+    {
+        $this->matrix = $matrix;
+        $this->moduleSize = $moduleSize;
+        $this->possibleCenters = [];
+    }
 
-		// We are looking for black/white/black modules in 1:1:1 ratio;
-		// this tracks the number of black/white/black modules seen so far
-		for($iGen = 0; $iGen < $height; $iGen++){
-			// Search from middle outwards
-			$i             = (int)($middleI + ((($iGen & 0x01) === 0) ? ($iGen + 1) / 2 : -(($iGen + 1) / 2)));
-			$stateCount[0] = 0;
-			$stateCount[1] = 0;
-			$stateCount[2] = 0;
-			$j             = $startX;
-			// Burn off leading white pixels before anything else; if we start in the middle of
-			// a white run, it doesn't make sense to count its length, since we don't know if the
-			// white run continued to the left of the start point
-			while($j < $maxJ && !$this->matrix->check($j, $i)){
-				$j++;
-			}
+    /**
+     * This method attempts to find the bottom-right alignment pattern in the image. It is a bit messy since
+     * it's pretty performance-critical and so is written to be fast foremost.
+     *
+     * @param  int  $startX  left column from which to start searching
+     * @param  int  $startY  top row from which to start searching
+     * @param  int  $width  width of region to search
+     * @param  int  $height  height of region to search
+     */
+    public function find(int $startX, int $startY, int $width, int $height): ?AlignmentPattern
+    {
+        $maxJ = ($startX + $width);
+        $middleI = ($startY + ($height / 2));
+        /** @var int[] $stateCount */
+        $stateCount = [];
 
-			$currentState = 0;
+        // We are looking for black/white/black modules in 1:1:1 ratio;
+        // this tracks the number of black/white/black modules seen so far
+        for ($iGen = 0; $iGen < $height; $iGen++) {
+            // Search from middle outwards
+            $i = (int) ($middleI + ((($iGen & 0x01) === 0) ? ($iGen + 1) / 2 : -(($iGen + 1) / 2)));
+            $stateCount[0] = 0;
+            $stateCount[1] = 0;
+            $stateCount[2] = 0;
+            $j = $startX;
+            // Burn off leading white pixels before anything else; if we start in the middle of
+            // a white run, it doesn't make sense to count its length, since we don't know if the
+            // white run continued to the left of the start point
+            while ($j < $maxJ && ! $this->matrix->check($j, $i)) {
+                $j++;
+            }
 
-			while($j < $maxJ){
+            $currentState = 0;
 
-				if($this->matrix->check($j, $i)){
-					// Black pixel
-					if($currentState === 1){ // Counting black pixels
-						$stateCount[$currentState]++;
-					}
-					// Counting white pixels
-					else{
-						// A winner?
-						if($currentState === 2){
-							// Yes
-							if($this->foundPatternCross($stateCount)){
-								$confirmed = $this->handlePossibleCenter($stateCount, $i, $j);
+            while ($j < $maxJ) {
 
-								if($confirmed !== null){
-									return $confirmed;
-								}
-							}
+                if ($this->matrix->check($j, $i)) {
+                    // Black pixel
+                    if ($currentState === 1) { // Counting black pixels
+                        $stateCount[$currentState]++;
+                    }
+                    // Counting white pixels
+                    else {
+                        // A winner?
+                        if ($currentState === 2) {
+                            // Yes
+                            if ($this->foundPatternCross($stateCount)) {
+                                $confirmed = $this->handlePossibleCenter($stateCount, $i, $j);
 
-							$stateCount[0] = $stateCount[2];
-							$stateCount[1] = 1;
-							$stateCount[2] = 0;
-							$currentState  = 1;
-						}
-						else{
-							$stateCount[++$currentState]++;
-						}
-					}
-				}
-				// White pixel
-				else{
-					// Counting black pixels
-					if($currentState === 1){
-						$currentState++;
-					}
+                                if ($confirmed !== null) {
+                                    return $confirmed;
+                                }
+                            }
 
-					$stateCount[$currentState]++;
-				}
+                            $stateCount[0] = $stateCount[2];
+                            $stateCount[1] = 1;
+                            $stateCount[2] = 0;
+                            $currentState = 1;
+                        } else {
+                            $stateCount[++$currentState]++;
+                        }
+                    }
+                }
+                // White pixel
+                else {
+                    // Counting black pixels
+                    if ($currentState === 1) {
+                        $currentState++;
+                    }
 
-				$j++;
-			}
+                    $stateCount[$currentState]++;
+                }
 
-			if($this->foundPatternCross($stateCount)){
-				$confirmed = $this->handlePossibleCenter($stateCount, $i, $maxJ);
+                $j++;
+            }
 
-				if($confirmed !== null){
-					return $confirmed;
-				}
-			}
+            if ($this->foundPatternCross($stateCount)) {
+                $confirmed = $this->handlePossibleCenter($stateCount, $i, $maxJ);
 
-		}
+                if ($confirmed !== null) {
+                    return $confirmed;
+                }
+            }
 
-		// Hmm, nothing we saw was observed and confirmed twice. If we had
-		// any guess at all, return it.
-		if(count($this->possibleCenters)){
-			return $this->possibleCenters[0];
-		}
+        }
 
-		return null;
-	}
+        // Hmm, nothing we saw was observed and confirmed twice. If we had
+        // any guess at all, return it.
+        if (count($this->possibleCenters)) {
+            return $this->possibleCenters[0];
+        }
 
-	/**
-	 * @param int[] $stateCount count of black/white/black pixels just read
-	 *
-	 * @return bool true if the proportions of the counts is close enough to the 1/1/1 ratios
-	 *         used by alignment patterns to be considered a match
-	 */
-	private function foundPatternCross(array $stateCount):bool{
-		$maxVariance = ($this->moduleSize / 2.0);
+        return null;
+    }
 
-		for($i = 0; $i < 3; $i++){
-			if(abs($this->moduleSize - $stateCount[$i]) >= $maxVariance){
-				return false;
-			}
-		}
+    /**
+     * @param  int[]  $stateCount  count of black/white/black pixels just read
+     * @return bool true if the proportions of the counts is close enough to the 1/1/1 ratios
+     *              used by alignment patterns to be considered a match
+     */
+    private function foundPatternCross(array $stateCount): bool
+    {
+        $maxVariance = ($this->moduleSize / 2.0);
 
-		return true;
-	}
+        for ($i = 0; $i < 3; $i++) {
+            if (abs($this->moduleSize - $stateCount[$i]) >= $maxVariance) {
+                return false;
+            }
+        }
 
-	/**
-	 * This is called when a horizontal scan finds a possible alignment pattern. It will
-	 * cross-check with a vertical scan, and if successful, will see if this pattern had been
-	 * found on a previous horizontal scan. If so, we consider it confirmed and conclude we have
-	 * found the alignment pattern.
-	 *
-	 * @param int[] $stateCount reading state module counts from horizontal scan
-	 * @param int   $i          row where alignment pattern may be found
-	 * @param int   $j          end of possible alignment pattern in row
-	 *
-	 * @return \zxf\QrCode\Detector\AlignmentPattern|null if we have found the same pattern twice, or null if not
-	 */
-	private function handlePossibleCenter(array $stateCount, int $i, int $j):AlignmentPattern|null{
-		$stateCountTotal = ($stateCount[0] + $stateCount[1] + $stateCount[2]);
-		$centerJ         = $this->centerFromEnd($stateCount, $j);
-		$centerI         = $this->crossCheckVertical($i, (int)$centerJ, (2 * $stateCount[1]), $stateCountTotal);
+        return true;
+    }
 
-		if($centerI !== null){
-			$estimatedModuleSize = (($stateCount[0] + $stateCount[1] + $stateCount[2]) / 3.0);
+    /**
+     * This is called when a horizontal scan finds a possible alignment pattern. It will
+     * cross-check with a vertical scan, and if successful, will see if this pattern had been
+     * found on a previous horizontal scan. If so, we consider it confirmed and conclude we have
+     * found the alignment pattern.
+     *
+     * @param  int[]  $stateCount  reading state module counts from horizontal scan
+     * @param  int  $i  row where alignment pattern may be found
+     * @param  int  $j  end of possible alignment pattern in row
+     * @return \zxf\QrCode\Detector\AlignmentPattern|null if we have found the same pattern twice, or null if not
+     */
+    private function handlePossibleCenter(array $stateCount, int $i, int $j): ?AlignmentPattern
+    {
+        $stateCountTotal = ($stateCount[0] + $stateCount[1] + $stateCount[2]);
+        $centerJ = $this->centerFromEnd($stateCount, $j);
+        $centerI = $this->crossCheckVertical($i, (int) $centerJ, (2 * $stateCount[1]), $stateCountTotal);
 
-			foreach($this->possibleCenters as $center){
-				// Look for about the same center and module size:
-				if($center->aboutEquals($estimatedModuleSize, $centerI, $centerJ)){
-					return $center->combineEstimate($centerI, $centerJ, $estimatedModuleSize);
-				}
-			}
+        if ($centerI !== null) {
+            $estimatedModuleSize = (($stateCount[0] + $stateCount[1] + $stateCount[2]) / 3.0);
 
-			// Hadn't found this before; save it
-			$point                   = new AlignmentPattern($centerJ, $centerI, $estimatedModuleSize);
-			$this->possibleCenters[] = $point;
-		}
+            foreach ($this->possibleCenters as $center) {
+                // Look for about the same center and module size:
+                if ($center->aboutEquals($estimatedModuleSize, $centerI, $centerJ)) {
+                    return $center->combineEstimate($centerI, $centerJ, $estimatedModuleSize);
+                }
+            }
 
-		return null;
-	}
+            // Hadn't found this before; save it
+            $point = new AlignmentPattern($centerJ, $centerI, $estimatedModuleSize);
+            $this->possibleCenters[] = $point;
+        }
 
-	/**
-	 * Given a count of black/white/black pixels just seen and an end position,
-	 * figures the location of the center of this black/white/black run.
-	 *
-	 * @param int[] $stateCount
-	 */
-	private function centerFromEnd(array $stateCount, int $end):float{
-		return (float)(($end - $stateCount[2]) - $stateCount[1] / 2);
-	}
+        return null;
+    }
 
-	/**
-	 * After a horizontal scan finds a potential alignment pattern, this method
-	 * "cross-checks" by scanning down vertically through the center of the possible
-	 * alignment pattern to see if the same proportion is detected.
-	 *
-	 * $startI   row where an alignment pattern was detected
-	 * $centerJ  center of the section that appears to cross an alignment pattern
-	 * $maxCount maximum reasonable number of modules that should be
-	 *           observed in any reading state, based on the results of the horizontal scan
-	 *
-	 * returns vertical center of alignment pattern, or null if not found
-	 */
-	private function crossCheckVertical(int $startI, int $centerJ, int $maxCount, int $originalStateCountTotal):float|null{
-		$maxI          = $this->matrix->getSize();
-		$stateCount    = [];
-		$stateCount[0] = 0;
-		$stateCount[1] = 0;
-		$stateCount[2] = 0;
+    /**
+     * Given a count of black/white/black pixels just seen and an end position,
+     * figures the location of the center of this black/white/black run.
+     *
+     * @param  int[]  $stateCount
+     */
+    private function centerFromEnd(array $stateCount, int $end): float
+    {
+        return (float) (($end - $stateCount[2]) - $stateCount[1] / 2);
+    }
 
-		// Start counting up from center
-		$i = $startI;
-		while($i >= 0 && $this->matrix->check($centerJ, $i) && $stateCount[1] <= $maxCount){
-			$stateCount[1]++;
-			$i--;
-		}
-		// If already too many modules in this state or ran off the edge:
-		if($i < 0 || $stateCount[1] > $maxCount){
-			return null;
-		}
+    /**
+     * After a horizontal scan finds a potential alignment pattern, this method
+     * "cross-checks" by scanning down vertically through the center of the possible
+     * alignment pattern to see if the same proportion is detected.
+     *
+     * $startI   row where an alignment pattern was detected
+     * $centerJ  center of the section that appears to cross an alignment pattern
+     * $maxCount maximum reasonable number of modules that should be
+     *           observed in any reading state, based on the results of the horizontal scan
+     *
+     * returns vertical center of alignment pattern, or null if not found
+     */
+    private function crossCheckVertical(int $startI, int $centerJ, int $maxCount, int $originalStateCountTotal): ?float
+    {
+        $maxI = $this->matrix->getSize();
+        $stateCount = [];
+        $stateCount[0] = 0;
+        $stateCount[1] = 0;
+        $stateCount[2] = 0;
 
-		while($i >= 0 && !$this->matrix->check($centerJ, $i) && $stateCount[0] <= $maxCount){
-			$stateCount[0]++;
-			$i--;
-		}
+        // Start counting up from center
+        $i = $startI;
+        while ($i >= 0 && $this->matrix->check($centerJ, $i) && $stateCount[1] <= $maxCount) {
+            $stateCount[1]++;
+            $i--;
+        }
+        // If already too many modules in this state or ran off the edge:
+        if ($i < 0 || $stateCount[1] > $maxCount) {
+            return null;
+        }
 
-		if($stateCount[0] > $maxCount){
-			return null;
-		}
+        while ($i >= 0 && ! $this->matrix->check($centerJ, $i) && $stateCount[0] <= $maxCount) {
+            $stateCount[0]++;
+            $i--;
+        }
 
-		// Now also count down from center
-		$i = ($startI + 1);
-		while($i < $maxI && $this->matrix->check($centerJ, $i) && $stateCount[1] <= $maxCount){
-			$stateCount[1]++;
-			$i++;
-		}
+        if ($stateCount[0] > $maxCount) {
+            return null;
+        }
 
-		if($i === $maxI || $stateCount[1] > $maxCount){
-			return null;
-		}
+        // Now also count down from center
+        $i = ($startI + 1);
+        while ($i < $maxI && $this->matrix->check($centerJ, $i) && $stateCount[1] <= $maxCount) {
+            $stateCount[1]++;
+            $i++;
+        }
 
-		while($i < $maxI && !$this->matrix->check($centerJ, $i) && $stateCount[2] <= $maxCount){
-			$stateCount[2]++;
-			$i++;
-		}
+        if ($i === $maxI || $stateCount[1] > $maxCount) {
+            return null;
+        }
 
-		if($stateCount[2] > $maxCount){
-			return null;
-		}
+        while ($i < $maxI && ! $this->matrix->check($centerJ, $i) && $stateCount[2] <= $maxCount) {
+            $stateCount[2]++;
+            $i++;
+        }
 
-		// phpcs:ignore
-		if((5 * abs(($stateCount[0] + $stateCount[1] + $stateCount[2]) - $originalStateCountTotal)) >= (2 * $originalStateCountTotal)){
-			return null;
-		}
+        if ($stateCount[2] > $maxCount) {
+            return null;
+        }
 
-		if(!$this->foundPatternCross($stateCount)){
-			return null;
-		}
+        // phpcs:ignore
+        if ((5 * abs(($stateCount[0] + $stateCount[1] + $stateCount[2]) - $originalStateCountTotal)) >= (2 * $originalStateCountTotal)) {
+            return null;
+        }
 
-		return $this->centerFromEnd($stateCount, $i);
-	}
+        if (! $this->foundPatternCross($stateCount)) {
+            return null;
+        }
 
+        return $this->centerFromEnd($stateCount, $i);
+    }
 }

@@ -32,8 +32,8 @@ class PdoDriver extends DbDriverAbstract
     /**
      * 配置 驱动连接数据库的实现
      *
-     * @param array  $options        连接参数, 包含 host、db_name、username、password 等
-     * @param string $connectionName 连接名称, 主要针对框架
+     * @param  array  $options  连接参数, 包含 host、db_name、username、password 等
+     * @param  string  $connectionName  连接名称, 主要针对框架
      *
      * @throws Exception
      */
@@ -44,14 +44,15 @@ class PdoDriver extends DbDriverAbstract
             // PDO连接参数
             // eg: $dsn = "mysql:host=localhost;port=3306;dbname=test;charset=utf8mb4";
             // eg: $dsn = "pgsql:host=localhost;port=5432;dbname=test;user=postgres;password=123456";
-            $dsn        = "{$this->extensionName}:host={$this->config['hostname']};port={$this->config['port']};dbname={$this->config['database']};charset=utf8mb4";
-            $pdoIc      = new \ReflectionClass('pdo');
+            $dsn = "{$this->extensionName}:host={$this->config['hostname']};port={$this->config['port']};dbname={$this->config['database']};charset=utf8mb4";
+            $pdoIc = new \ReflectionClass('pdo');
             $this->conn = $pdoIc->newInstanceArgs([$dsn, $this->config['username'], $this->config['password']]);
             $this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION); // 设置错误模式
         } catch (PDOException $e) {
             // 连接失败
-            throw new Exception('连接失败：' . $e->getCode() . ' => ' . $e->getMessage());
+            throw new Exception('连接失败：'.$e->getCode().' => '.$e->getMessage());
         }
+
         return $this;
     }
 
@@ -66,16 +67,15 @@ class PdoDriver extends DbDriverAbstract
     /**
      * 执行$sql直接 「查询」
      *
-     * @param string $sql sql语句
+     * @param  string  $sql  sql语句
      *
-     * @return array
      * @throws Exception
      */
     public function query(string $sql): array
     {
         $stmt = $this->conn->query($sql);
         if ($stmt === false) {
-            $this->error = '查询失败: ' . $this->conn->errorInfo()[2];
+            $this->error = '查询失败: '.$this->conn->errorInfo()[2];
             throw new Exception($this->error);
         }
         // 检查查询是否成功
@@ -89,21 +89,20 @@ class PdoDriver extends DbDriverAbstract
     /**
      * 直接执行$sql语句的实现
      *
-     * @param string     $sql        sql语句
-     * @param array|null $bindParams 绑定参数
+     * @param  string  $sql  sql语句
+     * @param  array|null  $bindParams  绑定参数
      *
-     * @return mixed
      * @throws Exception
      */
     public function runSql(string $sql = '', ?array $bindParams = null): mixed
     {
-        $sql        = empty($sql) ? $this->sqlGenerator->buildQuery() : $sql;
+        $sql = empty($sql) ? $this->sqlGenerator->buildQuery() : $sql;
         $bindParams = is_null($bindParams) ? $this->sqlGenerator->getBindings() : $bindParams;
         try {
             $this->writeRunSql($sql, $bindParams);
             $stmt = $this->conn->prepare($sql);
             if ($stmt === false) {
-                $this->error = '预处理失败: ' . $this->conn->errorInfo()[2];
+                $this->error = '预处理失败: '.$this->conn->errorInfo()[2];
                 throw new Exception($this->error);
             }
 
@@ -112,19 +111,18 @@ class PdoDriver extends DbDriverAbstract
 
             // 传入绑定参数
             $stmt->execute($bindParams);
+
             return $stmt;
         } catch (PDOException $e) {
             // 执行失败
-            throw new Exception('执行失败：' . $e->getCode() . ' => ' . $e->getMessage());
+            throw new Exception('执行失败：'.$e->getCode().' => '.$e->getMessage());
         }
     }
 
     /**
      * 各个驱动实现自己的数据处理
      *
-     * @param mixed $resource $stmt 资源
-     *
-     * @return array
+     * @param  mixed  $resource  $stmt 资源
      */
     public function dataProcessing(mixed $resource): array
     {
@@ -144,9 +142,7 @@ class PdoDriver extends DbDriverAbstract
 
         // $lastInsertId = $stmt->lastInsertId(); // 获取最近一次 INSERT 操作生成的 ID。
 
-
         // $stmt->closeCursor(); // 关闭预处理语句的游标，释放与之关联的资源，使语句能再次被执行
-
 
         // 使用 while 循环遍历结果集中的每一行记录。
         // while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -157,6 +153,7 @@ class PdoDriver extends DbDriverAbstract
         if ($resource instanceof PDOStatement) {
             return $resource->fetchAll(PDO::FETCH_ASSOC);
         }
+
         return $resource;
     }
 
@@ -167,6 +164,7 @@ class PdoDriver extends DbDriverAbstract
     {
         $this->sqlGenerator->create($data);
         $stmt = $this->runSql();
+
         return $stmt->rowCount() ?? 0;
     }
 
@@ -177,17 +175,16 @@ class PdoDriver extends DbDriverAbstract
     {
         $this->sqlGenerator->create($data);
         $this->runSql();
+
         return $this->conn->lastInsertId();
     }
 
     /**
      * 获取错误信息
-     *
-     * @return string
      */
     public function getError(): string
     {
-        return $this->conn->errorCode() . ':' . $this->conn->errorInfo()[2];
+        return $this->conn->errorCode().':'.$this->conn->errorInfo()[2];
     }
 
     /**
@@ -197,6 +194,7 @@ class PdoDriver extends DbDriverAbstract
     {
         $this->sqlGenerator->update($data);
         $stmt = $this->runSql();
+
         return $stmt->rowCount() ?? 0;
     }
 
@@ -210,21 +208,21 @@ class PdoDriver extends DbDriverAbstract
      *          3、【强烈建议】$uniqueColumn 和 $updateColumn 的字段合在一起刚好是 $data 中的「所有」字段
      *
      *
-     * @param array $data         需要更新或插入的数据； eg: [
-     *                            ['column1'=>'val_1_0', 'column2'=>'val_2_0', 'unique_column'=>'unique_val_0'],
-     *                            ['column1'=>'val_1_1','column2'=>'val_2_1', 'unique_column'=>'unique_val_1']
-     *                            ]
-     * @param array $uniqueColumn 根据$uniqueColumn里的字段组合的值进行判断，如果存在则更新$updateColumn里的字段，否则创建一条新数据 eg:  ['unique_column']
-     *                            或 ['column1', 'column2']
-     * @param array $updateColumn 需要更新的字段 eg: ['column1', 'column2'] 或 ['column2']
+     * @param  array  $data  需要更新或插入的数据； eg: [
+     *                       ['column1'=>'val_1_0', 'column2'=>'val_2_0', 'unique_column'=>'unique_val_0'],
+     *                       ['column1'=>'val_1_1','column2'=>'val_2_1', 'unique_column'=>'unique_val_1']
+     *                       ]
+     * @param  array  $uniqueColumn  根据$uniqueColumn里的字段组合的值进行判断，如果存在则更新$updateColumn里的字段，否则创建一条新数据 eg:  ['unique_column']
+     *                               或 ['column1', 'column2']
+     * @param  array  $updateColumn  需要更新的字段 eg: ['column1', 'column2'] 或 ['column2']
      *
-     * @return int
      * @throws Exception
      */
     public function upsert(array $data = [], array $uniqueColumn = [], array $updateColumn = []): int
     {
         $this->sqlGenerator->upsert($data, $uniqueColumn, $updateColumn);
         $stmt = $this->runSql();
+
         return $stmt->rowCount() ?? 0;
     }
 
@@ -232,6 +230,7 @@ class PdoDriver extends DbDriverAbstract
     {
         $this->sqlGenerator->update([$column => "`{$column}` + $amount"]);
         $stmt = $this->runSql();
+
         return $stmt->rowCount() ?? 0;
     }
 
@@ -240,6 +239,7 @@ class PdoDriver extends DbDriverAbstract
     {
         $this->sqlGenerator->update([$column => "`{$column}` - $amount"]);
         $stmt = $this->runSql();
+
         return $stmt->rowCount() ?? 0;
     }
 
@@ -250,6 +250,7 @@ class PdoDriver extends DbDriverAbstract
     {
         $this->sqlGenerator->delete();
         $stmt = $this->runSql();
+
         return $stmt->rowCount() ?? 0;
     }
 
@@ -259,6 +260,7 @@ class PdoDriver extends DbDriverAbstract
     public function reset(): static
     {
         $this->sqlGenerator->reset();
+
         return $this;
     }
 
@@ -272,11 +274,11 @@ class PdoDriver extends DbDriverAbstract
                 $callback($row);
             }
             $stmt->closeCursor();
+
             return $this;
         }
-        throw new Exception("参数必须是闭包函数");
+        throw new Exception('参数必须是闭包函数');
     }
-
 
     /**
      * 聚合查询
@@ -284,8 +286,8 @@ class PdoDriver extends DbDriverAbstract
     public function aggregate(string $aggregate = 'count', string $column = 'id')
     {
         $function = strtolower($aggregate);
-        if (!in_array($function, ['count', 'max', 'min', 'avg', 'sum', 'exists', 'doesntExist'])) {
-            throw new Exception("不支持的聚合查询");
+        if (! in_array($function, ['count', 'max', 'min', 'avg', 'sum', 'exists', 'doesntExist'])) {
+            throw new Exception('不支持的聚合查询');
         }
         $this->sqlGenerator->$function($column);
         $stmt = $this->runSql();
@@ -307,6 +309,7 @@ class PdoDriver extends DbDriverAbstract
     {
         // 开始事务
         $this->conn->beginTransaction();
+
         return $this;
     }
 
@@ -317,6 +320,7 @@ class PdoDriver extends DbDriverAbstract
     {
         // 提交事务
         $this->conn->commit();
+
         return $this;
     }
 
@@ -327,6 +331,7 @@ class PdoDriver extends DbDriverAbstract
     {
         // 回滚事务
         $this->conn->rollBack();
+
         return $this;
     }
 }

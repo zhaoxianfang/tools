@@ -21,12 +21,12 @@ class SqlServerDriver extends PdoDriver
     /**
      * 配置 驱动连接数据库的实现
      *
-     * @param array  $options        连接参数, 包含 host、db_name、username、password 等
-     * @param string $connectionName 连接名称, 主要针对框架
+     * @param  array  $options  连接参数, 包含 host、db_name、username、password 等
+     * @param  string  $connectionName  连接名称, 主要针对框架
      *
      * @throws Exception
      */
-    public function connect(array $options = [],string $connectionName = 'default'): static
+    public function connect(array $options = [], string $connectionName = 'default'): static
     {
         try {
             $this->getConfig($options, $connectionName);
@@ -36,13 +36,14 @@ class SqlServerDriver extends PdoDriver
 
             // PDO连接参数
             // 连接SQLite数据库，传递连接参数
-            $this->conn = new PDO($dsn,$this->config['username'], $this->config['password']);
+            $this->conn = new PDO($dsn, $this->config['username'], $this->config['password']);
             // 设置字符集
-            $this->conn->exec("SET NAMES utf8mb4");
+            $this->conn->exec('SET NAMES utf8mb4');
         } catch (PDOException $e) {
             // 连接失败
-            throw new Exception('连接失败：' . $e->getCode() . ' => ' . $e->getMessage());
+            throw new Exception('连接失败：'.$e->getCode().' => '.$e->getMessage());
         }
+
         return $this;
     }
 }

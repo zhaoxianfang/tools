@@ -798,6 +798,7 @@ class Tree
         $filtered = $clone->where(...$args)->getData();
 
         $firstKey = array_key_first($filtered);
+
         return $filtered[$firstKey] ?? null;
     }
 
@@ -881,6 +882,7 @@ class Tree
                 $item = array_merge($item, $attributes);
             }
         }
+
         return $this;
     }
 

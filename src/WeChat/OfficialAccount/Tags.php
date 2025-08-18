@@ -24,9 +24,8 @@ class Tags extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_Management.html
      *
-     * @param string $name
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function createTags(string $name)
@@ -39,10 +38,10 @@ class Tags extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_Management.html
      *
-     * @param int    $id   标签ID
-     * @param string $name 标签名称
-     *
+     * @param  int  $id  标签ID
+     * @param  string  $name  标签名称
      * @return array
+     *
      * @throws Exception
      */
     public function updateTags(int $id, string $name)
@@ -55,9 +54,8 @@ class Tags extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_Management.html
      *
-     * @param int $tagId
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function deleteTags(int $tagId)
@@ -70,10 +68,10 @@ class Tags extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_Management.html
      *
-     * @param int    $tagid       标签ID
-     * @param string $next_openid 第一个拉取的OPENID
-     *
+     * @param  int  $tagid  标签ID
+     * @param  string  $next_openid  第一个拉取的OPENID
      * @return array
+     *
      * @throws Exception
      */
     public function getUserListByTag(int $tagid, string $next_openid = '')
@@ -86,10 +84,8 @@ class Tags extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_Management.html
      *
-     * @param array $openids
-     * @param int   $tagId
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function batchTagging(array $openids, int $tagId)
@@ -102,10 +98,8 @@ class Tags extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_Management.html
      *
-     * @param array $openids
-     * @param int   $tagId
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function batchUntagging(array $openids, int $tagId)
@@ -118,9 +112,9 @@ class Tags extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_Management.html
      *
-     * @param string $openid
-     *
+     * @param  string  $openid
      * @return array
+     *
      * @throws Exception
      */
     public function getUserTagId($openid)

@@ -3,12 +3,12 @@
 namespace zxf\Laravel\Modules\Commands\Make;
 
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use zxf\Laravel\Modules\Support\Config\GenerateConfigReader;
 use zxf\Laravel\Modules\Support\Stub;
 use zxf\Laravel\Modules\Traits\CanClearModulesCache;
 use zxf\Laravel\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 
 class SeedMakeCommand extends GeneratorCommand
 {

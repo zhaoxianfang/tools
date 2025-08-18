@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace zxf\Dom;
 
-use zxf\Dom\Exceptions\InvalidSelectorException;
 use InvalidArgumentException;
 use RuntimeException;
+use zxf\Dom\Exceptions\InvalidSelectorException;
 
 class Query
 {
@@ -16,6 +16,7 @@ class Query
      * @const string
      */
     const TYPE_XPATH = 'XPATH';
+
     const TYPE_CSS = 'CSS';
 
     /**
@@ -26,9 +27,8 @@ class Query
     /**
      * Converts a CSS selector into an XPath expression.
      *
-     * @param string $expression XPath expression or CSS selector
-     * @param string $type The type of the expression
-     *
+     * @param  string  $expression  XPath expression or CSS selector
+     * @param  string  $type  The type of the expression
      * @return string XPath expression
      *
      * @throws InvalidSelectorException if the expression is empty
@@ -49,7 +49,7 @@ class Query
             return $expression;
         }
 
-        if ( ! array_key_exists($expression, static::$compiled)) {
+        if (! array_key_exists($expression, static::$compiled)) {
             static::$compiled[$expression] = static::cssToXpath($expression);
         }
 
@@ -59,9 +59,8 @@ class Query
     /**
      * Converts a CSS selector into an XPath expression.
      *
-     * @param string $selector A CSS selector
-     * @param string $prefix Specifies the nesting of nodes
-     *
+     * @param  string  $selector  A CSS selector
+     * @param  string  $prefix  Specifies the nesting of nodes
      * @return string XPath expression
      *
      * @throws InvalidSelectorException
@@ -71,7 +70,7 @@ class Query
         $paths = [];
 
         while ($selector !== '') {
-            list($xpath, $selector) = static::parseAndConvertSelector($selector, $prefix);
+            [$xpath, $selector] = static::parseAndConvertSelector($selector, $prefix);
 
             if (substr($selector, 0, 1) === ',') {
                 $selector = trim($selector, ', ');
@@ -84,11 +83,6 @@ class Query
     }
 
     /**
-     * @param string $selector
-     * @param string $prefix
-     *
-     * @return array
-     *
      * @throws InvalidSelectorException
      */
     protected static function parseAndConvertSelector(string $selector, string $prefix = '//'): array
@@ -123,17 +117,13 @@ class Query
             $selector = substr($selector, strlen($property['property']));
             $selector = trim($selector);
 
-            $xpath .= '/' . $propertyXpath;
+            $xpath .= '/'.$propertyXpath;
         }
 
         return [$xpath, $selector];
     }
 
     /**
-     * @param string $selector
-     *
-     * @return array
-     *
      * @throws InvalidSelectorException
      */
     protected static function parseProperty(string $selector): array
@@ -141,7 +131,7 @@ class Query
         $name = '(?P<name>[\w\-]+)';
         $args = '(?:\((?P<args>[^\)]+)?\))?';
 
-        $regexp = '/^::' . $name . $args . '/is';
+        $regexp = '/^::'.$name.$args.'/is';
 
         if (preg_match($regexp, $selector, $matches) !== 1) {
             throw new InvalidSelectorException(sprintf('Invalid property "%s".', $selector));
@@ -159,11 +149,6 @@ class Query
     }
 
     /**
-     * @param string $name
-     * @param array $parameters
-     *
-     * @return string
-     *
      * @throws InvalidSelectorException if the specified property is unknown
      */
     protected static function convertProperty(string $name, array $parameters = []): string
@@ -192,11 +177,7 @@ class Query
     /**
      * Converts a CSS pseudo-class into an XPath expression.
      *
-     * @param string $pseudo Pseudo-class
-     * @param string $tagName
-     * @param array $parameters
-     *
-     * @return string
+     * @param  string  $pseudo  Pseudo-class
      *
      * @throws InvalidSelectorException if the specified pseudo-class is unknown
      */
@@ -253,9 +234,7 @@ class Query
     }
 
     /**
-     * @param array $segments
-     * @param string $prefix Specifies the nesting of nodes
-     *
+     * @param  string  $prefix  Specifies the nesting of nodes
      * @return string XPath expression
      *
      * @throws InvalidArgumentException if you neither specify tag name nor attributes
@@ -301,7 +280,7 @@ class Query
             throw new InvalidArgumentException('The array of segments must contain the name of the tag or at least one attribute.');
         }
 
-        $xpath = $prefix . $tagName;
+        $xpath = $prefix.$tagName;
 
         if ($count = count($attributes)) {
             $xpath .= ($count > 1) ? sprintf('[(%s)]', implode(') and (', $attributes)) : sprintf('[%s]', $attributes[0]);
@@ -311,19 +290,17 @@ class Query
     }
 
     /**
-     * @param string $name The name of an attribute
-     * @param string|null $value The value of an attribute
-     *
-     * @return string
+     * @param  string  $name  The name of an attribute
+     * @param  string|null  $value  The value of an attribute
      */
     protected static function convertAttribute(string $name, ?string $value): string
     {
         $isSimpleSelector = ! in_array(substr($name, 0, 1), ['^', '!'], true);
-        $isSimpleSelector = $isSimpleSelector && ( ! in_array(substr($name, -1), ['^', '$', '*', '!', '~'], true));
+        $isSimpleSelector = $isSimpleSelector && (! in_array(substr($name, -1), ['^', '$', '*', '!', '~'], true));
 
         if ($isSimpleSelector) {
             // if specified only the attribute name
-            $xpath = $value === null ? '@' . $name : sprintf('@%s="%s"', $name, $value);
+            $xpath = $value === null ? '@'.$name : sprintf('@%s="%s"', $name, $value);
 
             return $xpath;
         }
@@ -376,9 +353,7 @@ class Query
     /**
      * Converts nth-expression into an XPath expression.
      *
-     * @param string $expression nth-expression
-     *
-     * @return string
+     * @param  string  $expression  nth-expression
      *
      * @throws InvalidSelectorException if the given nth-child expression is empty or invalid
      */
@@ -413,13 +388,6 @@ class Query
         throw new InvalidSelectorException(sprintf('Invalid nth-child expression "%s".', $expression));
     }
 
-    /**
-     * @param string $string
-     * @param bool $caseSensitive
-     * @param bool $fullMatch
-     *
-     * @return string
-     */
     protected static function convertContains(string $string, bool $caseSensitive = true, bool $fullMatch = false): string
     {
         if ($caseSensitive && $fullMatch) {
@@ -432,7 +400,7 @@ class Query
 
         $strToLowerFunction = function_exists('mb_strtolower') ? 'mb_strtolower' : 'strtolower';
 
-        if ( ! $caseSensitive && $fullMatch) {
+        if (! $caseSensitive && $fullMatch) {
             return sprintf("php:functionString(\"{$strToLowerFunction}\", .) = php:functionString(\"{$strToLowerFunction}\", \"%s\")", $string);
         }
 
@@ -443,9 +411,7 @@ class Query
     /**
      * Splits the CSS selector into parts (tag name, ID, classes, attributes, pseudo-class).
      *
-     * @param string $selector CSS selector
-     *
-     * @return array
+     * @param  string  $selector  CSS selector
      *
      * @throws InvalidSelectorException if the selector is empty or not valid
      */
@@ -481,7 +447,7 @@ class Query
 
             foreach ($attributes as $attribute) {
                 if ($attribute !== '') {
-                    list($name, $value) = array_pad(explode('=', $attribute, 2), 2, null);
+                    [$name, $value] = array_pad(explode('=', $attribute, 2), 2, null);
 
                     if ($name === '') {
                         throw new InvalidSelectorException(sprintf('Invalid selector "%s": attribute name must not be empty.', $selector));
@@ -535,23 +501,18 @@ class Query
         $attrs = '(?P<attrs>(?:\[.+?\])*)?';
         $pseudoType = '[\w\-]+';
         $pseudoExpr = '(?:\([^\)]+\))?';
-        $pseudo = '(?P<pseudo>(?::' . $pseudoType  . $pseudoExpr . ')+)?';
+        $pseudo = '(?P<pseudo>(?::'.$pseudoType.$pseudoExpr.')+)?';
         $rel = '\s*(?P<rel>>)?';
 
-        return '/' . $tag . $id . $classes . $attrs . $pseudo . $rel . '/is';
+        return '/'.$tag.$id.$classes.$attrs.$pseudo.$rel.'/is';
     }
 
-    /**
-     * @return array
-     */
     public static function getCompiled(): array
     {
         return static::$compiled;
     }
 
     /**
-     * @param array $compiled
-     *
      * @throws InvalidArgumentException if the attributes is not an array
      */
     public static function setCompiled(array $compiled): void

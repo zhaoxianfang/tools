@@ -16,7 +16,7 @@ class BinarySequenceConverter
 
         $len = strlen($sequence);
         $barWidth = 0;
-        for ($i = 0; $i < $len; ++$i) {
+        for ($i = 0; $i < $len; $i++) {
             $barWidth += 1;
             if (($i == ($len - 1)) || (($i < ($len - 1)) && ($sequence[$i] != $sequence[($i + 1)]))) {
                 if ($sequence[$i] == '1') {

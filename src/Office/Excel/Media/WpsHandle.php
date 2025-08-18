@@ -29,6 +29,7 @@ class WpsHandle implements DriveInterface
         if (! $imgsXml) {
             // 没有图片
             self::$idToImgMap = [];
+
             return [];
         }
         // id => rid

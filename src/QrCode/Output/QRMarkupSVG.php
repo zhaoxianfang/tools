@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class QRMarkupSVG
  *
  * @created      06.06.2022
+ *
  * @author       smiley <smiley@chillerlan.net>
  * @copyright    2022 smiley
  * @license      MIT
@@ -11,7 +13,12 @@ declare(strict_types=1);
 
 namespace zxf\QrCode\Output;
 
-use function array_chunk, implode, is_string, preg_match, sprintf, trim;
+use function array_chunk;
+use function implode;
+use function is_string;
+use function preg_match;
+use function sprintf;
+use function trim;
 
 /**
  * SVG output
@@ -24,164 +31,172 @@ use function array_chunk, implode, is_string, preg_match, sprintf, trim;
  * @see https://jakearchibald.github.io/svgomg/
  * @see https://web.archive.org/web/20200220211445/http://apex.infogridpacific.com/SVG/svg-tutorial-contents.html
  */
-class QRMarkupSVG extends QRMarkup{
+class QRMarkupSVG extends QRMarkup
+{
+    final public const MIME_TYPE = 'image/svg+xml';
 
-	final public const MIME_TYPE = 'image/svg+xml';
+    /**
+     * @todo: XSS proof
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/fill
+     * {@inheritDoc}
+     */
+    public static function moduleValueIsValid(mixed $value): bool
+    {
 
-	/**
-	 * @todo: XSS proof
-	 *
-	 * @see https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/fill
-	 * @inheritDoc
-	 */
-	public static function moduleValueIsValid(mixed $value):bool{
+        if (! is_string($value)) {
+            return false;
+        }
 
-		if(!is_string($value)){
-			return false;
-		}
+        $value = trim($value);
 
-		$value = trim($value);
+        // url(...)
+        if (preg_match('~^url\([-/#a-z\d]+\)$~i', $value)) {
+            return true;
+        }
 
-		// url(...)
-		if(preg_match('~^url\([-/#a-z\d]+\)$~i', $value)){
-			return true;
-		}
+        // otherwise check for standard css notation
+        return parent::moduleValueIsValid($value);
+    }
 
-		// otherwise check for standard css notation
-		return parent::moduleValueIsValid($value);
-	}
+    protected function getOutputDimensions(): array
+    {
+        return [$this->moduleCount, $this->moduleCount];
+    }
 
-	protected function getOutputDimensions():array{
-		return [$this->moduleCount, $this->moduleCount];
-	}
+    protected function getCssClass(int $M_TYPE = 0): string
+    {
+        return implode(' ', [
+            'qr-'.($this::LAYERNAMES[$M_TYPE] ?? $M_TYPE),
+            $this->matrix->isDark($M_TYPE) ? 'dark' : 'light',
+            $this->options->cssClass,
+        ]);
+    }
 
-	protected function getCssClass(int $M_TYPE = 0):string{
-		return implode(' ', [
-			'qr-'.($this::LAYERNAMES[$M_TYPE] ?? $M_TYPE),
-			$this->matrix->isDark($M_TYPE) ? 'dark' : 'light',
-			$this->options->cssClass,
-		]);
-	}
+    protected function createMarkup(bool $saveToFile): string
+    {
+        $svg = $this->header();
 
-	protected function createMarkup(bool $saveToFile):string{
-		$svg = $this->header();
+        if (! empty($this->options->svgDefs)) {
+            $svg .= sprintf('<defs>%1$s%2$s</defs>%2$s', $this->options->svgDefs, $this->eol);
+        }
 
-		if(!empty($this->options->svgDefs)){
-			$svg .= sprintf('<defs>%1$s%2$s</defs>%2$s', $this->options->svgDefs, $this->eol);
-		}
+        $svg .= $this->paths();
 
-		$svg .= $this->paths();
+        // close svg
+        $svg .= sprintf('%1$s</svg>%1$s', $this->eol);
 
-		// close svg
-		$svg .= sprintf('%1$s</svg>%1$s', $this->eol);
+        return $svg;
+    }
 
-		return $svg;
-	}
+    /**
+     * returns the value for the SVG viewBox attribute
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/viewBox
+     * @see https://css-tricks.com/scale-svg/#article-header-id-3
+     */
+    protected function getViewBox(): string
+    {
+        [$width, $height] = $this->getOutputDimensions();
 
-	/**
-	 * returns the value for the SVG viewBox attribute
-	 *
-	 * @see https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/viewBox
-	 * @see https://css-tricks.com/scale-svg/#article-header-id-3
-	 */
-	protected function getViewBox():string{
-		[$width, $height] = $this->getOutputDimensions();
+        return sprintf('0 0 %s %s', $width, $height);
+    }
 
-		return sprintf('0 0 %s %s', $width, $height);
-	}
+    /**
+     * returns the <svg> header with the given options parsed
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/SVG/Element/svg
+     */
+    protected function header(): string
+    {
 
-	/**
-	 * returns the <svg> header with the given options parsed
-	 *
-	 * @see https://developer.mozilla.org/en-US/docs/Web/SVG/Element/svg
-	 */
-	protected function header():string{
+        $header = sprintf(
+            '<svg xmlns="http://www.w3.org/2000/svg" class="qr-svg %1$s" viewBox="%2$s" preserveAspectRatio="%3$s">%4$s',
+            $this->options->cssClass,
+            $this->getViewBox(),
+            $this->options->svgPreserveAspectRatio,
+            $this->eol,
+        );
 
-		$header = sprintf(
-			'<svg xmlns="http://www.w3.org/2000/svg" class="qr-svg %1$s" viewBox="%2$s" preserveAspectRatio="%3$s">%4$s',
-			$this->options->cssClass,
-			$this->getViewBox(),
-			$this->options->svgPreserveAspectRatio,
-			$this->eol,
-		);
+        if ($this->options->svgAddXmlHeader) {
+            $header = sprintf('<?xml version="1.0" encoding="UTF-8"?>%s%s', $this->eol, $header);
+        }
 
-		if($this->options->svgAddXmlHeader){
-			$header = sprintf('<?xml version="1.0" encoding="UTF-8"?>%s%s', $this->eol, $header);
-		}
+        return $header;
+    }
 
-		return $header;
-	}
+    /**
+     * returns one or more SVG <path> elements
+     */
+    protected function paths(): string
+    {
+        $paths = $this->collectModules($this->module(...));
+        $svg = [];
 
-	/**
-	 * returns one or more SVG <path> elements
-	 */
-	protected function paths():string{
-		$paths = $this->collectModules($this->module(...));
-		$svg   = [];
+        // create the path elements
+        foreach ($paths as $M_TYPE => $modules) {
+            // limit the total line length
+            $chunks = array_chunk($modules, 100);
+            $chonks = [];
 
-		// create the path elements
-		foreach($paths as $M_TYPE => $modules){
-			// limit the total line length
-			$chunks = array_chunk($modules, 100);
-			$chonks = [];
+            foreach ($chunks as $chunk) {
+                $chonks[] = implode(' ', $chunk);
+            }
 
-			foreach($chunks as $chunk){
-				$chonks[] = implode(' ', $chunk);
-			}
+            $path = implode($this->eol, $chonks);
 
-			$path = implode($this->eol, $chonks);
+            if (empty($path)) {
+                continue;
+            }
 
-			if(empty($path)){
-				continue;
-			}
+            $svg[] = $this->path($path, $M_TYPE);
+        }
 
-			$svg[] = $this->path($path, $M_TYPE);
-		}
+        return implode($this->eol, $svg);
+    }
 
-		return implode($this->eol, $svg);
-	}
+    /**
+     * renders and returns a single <path> element
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/SVG/Element/path
+     */
+    protected function path(string $path, int $M_TYPE): string
+    {
 
-	/**
-	 * renders and returns a single <path> element
-	 *
-	 * @see https://developer.mozilla.org/en-US/docs/Web/SVG/Element/path
-	 */
-	protected function path(string $path, int $M_TYPE):string{
+        if ($this->options->svgUseFillAttributes) {
+            return sprintf(
+                '<path class="%s" fill="%s" d="%s"/>',
+                $this->getCssClass($M_TYPE),
+                $this->getModuleValue($M_TYPE),
+                $path,
+            );
+        }
 
-		if($this->options->svgUseFillAttributes){
-			return sprintf(
-				'<path class="%s" fill="%s" d="%s"/>',
-				$this->getCssClass($M_TYPE),
-				$this->getModuleValue($M_TYPE),
-				$path,
-			);
-		}
+        return sprintf('<path class="%s" d="%s"/>', $this->getCssClass($M_TYPE), $path);
+    }
 
-		return sprintf('<path class="%s" d="%s"/>', $this->getCssClass($M_TYPE), $path);
-	}
+    /**
+     * returns a path segment for a single module
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/d
+     */
+    protected function module(int $x, int $y, int $M_TYPE): string
+    {
 
-	/**
-	 * returns a path segment for a single module
-	 *
-	 * @see https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/d
-	 */
-	protected function module(int $x, int $y, int $M_TYPE):string{
+        if (! $this->drawLightModules && ! $this->matrix->isDark($M_TYPE)) {
+            return '';
+        }
 
-		if(!$this->drawLightModules && !$this->matrix->isDark($M_TYPE)){
-			return '';
-		}
+        if ($this->drawCircularModules && ! $this->matrix->checkTypeIn($x, $y, $this->keepAsSquare)) {
+            // string interpolation: ugly and fast
+            $ix = ($x + 0.5 - $this->circleRadius);
+            $iy = ($y + 0.5);
 
-		if($this->drawCircularModules && !$this->matrix->checkTypeIn($x, $y, $this->keepAsSquare)){
-			// string interpolation: ugly and fast
-			$ix = ($x + 0.5 - $this->circleRadius);
-			$iy = ($y + 0.5);
+            // phpcs:ignore
+            return "M$ix $iy a$this->circleRadius $this->circleRadius 0 1 0 $this->circleDiameter 0 a$this->circleRadius $this->circleRadius 0 1 0 -$this->circleDiameter 0Z";
+        }
 
-			// phpcs:ignore
-			return "M$ix $iy a$this->circleRadius $this->circleRadius 0 1 0 $this->circleDiameter 0 a$this->circleRadius $this->circleRadius 0 1 0 -$this->circleDiameter 0Z";
-		}
-
-		// phpcs:ignore
-		return "M$x $y h1 v1 h-1Z";
-	}
-
+        // phpcs:ignore
+        return "M$x $y h1 v1 h-1Z";
+    }
 }

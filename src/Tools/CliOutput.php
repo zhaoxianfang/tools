@@ -39,32 +39,53 @@ namespace zxf\Tools;
  */
 class CliOutput
 {
-    const ANSI_RESET   = "\033[0m";
-    const ANSI_BLACK   = "\033[30m";
-    const ANSI_RED     = "\033[31m";
-    const ANSI_GREEN   = "\033[32m";
-    const ANSI_YELLOW  = "\033[33m";
-    const ANSI_BLUE    = "\033[34m";
+    const ANSI_RESET = "\033[0m";
+
+    const ANSI_BLACK = "\033[30m";
+
+    const ANSI_RED = "\033[31m";
+
+    const ANSI_GREEN = "\033[32m";
+
+    const ANSI_YELLOW = "\033[33m";
+
+    const ANSI_BLUE = "\033[34m";
+
     const ANSI_MAGENTA = "\033[35m";
-    const ANSI_CYAN    = "\033[36m";
-    const ANSI_WHITE   = "\033[37m";
 
-    const ANSI_BG_BLACK   = "\033[40m";
-    const ANSI_BG_RED     = "\033[41m";
-    const ANSI_BG_GREEN   = "\033[42m";
-    const ANSI_BG_YELLOW  = "\033[43m";
-    const ANSI_BG_BLUE    = "\033[44m";
+    const ANSI_CYAN = "\033[36m";
+
+    const ANSI_WHITE = "\033[37m";
+
+    const ANSI_BG_BLACK = "\033[40m";
+
+    const ANSI_BG_RED = "\033[41m";
+
+    const ANSI_BG_GREEN = "\033[42m";
+
+    const ANSI_BG_YELLOW = "\033[43m";
+
+    const ANSI_BG_BLUE = "\033[44m";
+
     const ANSI_BG_MAGENTA = "\033[45m";
-    const ANSI_BG_CYAN    = "\033[46m";
-    const ANSI_BG_WHITE   = "\033[47m";
 
-    const ANSI_BOLD      = "\033[1m";
-    const ANSI_DIM       = "\033[2m";
-    const ANSI_ITALIC    = "\033[3m";
+    const ANSI_BG_CYAN = "\033[46m";
+
+    const ANSI_BG_WHITE = "\033[47m";
+
+    const ANSI_BOLD = "\033[1m";
+
+    const ANSI_DIM = "\033[2m";
+
+    const ANSI_ITALIC = "\033[3m";
+
     const ANSI_UNDERLINE = "\033[4m";
-    const ANSI_BLINK     = "\033[5m";
-    const ANSI_REVERSE   = "\033[7m";
-    const ANSI_HIDDEN    = "\033[8m";
+
+    const ANSI_BLINK = "\033[5m";
+
+    const ANSI_REVERSE = "\033[7m";
+
+    const ANSI_HIDDEN = "\033[8m";
 
     public function __construct()
     {
@@ -77,14 +98,14 @@ class CliOutput
     /**
      * 打印带有颜色和样式的文本。
      *
-     * @param string $text     要打印的文本。
-     * @param string $color    颜色代码。
-     * @param string $style    样式代码，默认为重置样式。
-     * @param bool   $needWrap 是否需要换行
+     * @param  string  $text  要打印的文本。
+     * @param  string  $color  颜色代码。
+     * @param  string  $style  样式代码，默认为重置样式。
+     * @param  bool  $needWrap  是否需要换行
      */
     public function printColoredText(string $text, string $color, string $style = self::ANSI_RESET, bool $needWrap = false): void
     {
-        echo $style . $color . $text . self::ANSI_RESET;
+        echo $style.$color.$text.self::ANSI_RESET;
         if ($needWrap) {
             echo "\n";
         }
@@ -93,9 +114,9 @@ class CliOutput
     /**
      * 打印一行带有颜色和样式的文本，并自动换行。
      *
-     * @param string $text  要打印的文本。
-     * @param string $color 颜色代码。
-     * @param string $style 样式代码，默认为重置样式。
+     * @param  string  $text  要打印的文本。
+     * @param  string  $color  颜色代码。
+     * @param  string  $style  样式代码，默认为重置样式。
      */
     public function printLine(string $text, string $color, string $style = self::ANSI_RESET): void
     {
@@ -105,17 +126,17 @@ class CliOutput
     /**
      * 打印一个进度条，显示完成的百分比。
      *
-     * @param int    $current   当前进度。
-     * @param int    $total     总数。
-     * @param int    $barLength 进度条长度，默认为 20 个占位符号。
-     * @param string $color     颜色代码，默认为绿色。
-     * @param string $style     样式代码，默认为重置样式。
+     * @param  int  $current  当前进度。
+     * @param  int  $total  总数。
+     * @param  int  $barLength  进度条长度，默认为 20 个占位符号。
+     * @param  string  $color  颜色代码，默认为绿色。
+     * @param  string  $style  样式代码，默认为重置样式。
      */
     public function printProgress(int $current, int $total, int $barLength = 20, string $color = self::ANSI_GREEN, string $style = self::ANSI_RESET): void
     {
-        $progress     = round(($current / $total) * 100);
+        $progress = round(($current / $total) * 100);
         $filledLength = floor($barLength * $current / $total);
-        $bar          = str_repeat('▓', $filledLength) . str_repeat('░', $barLength - $filledLength);
+        $bar = str_repeat('▓', $filledLength).str_repeat('░', $barLength - $filledLength);
 
         $this->printColoredText("[$bar] $progress%", $color, $style);
         echo " ($current/$total)\r";
@@ -151,58 +172,57 @@ class CliOutput
     /**
      *  闪烁文字
      *
-     * @param string $test  闪烁文字
-     * @param string $color 色闪烁文字的颜色,默认黄色
+     * @param  string  $test  闪烁文字
+     * @param  string  $color  色闪烁文字的颜色,默认黄色
      */
     public function blink(string $test, string $color = self::ANSI_YELLOW): void
     {
         $this->printLine($test, $color, self::ANSI_BLINK); // $color色闪烁文字
     }
 
-
     /**
      * 打印一个简单的表格。
      *
-     * @param array $data 二维数组，表示表格的数据。
+     * @param  array  $data  二维数组，表示表格的数据。
      */
     public function printTable(array $data): void
     {
-        $topBorder  = '+';
-        $separator  = '+';
+        $topBorder = '+';
+        $separator = '+';
         $horizontal = '-';
-        $vertical   = '|';
+        $vertical = '|';
 
         // 计算列宽
         $columnWidths = [];
         foreach ($data as $row) {
             foreach ($row as $colIndex => $cell) {
-                if (!isset($columnWidths[$colIndex])) {
+                if (! isset($columnWidths[$colIndex])) {
                     $columnWidths[$colIndex] = 0;
                 }
-                $cellWidth               = mb_strlen($cell, 'UTF-8');
-                $cellWidth               += strlen(preg_replace('/[\x{4e00}-\x{9fff}]/u', '', $cell)) * 1;
+                $cellWidth = mb_strlen($cell, 'UTF-8');
+                $cellWidth += strlen(preg_replace('/[\x{4e00}-\x{9fff}]/u', '', $cell)) * 1;
                 $columnWidths[$colIndex] = max($columnWidths[$colIndex], $cellWidth);
             }
         }
 
         $totalWidth = array_sum($columnWidths) + (count($columnWidths) + 1) * 3; // Add extra space for vertical bars
 
-        echo $topBorder . str_repeat($horizontal, $totalWidth - 2) . $topBorder . PHP_EOL;
+        echo $topBorder.str_repeat($horizontal, $totalWidth - 2).$topBorder.PHP_EOL;
 
         foreach ($data as $row) {
             $output = $vertical;
             foreach ($row as $colIndex => $cell) {
-                $cellWidth    = mb_strlen($cell, 'UTF-8');
-                $cellWidth    += strlen(preg_replace('/[\x{4e00}-\x{9fff}]/u', '', $cell)) * 1;
-                $padding      = $columnWidths[$colIndex] - $cellWidth;
-                $leftPadding  = floor($padding / 2);
+                $cellWidth = mb_strlen($cell, 'UTF-8');
+                $cellWidth += strlen(preg_replace('/[\x{4e00}-\x{9fff}]/u', '', $cell)) * 1;
+                $padding = $columnWidths[$colIndex] - $cellWidth;
+                $leftPadding = floor($padding / 2);
                 $rightPadding = ceil($padding / 2);
 
-                $paddedCell = str_repeat(' ', $leftPadding) . $cell . str_repeat(' ', $rightPadding);
-                $output     .= " " . $paddedCell . " " . $vertical;
+                $paddedCell = str_repeat(' ', $leftPadding).$cell.str_repeat(' ', $rightPadding);
+                $output .= ' '.$paddedCell.' '.$vertical;
             }
-            echo $output . PHP_EOL;
-            echo $separator . str_repeat($horizontal, $totalWidth - 2) . $separator . PHP_EOL;
+            echo $output.PHP_EOL;
+            echo $separator.str_repeat($horizontal, $totalWidth - 2).$separator.PHP_EOL;
         }
     }
 }

@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class QRGdImageJPEG
  *
  * @created      25.10.2023
+ *
  * @author       smiley <smiley@chillerlan.net>
  * @copyright    2023 smiley
  * @license      MIT
@@ -13,29 +15,30 @@ declare(strict_types=1);
 
 namespace zxf\QrCode\Output;
 
-use function imagejpeg, max, min;
+use function imagejpeg;
 
 /**
  * GdImage jpeg output
  *
  * @see \imagejpeg()
  */
-class QRGdImageJPEG extends QRGdImage{
+class QRGdImageJPEG extends QRGdImage
+{
+    final public const MIME_TYPE = 'image/jpg';
 
-	final public const MIME_TYPE = 'image/jpg';
+    protected function setTransparencyColor(): int
+    {
+        // noop - transparency is not supported
+        return -1;
+    }
 
-	protected function setTransparencyColor():int{
-		// noop - transparency is not supported
-		return -1;
-	}
-
-	/**
-	 * @throws \zxf\QrCode\Output\QRCodeOutputException
-	 */
-	protected function renderImage():void{
-		if(imagejpeg(image: $this->image, quality: $this->getQuality()) === false){
-			throw new QRCodeOutputException('imagejpeg() error');
-		}
-	}
-
+    /**
+     * @throws \zxf\QrCode\Output\QRCodeOutputException
+     */
+    protected function renderImage(): void
+    {
+        if (imagejpeg(image: $this->image, quality: $this->getQuality()) === false) {
+            throw new QRCodeOutputException('imagejpeg() error');
+        }
+    }
 }

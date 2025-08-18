@@ -49,7 +49,7 @@ class TypePharmacodeTwoCode implements TypeInterface
 
         $barcode = new Barcode($originalCode);
 
-        for ($i = 0; $i < strlen($seq); ++$i) {
+        for ($i = 0; $i < strlen($seq); $i++) {
             switch ($seq[$i]) {
                 case '1':
                     $p = 1;

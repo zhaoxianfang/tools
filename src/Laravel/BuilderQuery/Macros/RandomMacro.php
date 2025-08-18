@@ -164,7 +164,6 @@ class RandomMacro
          *
          * @param  int  $limit  返回记录数，默认10
          * @param  string  $primaryKey  主键名，默认'id'
-         *
          * @return Builder
          */
         Builder::macro('random', function (int $limit = 10, string $primaryKey = 'id') {
@@ -213,7 +212,6 @@ class RandomMacro
          * @param  string  $groupColumn  分组字段名
          * @param  int  $limit  每组返回记录数，默认10
          * @param  string  $primaryKey  主键名，默认'id'
-         *
          * @return Builder
          */
         Builder::macro('groupRandom', function (string $groupColumn, int $limit = 10, string $primaryKey = 'id') {

@@ -9,10 +9,10 @@ class JpgRenderer extends PngRenderer
 {
     protected function createImagickImageObject(int $width, int $height): Imagick
     {
-        $image = new Imagick();
+        $image = new Imagick;
         if ($this->backgroundColor !== null) {
             // Colored background
-            $backgroundColor = new ImagickPixel('rgb(' . implode(',', $this->backgroundColor) . ')');
+            $backgroundColor = new ImagickPixel('rgb('.implode(',', $this->backgroundColor).')');
         } else {
             // Use transparent background
             $backgroundColor = new ImagickPixel('none');

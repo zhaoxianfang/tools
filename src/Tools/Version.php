@@ -1,6 +1,7 @@
 <?php
 
 namespace zxf\Tools;
+
 use Exception;
 
 /**
@@ -44,20 +45,20 @@ use Exception;
  */
 class Version
 {
-
     /**
      * @desc 将版本转为数字
      *
-     * @param String $version 版本
+     * @param  string  $version  版本
+     * @return int
      *
-     * @return Int
      * @throws Exception
      */
     public function versionToInteger($version)
     {
         if ($this->check($version)) {
-            list($major, $minor, $sub) = explode('.', $version);
+            [$major, $minor, $sub] = explode('.', $version);
             $integer_version = $major * 10000 + $minor * 100 + $sub;
+
             return intval($integer_version);
         } else {
             throw new Exception('version Validate Error');
@@ -68,18 +69,19 @@ class Version
     /**
      * @desc 将数字转为版本
      *
-     * @param Int $version_code 版本的数字表示
+     * @param  int  $version_code  版本的数字表示
+     * @return string
      *
-     * @return String
      * @throws Exception
      */
     public function integerToVersion($version_code)
     {
         if (is_numeric($version_code) && $version_code >= 10000) {
-            $version    = array();
-            $version[0] = (int)($version_code / 10000);
-            $version[1] = (int)($version_code % 10000 / 100);
+            $version = [];
+            $version[0] = (int) ($version_code / 10000);
+            $version[1] = (int) ($version_code % 10000 / 100);
             $version[2] = $version_code % 100;
+
             return implode('.', $version);
         } else {
             throw new Exception('version code Validate Error');
@@ -88,21 +90,22 @@ class Version
 
     /**
      * @desc 检查版本格式是否正确
-     * @param String $version 版本
-     * @return Boolean
+     *
+     * @param  string  $version  版本
+     * @return bool
      */
     public function check($version)
     {
-        return (bool)preg_match('/^[0-9]{1,3}\.[0-9]{1,2}\.[0-9]{1,2}$/', $version);
+        return (bool) preg_match('/^[0-9]{1,3}\.[0-9]{1,2}\.[0-9]{1,2}$/', $version);
     }
 
     /**
      * @desc 比较两个版本的值
      *
-     * @param String $version1 版本1
-     * @param String $version2 版本2
+     * @param  string  $version1  版本1
+     * @param  string  $version2  版本2
+     * @return int -1:1<2, 0:相等, 1:1>2
      *
-     * @return Int                -1:1<2, 0:相等, 1:1>2
      * @throws Exception
      */
     public function compare($version1, $version2)

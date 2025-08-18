@@ -12,27 +12,38 @@ use GdImage;
 class TnCode
 {
     // 完整背景图片资源，初始化为null，类型为GdImage|null，用于存储从文件加载的完整背景图片
-    private GdImage|null $im_fullbg = null;
+    private ?GdImage $im_fullbg = null;
+
     // 主要背景图片资源，初始化为null，类型为GdImage|null，用于存储裁剪等处理后的背景图片
-    private GdImage|null $im_bg = null;
+    private ?GdImage $im_bg = null;
+
     // 滑块图片资源，初始化为null，类型为GdImage|null，用于存储滑块相关的图片
-    private GdImage|null $im_slide = null;
+    private ?GdImage $im_slide = null;
+
     // 最终合成图片资源，初始化为null，类型为GdImage|null，用于存储整个验证码图片最终合成结果
-    private GdImage|null $im = null;
+    private ?GdImage $im = null;
+
     // 背景图片宽度，类型为int，单位为像素，用于定义背景图片的横向尺寸
     private int $bg_width = 240;
+
     // 背景图片高度，类型为int，单位为像素，用于定义背景图片的纵向尺寸
     private int $bg_height = 150;
+
     // 滑块标记的宽度，类型为int，单位为像素，用于定义滑块标记的横向尺寸
     private int $mark_width = 50;
+
     // 滑块标记的高度，类型为int，单位为像素，用于定义滑块标记的纵向尺寸
     private int $mark_height = 50;
+
     // 背景图片的数量，类型为int，用于表示可供选择的不同背景图片的个数
     private int $bg_num = 6;
+
     // 滑块在背景上的横坐标位置，初始化为0，类型为int，用于记录滑块在背景图片中的横向位置
     private int $_x = 0;
+
     // 滑块在背景上的纵坐标位置，初始化为0，类型为int，用于记录滑块在背景图片中的纵向位置
     private int $_y = 0;
+
     // 容错像素值，类型为int，越大用户体验越好，但验证码破解难度越低，越小则破解难度越高
     private int $_fault = 3;
 
@@ -42,7 +53,7 @@ class TnCode
     /**
      * 构造函数，用于初始化一些必要的设置等
      *
-     * @param array $slideConfig 滑动验证码配置【一般不传此参数】
+     * @param  array  $slideConfig  滑动验证码配置【一般不传此参数】
      */
     public function __construct(array $slideConfig = [])
     {
@@ -56,19 +67,17 @@ class TnCode
         // }
 
         $defaultSlideConfig = [
-            'tool_icon_img'         => dirname(__DIR__) . '/resource/images/tn_code/img/icon.png', // 前端使用的图标组图片
-            'slide_dark_img'        => dirname(__DIR__) . '/resource/images/tn_code/img/mark2.png', // 黑色滑块图片
-            'slide_transparent_img' => dirname(__DIR__) . '/resource/images/tn_code/img/mark.png', // 透明滑块图片
+            'tool_icon_img' => dirname(__DIR__).'/resource/images/tn_code/img/icon.png', // 前端使用的图标组图片
+            'slide_dark_img' => dirname(__DIR__).'/resource/images/tn_code/img/mark2.png', // 黑色滑块图片
+            'slide_transparent_img' => dirname(__DIR__).'/resource/images/tn_code/img/mark.png', // 透明滑块图片
         ];
-        $this->slideConfig  = !empty($slideConfig) ? array_merge($defaultSlideConfig, $slideConfig) : $defaultSlideConfig;
+        $this->slideConfig = ! empty($slideConfig) ? array_merge($defaultSlideConfig, $slideConfig) : $defaultSlideConfig;
     }
 
     /**
      * 生成验证码图片的主方法，按步骤调用多个私有方法来完成验证码图片的创建、合成及输出等操作
      *
-     * @param array $bgImg 自定义背景图片路径，图片规格为 240x150，如果不传此参数，则使用默认背景图片
-     *
-     * @return void
+     * @param  array  $bgImg  自定义背景图片路径，图片规格为 240x150，如果不传此参数，则使用默认背景图片
      */
     public function make(array $bgImg = []): void
     {
@@ -79,7 +88,7 @@ class TnCode
         $this->merge();
         $this->imgout();
         $this->destroy();
-        die;
+        exit;
     }
 
     private function clean()
@@ -97,7 +106,7 @@ class TnCode
             return false;
         }
         // 如果传入的偏移量参数为空，则尝试从请求参数中获取名为'tn_r'的滑块偏移量值
-        if (!$offset) {
+        if (! $offset) {
             $offset = $_REQUEST['tn_r'];
         }
         // 计算用户输入的偏移量与正确的滑块位置的差值绝对值是否在容错范围内，返回比较结果
@@ -117,26 +126,25 @@ class TnCode
                 i_session('tncode_r', '');
             }
         }
+
         return $ret;
     }
 
     /**
      * 验证码二次验证【复检】
-     *
-     * @param $codeValue
-     *
-     * @return bool
      */
     public function recheck($codeValue = ''): bool
     {
-        if (empty(i_session('tncode_r')) && !empty($value = i_session('tncode_validation'))) {
+        if (empty(i_session('tncode_r')) && ! empty($value = i_session('tncode_validation'))) {
             $ret = abs($value - $codeValue) <= $this->_fault;
             if ($ret) {
                 i_session('tncode_validation', ''); // 验证成功时删除
                 i_session('tncode_err', '');
+
                 return true;
             }
         }
+
         return false;
     }
 
@@ -149,12 +157,12 @@ class TnCode
         // $file_bg = dirname(__FILE__). '/bg/'. $bg. '.png';
 
         // 背景图
-        $bgImg = !empty($bgImg) ? $bgImg : [
-            dirname(__DIR__) . '/resource/images/tn_code/bg/1.png',
-            dirname(__DIR__) . '/resource/images/tn_code/bg/2.png',
-            dirname(__DIR__) . '/resource/images/tn_code/bg/3.png',
-            dirname(__DIR__) . '/resource/images/tn_code/bg/4.png',
-            dirname(__DIR__) . '/resource/images/tn_code/bg/5.png',
+        $bgImg = ! empty($bgImg) ? $bgImg : [
+            dirname(__DIR__).'/resource/images/tn_code/bg/1.png',
+            dirname(__DIR__).'/resource/images/tn_code/bg/2.png',
+            dirname(__DIR__).'/resource/images/tn_code/bg/3.png',
+            dirname(__DIR__).'/resource/images/tn_code/bg/4.png',
+            dirname(__DIR__).'/resource/images/tn_code/bg/5.png',
         ];
 
         // 从 $bgImg 里面随机取出一个元素作为背景图
@@ -194,17 +202,17 @@ class TnCode
     private function imgout(): void
     {
         // 判断是否不需要网页格式（通过GET参数'nowebp'判断）且当前环境支持imagewebp函数（用于输出webp格式图片），优先选择webp格式，因其有超高压缩率
-        if (!isset($_GET['nowebp']) && function_exists('imagewebp')) {
-            $type    = 'webp';
+        if (! isset($_GET['nowebp']) && function_exists('imagewebp')) {
+            $type = 'webp';
             $quality = 40; // webp格式图片质量，取值范围0 - 100
         } else {
-            $type    = 'png';
+            $type = 'png';
             $quality = 7; // png格式图片质量，取值范围0 - 9
         }
         // 设置输出的HTTP头信息，指定内容类型为相应的图片格式
-        header('Content-Type: image/' . $type);
+        header('Content-Type: image/'.$type);
         // 根据选择的图片格式动态构建对应的输出函数名，如'imagewebp'或'imagepng'
-        $func = "image" . $type;
+        $func = 'image'.$type;
         // 调用对应的图片输出函数，将最终合成的图片输出到浏览器，第二个参数null表示按默认设置输出，第三个参数为指定的图片质量
         $func($this->im, null, $quality);
     }

@@ -14,6 +14,7 @@
  * @copyright 2010 - 2012 Jim Jagielski
  * @copyright 2004 - 2009 Andy Prevost
  * @license   https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html GNU Lesser General Public License
+ *
  * @note      This program is distributed in the hope that it will be useful - WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.
@@ -81,8 +82,8 @@ class OAuth implements OAuthTokenProvider
     /**
      * OAuth constructor.
      *
-     * @param array $options Associative array containing
-     *                       `provider`, `userName`, `clientSecret`, `clientId` and `refreshToken` elements
+     * @param  array  $options  Associative array containing
+     *                          `provider`, `userName`, `clientSecret`, `clientId` and `refreshToken` elements
      */
     public function __construct($options)
     {
@@ -100,7 +101,7 @@ class OAuth implements OAuthTokenProvider
      */
     protected function getGrant()
     {
-        return new RefreshToken();
+        return new RefreshToken;
     }
 
     /**
@@ -123,16 +124,16 @@ class OAuth implements OAuthTokenProvider
      */
     public function getOauth64()
     {
-        //Get a new token if it's not available or has expired
-        if (null === $this->oauthToken || $this->oauthToken->hasExpired()) {
+        // Get a new token if it's not available or has expired
+        if ($this->oauthToken === null || $this->oauthToken->hasExpired()) {
             $this->oauthToken = $this->getToken();
         }
 
         return base64_encode(
-            'user=' .
-            $this->oauthUserEmail .
-            "\001auth=Bearer " .
-            $this->oauthToken .
+            'user='.
+            $this->oauthUserEmail.
+            "\001auth=Bearer ".
+            $this->oauthToken.
             "\001\001"
         );
     }

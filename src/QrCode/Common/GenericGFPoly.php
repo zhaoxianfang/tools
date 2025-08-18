@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class GenericGFPoly
  *
  * @created      16.01.2021
+ *
  * @author       ZXing Authors
  * @author       Smiley <smiley@chillerlan.net>
  * @copyright    2021 Smiley
@@ -13,7 +15,11 @@ declare(strict_types=1);
 namespace zxf\QrCode\Common;
 
 use zxf\QrCode\QRCodeException;
-use function array_fill, array_slice, array_splice, count;
+
+use function array_fill;
+use function array_slice;
+use function array_splice;
+use function count;
 
 /**
  * Represents a polynomial whose coefficients are elements of a GF.
@@ -24,229 +30,241 @@ use function array_fill, array_slice, array_splice, count;
  *
  * @author Sean Owen
  */
-final class GenericGFPoly{
+final class GenericGFPoly
+{
+    /** @var int[] */
+    private array $coefficients;
 
-	/** @var int[] */
-	private array $coefficients;
+    /**
+     * @param  int[]  $coefficients  array coefficients as ints representing elements of GF(size), arranged
+     *                               from most significant (highest-power term) coefficient to the least significant
+     *
+     * @throws \zxf\QrCode\QRCodeException if argument is null or empty, or if leading coefficient is 0 and this
+     *                                     is not a constant polynomial (that is, it is not the monomial "0")
+     */
+    public function __construct(array $coefficients, ?int $degree = null)
+    {
+        $degree ??= 0;
 
-	/**
-	 * @param int[]      $coefficients array coefficients as ints representing elements of GF(size), arranged
-	 *                                 from most significant (highest-power term) coefficient to the least significant
-	 *
-	 * @throws \zxf\QrCode\QRCodeException if argument is null or empty, or if leading coefficient is 0 and this
-	 *                                            is not a constant polynomial (that is, it is not the monomial "0")
-	 */
-	public function __construct(array $coefficients, int|null $degree = null){
-		$degree ??= 0;
+        if (empty($coefficients)) {
+            throw new QRCodeException('arg $coefficients is empty');
+        }
 
-		if(empty($coefficients)){
-			throw new QRCodeException('arg $coefficients is empty');
-		}
+        if ($degree < 0) {
+            throw new QRCodeException('negative degree');
+        }
 
-		if($degree < 0){
-			throw new QRCodeException('negative degree');
-		}
+        $coefficientsLength = count($coefficients);
 
-		$coefficientsLength = count($coefficients);
+        // Leading term must be non-zero for anything except the constant polynomial "0"
+        $firstNonZero = 0;
 
-		// Leading term must be non-zero for anything except the constant polynomial "0"
-		$firstNonZero = 0;
+        while ($firstNonZero < $coefficientsLength && $coefficients[$firstNonZero] === 0) {
+            $firstNonZero++;
+        }
 
-		while($firstNonZero < $coefficientsLength && $coefficients[$firstNonZero] === 0){
-			$firstNonZero++;
-		}
+        $this->coefficients = [0];
 
-		$this->coefficients = [0];
+        if ($firstNonZero !== $coefficientsLength) {
+            $this->coefficients = array_fill(0, ($coefficientsLength - $firstNonZero + $degree), 0);
 
-		if($firstNonZero !== $coefficientsLength){
-			$this->coefficients = array_fill(0, ($coefficientsLength - $firstNonZero + $degree), 0);
+            for ($i = 0; $i < ($coefficientsLength - $firstNonZero); $i++) {
+                $this->coefficients[$i] = $coefficients[($i + $firstNonZero)];
+            }
+        }
 
-			for($i = 0; $i < ($coefficientsLength - $firstNonZero); $i++){
-				$this->coefficients[$i] = $coefficients[($i + $firstNonZero)];
-			}
-		}
+    }
 
-	}
+    /**
+     * @return int $coefficient of x^degree term in this polynomial
+     */
+    public function getCoefficient(int $degree): int
+    {
+        return $this->coefficients[(count($this->coefficients) - 1 - $degree)];
+    }
 
-	/**
-	 * @return int $coefficient of x^degree term in this polynomial
-	 */
-	public function getCoefficient(int $degree):int{
-		return $this->coefficients[(count($this->coefficients) - 1 - $degree)];
-	}
+    /**
+     * @return int[]
+     */
+    public function getCoefficients(): array
+    {
+        return $this->coefficients;
+    }
 
-	/**
-	 * @return int[]
-	 */
-	public function getCoefficients():array{
-		return $this->coefficients;
-	}
+    /**
+     * @return int $degree of this polynomial
+     */
+    public function getDegree(): int
+    {
+        return count($this->coefficients) - 1;
+    }
 
-	/**
-	 * @return int $degree of this polynomial
-	 */
-	public function getDegree():int{
-		return (count($this->coefficients) - 1);
-	}
+    /**
+     * @return bool true if this polynomial is the monomial "0"
+     */
+    public function isZero(): bool
+    {
+        return $this->coefficients[0] === 0;
+    }
 
-	/**
-	 * @return bool true if this polynomial is the monomial "0"
-	 */
-	public function isZero():bool{
-		return $this->coefficients[0] === 0;
-	}
+    /**
+     * @return int evaluation of this polynomial at a given point
+     */
+    public function evaluateAt(int $a): int
+    {
 
-	/**
-	 * @return int evaluation of this polynomial at a given point
-	 */
-	public function evaluateAt(int $a):int{
+        if ($a === 0) {
+            // Just return the x^0 coefficient
+            return $this->getCoefficient(0);
+        }
 
-		if($a === 0){
-			// Just return the x^0 coefficient
-			return $this->getCoefficient(0);
-		}
+        $result = 0;
 
-		$result = 0;
+        foreach ($this->coefficients as $c) {
+            // if $a === 1 just the sum of the coefficients
+            $result = GF256::addOrSubtract((($a === 1) ? $result : GF256::multiply($a, $result)), $c);
+        }
 
-		foreach($this->coefficients as $c){
-			// if $a === 1 just the sum of the coefficients
-			$result = GF256::addOrSubtract((($a === 1) ? $result : GF256::multiply($a, $result)), $c);
-		}
+        return $result;
+    }
 
-		return $result;
-	}
+    public function multiply(GenericGFPoly $other): self
+    {
 
-	public function multiply(GenericGFPoly $other):self{
+        if ($this->isZero() || $other->isZero()) {
+            return new self([0]);
+        }
 
-		if($this->isZero() || $other->isZero()){
-			return new self([0]);
-		}
+        $product = array_fill(0, (count($this->coefficients) + count($other->coefficients) - 1), 0);
 
-		$product = array_fill(0, (count($this->coefficients) + count($other->coefficients) - 1), 0);
+        foreach ($this->coefficients as $i => $aCoeff) {
+            foreach ($other->coefficients as $j => $bCoeff) {
+                $product[($i + $j)] ^= GF256::multiply($aCoeff, $bCoeff);
+            }
+        }
 
-		foreach($this->coefficients as $i => $aCoeff){
-			foreach($other->coefficients as $j => $bCoeff){
-				$product[($i + $j)] ^= GF256::multiply($aCoeff, $bCoeff);
-			}
-		}
+        return new self($product);
+    }
 
-		return new self($product);
-	}
+    /**
+     * @return \zxf\QrCode\Common\GenericGFPoly[] [quotient, remainder]
+     *
+     * @throws \zxf\QrCode\QRCodeException
+     */
+    public function divide(GenericGFPoly $other): array
+    {
 
-	/**
-	 * @return \zxf\QrCode\Common\GenericGFPoly[] [quotient, remainder]
-	 * @throws \zxf\QrCode\QRCodeException
-	 */
-	public function divide(GenericGFPoly $other):array{
+        if ($other->isZero()) {
+            throw new QRCodeException('Division by 0');
+        }
 
-		if($other->isZero()){
-			throw new QRCodeException('Division by 0');
-		}
+        $quotient = new self([0]);
+        $remainder = clone $this;
 
-		$quotient  = new self([0]);
-		$remainder = clone $this;
+        $denominatorLeadingTerm = $other->getCoefficient($other->getDegree());
+        $inverseDenominatorLeadingTerm = GF256::inverse($denominatorLeadingTerm);
 
-		$denominatorLeadingTerm        = $other->getCoefficient($other->getDegree());
-		$inverseDenominatorLeadingTerm = GF256::inverse($denominatorLeadingTerm);
+        while ($remainder->getDegree() >= $other->getDegree() && ! $remainder->isZero()) {
+            $scale = GF256::multiply($remainder->getCoefficient($remainder->getDegree()), $inverseDenominatorLeadingTerm);
+            $diff = ($remainder->getDegree() - $other->getDegree());
+            $quotient = $quotient->addOrSubtract(GF256::buildMonomial($diff, $scale));
+            $remainder = $remainder->addOrSubtract($other->multiplyByMonomial($diff, $scale));
+        }
 
-		while($remainder->getDegree() >= $other->getDegree() && !$remainder->isZero()){
-			$scale     = GF256::multiply($remainder->getCoefficient($remainder->getDegree()), $inverseDenominatorLeadingTerm);
-			$diff      = ($remainder->getDegree() - $other->getDegree());
-			$quotient  = $quotient->addOrSubtract(GF256::buildMonomial($diff, $scale));
-			$remainder = $remainder->addOrSubtract($other->multiplyByMonomial($diff, $scale));
-		}
+        return [$quotient, $remainder];
 
-		return [$quotient, $remainder];
+    }
 
-	}
+    public function multiplyInt(int $scalar): self
+    {
 
-	public function multiplyInt(int $scalar):self{
+        if ($scalar === 0) {
+            return new self([0]);
+        }
 
-		if($scalar === 0){
-			return new self([0]);
-		}
+        if ($scalar === 1) {
+            return $this;
+        }
 
-		if($scalar === 1){
-			return $this;
-		}
+        $product = array_fill(0, count($this->coefficients), 0);
 
-		$product = array_fill(0, count($this->coefficients), 0);
+        foreach ($this->coefficients as $i => $c) {
+            $product[$i] = GF256::multiply($c, $scalar);
+        }
 
-		foreach($this->coefficients as $i => $c){
-			$product[$i] = GF256::multiply($c, $scalar);
-		}
+        return new self($product);
+    }
 
-		return new self($product);
-	}
+    /**
+     * @throws \zxf\QrCode\QRCodeException
+     */
+    public function multiplyByMonomial(int $degree, int $coefficient): self
+    {
 
-	/**
-	 * @throws \zxf\QrCode\QRCodeException
-	 */
-	public function multiplyByMonomial(int $degree, int $coefficient):self{
+        if ($degree < 0) {
+            throw new QRCodeException('degree < 0');
+        }
 
-		if($degree < 0){
-			throw new QRCodeException('degree < 0');
-		}
+        if ($coefficient === 0) {
+            return new self([0]);
+        }
 
-		if($coefficient === 0){
-			return new self([0]);
-		}
+        $product = array_fill(0, (count($this->coefficients) + $degree), 0);
 
-		$product = array_fill(0, (count($this->coefficients) + $degree), 0);
+        foreach ($this->coefficients as $i => $c) {
+            $product[$i] = GF256::multiply($c, $coefficient);
+        }
 
-		foreach($this->coefficients as $i => $c){
-			$product[$i] = GF256::multiply($c, $coefficient);
-		}
+        return new self($product);
+    }
 
-		return new self($product);
-	}
+    public function mod(GenericGFPoly $other): self
+    {
 
-	public function mod(GenericGFPoly $other):self{
+        if ((count($this->coefficients) - count($other->coefficients)) < 0) {
+            return $this;
+        }
 
-		if((count($this->coefficients) - count($other->coefficients)) < 0){
-			return $this;
-		}
+        $ratio = (GF256::log($this->coefficients[0]) - GF256::log($other->coefficients[0]));
 
-		$ratio = (GF256::log($this->coefficients[0]) - GF256::log($other->coefficients[0]));
+        foreach ($other->coefficients as $i => $c) {
+            $this->coefficients[$i] ^= GF256::exp(GF256::log($c) + $ratio);
+        }
 
-		foreach($other->coefficients as $i => $c){
-			$this->coefficients[$i] ^= GF256::exp(GF256::log($c) + $ratio);
-		}
+        return (new self($this->coefficients))->mod($other);
+    }
 
-		return (new self($this->coefficients))->mod($other);
-	}
+    public function addOrSubtract(GenericGFPoly $other): self
+    {
 
-	public function addOrSubtract(GenericGFPoly $other):self{
+        if ($this->isZero()) {
+            return $other;
+        }
 
-		if($this->isZero()){
-			return $other;
-		}
+        if ($other->isZero()) {
+            return $this;
+        }
 
-		if($other->isZero()){
-			return $this;
-		}
+        $smallerCoefficients = $this->coefficients;
+        $largerCoefficients = $other->coefficients;
 
-		$smallerCoefficients = $this->coefficients;
-		$largerCoefficients  = $other->coefficients;
+        if (count($smallerCoefficients) > count($largerCoefficients)) {
+            $temp = $smallerCoefficients;
+            $smallerCoefficients = $largerCoefficients;
+            $largerCoefficients = $temp;
+        }
 
-		if(count($smallerCoefficients) > count($largerCoefficients)){
-			$temp                = $smallerCoefficients;
-			$smallerCoefficients = $largerCoefficients;
-			$largerCoefficients  = $temp;
-		}
+        $sumDiff = array_fill(0, count($largerCoefficients), 0);
+        $lengthDiff = (count($largerCoefficients) - count($smallerCoefficients));
+        // Copy high-order terms only found in higher-degree polynomial's coefficients
+        array_splice($sumDiff, 0, $lengthDiff, array_slice($largerCoefficients, 0, $lengthDiff));
 
-		$sumDiff    = array_fill(0, count($largerCoefficients), 0);
-		$lengthDiff = (count($largerCoefficients) - count($smallerCoefficients));
-		// Copy high-order terms only found in higher-degree polynomial's coefficients
-		array_splice($sumDiff, 0, $lengthDiff, array_slice($largerCoefficients, 0, $lengthDiff));
+        $countLargerCoefficients = count($largerCoefficients);
 
-		$countLargerCoefficients = count($largerCoefficients);
+        for ($i = $lengthDiff; $i < $countLargerCoefficients; $i++) {
+            $sumDiff[$i] = GF256::addOrSubtract($smallerCoefficients[($i - $lengthDiff)], $largerCoefficients[$i]);
+        }
 
-		for($i = $lengthDiff; $i < $countLargerCoefficients; $i++){
-			$sumDiff[$i] = GF256::addOrSubtract($smallerCoefficients[($i - $lengthDiff)], $largerCoefficients[$i]);
-		}
-
-		return new self($sumDiff);
-	}
-
+        return new self($sumDiff);
+    }
 }

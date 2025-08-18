@@ -1,8 +1,10 @@
 <?php
+
 /**
  * RGBArrayModuleValueTrait.php
  *
  * @created      06.05.2024
+ *
  * @author       smiley <smiley@chillerlan.net>
  * @copyright    2024 smiley
  * @license      MIT
@@ -11,74 +13,82 @@ declare(strict_types=1);
 
 namespace zxf\QrCode\Output;
 
-use function array_values, count, intval, is_array, is_numeric, max, min;
+use function array_values;
+use function count;
+use function intval;
+use function is_array;
+use function is_numeric;
+use function max;
+use function min;
 
 /**
  * Module value checks for output classes that use RGB color arrays
  */
-trait RGBArrayModuleValueTrait{
+trait RGBArrayModuleValueTrait
+{
+    /**
+     * implements \zxf\QrCode\Output\QROutputInterface::moduleValueIsValid()
+     *
+     * @param  int[]  $value
+     */
+    public static function moduleValueIsValid(mixed $value): bool
+    {
 
-	/**
-	 * implements \zxf\QrCode\Output\QROutputInterface::moduleValueIsValid()
-	 *
-	 * @param int[] $value
-	 */
-	public static function moduleValueIsValid(mixed $value):bool{
+        if (! is_array($value) || count($value) < 3) {
+            return false;
+        }
 
-		if(!is_array($value) || count($value) < 3){
-			return false;
-		}
+        // check the first 3 values of the array
+        foreach (array_values($value) as $i => $val) {
 
-		// check the first 3 values of the array
-		foreach(array_values($value) as $i => $val){
+            if ($i > 2) {
+                break;
+            }
 
-			if($i > 2){
-				break;
-			}
+            if (! is_numeric($val)) {
+                return false;
+            }
 
-			if(!is_numeric($val)){
-				return false;
-			}
+        }
 
-		}
+        return true;
+    }
 
-		return true;
-	}
+    /**
+     * implements \zxf\QrCode\Output\QROutputAbstract::prepareModuleValue()
+     *
+     * @param  int[]  $value
+     * @return int[]
+     *
+     * @throws \zxf\QrCode\Output\QRCodeOutputException
+     */
+    protected function prepareModuleValue(mixed $value): array
+    {
+        $values = [];
 
-	/**
-	 * implements \zxf\QrCode\Output\QROutputAbstract::prepareModuleValue()
-	 *
-	 * @param  int[] $value
-	 * @return int[]
-	 *
-	 * @throws \zxf\QrCode\Output\QRCodeOutputException
-	 */
-	protected function prepareModuleValue(mixed $value):array{
-		$values = [];
+        foreach (array_values($value) as $i => $val) {
 
-		foreach(array_values($value) as $i => $val){
+            if ($i > 2) {
+                break;
+            }
 
-			if($i > 2){
-				break;
-			}
+            $values[] = max(0, min(255, intval($val)));
+        }
 
-			$values[] = max(0, min(255, intval($val)));
-		}
+        if (count($values) !== 3) {
+            throw new QRCodeOutputException('invalid color value');
+        }
 
-		if(count($values) !== 3){
-			throw new QRCodeOutputException('invalid color value');
-		}
+        return $values;
+    }
 
-		return $values;
-	}
-
-	/**
-	 * implements \zxf\QrCode\Output\QROutputAbstract::getDefaultModuleValue()
-	 *
-	 * @return int[]
-	 */
-	protected function getDefaultModuleValue(bool $isDark):array{
-		return ($isDark) ? [0, 0, 0] : [255, 255, 255];
-	}
-
+    /**
+     * implements \zxf\QrCode\Output\QROutputAbstract::getDefaultModuleValue()
+     *
+     * @return int[]
+     */
+    protected function getDefaultModuleValue(bool $isDark): array
+    {
+        return ($isDark) ? [0, 0, 0] : [255, 255, 255];
+    }
 }

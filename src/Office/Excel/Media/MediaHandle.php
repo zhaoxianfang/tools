@@ -105,6 +105,7 @@ class MediaHandle
         // return $zip->locateName('xl/cellimages.xml') !== false;
 
         $ContentTypes = XML2Array::toArray($zip->getFromName('[Content_Types].xml'));
+
         // 判断 $firstContentType 字符串中是否包含 "extended-properties+xml" 字符串
         return ! empty($firstContentType = $ContentTypes['Override'][0]['@ContentType']) && str_contains($firstContentType, 'extended-properties+xml');
     }
@@ -113,6 +114,7 @@ class MediaHandle
     public function isOffice(ZipArchive $zip)
     {
         $ContentTypes = XML2Array::toArray($zip->getFromName('[Content_Types].xml'));
+
         // 判断 $firstContentType 字符串中是否包含 "spreadsheetml.sheet.main+xml" 字符串
         return ! empty($firstContentType = $ContentTypes['Override'][0]['@ContentType']) && str_contains($firstContentType, 'spreadsheetml.sheet.main+xml');
     }

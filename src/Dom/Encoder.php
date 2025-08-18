@@ -6,12 +6,6 @@ namespace zxf\Dom;
 
 class Encoder
 {
-    /**
-     * @param string $string
-     * @param string $encoding
-     *
-     * @return string
-     */
     public static function convertToHtmlEntities(string $string, string $encoding): string
     {
         // handling HTML entities via mbstring is deprecated in PHP 8.2
@@ -19,7 +13,7 @@ class Encoder
             return mb_convert_encoding($string, 'HTML-ENTITIES', $encoding);
         }
 
-        if ('UTF-8' !== $encoding) {
+        if ($encoding !== 'UTF-8') {
             $string = iconv($encoding, 'UTF-8//IGNORE', $string);
         }
 
@@ -27,9 +21,7 @@ class Encoder
     }
 
     /**
-     * @param string[] $matches
-     *
-     * @return string
+     * @param  string[]  $matches
      */
     private static function htmlEncodingCallback(array $matches): string
     {
@@ -39,21 +31,21 @@ class Encoder
         $codes = unpack('C*', htmlentities($matches[0], ENT_COMPAT, 'UTF-8'));
 
         while (isset($codes[$characterIndex])) {
-            if (0x80 > $codes[$characterIndex]) {
+            if ($codes[$characterIndex] < 0x80) {
                 $entities .= chr($codes[$characterIndex++]);
 
                 continue;
             }
 
-            if (0xF0 <= $codes[$characterIndex]) {
+            if ($codes[$characterIndex] >= 0xF0) {
                 $code = (($codes[$characterIndex++] - 0xF0) << 18) + (($codes[$characterIndex++] - 0x80) << 12) + (($codes[$characterIndex++] - 0x80) << 6) + $codes[$characterIndex++] - 0x80;
-            } elseif (0xE0 <= $codes[$characterIndex]) {
+            } elseif ($codes[$characterIndex] >= 0xE0) {
                 $code = (($codes[$characterIndex++] - 0xE0) << 12) + (($codes[$characterIndex++] - 0x80) << 6) + $codes[$characterIndex++] - 0x80;
             } else {
                 $code = (($codes[$characterIndex++] - 0xC0) << 6) + $codes[$characterIndex++] - 0x80;
             }
 
-            $entities .= '&#' . $code . ';';
+            $entities .= '&#'.$code.';';
         }
 
         return $entities;

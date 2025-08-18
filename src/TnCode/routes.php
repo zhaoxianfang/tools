@@ -1,8 +1,8 @@
 <?php
 
 use zxf\TnCode\AssetController;
-use zxf\Tools\Str;
 use zxf\TnCode\Http\TnCodeController;
+use zxf\Tools\Str;
 
 app('router')->prefix('tn_code')->name('tn_code.')->group(function ($router) {
     // 获取验证码图片
@@ -23,7 +23,7 @@ app('router')->prefix('tn_code')->name('tn_code.')->group(function ($router) {
     // 加载 png 图片
     $router->get('assets/{dir}/{filePath}', function ($dir, $filePath) {
         if (Str::endsWith($filePath, '.png')) {
-            return AssetController::loadImg($dir . '/' . $filePath);
+            return AssetController::loadImg($dir.'/'.$filePath);
         }
         abort(404);
     });

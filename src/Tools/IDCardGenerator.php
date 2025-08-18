@@ -59,15 +59,15 @@ final class IDCardGenerator
 {
     // 省份代码映射
     private const PROVINCE_CODES = [
-        11 => "北京市", 12 => "天津市", 13 => "河北省", 14 => "山西省", 15 => "内蒙古自治区",
-        21 => "辽宁省", 22 => "吉林省", 23 => "黑龙江省",
-        31 => "上海市", 32 => "江苏省", 33 => "浙江省", 34 => "安徽省", 35 => "福建省",
-        36 => "江西省", 37 => "山东省",
-        41 => "河南省", 42 => "湖北省", 43 => "湖南省", 44 => "广东省", 45 => "广西壮族自治区",
-        46 => "海南省",
-        50 => "重庆市", 51 => "四川省", 52 => "贵州省", 53 => "云南省", 54 => "西藏自治区",
-        61 => "陕西省", 62 => "甘肃省", 63 => "青海省", 64 => "宁夏回族自治区", 65 => "新疆维吾尔自治区",
-        71 => "台湾省", 81 => "香港特别行政区", 82 => "澳门特别行政区"
+        11 => '北京市', 12 => '天津市', 13 => '河北省', 14 => '山西省', 15 => '内蒙古自治区',
+        21 => '辽宁省', 22 => '吉林省', 23 => '黑龙江省',
+        31 => '上海市', 32 => '江苏省', 33 => '浙江省', 34 => '安徽省', 35 => '福建省',
+        36 => '江西省', 37 => '山东省',
+        41 => '河南省', 42 => '湖北省', 43 => '湖南省', 44 => '广东省', 45 => '广西壮族自治区',
+        46 => '海南省',
+        50 => '重庆市', 51 => '四川省', 52 => '贵州省', 53 => '云南省', 54 => '西藏自治区',
+        61 => '陕西省', 62 => '甘肃省', 63 => '青海省', 64 => '宁夏回族自治区', 65 => '新疆维吾尔自治区',
+        71 => '台湾省', 81 => '香港特别行政区', 82 => '澳门特别行政区',
     ];
 
     // 校验码权重因子
@@ -95,11 +95,12 @@ final class IDCardGenerator
         ['name' => '天秤座', 'start' => '09-23', 'end' => '10-23'],
         ['name' => '天蝎座', 'start' => '10-24', 'end' => '11-22'],
         ['name' => '射手座', 'start' => '11-23', 'end' => '12-21'],
-        ['name' => '摩羯座', 'start' => '12-22', 'end' => '01-19']
+        ['name' => '摩羯座', 'start' => '12-22', 'end' => '01-19'],
     ];
 
     // 年龄限制范围
     private const MIN_AGE = 0;
+
     private const MAX_AGE = 125;
 
     /**
@@ -112,6 +113,7 @@ final class IDCardGenerator
      *     length?: 15|18
      * } $options 生成选项
      * @return string 身份证号码
+     *
      * @throws InvalidArgumentException 当参数无效时抛出
      */
     public static function generate(array $options = []): string
@@ -120,7 +122,7 @@ final class IDCardGenerator
             'province' => null,
             'birthday' => null,
             'gender' => null,
-            'length' => 18
+            'length' => 18,
         ], $options);
 
         self::validateOptions($options);
@@ -130,17 +132,18 @@ final class IDCardGenerator
         $sequenceCode = self::generateSequenceCode($options['gender']);
 
         if ($options['length'] === 15) {
-            return $areaCode . $birthCode . $sequenceCode;
+            return $areaCode.$birthCode.$sequenceCode;
         }
 
-        $idBase = $areaCode . $birthCode . $sequenceCode;
-        return $idBase . self::calculateChecksum($idBase);
+        $idBase = $areaCode.$birthCode.$sequenceCode;
+
+        return $idBase.self::calculateChecksum($idBase);
     }
 
     /**
      * 批量生成身份证号码
      *
-     * @param int $count 要生成的数量
+     * @param  int  $count  要生成的数量
      * @param array{
      *     province?: string|null,
      *     birthday?: string|DateTimeInterface|null,
@@ -148,6 +151,7 @@ final class IDCardGenerator
      *     length?: 15|18
      * } $options 生成选项
      * @return array<string> 生成的身份证号码数组
+     *
      * @throws InvalidArgumentException 当参数无效时抛出
      */
     public static function generateBatch(int $count, array $options = []): array
@@ -169,13 +173,13 @@ final class IDCardGenerator
      */
     private static function validateOptions(array $options): void
     {
-        if (!in_array($options['length'], [15, 18], true)) {
+        if (! in_array($options['length'], [15, 18], true)) {
             throw new InvalidArgumentException('身份证位数必须是15或18');
         }
 
         if ($options['gender'] !== null) {
             $gender = strtolower($options['gender']);
-            if (!in_array($gender, ['m', 'male', 'f', 'female'], true)) {
+            if (! in_array($gender, ['m', 'male', 'f', 'female'], true)) {
                 throw new InvalidArgumentException("性别必须是'm/male'或'f/female'");
             }
         }
@@ -186,7 +190,7 @@ final class IDCardGenerator
                 if ($date === false || $date->format('Y-m-d') !== $options['birthday']) {
                     throw new InvalidArgumentException('出生日期格式无效，请使用YYYY-MM-DD格式');
                 }
-            } elseif (!($options['birthday'] instanceof DateTimeInterface)) {
+            } elseif (! ($options['birthday'] instanceof DateTimeInterface)) {
                 throw new InvalidArgumentException('出生日期必须是字符串或DateTimeInterface实例');
             }
         }
@@ -203,10 +207,10 @@ final class IDCardGenerator
         $cityMax = $isMunicipality ? 1 : 99;
         $districtMax = $isMunicipality ? 20 : 99;
 
-        $cityCode = str_pad((string)random_int(1, $cityMax), 2, '0', STR_PAD_LEFT);
-        $districtCode = str_pad((string)random_int(1, $districtMax), 2, '0', STR_PAD_LEFT);
+        $cityCode = str_pad((string) random_int(1, $cityMax), 2, '0', STR_PAD_LEFT);
+        $districtCode = str_pad((string) random_int(1, $districtMax), 2, '0', STR_PAD_LEFT);
 
-        return $provinceCode . $cityCode . $districtCode;
+        return $provinceCode.$cityCode.$districtCode;
     }
 
     /**
@@ -249,7 +253,7 @@ final class IDCardGenerator
      */
     private static function generateRandomBirthCode(bool $is18Digit): string
     {
-        $currentYear = (int)date('Y');
+        $currentYear = (int) date('Y');
         $year = random_int($currentYear - self::MAX_AGE, $currentYear - self::MIN_AGE);
         $month = random_int(1, 12);
         $day = random_int(1, self::daysInMonth($year, $month));
@@ -280,7 +284,7 @@ final class IDCardGenerator
     /**
      * 生成顺序码（包含性别信息）
      */
-    private static function generateSequenceCode(null|string $gender): string
+    private static function generateSequenceCode(?string $gender): string
     {
         $sequence = random_int(1, 999);
 
@@ -294,7 +298,7 @@ final class IDCardGenerator
             }
         }
 
-        return str_pad((string)$sequence, 3, '0', STR_PAD_LEFT);
+        return str_pad((string) $sequence, 3, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -308,10 +312,10 @@ final class IDCardGenerator
 
         $sum = 0;
         for ($i = 0; $i < 17; $i++) {
-            if (!ctype_digit($idBase[$i])) {
+            if (! ctype_digit($idBase[$i])) {
                 throw new InvalidArgumentException('身份证前17位必须为数字');
             }
-            $sum += (int)$idBase[$i] * self::CHECKSUM_WEIGHTS[$i];
+            $sum += (int) $idBase[$i] * self::CHECKSUM_WEIGHTS[$i];
         }
 
         return self::CHECKSUM_CODES[$sum % 11];
@@ -336,12 +340,12 @@ final class IDCardGenerator
      */
     private static function validate15Digit(string $idCard): bool
     {
-        if (!ctype_digit($idCard)) {
+        if (! ctype_digit($idCard)) {
             return false;
         }
 
-        $provinceCode = (int)substr($idCard, 0, 2);
-        if (!isset(self::PROVINCE_CODES[$provinceCode])) {
+        $provinceCode = (int) substr($idCard, 0, 2);
+        if (! isset(self::PROVINCE_CODES[$provinceCode])) {
             return false;
         }
 
@@ -358,12 +362,12 @@ final class IDCardGenerator
     private static function validate18Digit(string $idCard): bool
     {
         $base = substr($idCard, 0, 17);
-        if (!ctype_digit($base)) {
+        if (! ctype_digit($base)) {
             return false;
         }
 
-        $provinceCode = (int)substr($idCard, 0, 2);
-        if (!isset(self::PROVINCE_CODES[$provinceCode])) {
+        $provinceCode = (int) substr($idCard, 0, 2);
+        if (! isset(self::PROVINCE_CODES[$provinceCode])) {
             return false;
         }
 
@@ -371,7 +375,7 @@ final class IDCardGenerator
         $month = substr($idCard, 10, 2);
         $day = substr($idCard, 12, 2);
 
-        if (!self::isValidDate($year, $month, $day, true)) {
+        if (! self::isValidDate($year, $month, $day, true)) {
             return false;
         }
 
@@ -383,15 +387,15 @@ final class IDCardGenerator
      */
     private static function isValidDate(string $year, string $month, string $day, bool $fullYear): bool
     {
-        $monthInt = (int)$month;
-        $dayInt = (int)$day;
+        $monthInt = (int) $month;
+        $dayInt = (int) $day;
 
         if ($monthInt < 1 || $monthInt > 12) {
             return false;
         }
 
-        $yearInt = (int)$year;
-        if (!$fullYear) {
+        $yearInt = (int) $year;
+        if (! $fullYear) {
             $yearInt += ($yearInt < 50) ? 2000 : 1900;
         }
 
@@ -414,16 +418,17 @@ final class IDCardGenerator
      *     constellation: string,
      *     generation: string
      * }
+     *
      * @throws InvalidArgumentException 当身份证无效时抛出
      */
     public static function parse(string $idCard): array
     {
-        if (!self::validate($idCard)) {
+        if (! self::validate($idCard)) {
             throw new InvalidArgumentException('无效的身份证号码');
         }
 
         $is18Digit = strlen($idCard) === 18;
-        $provinceCode = (int)substr($idCard, 0, 2);
+        $provinceCode = (int) substr($idCard, 0, 2);
         $sequence = substr($idCard, $is18Digit ? 14 : 12, 3);
         $birthday = self::parseBirthday($idCard, $is18Digit);
         $birthDate = DateTimeImmutable::createFromFormat('Y-m-d', $birthday);
@@ -434,12 +439,12 @@ final class IDCardGenerator
             'province' => self::PROVINCE_CODES[$provinceCode] ?? '未知',
             'birthday' => $birthday,
             'age' => self::calculateAge($birthDate),
-            'gender' => ((int)$sequence % 2 === 0) ? 'female' : 'male',
+            'gender' => ((int) $sequence % 2 === 0) ? 'female' : 'male',
             'sequence_code' => $sequence,
             'check_code' => $is18Digit ? strtoupper($idCard[17]) : null,
             'zodiac' => self::getZodiacSign($birthDate),
             'constellation' => self::getConstellation($birthDate),
-            'generation' => self::getGeneration($birthDate)
+            'generation' => self::getGeneration($birthDate),
         ];
     }
 
@@ -450,11 +455,13 @@ final class IDCardGenerator
     {
         if ($is18Digit) {
             $birthday = substr($idCard, 6, 8);
+
             return sprintf('%s-%s-%s', substr($birthday, 0, 4), substr($birthday, 4, 2), substr($birthday, 6, 2));
         }
 
         $birthday = substr($idCard, 6, 6);
-        $century = (int)substr($birthday, 0, 2) < 50 ? '20' : '19';
+        $century = (int) substr($birthday, 0, 2) < 50 ? '20' : '19';
+
         return sprintf('%s%s-%s-%s', $century, substr($birthday, 0, 2), substr($birthday, 2, 2), substr($birthday, 4, 2));
     }
 
@@ -463,8 +470,9 @@ final class IDCardGenerator
      */
     private static function calculateAge(DateTimeImmutable $birthDate): int
     {
-        $now = new DateTimeImmutable();
+        $now = new DateTimeImmutable;
         $age = $now->diff($birthDate)->y;
+
         return max(self::MIN_AGE, min($age, self::MAX_AGE));
     }
 
@@ -497,13 +505,23 @@ final class IDCardGenerator
      */
     private static function getGeneration(DateTimeImmutable $birthDate): string
     {
-        $year = (int)$birthDate->format('Y');
+        $year = (int) $birthDate->format('Y');
 
-        if ($year >= 2010) return 'Z世代';
-        if ($year >= 1995) return '千禧一代';
-        if ($year >= 1980) return 'Y世代';
-        if ($year >= 1965) return 'X世代';
-        if ($year >= 1946) return '婴儿潮一代';
+        if ($year >= 2010) {
+            return 'Z世代';
+        }
+        if ($year >= 1995) {
+            return '千禧一代';
+        }
+        if ($year >= 1980) {
+            return 'Y世代';
+        }
+        if ($year >= 1965) {
+            return 'X世代';
+        }
+        if ($year >= 1946) {
+            return '婴儿潮一代';
+        }
 
         return '传统一代';
     }
@@ -513,18 +531,18 @@ final class IDCardGenerator
      */
     public static function upgradeTo18(string $idCard15): string
     {
-        if (strlen($idCard15) !== 15 || !self::validate($idCard15)) {
+        if (strlen($idCard15) !== 15 || ! self::validate($idCard15)) {
             throw new InvalidArgumentException('无效的15位身份证号码');
         }
 
         $areaCode = substr($idCard15, 0, 6);
         $birthYear = substr($idCard15, 6, 2);
-        $century = (int)$birthYear < 50 ? '20' : '19';
-        $birthCode = $century . $birthYear . substr($idCard15, 8, 4);
+        $century = (int) $birthYear < 50 ? '20' : '19';
+        $birthCode = $century.$birthYear.substr($idCard15, 8, 4);
         $sequenceCode = substr($idCard15, 12, 3);
-        $idBase = $areaCode . $birthCode . $sequenceCode;
+        $idBase = $areaCode.$birthCode.$sequenceCode;
 
-        return $idBase . self::calculateChecksum($idBase);
+        return $idBase.self::calculateChecksum($idBase);
     }
 
     /**

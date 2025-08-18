@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class AlphaNum
  *
  * @created      25.11.2015
+ *
  * @author       Smiley <smiley@chillerlan.net>
  * @copyright    2015 Smiley
  * @license      MIT
@@ -11,8 +13,13 @@ declare(strict_types=1);
 
 namespace zxf\QrCode\Data;
 
-use zxf\QrCode\Common\{BitBuffer, Mode};
-use function ceil, intdiv, preg_match, strpos;
+use zxf\QrCode\Common\BitBuffer;
+use zxf\QrCode\Common\Mode;
+
+use function ceil;
+use function intdiv;
+use function preg_match;
+use function strpos;
 
 /**
  * Alphanumeric mode: 0 to 9, A to Z, space, $ % * + - . / :
@@ -20,105 +27,109 @@ use function ceil, intdiv, preg_match, strpos;
  * ISO/IEC 18004:2000 Section 8.3.3
  * ISO/IEC 18004:2000 Section 8.4.3
  */
-final class AlphaNum extends QRDataModeAbstract{
+final class AlphaNum extends QRDataModeAbstract
+{
+    /**
+     * ISO/IEC 18004:2000 Table 5
+     *
+     * @var string
+     */
+    private const CHAR_MAP = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
 
-	/**
-	 * ISO/IEC 18004:2000 Table 5
-	 *
-	 * @var string
-	 */
-	private const CHAR_MAP = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+    public const DATAMODE = Mode::ALPHANUM;
 
-	public const DATAMODE = Mode::ALPHANUM;
+    public function getLengthInBits(): int
+    {
+        return (int) ceil($this->getCharCount() * (11 / 2));
+    }
 
-	public function getLengthInBits():int{
-		return (int)ceil($this->getCharCount() * (11 / 2));
-	}
+    public static function validateString(string $string): bool
+    {
+        return (bool) preg_match('/^[A-Z\d %$*+-.:\/]+$/', $string);
+    }
 
-	public static function validateString(string $string):bool{
-		return (bool)preg_match('/^[A-Z\d %$*+-.:\/]+$/', $string);
-	}
+    public function write(BitBuffer $bitBuffer, int $versionNumber): static
+    {
+        $len = $this->getCharCount();
 
-	public function write(BitBuffer $bitBuffer, int $versionNumber):static{
-		$len = $this->getCharCount();
+        $bitBuffer
+            ->put(self::DATAMODE, 4)
+            ->put($len, $this::getLengthBits($versionNumber));
 
-		$bitBuffer
-			->put(self::DATAMODE, 4)
-			->put($len, $this::getLengthBits($versionNumber))
-		;
+        // encode 2 characters in 11 bits
+        for ($i = 0; ($i + 1) < $len; $i += 2) {
+            $bitBuffer->put(
+                ($this->ord($this->data[$i]) * 45 + $this->ord($this->data[($i + 1)])),
+                11,
+            );
+        }
 
-		// encode 2 characters in 11 bits
-		for($i = 0; ($i + 1) < $len; $i += 2){
-			$bitBuffer->put(
-				($this->ord($this->data[$i]) * 45 + $this->ord($this->data[($i + 1)])),
-				11,
-			);
-		}
+        // encode a remaining character in 6 bits
+        if ($i < $len) {
+            $bitBuffer->put($this->ord($this->data[$i]), 6);
+        }
 
-		// encode a remaining character in 6 bits
-		if($i < $len){
-			$bitBuffer->put($this->ord($this->data[$i]), 6);
-		}
+        return $this;
+    }
 
-		return $this;
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @throws \zxf\QrCode\Data\QRCodeDataException
+     */
+    public static function decodeSegment(BitBuffer $bitBuffer, int $versionNumber): string
+    {
+        $length = $bitBuffer->read(self::getLengthBits($versionNumber));
+        $result = '';
+        // Read two characters at a time
+        while ($length > 1) {
 
-	/**
-	 * @inheritDoc
-	 *
-	 * @throws \zxf\QrCode\Data\QRCodeDataException
-	 */
-	public static function decodeSegment(BitBuffer $bitBuffer, int $versionNumber):string{
-		$length = $bitBuffer->read(self::getLengthBits($versionNumber));
-		$result = '';
-		// Read two characters at a time
-		while($length > 1){
+            if ($bitBuffer->available() < 11) {
+                throw new QRCodeDataException('not enough bits available'); // @codeCoverageIgnore
+            }
 
-			if($bitBuffer->available() < 11){
-				throw new QRCodeDataException('not enough bits available'); // @codeCoverageIgnore
-			}
+            $nextTwoCharsBits = $bitBuffer->read(11);
+            $result .= self::chr(intdiv($nextTwoCharsBits, 45));
+            $result .= self::chr($nextTwoCharsBits % 45);
+            $length -= 2;
+        }
 
-			$nextTwoCharsBits  = $bitBuffer->read(11);
-			$result           .= self::chr(intdiv($nextTwoCharsBits, 45));
-			$result           .= self::chr($nextTwoCharsBits % 45);
-			$length           -= 2;
-		}
+        if ($length === 1) {
+            // special case: one character left
+            if ($bitBuffer->available() < 6) {
+                throw new QRCodeDataException('not enough bits available'); // @codeCoverageIgnore
+            }
 
-		if($length === 1){
-			// special case: one character left
-			if($bitBuffer->available() < 6){
-				throw new QRCodeDataException('not enough bits available'); // @codeCoverageIgnore
-			}
+            $result .= self::chr($bitBuffer->read(6));
+        }
 
-			$result .= self::chr($bitBuffer->read(6));
-		}
+        return $result;
+    }
 
-		return $result;
-	}
+    /**
+     * @throws \zxf\QrCode\Data\QRCodeDataException
+     */
+    private function ord(string $chr): int
+    {
+        $ord = strpos(self::CHAR_MAP, $chr);
 
-	/**
-	 * @throws \zxf\QrCode\Data\QRCodeDataException
-	 */
-	private function ord(string $chr):int{
-		$ord = strpos(self::CHAR_MAP, $chr);
+        if ($ord === false) {
+            throw new QRCodeDataException('invalid character'); // @codeCoverageIgnore
+        }
 
-		if($ord === false){
-			throw new QRCodeDataException('invalid character'); // @codeCoverageIgnore
-		}
+        return $ord;
+    }
 
-		return $ord;
-	}
+    /**
+     * @throws \zxf\QrCode\Data\QRCodeDataException
+     */
+    private static function chr(int $ord): string
+    {
 
-	/**
-	 * @throws \zxf\QrCode\Data\QRCodeDataException
-	 */
-	private static function chr(int $ord):string{
+        if ($ord < 0 || $ord > 44) {
+            throw new QRCodeDataException('invalid character code'); // @codeCoverageIgnore
+        }
 
-		if($ord < 0 || $ord > 44){
-			throw new QRCodeDataException('invalid character code'); // @codeCoverageIgnore
-		}
-
-		return self::CHAR_MAP[$ord];
-	}
-
+        return self::CHAR_MAP[$ord];
+    }
 }

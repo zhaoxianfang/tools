@@ -17,9 +17,9 @@ class Security extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/framework/security.imgSecCheck.html#HTTPS%20%E8%B0%83%E7%94%A8
      *
-     * @param string $filePath 要检测的图片文件，格式支持PNG、JPEG、JPG、GIF，图片尺寸不超过 750px x 1334px
-     *
+     * @param  string  $filePath  要检测的图片文件，格式支持PNG、JPEG、JPG、GIF，图片尺寸不超过 750px x 1334px
      * @return array
+     *
      * @throws Exception
      */
     public function imgSecCheck(string $filePath)
@@ -32,9 +32,8 @@ class Security extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/sec-center/sec-check/mediaCheckAsync.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function mediaCheckAsync(array $data)
@@ -47,9 +46,8 @@ class Security extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/sec-center/sec-check/msgSecCheck.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function msgSecCheck(array $data)
@@ -62,9 +60,8 @@ class Security extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/sec-center/safety-control-capability/getUserRiskRank.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function getUserRiskRank(array $data)

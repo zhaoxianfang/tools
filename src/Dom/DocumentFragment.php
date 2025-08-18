@@ -11,9 +11,6 @@ use DOMDocumentFragment;
  */
 class DocumentFragment extends Node
 {
-    /**
-     * @param DOMDocumentFragment $documentFragment
-     */
     public function __construct(DOMDocumentFragment $documentFragment)
     {
         $this->setNode($documentFragment);
@@ -22,7 +19,7 @@ class DocumentFragment extends Node
     /**
      * Append raw XML data.
      *
-     * @param string $data
+     * @param  string  $data
      */
     public function appendXml($data)
     {

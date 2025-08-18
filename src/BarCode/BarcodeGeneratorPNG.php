@@ -11,19 +11,20 @@ class BarcodeGeneratorPNG extends BarcodeGenerator
     /**
      * Return a PNG image representation of barcode (requires GD or Imagick library).
      *
-     * @param string $barcode code to print
-     * @param BarcodeGenerator::TYPE_* $type (string) type of barcode
-     * @param int $widthFactor Width of a single bar element in pixels.
-     * @param int $height Height of a single bar element in pixels.
-     * @param array $foregroundColor RGB (0-255) foreground color for bar elements (background is transparent).
+     * @param  string  $barcode  code to print
+     * @param  BarcodeGenerator::TYPE_*  $type  (string) type of barcode
+     * @param  int  $widthFactor  Width of a single bar element in pixels.
+     * @param  int  $height  Height of a single bar element in pixels.
+     * @param  array  $foregroundColor  RGB (0-255) foreground color for bar elements (background is transparent).
      * @return string image data or false in case of error.
+     *
      * @throws UnknownTypeException
      */
     public function getBarcode(string $barcode, $type, int $widthFactor = 2, int $height = 30, array $foregroundColor = [0, 0, 0]): string
     {
         $barcodeData = $this->getBarcodeData($barcode, $type);
 
-        $renderer = new \zxf\BarCode\Renderers\PngRenderer();
+        $renderer = new \zxf\BarCode\Renderers\PngRenderer;
         $renderer->setForegroundColor($foregroundColor);
 
         if (! is_null($this->useImagick)) {

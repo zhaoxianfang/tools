@@ -18,6 +18,7 @@ class Newtmpl extends WeChatBase
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/getCategory.html
      *
      * @return array
+     *
      * @throws Exception
      */
     public function getCategory()
@@ -30,11 +31,9 @@ class Newtmpl extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/getPubTemplateTitleList.html
      *
-     * @param string $ids 类目 id，多个用逗号隔开
-     * @param string $start
-     * @param int    $limit
-     *
+     * @param  string  $ids  类目 id，多个用逗号隔开
      * @return array
+     *
      * @throws Exception
      */
     public function getPubTemplateTitleList(string $ids, string $start, int $limit)
@@ -47,9 +46,9 @@ class Newtmpl extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/getPubTemplateKeyWordsById.html
      *
-     * @param string $tid 模板标题 id，可通过接口获取
-     *
+     * @param  string  $tid  模板标题 id，可通过接口获取
      * @return array
+     *
      * @throws Exception
      */
     public function getPubTemplateKeyWordsById(string $tid)
@@ -62,11 +61,11 @@ class Newtmpl extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/addMessageTemplate.html#%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F
      *
-     * @param string $tid       模板标题 id，可通过接口获取，也可登录小程序后台查看获取
-     * @param array  $kidList   开发者自行组合好的模板关键词列表，关键词顺序可以自由搭配（例如 [3,5,4] 或 [4,5,3]），最多支持5个，最少2个关键词组合
-     * @param string $sceneDesc 服务场景描述，15个字以内
-     *
+     * @param  string  $tid  模板标题 id，可通过接口获取，也可登录小程序后台查看获取
+     * @param  array  $kidList  开发者自行组合好的模板关键词列表，关键词顺序可以自由搭配（例如 [3,5,4] 或 [4,5,3]），最多支持5个，最少2个关键词组合
+     * @param  string  $sceneDesc  服务场景描述，15个字以内
      * @return array
+     *
      * @throws Exception
      */
     public function addTemplate(string $tid, array $kidList, string $sceneDesc = '')
@@ -80,6 +79,7 @@ class Newtmpl extends WeChatBase
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/getMessageTemplateList.html
      *
      * @return array
+     *
      * @throws Exception
      */
     public function getTemplateList()
@@ -92,9 +92,9 @@ class Newtmpl extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/deleteMessageTemplate.html
      *
-     * @param string $priTmplId 要删除的模板id
-     *
+     * @param  string  $priTmplId  要删除的模板id
      * @return array
+     *
      * @throws Exception
      */
     public function delTemplate($priTmplId)
@@ -107,9 +107,9 @@ class Newtmpl extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/sendMessage.html
      *
-     * @param array $data 发送的消息对象数组
-     *
+     * @param  array  $data  发送的消息对象数组
      * @return array
+     *
      * @throws Exception
      */
     public function send(array $data)

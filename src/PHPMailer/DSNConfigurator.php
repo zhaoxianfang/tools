@@ -14,6 +14,7 @@
  * @copyright 2010 - 2012 Jim Jagielski
  * @copyright 2004 - 2009 Andy Prevost
  * @license   https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html GNU Lesser General Public License
+ *
  * @note      This program is distributed in the hope that it will be useful - WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.
@@ -33,17 +34,16 @@ class DSNConfigurator
     /**
      * Create new PHPMailer instance configured by DSN.
      *
-     * @param string $dsn        DSN
-     * @param bool   $exceptions Should we throw external exceptions?
-     *
+     * @param  string  $dsn  DSN
+     * @param  bool  $exceptions  Should we throw external exceptions?
      * @return PHPMailer
      */
     public static function mailer($dsn, $exceptions = null)
     {
         static $configurator = null;
 
-        if (null === $configurator) {
-            $configurator = new DSNConfigurator();
+        if ($configurator === null) {
+            $configurator = new DSNConfigurator;
         }
 
         return $configurator->configure(new PHPMailer($exceptions), $dsn);
@@ -52,9 +52,8 @@ class DSNConfigurator
     /**
      * Configure PHPMailer instance with DSN string.
      *
-     * @param PHPMailer $mailer PHPMailer instance
-     * @param string    $dsn    DSN
-     *
+     * @param  PHPMailer  $mailer  PHPMailer instance
+     * @param  string  $dsn  DSN
      * @return PHPMailer
      */
     public function configure(PHPMailer $mailer, $dsn)
@@ -69,17 +68,16 @@ class DSNConfigurator
     /**
      * Parse DSN string.
      *
-     * @param string $dsn DSN
+     * @param  string  $dsn  DSN
+     * @return array Configuration
      *
      * @throws Exception If DSN is malformed
-     *
-     * @return array Configuration
      */
     private function parseDSN($dsn)
     {
         $config = $this->parseUrl($dsn);
 
-        if (false === $config || !isset($config['scheme']) || !isset($config['host'])) {
+        if ($config === false || ! isset($config['scheme']) || ! isset($config['host'])) {
             throw new Exception('Malformed DSN');
         }
 
@@ -93,8 +91,8 @@ class DSNConfigurator
     /**
      * Apply configuration to mailer.
      *
-     * @param PHPMailer $mailer PHPMailer instance
-     * @param array     $config Configuration
+     * @param  PHPMailer  $mailer  PHPMailer instance
+     * @param  array  $config  Configuration
      *
      * @throws Exception If scheme is invalid
      */
@@ -132,12 +130,12 @@ class DSNConfigurator
     /**
      * Configure SMTP.
      *
-     * @param PHPMailer $mailer PHPMailer instance
-     * @param array     $config Configuration
+     * @param  PHPMailer  $mailer  PHPMailer instance
+     * @param  array  $config  Configuration
      */
     private function configureSMTP($mailer, $config)
     {
-        $isSMTPS = 'smtps' === $config['scheme'];
+        $isSMTPS = $config['scheme'] === 'smtps';
 
         if ($isSMTPS) {
             $mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
@@ -165,8 +163,8 @@ class DSNConfigurator
     /**
      * Configure options.
      *
-     * @param PHPMailer $mailer  PHPMailer instance
-     * @param array     $options Options
+     * @param  PHPMailer  $mailer  PHPMailer instance
+     * @param  array  $options  Options
      *
      * @throws Exception If option is unknown
      */
@@ -185,7 +183,7 @@ class DSNConfigurator
         $allowedOptions = \array_keys($allowedOptions);
 
         foreach ($options as $key => $value) {
-            if (!in_array($key, $allowedOptions)) {
+            if (! in_array($key, $allowedOptions)) {
                 throw new Exception(
                     sprintf(
                         'Unknown option: "%s". Allowed values: "%s"',
@@ -221,13 +219,12 @@ class DSNConfigurator
      * Parse a URL.
      * Wrapper for the built-in parse_url function to work around a bug in PHP 5.5.
      *
-     * @param string $url URL
-     *
+     * @param  string  $url  URL
      * @return array|false
      */
     protected function parseUrl($url)
     {
-        if (\PHP_VERSION_ID >= 50600 || false === strpos($url, '?')) {
+        if (\PHP_VERSION_ID >= 50600 || strpos($url, '?') === false) {
             return parse_url($url);
         }
 
@@ -237,6 +234,7 @@ class DSNConfigurator
             if (is_array($result)) {
                 $result['query'] = $chunks[1];
             }
+
             return $result;
         }
 

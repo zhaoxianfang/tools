@@ -4,7 +4,6 @@ namespace zxf\Sms;
 
 abstract class Base
 {
-
     // 驱动类型  aliyun 或者 tencent
     protected $driver;
 
@@ -65,18 +64,16 @@ abstract class Base
     /**
      * 构造函数
      *
-     * @param string $key
-     * @param string $secret
      *
      * @return void
      */
-    public function __construct(string $key = null, string $secret = null)
+    public function __construct(?string $key = null, ?string $secret = null)
     {
         if (empty($key) && function_exists('config')) {
-            $this->key    = config('tools_other.sms.' . $this->driver . '.app_id');
-            $this->secret = config('tools_other.sms.' . $this->driver . '.secret');
+            $this->key = config('tools_other.sms.'.$this->driver.'.app_id');
+            $this->secret = config('tools_other.sms.'.$this->driver.'.secret');
         } else {
-            $this->key    = $key;
+            $this->key = $key;
             $this->secret = $secret;
         }
     }
@@ -84,16 +81,13 @@ abstract class Base
     /**
      * 初始化
      *
-     * @access public
      *
-     * @param string|null $key
-     * @param string|null $secret
      *
      * @return Base
      */
     public static function instance(?string $key, ?string $secret)
     {
-        if (!isset(self::$instance) || is_null(self::$instance)) {
+        if (! isset(self::$instance) || is_null(self::$instance)) {
             self::$instance = new static($key, $secret);
         }
 
@@ -107,60 +101,61 @@ abstract class Base
      */
     public function send()
     {
-        $data              = $this->getData();
+        $data = $this->getData();
         $data['Signature'] = $this->sign($data);
+
         return $this->request($data);
     }
 
     /**
      * 设置手机号
      *
-     * @param mixed $mobile
-     *
+     * @param  mixed  $mobile
      * @return self
      */
     public function setMobile($mobile)
     {
         $this->mobiles = $this->handleMobile($mobile);
+
         return $this;
     }
 
     /**
      * 设置模板
      *
-     * @param string $template
-     *
+     * @param  string  $template
      * @return self
      */
     public function setTemplate($template)
     {
         $this->template = $template;
+
         return $this;
     }
 
     /**
      * 设置签名
      *
-     * @param string $sign
-     *
+     * @param  string  $sign
      * @return self
      */
     public function setSign($sign)
     {
         $this->sign = $sign;
+
         return $this;
     }
 
     /**
      * 设置参数
      *
-     * @param array $params
-     *
+     * @param  array  $params
      * @return self
      */
     public function setParams($params)
     {
         $this->params = $params;
+
         return $this;
     }
 
@@ -168,8 +163,7 @@ abstract class Base
      * 处理手机号
      * 未加国际区号时默认为中国手机号
      *
-     * @param mixed $mobiles
-     *
+     * @param  mixed  $mobiles
      * @return array
      */
     public function handleMobile($mobiles)
@@ -178,23 +172,23 @@ abstract class Base
         foreach ($mobiles as $index => $value) {
             $first = substr($value, 0, 1);
             if (substr($value, 0, 1) != '+') {
-                $mobiles[$index] = '+86' . $value;
+                $mobiles[$index] = '+86'.$value;
             }
         }
+
         return $mobiles;
     }
 
     /**
      * 发送请求
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return array
      */
     protected function request($data)
     {
-        $host = 'https://' . preg_replace('/https?:\/\//', '', $this->getHost());
-        $ch   = curl_init();
+        $host = 'https://'.preg_replace('/https?:\/\//', '', $this->getHost());
+        $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $host);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -205,8 +199,9 @@ abstract class Base
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         $response = curl_exec($ch);
         curl_close($ch);
-        $response       = $this->handleResponse(json_decode($response, true));
+        $response = $this->handleResponse(json_decode($response, true));
         $this->response = $response;
+
         return $response['status'];
     }
 
@@ -230,8 +225,7 @@ abstract class Base
     /**
      * 生成签名
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return string
      */
     abstract protected function sign($data);
@@ -239,8 +233,7 @@ abstract class Base
     /**
      * 处理响应
      *
-     * @param array $response
-     *
+     * @param  array  $response
      * @return array
      */
     abstract protected function handleResponse($response);

@@ -31,7 +31,7 @@ class Errors
     /**
      * Restore error reporting.
      *
-     * @param bool $clear
+     * @param  bool  $clear
      */
     public static function restore($clear = true)
     {

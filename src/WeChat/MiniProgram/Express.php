@@ -17,9 +17,9 @@ class Express extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-business/bindAccount.html
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return array
+     *
      * @throws Exception
      */
     public function bindAccount($data)
@@ -32,9 +32,9 @@ class Express extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-business/getAllAccount.html
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return array
+     *
      * @throws Exception
      */
     public function getAllAccount($data)
@@ -47,9 +47,9 @@ class Express extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-business/getAllDelivery.html
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return array
+     *
      * @throws Exception
      */
     public function getAllDelivery($data)
@@ -62,9 +62,9 @@ class Express extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-business/cancelOrder.html
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return array
+     *
      * @throws Exception
      */
     public function cancelOrder($data)
@@ -77,9 +77,9 @@ class Express extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-business/updatePrinter.html
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return array
+     *
      * @throws Exception
      */
     public function updatePrinter($data)
@@ -92,9 +92,9 @@ class Express extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-business/getQuota.html
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return array
+     *
      * @throws Exception
      */
     public function getQuota($data)
@@ -107,9 +107,9 @@ class Express extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-business/getOrder.html
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return array
+     *
      * @throws Exception
      */
     public function getOrder($data)
@@ -122,9 +122,9 @@ class Express extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-business/testUpdateOrder.html
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return array
+     *
      * @throws Exception
      */
     public function testUpdateOrder($data)
@@ -138,6 +138,7 @@ class Express extends WeChatBase
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-business/getPrinter.html
      *
      * @return array
+     *
      * @throws Exception
      */
     public function getPrinter()
@@ -145,26 +146,24 @@ class Express extends WeChatBase
         return $this->get('cgi-bin/express/business/printer/getall');
     }
 
-
     /**
      * 查询运单轨迹
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-business/getPath.html
      *
-     * @param string      $delivery_id 快递公司ID，参见getAllDelivery
-     * @param string      $waybill_id  运单ID
-     *
-     * @param string|null $openid      用户openid，当add_source=2时无需填写（不发送物流服务通知）
-     *
+     * @param  string  $delivery_id  快递公司ID，参见getAllDelivery
+     * @param  string  $waybill_id  运单ID
+     * @param  string|null  $openid  用户openid，当add_source=2时无需填写（不发送物流服务通知）
      * @return array
+     *
      * @throws Exception
      */
     public function getPath(string $delivery_id, string $waybill_id, ?string $openid)
     {
         return $this->post('cgi-bin/express/business/path/get', [
-            'openid'      => $openid,
+            'openid' => $openid,
             'delivery_id' => $delivery_id,
-            'waybill_id'  => $waybill_id,
+            'waybill_id' => $waybill_id,
         ]);
     }
 
@@ -173,9 +172,8 @@ class Express extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-business/batchGetOrder.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function batchGetOrder(array $data)
@@ -188,9 +186,8 @@ class Express extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-business/addOrder.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function addOrder(array $data)
@@ -203,9 +200,8 @@ class Express extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-provider/updateBusiness.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function updateBusiness(array $data)
@@ -218,9 +214,8 @@ class Express extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-provider/updatePath.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function updatePath(array $data)
@@ -233,9 +228,8 @@ class Express extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-provider/previewTemplate.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function previewTemplate(array $data)
@@ -248,14 +242,12 @@ class Express extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/express/express-by-provider/getContact.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function getContact(array $data)
     {
         return $this->post('cgi-bin/express/delivery/contact/get', $data);
     }
-
 }

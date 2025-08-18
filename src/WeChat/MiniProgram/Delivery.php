@@ -17,9 +17,9 @@ class Delivery extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/immediate-delivery/deliver-by-business/abnormalConfirm.html#%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return array
+     *
      * @throws Exception
      */
     public function abnormalConfirm($data)
@@ -32,9 +32,9 @@ class Delivery extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/immediate-delivery/deliver-by-business/addLocalOrder.html
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return array
+     *
      * @throws Exception
      */
     public function addOrder($data)
@@ -47,9 +47,9 @@ class Delivery extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/immediate-delivery/deliver-by-business/addTips.html
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return array
+     *
      * @throws Exception
      */
     public function addTip($data)
@@ -62,9 +62,8 @@ class Delivery extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/immediate-delivery/deliver-by-business/cancelLocalOrder.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function cancelOrder(array $data)
@@ -78,6 +77,7 @@ class Delivery extends WeChatBase
      * @link  https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/immediate-delivery/deliver-by-business/getAllImmeDelivery.html
      *
      * @return array
+     *
      * @throws Exception
      */
     public function getAllImmeDelivery()
@@ -91,6 +91,7 @@ class Delivery extends WeChatBase
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/immediate-delivery/deliver-by-business/getBindAccount.html
      *
      * @return array
+     *
      * @throws Exception
      */
     public function getBindAccount()
@@ -103,9 +104,8 @@ class Delivery extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/immediate-delivery/deliver-by-business/getLocalOrder.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function getOrder(array $data)
@@ -118,9 +118,8 @@ class Delivery extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/immediate-delivery/deliver-by-business/mockUpdateOrder.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function mockUpdateOrder(array $data)
@@ -133,9 +132,8 @@ class Delivery extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/immediate-delivery/deliver-by-business/preAddOrder.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function preAddOrder(array $data)
@@ -148,9 +146,8 @@ class Delivery extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/immediate-delivery/deliver-by-business/preCancelOrder.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function preCancelOrder(array $data)
@@ -164,6 +161,7 @@ class Delivery extends WeChatBase
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/immediate-delivery/deliver-by-business/openDelivery.html
      *
      * @return array
+     *
      * @throws Exception
      */
     public function openDelivery()
@@ -176,9 +174,9 @@ class Delivery extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/immediate-delivery/deliver-by-business/bindLocalAccount.html
      *
-     * @param string $delivery_id 配送公司ID
-     *
+     * @param  string  $delivery_id  配送公司ID
      * @return array
+     *
      * @throws Exception
      */
     public function bindLocalAccount(string $delivery_id)
@@ -191,9 +189,8 @@ class Delivery extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/immediate-delivery/deliver-by-business/reOrder.html
      *
-     * @param array $date
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function reOrder(array $date)
@@ -206,14 +203,12 @@ class Delivery extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/immediate-delivery/deliver-by-business/realMockUpdateOrder.html
      *
-     * @param array $date
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function realMockUpdateOrder(array $date)
     {
         return $this->post('cgi-bin/express/local/business/realmock_update_order', $date);
     }
-
 }

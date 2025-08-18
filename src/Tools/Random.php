@@ -1,4 +1,5 @@
 <?php
+
 // +---------------------------------------------------------------------
 // | 随机数
 // +---------------------------------------------------------------------
@@ -16,12 +17,10 @@ namespace zxf\Tools;
  */
 class Random
 {
-
     /**
      * 生成数字和字母
      *
-     * @param int $len 长度
-     *
+     * @param  int  $len  长度
      * @return string
      */
     public static function alnum(int $len = 6)
@@ -32,8 +31,7 @@ class Random
     /**
      * 仅生成字符
      *
-     * @param int $len 长度
-     *
+     * @param  int  $len  长度
      * @return string
      */
     public static function alpha(int $len = 6)
@@ -44,8 +42,7 @@ class Random
     /**
      * 生成指定长度的随机数字
      *
-     * @param int $len 长度
-     *
+     * @param  int  $len  长度
      * @return string
      */
     public static function numeric(int $len = 4)
@@ -56,8 +53,7 @@ class Random
     /**
      * 数字和字母组合的随机字符串
      *
-     * @param int $len 长度
-     *
+     * @param  int  $len  长度
      * @return string
      */
     public static function nozero(int $len = 4)
@@ -68,9 +64,8 @@ class Random
     /**
      * 能用的随机数生成
      *
-     * @param string $type 类型 alpha/alnum/numeric/nozero/unique/md5/encrypt/sha1
-     * @param int    $len  长度
-     *
+     * @param  string  $type  类型 alpha/alnum/numeric/nozero/unique/md5/encrypt/sha1
+     * @param  int  $len  长度
      * @return string
      */
     public static function build(string $type = 'alnum', int $len = 8)
@@ -97,6 +92,7 @@ class Random
             default:
                 $pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         }
+
         return substr(str_shuffle(str_repeat($pool, ceil($len / strlen($pool)))), 0, $len);
     }
 
@@ -108,8 +104,7 @@ class Random
     public static function uuid()
     {
         return sprintf(
-            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xFFFF), mt_rand(0, 0xFFFF), mt_rand(0, 0xFFFF), mt_rand(0, 0x0FFF) | 0x4000, mt_rand(0, 0x3FFF) | 0x8000, mt_rand(0, 0xFFFF), mt_rand(0, 0xFFFF), mt_rand(0, 0xFFFF)
         );
     }
-
 }

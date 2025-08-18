@@ -32,7 +32,7 @@ class TypeITF14 implements TypeInterface
         $chr['Z'] = '21';
 
         if (strlen($code) < 13 || strlen($code) > 14) {
-            throw new InvalidLengthException();
+            throw new InvalidLengthException;
         }
 
         if (strlen($code) === 13) {
@@ -40,18 +40,18 @@ class TypeITF14 implements TypeInterface
         } elseif (substr($code, -1) !== $this->getChecksum(substr($code, 0, -1))) {
             // If length of given barcode is same as final length, barcode is including checksum
             // Make sure that checksum is the same as we calculated
-            throw new InvalidCheckDigitException();
+            throw new InvalidCheckDigitException;
         }
 
         $barcode = new Barcode($code);
 
         // Add start and stop codes
-        $code = 'AA' . strtolower($code) . 'ZA';
+        $code = 'AA'.strtolower($code).'ZA';
 
         // Loop through 2 chars at once
         for ($charIndex = 0; $charIndex < strlen($code); $charIndex += 2) {
             if (! isset($chr[$code[$charIndex]]) || ! isset($chr[$code[$charIndex + 1]])) {
-                throw new InvalidCharacterException();
+                throw new InvalidCharacterException;
             }
 
             $drawBar = true;
@@ -60,7 +60,7 @@ class TypeITF14 implements TypeInterface
             $pmixed = '';
 
             while (strlen($pbars) > 0) {
-                $pmixed .= $pbars[0] . $pspaces[0];
+                $pmixed .= $pbars[0].$pspaces[0];
                 $pbars = substr($pbars, 1);
                 $pspaces = substr($pspaces, 1);
             }
@@ -88,6 +88,6 @@ class TypeITF14 implements TypeInterface
             $checksum = 0;
         }
 
-        return (string)$checksum;
+        return (string) $checksum;
     }
 }

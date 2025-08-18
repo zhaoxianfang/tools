@@ -4,9 +4,9 @@ namespace zxf\Laravel\Modules\Commands\Database;
 
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Collection;
+use Symfony\Component\Console\Input\InputOption;
 use zxf\Laravel\Modules\Commands\BaseCommand;
 use zxf\Laravel\Modules\Contracts\ConfirmableCommand;
-use Symfony\Component\Console\Input\InputOption;
 
 class MigrateFreshCommand extends BaseCommand implements ConfirmableCommand
 {

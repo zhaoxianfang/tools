@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class QRInterventionImage
  *
  * @created      21.01.2024
+ *
  * @author       smiley <smiley@chillerlan.net>
  * @copyright    2024 smiley
  * @license      MIT
@@ -11,9 +13,6 @@ declare(strict_types=1);
 
 namespace zxf\QrCode\Output;
 
-use zxf\QrCode\Data\QRMatrix;
-use zxf\QrCode\QROptions;
-use zxf\QrCode\Settings\SettingsContainerInterface;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
 use Intervention\Image\Geometry\Factories\CircleFactory;
@@ -23,6 +22,10 @@ use Intervention\Image\Interfaces\DriverInterface;
 use Intervention\Image\Interfaces\ImageInterface;
 use Intervention\Image\Interfaces\ImageManagerInterface;
 use UnhandledMatchError;
+use zxf\QrCode\Data\QRMatrix;
+use zxf\QrCode\QROptions;
+use zxf\QrCode\Settings\SettingsContainerInterface;
+
 use function class_exists;
 use function extension_loaded;
 use function intdiv;
@@ -36,127 +39,131 @@ use function intdiv;
  * @see https://github.com/Intervention/image
  * @see https://image.intervention.io/
  */
-class QRInterventionImage extends QROutputAbstract{
-	use CssColorModuleValueTrait;
+class QRInterventionImage extends QROutputAbstract
+{
+    use CssColorModuleValueTrait;
 
-	protected DriverInterface $driver;
-	protected ImageManagerInterface $manager;
-	protected ImageInterface $image;
+    protected DriverInterface $driver;
 
-	/**
-	 * QRInterventionImage constructor.
-	 *
-	 * @throws \zxf\QrCode\Output\QRCodeOutputException
-	 */
-	public function __construct(SettingsContainerInterface|QROptions $options, QRMatrix $matrix){
+    protected ImageManagerInterface $manager;
 
-		if(!class_exists(ImageManager::class)){
-			// @codeCoverageIgnoreStart
-			throw new QRCodeOutputException(
-				'The QRInterventionImage output requires Intervention/image (https://github.com/Intervention/image)'.
-				' as dependency but the class "\\Intervention\\Image\\ImageManager" could not be found.',
-			);
-			// @codeCoverageIgnoreEnd
-		}
+    protected ImageInterface $image;
 
-		try{
-			$this->driver = match(true){
-				extension_loaded('gd')      => new GdDriver,
-				extension_loaded('imagick') => new ImagickDriver,
-			};
+    /**
+     * QRInterventionImage constructor.
+     *
+     * @throws \zxf\QrCode\Output\QRCodeOutputException
+     */
+    public function __construct(SettingsContainerInterface|QROptions $options, QRMatrix $matrix)
+    {
 
-			$this->setDriver($this->driver);
-		}
-		catch(UnhandledMatchError){
-			throw new QRCodeOutputException('no image processing extension loaded (gd, imagick)'); // @codeCoverageIgnore
-		}
+        if (! class_exists(ImageManager::class)) {
+            // @codeCoverageIgnoreStart
+            throw new QRCodeOutputException(
+                'The QRInterventionImage output requires Intervention/image (https://github.com/Intervention/image)'.
+                ' as dependency but the class "\\Intervention\\Image\\ImageManager" could not be found.',
+            );
+            // @codeCoverageIgnoreEnd
+        }
 
-		parent::__construct($options, $matrix);
-	}
+        try {
+            $this->driver = match (true) {
+                extension_loaded('gd') => new GdDriver,
+                extension_loaded('imagick') => new ImagickDriver,
+            };
 
-	/**
-	 * Sets a DriverInterface
-	 */
-	public function setDriver(DriverInterface $driver):static{
-		$this->manager = new ImageManager($driver);
+            $this->setDriver($this->driver);
+        } catch (UnhandledMatchError) {
+            throw new QRCodeOutputException('no image processing extension loaded (gd, imagick)'); // @codeCoverageIgnore
+        }
 
-		return $this;
-	}
+        parent::__construct($options, $matrix);
+    }
 
-	public function dump(string|null $file = null):string|ImageInterface{
-		[$width, $height] = $this->getOutputDimensions();
+    /**
+     * Sets a DriverInterface
+     */
+    public function setDriver(DriverInterface $driver): static
+    {
+        $this->manager = new ImageManager($driver);
 
-		$this->image = $this->manager->create($width, $height);
+        return $this;
+    }
 
-		$this->image->fill($this->getDefaultModuleValue(false));
+    public function dump(?string $file = null): string|ImageInterface
+    {
+        [$width, $height] = $this->getOutputDimensions();
 
-		if($this->options->imageTransparent && $this::moduleValueIsValid($this->options->transparencyColor)){
-			$this->manager
-				->driver()
-				->config()
-				->setOptions(blendingColor: $this->prepareModuleValue($this->options->transparencyColor))
-			;
-		}
+        $this->image = $this->manager->create($width, $height);
 
-		if($this::moduleValueIsValid($this->options->bgColor)){
-			$this->image->fill($this->prepareModuleValue($this->options->bgColor));
-		}
+        $this->image->fill($this->getDefaultModuleValue(false));
 
-		foreach($this->matrix->getMatrix() as $y => $row){
-			foreach($row as $x => $M_TYPE){
-				$this->module($x, $y, $M_TYPE);
-			}
-		}
+        if ($this->options->imageTransparent && $this::moduleValueIsValid($this->options->transparencyColor)) {
+            $this->manager
+                ->driver()
+                ->config()
+                ->setOptions(blendingColor: $this->prepareModuleValue($this->options->transparencyColor));
+        }
 
-		if($this->options->returnResource){
-			return $this->image;
-		}
+        if ($this::moduleValueIsValid($this->options->bgColor)) {
+            $this->image->fill($this->prepareModuleValue($this->options->bgColor));
+        }
 
-		$image     = $this->image->toPng();
-		$imageData = $image->toString();
+        foreach ($this->matrix->getMatrix() as $y => $row) {
+            foreach ($row as $x => $M_TYPE) {
+                $this->module($x, $y, $M_TYPE);
+            }
+        }
 
-		$this->saveToFile($imageData, $file);
+        if ($this->options->returnResource) {
+            return $this->image;
+        }
 
-		if($this->options->outputBase64){
-			return $image->toDataUri();
-		}
+        $image = $this->image->toPng();
+        $imageData = $image->toString();
 
-		return $imageData;
-	}
+        $this->saveToFile($imageData, $file);
 
-	/**
-	 * draws a single pixel at the given position
-	 */
-	protected function module(int $x, int $y, int $M_TYPE):void{
+        if ($this->options->outputBase64) {
+            return $image->toDataUri();
+        }
 
-		if(!$this->drawLightModules && !$this->matrix->isDark($M_TYPE)){
-			return;
-		}
+        return $imageData;
+    }
 
-		$color = $this->getModuleValue($M_TYPE);
+    /**
+     * draws a single pixel at the given position
+     */
+    protected function module(int $x, int $y, int $M_TYPE): void
+    {
 
-		if($this->drawCircularModules && !$this->matrix->checkTypeIn($x, $y, $this->keepAsSquare)){
+        if (! $this->drawLightModules && ! $this->matrix->isDark($M_TYPE)) {
+            return;
+        }
 
-			$this->image->drawCircle(
-				(($x * $this->scale) + intdiv($this->scale, 2)),
-				(($y * $this->scale) + intdiv($this->scale, 2)),
-				function(CircleFactory $circle) use ($color):void{
-					$circle->radius((int)($this->circleRadius * $this->scale));
-					$circle->background($color);
-				},
-			);
+        $color = $this->getModuleValue($M_TYPE);
 
-			return;
-		}
+        if ($this->drawCircularModules && ! $this->matrix->checkTypeIn($x, $y, $this->keepAsSquare)) {
 
-		$this->image->drawRectangle(
-			($x * $this->scale),
-			($y * $this->scale),
-			function(RectangleFactory $rectangle) use ($color):void{
-				$rectangle->size($this->scale, $this->scale);
-				$rectangle->background($color);
-			},
-		);
-	}
+            $this->image->drawCircle(
+                (($x * $this->scale) + intdiv($this->scale, 2)),
+                (($y * $this->scale) + intdiv($this->scale, 2)),
+                function (CircleFactory $circle) use ($color): void {
+                    $circle->radius((int) ($this->circleRadius * $this->scale));
+                    $circle->background($color);
+                },
+            );
 
+            return;
+        }
+
+        $this->image->drawRectangle(
+            ($x * $this->scale),
+            ($y * $this->scale),
+            function (RectangleFactory $rectangle) use ($color): void {
+                $rectangle->size($this->scale, $this->scale);
+                $rectangle->background($color);
+            },
+        );
+    }
 }

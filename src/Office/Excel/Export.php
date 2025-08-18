@@ -14,6 +14,7 @@ use zxf\Office\Excel\Handle\ExportHandle;
 class Export
 {
     protected array $data;
+
     protected array $header;
 
     protected string $sheetName = '表1';
@@ -23,11 +24,12 @@ class Export
      *
      * @var string xlsx、xls、csv等
      */
-    protected string $ext    = 'xlsx';
-    protected array  $extMap = [
+    protected string $ext = 'xlsx';
+
+    protected array $extMap = [
         'xlsx' => ExcelExtension::XLSX,
-        'xls'  => ExcelExtension::XLS,
-        'csv'  => ExcelExtension::CSV,
+        'xls' => ExcelExtension::XLS,
+        'csv' => ExcelExtension::CSV,
     ];
 
     // styles 回调函数
@@ -38,14 +40,12 @@ class Export
 
     /**
      * 保存到哪个磁盘； eg: public、s3等
-     *
-     * @var string|null
      */
-    protected string|null $storeDisk = null;
+    protected ?string $storeDisk = null;
 
     public function __construct(array $data, array $header = [])
     {
-        $this->data   = $data;
+        $this->data = $data;
         $this->header = $header;
     }
 
@@ -57,48 +57,48 @@ class Export
     /**
      * 设置导出的数据
      *
-     * @param array $data
      *
      * @return $this
      */
     public function setData(array $data)
     {
         $this->data = $data;
+
         return $this;
     }
 
     /**
      * 设置表头:第一行
      *
-     * @param array $header
      *
      * @return $this
      */
     public function setHeader(array $header)
     {
         $this->header = $header;
+
         return $this;
     }
 
     /**
      * 设置sheet名称
      *
-     * @param string $sheetName
      *
      * @return $this
      */
     public function setSheetName(string $sheetName)
     {
         $this->sheetName = $sheetName;
+
         return $this;
     }
 
     /**
      * 设置导出文件后缀
      *
-     * @param string $ext xlsx、xls、csv等
-     *
+     * @param  string  $ext  xlsx、xls、csv等
      * @return $this
+     *
      * @throws Exception
      */
     public function setExt(string $ext = 'xlsx')
@@ -107,19 +107,20 @@ class Export
             throw new Exception('不支持的导出文件后缀');
         }
         $this->ext = $ext;
+
         return $this;
     }
 
     /**
      * 保存到哪个磁盘,下载到浏览器时设置为空
      *
-     * @param string|null $diskName 文件系统disk名称 eg: public、s3等
-     *
+     * @param  string|null  $diskName  文件系统disk名称 eg: public、s3等
      * @return $this
      */
-    public function setDisk(string $diskName = null)
+    public function setDisk(?string $diskName = null)
     {
         $this->storeDisk = $diskName;
+
         return $this;
     }
 
@@ -149,8 +150,6 @@ class Export
      *              ],
      *          ]);
      *      })
-     *
-     * @param callable $callback
      */
     public function setStyles(callable $callback)
     {
@@ -158,12 +157,14 @@ class Export
         $this->styleCallback = function (Worksheet $sheet) use ($callback) {
             $callback($sheet);
         };
+
         return $this;
     }
 
     public function setMultiSheets(bool $flag = true)
     {
         $this->multiSheets = $flag;
+
         return $this;
     }
 
@@ -172,7 +173,7 @@ class Export
      */
     public function download(string $filename = '', mixed ...$args)
     {
-        $filePath = (empty($filename) ? date('YmdHis') : $filename) . '.' . $this->ext;
+        $filePath = (empty($filename) ? date('YmdHis') : $filename).'.'.$this->ext;
 
         $export = new ExportHandle($this->data, $this->header);
         // sheet名称
@@ -185,9 +186,10 @@ class Export
             return $export;
         }
 
-        if (!empty($this->storeDisk)) {
+        if (! empty($this->storeDisk)) {
             return Excel::store($export, $filePath, $this->storeDisk, $this->extMap[$this->ext], ...$args);
         }
+
         return Excel::download($export, $filePath, $this->extMap[$this->ext], ...$args);
     }
 }

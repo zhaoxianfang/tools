@@ -46,7 +46,6 @@ interface GatewayInterface
      * 检验授权凭证AccessToken是否有效.
      *
      * @return bool
-     *
      */
     public function validateAccessToken(?string $accessToken = null);
 }

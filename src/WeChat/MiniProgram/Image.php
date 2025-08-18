@@ -17,10 +17,10 @@ class Image extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/img-ocr/img/aiCrop.html#%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F
      *
-     * @param string      $img_url 要检测的图片 url，传这个则不用传 img 参数。
-     * @param string|null $img     form-data 中媒体文件标识，有filename、filelength、content-type等信息，传这个则不用穿 img_url
-     *
+     * @param  string  $img_url  要检测的图片 url，传这个则不用传 img 参数。
+     * @param  string|null  $img  form-data 中媒体文件标识，有filename、filelength、content-type等信息，传这个则不用穿 img_url
      * @return array
+     *
      * @throws Exception
      */
     public function aiCrop(string $img_url, ?string $img)
@@ -33,10 +33,10 @@ class Image extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/img-ocr/img/scanQRCode.html
      *
-     * @param string      $img_url 要检测的图片 url，传这个则不用传 img 参数。
-     * @param string|null $img     form-data 中媒体文件标识，有filename、filelength、content-type等信息，传这个则不用穿 img_url
-     *
+     * @param  string  $img_url  要检测的图片 url，传这个则不用传 img 参数。
+     * @param  string|null  $img  form-data 中媒体文件标识，有filename、filelength、content-type等信息，传这个则不用穿 img_url
      * @return array
+     *
      * @throws Exception
      */
     public function scanQRCode(string $img_url, ?string $img)
@@ -49,10 +49,10 @@ class Image extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/img-ocr/img/superResolution.html
      *
-     * @param string      $img_url 要检测的图片 url，传这个则不用传 img 参数。
-     * @param string|null $img     form-data 中媒体文件标识，有filename、filelength、content-type等信息，传这个则不用穿 img_url
-     *
+     * @param  string  $img_url  要检测的图片 url，传这个则不用传 img 参数。
+     * @param  string|null  $img  form-data 中媒体文件标识，有filename、filelength、content-type等信息，传这个则不用穿 img_url
      * @return array
+     *
      * @throws Exception
      */
     public function superResolution(string $img_url, ?string $img)
@@ -63,18 +63,18 @@ class Image extends WeChatBase
     /**
      * 上传临时图片
      *
-     * @param string $filePath 文件路径
-     *
+     * @param  string  $filePath  文件路径
      * @return array|bool|mixed|string
+     *
      * @throws Exception
      */
     public function uploadImage(string $filePath)
     {
-        $res = $this->upload(10, $filePath, "image");
-        if (!empty($res["errcode"])) {
-            throw new Exception($this->getMessage($res["errcode"]), $res["errcode"]);
+        $res = $this->upload(10, $filePath, 'image');
+        if (! empty($res['errcode'])) {
+            throw new Exception($this->getMessage($res['errcode']), $res['errcode']);
         }
+
         return $res; // 返回 type、media_id、created_at
     }
-
 }

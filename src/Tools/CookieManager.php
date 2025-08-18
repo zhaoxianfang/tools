@@ -8,10 +8,11 @@ use InvalidArgumentException;
  * Cookie管理
  *
  * @author zxf
+ *
  * @date   2020年05月08日
  */
 // 示例用法
-//try {
+// try {
 //    $cookies1 = CookieManager::parseCookieFile('cookie1.txt');
 //    $cookies2 = CookieManager::parseCookieFile('cookie2.txt');
 //
@@ -23,27 +24,27 @@ use InvalidArgumentException;
 //    } else {
 //        echo "合并失败！\n";
 //    }
-//} catch (Exception $e) {
+// } catch (Exception $e) {
 //    echo "错误: " . $e->getMessage();
-//}
+// }
 class CookieManager
 {
     /**
      * 解析 cookie 文件
      *
-     * @param string $filePath cookie 文件路径
-     *
+     * @param  string  $filePath  cookie 文件路径
      * @return array 解析后的 cookie 数组
+     *
      * @throws InvalidArgumentException
      */
     public static function parseCookieFile(string $filePath): array
     {
-        if (!file_exists($filePath) || !is_readable($filePath)) {
+        if (! file_exists($filePath) || ! is_readable($filePath)) {
             throw new InvalidArgumentException("文件不存在或不可读: {$filePath}");
         }
 
         $cookies = [];
-        $lines   = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
         foreach ($lines as $line) {
             if (strpos(trim($line), '#') === 0 || trim($line) === '') {
@@ -53,16 +54,16 @@ class CookieManager
             $parts = preg_split("/\s+/", $line, 7);
 
             if (count($parts) === 7) {
-                $cookie              = [
-                    'domain'     => strtolower($parts[0]),
-                    'flag'       => $parts[1] === 'TRUE',
-                    'path'       => $parts[2],
-                    'secure'     => $parts[3] === 'TRUE',
-                    'expiration' => (int)$parts[4],
-                    'name'       => $parts[5],
-                    'value'      => $parts[6],
+                $cookie = [
+                    'domain' => strtolower($parts[0]),
+                    'flag' => $parts[1] === 'TRUE',
+                    'path' => $parts[2],
+                    'secure' => $parts[3] === 'TRUE',
+                    'expiration' => (int) $parts[4],
+                    'name' => $parts[5],
+                    'value' => $parts[6],
                 ];
-                $uniqueKey           = hash('sha256', implode('|', [$cookie['domain'], $cookie['path'], $cookie['name']]));
+                $uniqueKey = hash('sha256', implode('|', [$cookie['domain'], $cookie['path'], $cookie['name']]));
                 $cookies[$uniqueKey] = $cookie;
             }
         }
@@ -73,9 +74,8 @@ class CookieManager
     /**
      * 通用合并 cookie 方法，支持多个 cookie 数组或文件路径
      *
-     * @param bool         $overwrite  是否覆盖已有 cookie (默认 true)
-     * @param array|string ...$sources 多个 cookie 数组或文件路径
-     *
+     * @param  bool  $overwrite  是否覆盖已有 cookie (默认 true)
+     * @param  array|string  ...$sources  多个 cookie 数组或文件路径
      * @return array 合并后的 cookie 数组
      */
     public static function mergeCookies(bool $overwrite = true, ...$sources): array
@@ -84,40 +84,35 @@ class CookieManager
         foreach ($sources as $source) {
             $cookies = is_array($source) ? $source : self::parseCookieFile($source);
             foreach ($cookies as $key => $cookie) {
-                if ($overwrite || !isset($mergedCookies[$key])) {
+                if ($overwrite || ! isset($mergedCookies[$key])) {
                     $mergedCookies[$key] = $cookie;
                 }
             }
         }
 
-        return array_filter($mergedCookies, fn($cookie) => $cookie['expiration'] === 0 || $cookie['expiration'] > time());
+        return array_filter($mergedCookies, fn ($cookie) => $cookie['expiration'] === 0 || $cookie['expiration'] > time());
     }
 
     /**
      * 追加 cookie
      *
-     * @param array $cookies   原有的 cookie 数组
-     * @param array $newCookie 需要添加的 cookie 数据
-     * @param bool  $overwrite 是否覆盖已有的 cookie
-     *
+     * @param  array  $cookies  原有的 cookie 数组
+     * @param  array  $newCookie  需要添加的 cookie 数据
+     * @param  bool  $overwrite  是否覆盖已有的 cookie
      * @return array 追加后的 cookie 数组
      */
     public static function addCookie(array $cookies, array $newCookie, bool $overwrite = true): array
     {
         $uniqueKey = hash('sha256', implode('|', [$newCookie['domain'], $newCookie['path'], $newCookie['name']]));
-        if ($overwrite || !isset($cookies[$uniqueKey])) {
+        if ($overwrite || ! isset($cookies[$uniqueKey])) {
             $cookies[$uniqueKey] = $newCookie;
         }
+
         return $cookies;
     }
 
     /**
      * 保存 cookie 数组到文件
-     *
-     * @param array  $cookies
-     * @param string $outputFile
-     *
-     * @return bool
      */
     public static function saveCookiesToFile(array $cookies, string $outputFile): bool
     {
@@ -142,14 +137,11 @@ class CookieManager
         return file_put_contents($outputFile, $output) !== false;
     }
 
-
     /**
      * 清除 cookie 文件内容
      *
-     * @param string ...$filePaths cookie 文件路径(如果有多个文件，就传多个参数：eg: cleanUp('cookie1.txt')、 cleanUp('cookie1.txt',
-     *                             'cookie2.txt'))
-     *
-     * @return bool
+     * @param  string  ...$filePaths  cookie 文件路径(如果有多个文件，就传多个参数：eg: cleanUp('cookie1.txt')、 cleanUp('cookie1.txt',
+     *                                'cookie2.txt'))
      */
     public static function cleanUp(string ...$filePaths): bool
     {
@@ -159,6 +151,7 @@ class CookieManager
                 return false;
             }
         }
+
         return true;
     }
 }

@@ -5,7 +5,6 @@ namespace zxf\Database\Driver;
 use Closure;
 use Exception;
 use ReflectionClass;
-use ReflectionException;
 use zxf\Database\Contracts\DbDriverAbstract;
 
 class MysqliDriver extends DbDriverAbstract
@@ -26,8 +25,8 @@ class MysqliDriver extends DbDriverAbstract
     /**
      * 配置 驱动连接数据库的实现
      *
-     * @param string $connectionName 连接名称
-     * @param array  $options        连接参数, 包含 host、db_name、username、password 等
+     * @param  string  $connectionName  连接名称
+     * @param  array  $options  连接参数, 包含 host、db_name、username、password 等
      *
      * @throws Exception
      */
@@ -36,17 +35,18 @@ class MysqliDriver extends DbDriverAbstract
         $params = $this->getConfig($options, $connectionName);
 
         try {
-            $mysqlIc    = new ReflectionClass($this->extensionName);
+            $mysqlIc = new ReflectionClass($this->extensionName);
             $this->conn = $mysqlIc->newInstanceArgs($params);
             if ($this->conn->connect_error) {
-                $this->error = "连接失败: " . $this->conn->connect_error;
+                $this->error = '连接失败: '.$this->conn->connect_error;
                 throw new Exception($this->error);
             }
             // 设置字符集为utf8mb4
-            $this->conn->prepare("SET NAMES utf8mb4");
+            $this->conn->prepare('SET NAMES utf8mb4');
+
             return $this;
         } catch (Exception $e) {
-            throw new Exception("Database 连接失败：" . $e->getMessage());
+            throw new Exception('Database 连接失败：'.$e->getMessage());
         }
     }
 
@@ -61,9 +61,9 @@ class MysqliDriver extends DbDriverAbstract
     /**
      * 执行$sql直接 「查询」
      *
-     * @param string $sql sql语句
-     *
+     * @param  string  $sql  sql语句
      * @return array
+     *
      * @throws Exception
      */
     public function query(string $sql)
@@ -81,11 +81,12 @@ class MysqliDriver extends DbDriverAbstract
             }
             // 释放结果集
             $result->close();
+
             return $data;
         } else {
             // 释放结果集
             $result->close();
-            throw new Exception("执行查询时发生错误: " . $this->conn->error);
+            throw new Exception('执行查询时发生错误: '.$this->conn->error);
         }
 
     }
@@ -93,31 +94,30 @@ class MysqliDriver extends DbDriverAbstract
     /**
      * 直接执行$sql语句的实现
      *
-     * @param string     $sql        sql语句
-     * @param array|null $bindParams 绑定参数
+     * @param  string  $sql  sql语句
+     * @param  array|null  $bindParams  绑定参数
      *
-     * @return mixed
      * @throws Exception
      */
-    public function runSql(string $sql = '', array|null $bindParams = null): mixed
+    public function runSql(string $sql = '', ?array $bindParams = null): mixed
     {
-        $sql        = empty($sql) ? $this->sqlGenerator->buildQuery() : $sql;
+        $sql = empty($sql) ? $this->sqlGenerator->buildQuery() : $sql;
         $bindParams = is_null($bindParams) ? $this->sqlGenerator->getBindings() : $bindParams;
         $this->writeRunSql($sql, $bindParams);
         // 准备 SQL 语句
         $stmt = $this->conn->prepare($sql);
 
         if ($stmt === false) {
-            throw new Exception("Prepare failed: (" . $this->conn->errno . ") " . $this->conn->error);
+            throw new Exception('Prepare failed: ('.$this->conn->errno.') '.$this->conn->error);
         }
 
         // 绑定参数
         $bindStr = '';
         foreach ($bindParams as $value) {
-            //"i": 表示整数类型
-            //"d": 表示双精度浮点数类型
-            //"s": 表示字符串类型
-            //"b": 表示二进制数据类型（例如 BLOB）
+            // "i": 表示整数类型
+            // "d": 表示双精度浮点数类型
+            // "s": 表示字符串类型
+            // "b": 表示二进制数据类型（例如 BLOB）
             $bindStr .= is_numeric($value) ? 'd' : 's';
         }
         $stmt->bind_param($bindStr, ...array_values($bindParams));
@@ -127,7 +127,7 @@ class MysqliDriver extends DbDriverAbstract
         if ($stmt->error) {
             // 关闭连接
             $stmt->close();
-            throw new Exception("ERROR: " . $stmt->errno . ':' . $stmt->error);
+            throw new Exception('ERROR: '.$stmt->errno.':'.$stmt->error);
         }
 
         // 关闭连接
@@ -139,9 +139,7 @@ class MysqliDriver extends DbDriverAbstract
     /**
      * 各个驱动实现自己的数据处理
      *
-     * @param mixed $resource $stmt 资源
-     *
-     * @return array
+     * @param  mixed  $resource  $stmt 资源
      */
     public function dataProcessing(mixed $resource): array
     {
@@ -165,6 +163,7 @@ class MysqliDriver extends DbDriverAbstract
             // 处理每一行结果
             $data[] = $row;
         }
+
         return $data;
     }
 
@@ -175,6 +174,7 @@ class MysqliDriver extends DbDriverAbstract
     {
         $this->sqlGenerator->create($data);
         $stmt = $this->runSql();
+
         return $stmt->affected_rows ?? 0;
     }
 
@@ -185,6 +185,7 @@ class MysqliDriver extends DbDriverAbstract
     {
         $this->sqlGenerator->create($data);
         $stmt = $this->runSql();
+
         return $stmt->insert_id ?? 0;
     }
 
@@ -195,7 +196,7 @@ class MysqliDriver extends DbDriverAbstract
      */
     public function getError()
     {
-        return $this->conn->errno . ':' . $this->conn->error;
+        return $this->conn->errno.':'.$this->conn->error;
     }
 
     /**
@@ -205,6 +206,7 @@ class MysqliDriver extends DbDriverAbstract
     {
         $this->sqlGenerator->update($data);
         $stmt = $this->runSql();
+
         return $stmt->affected_rows ?? 0;
     }
 
@@ -218,19 +220,19 @@ class MysqliDriver extends DbDriverAbstract
      *          3、【强烈建议】$uniqueColumn 和 $updateColumn 的字段合在一起刚好是 $data 中的「所有」字段
      *
      *
-     * @param array $data         需要更新或插入的数据； eg: [
-     *                            ['column1'=>'val_1_0', 'column2'=>'val_2_0', 'unique_column'=>'unique_val_0'],
-     *                            ['column1'=>'val_1_1','column2'=>'val_2_1', 'unique_column'=>'unique_val_1']
-     *                            ]
-     * @param array $uniqueColumn 根据$uniqueColumn里的字段组合的值进行判断，如果存在则更新$updateColumn里的字段，否则创建一条新数据 eg:  ['unique_column']
-     *                            或 ['column1', 'column2']
-     * @param array $updateColumn 需要更新的字段 eg: ['column1', 'column2'] 或 ['column2']
-     *
+     * @param  array  $data  需要更新或插入的数据； eg: [
+     *                       ['column1'=>'val_1_0', 'column2'=>'val_2_0', 'unique_column'=>'unique_val_0'],
+     *                       ['column1'=>'val_1_1','column2'=>'val_2_1', 'unique_column'=>'unique_val_1']
+     *                       ]
+     * @param  array  $uniqueColumn  根据$uniqueColumn里的字段组合的值进行判断，如果存在则更新$updateColumn里的字段，否则创建一条新数据 eg:  ['unique_column']
+     *                               或 ['column1', 'column2']
+     * @param  array  $updateColumn  需要更新的字段 eg: ['column1', 'column2'] 或 ['column2']
      */
     public function upsert(array $data = [], array $uniqueColumn = [], array $updateColumn = [])
     {
         $this->sqlGenerator->upsert($data, $uniqueColumn, $updateColumn);
         $stmt = $this->runSql();
+
         return $stmt->affected_rows ?? 0;
     }
 
@@ -238,6 +240,7 @@ class MysqliDriver extends DbDriverAbstract
     {
         $this->sqlGenerator->update([$column => "`{$column}` + $amount"]);
         $stmt = $this->runSql();
+
         return $stmt->affected_rows ?? 0;
     }
 
@@ -245,6 +248,7 @@ class MysqliDriver extends DbDriverAbstract
     {
         $this->sqlGenerator->update([$column => "`{$column}` - $amount"]);
         $stmt = $this->runSql();
+
         return $stmt->affected_rows ?? 0;
     }
 
@@ -255,6 +259,7 @@ class MysqliDriver extends DbDriverAbstract
     {
         $this->sqlGenerator->delete();
         $stmt = $this->runSql();
+
         return $stmt->affected_rows ?? 0;
     }
 
@@ -264,21 +269,23 @@ class MysqliDriver extends DbDriverAbstract
     public function reset()
     {
         $this->sqlGenerator->reset();
+
         return $this;
     }
 
     public function each($callback, string $sql = '', ?array $bindParams = null)
     {
         if ($callback instanceof Closure && is_callable($callback)) {
-            $stmt   = $this->runSql($sql, $bindParams);
+            $stmt = $this->runSql($sql, $bindParams);
             $result = $stmt->get_result();
             while ($row = $result->fetch_assoc()) {
                 $callback($row);
             }
             $stmt->close();
+
             return $this;
         }
-        throw new Exception("参数必须是闭包函数");
+        throw new Exception('参数必须是闭包函数');
     }
 
     /**
@@ -287,8 +294,8 @@ class MysqliDriver extends DbDriverAbstract
     public function aggregate(string $aggregate = 'count', string $column = 'id')
     {
         $function = strtolower($aggregate);
-        if (!in_array($function, ['count', 'max', 'min', 'avg', 'sum', 'exists', 'doesntExist'])) {
-            throw new Exception("不支持的聚合查询");
+        if (! in_array($function, ['count', 'max', 'min', 'avg', 'sum', 'exists', 'doesntExist'])) {
+            throw new Exception('不支持的聚合查询');
         }
         $this->sqlGenerator->$function($column);
         $stmt = $this->runSql();
@@ -310,6 +317,7 @@ class MysqliDriver extends DbDriverAbstract
     public function beginTransaction()
     {
         $this->conn->autocommit(false);
+
         // return $this->conn->begin_transaction();
         return $this;
     }
@@ -322,6 +330,7 @@ class MysqliDriver extends DbDriverAbstract
         $this->conn->commit();
         // 恢复自动提交
         $this->conn->autocommit(true);
+
         return $this;
     }
 
@@ -333,6 +342,7 @@ class MysqliDriver extends DbDriverAbstract
         $this->conn->rollback();
         // 恢复自动提交
         $this->conn->autocommit(true);
+
         return $this;
     }
 }

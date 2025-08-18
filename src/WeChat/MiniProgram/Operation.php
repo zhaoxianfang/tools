@@ -17,9 +17,9 @@ class Operation extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/operation/realtimelogSearch.html
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return array
+     *
      * @throws Exception
      */
     public function realtimelogSearch($data)
@@ -32,9 +32,9 @@ class Operation extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/operation/getDomainInfo.html
      *
-     * @param string|null $action 查询配置域名的类型, 可选值如下： 1. getbizdomain 返回业务域名 2. getserverdomain 返回服务器域名 3. 不指明返回全部
-     *
+     * @param  string|null  $action  查询配置域名的类型, 可选值如下： 1. getbizdomain 返回业务域名 2. getserverdomain 返回服务器域名 3. 不指明返回全部
      * @return array
+     *
      * @throws Exception
      */
     public function getDomainInfo(?string $action)
@@ -42,6 +42,7 @@ class Operation extends WeChatBase
         $data = [
             'action' => $action,
         ];
+
         return $this->post('wxa/getwxadevinfo', $data);
     }
 
@@ -50,9 +51,8 @@ class Operation extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/operation/getPerformance.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function getPerformance(array $data)
@@ -66,6 +66,7 @@ class Operation extends WeChatBase
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/operation/getSceneList.html
      *
      * @return array
+     *
      * @throws Exception
      */
     public function getSceneList()
@@ -79,6 +80,7 @@ class Operation extends WeChatBase
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/operation/getVersionList.html
      *
      * @return array
+     *
      * @throws Exception
      */
     public function getVersionList()
@@ -91,20 +93,18 @@ class Operation extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/operation/getFeedback.html
      *
-     * @param int      $page
-     * @param int      $num
-     * @param int|null $type
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function getFeedback(int $page, int $num, ?int $type)
     {
         $data = [
             'page' => $page,
-            'num'  => $num,
+            'num' => $num,
             'type' => $type,
         ];
+
         return $this->get('wxaapi/feedback/list', $data);
     }
 
@@ -113,18 +113,19 @@ class Operation extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/operation/getFeedbackmedia.html
      *
-     * @param int    $record_id 用户反馈信息的 record_id, 可通过 getFeedback 获取
-     * @param string $media_id  图片的 mediaId
-     *
+     * @param  int  $record_id  用户反馈信息的 record_id, 可通过 getFeedback 获取
+     * @param  string  $media_id  图片的 mediaId
      * @return array
+     *
      * @throws Exception
      */
     public function getFeedbackmedia(int $record_id, string $media_id)
     {
         $data = [
             'record_id' => $record_id,
-            'media_id'  => $media_id,
+            'media_id' => $media_id,
         ];
+
         return $this->get('cgi-bin/media/getfeedbackmedia', $data);
     }
 
@@ -133,9 +134,8 @@ class Operation extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/operation/getJsErrDetail.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function getJsErrDetail(array $data)
@@ -148,9 +148,8 @@ class Operation extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/operation/getJsErrList.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function getJsErrList(array $data)
@@ -164,11 +163,11 @@ class Operation extends WeChatBase
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/operation/getGrayReleasePlan.html
      *
      * @return array
+     *
      * @throws Exception
      */
     public function getGrayReleasePlan()
     {
         return $this->get('wxa/getgrayreleaseplan');
     }
-
 }

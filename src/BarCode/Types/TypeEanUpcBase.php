@@ -21,7 +21,9 @@ use zxf\BarCode\Exceptions\InvalidLengthException;
 abstract class TypeEanUpcBase implements TypeInterface
 {
     protected int $length = 13;
+
     protected bool $upca = false;
+
     protected bool $upce = false;
 
     public function getBarcode(string $code): Barcode
@@ -44,33 +46,33 @@ abstract class TypeEanUpcBase implements TypeInterface
         } elseif ($checksumDigit !== intval($code[$dataLength])) {
             // If length of given barcode is same as final length, barcode is including checksum
             // Make sure that checksum is the same as we calculated
-            throw new InvalidCheckDigitException();
+            throw new InvalidCheckDigitException;
         }
 
         if ($this->upca || $this->upce) {
-            $code = '0' . $code;
-            ++$length;
+            $code = '0'.$code;
+            $length++;
         }
-        
+
         if ($this->upce) {
             // convert UPC-A to UPC-E
             $tmp = substr($code, 4, 3);
-            if (($tmp == '000') OR ($tmp == '100') OR ($tmp == '200')) {
+            if (($tmp == '000') or ($tmp == '100') or ($tmp == '200')) {
                 // manufacturer code ends in 000, 100, or 200
-                $upce_code = substr($code, 2, 2) . substr($code, 9, 3) . substr($code, 4, 1);
+                $upce_code = substr($code, 2, 2).substr($code, 9, 3).substr($code, 4, 1);
             } else {
                 $tmp = substr($code, 5, 2);
                 if ($tmp == '00') {
                     // manufacturer code ends in 00
-                    $upce_code = substr($code, 2, 3) . substr($code, 10, 2) . '3';
+                    $upce_code = substr($code, 2, 3).substr($code, 10, 2).'3';
                 } else {
                     $tmp = substr($code, 6, 1);
                     if ($tmp == '0') {
                         // manufacturer code ends in 0
-                        $upce_code = substr($code, 2, 4) . substr($code, 11, 1) . '4';
+                        $upce_code = substr($code, 2, 4).substr($code, 11, 1).'4';
                     } else {
                         // manufacturer code does not end in zero
-                        $upce_code = substr($code, 2, 5) . substr($code, 11, 1);
+                        $upce_code = substr($code, 2, 5).substr($code, 11, 1);
                     }
                 }
             }
@@ -88,7 +90,7 @@ abstract class TypeEanUpcBase implements TypeInterface
                 '6' => '0101111',
                 '7' => '0111011',
                 '8' => '0110111',
-                '9' => '0001011'
+                '9' => '0001011',
             ],
             'B' => [ // left even parity
                 '0' => '0100111',
@@ -100,7 +102,7 @@ abstract class TypeEanUpcBase implements TypeInterface
                 '6' => '0000101',
                 '7' => '0010001',
                 '8' => '0001001',
-                '9' => '0010111'
+                '9' => '0010111',
             ],
             'C' => [ // right
                 '0' => '1110010',
@@ -112,8 +114,8 @@ abstract class TypeEanUpcBase implements TypeInterface
                 '6' => '1010000',
                 '7' => '1000100',
                 '8' => '1001000',
-                '9' => '1110100'
-            ]
+                '9' => '1110100',
+            ],
         ];
 
         $parities = [
@@ -160,7 +162,7 @@ abstract class TypeEanUpcBase implements TypeInterface
         if ($this->upce) {
             $barcode = new Barcode($upce_code);
             $p = $upce_parities[$code[1]][$checksumDigit];
-            for ($i = 0; $i < 6; ++$i) {
+            for ($i = 0; $i < 6; $i++) {
                 $seq .= $codes[$p[$i]][$upce_code[$i]];
             }
             $seq .= '010101'; // right guard bar
@@ -168,19 +170,19 @@ abstract class TypeEanUpcBase implements TypeInterface
             $barcode = new Barcode($code);
             $half_len = intval(ceil($length / 2));
             if ($length == 8) {
-                for ($i = 0; $i < $half_len; ++$i) {
+                for ($i = 0; $i < $half_len; $i++) {
                     $seq .= $codes['A'][$code[$i]];
                 }
             } else {
                 $p = $parities[$code[0]];
-                for ($i = 1; $i < $half_len; ++$i) {
+                for ($i = 1; $i < $half_len; $i++) {
                     $seq .= $codes[$p[$i - 1]][$code[$i]];
                 }
             }
             $seq .= '01010'; // center guard bar
-            for ($i = $half_len; $i < $length; ++$i) {
+            for ($i = $half_len; $i < $length; $i++) {
                 if (! isset($codes['C'][$code[$i]])) {
-                    throw new InvalidCharacterException('Char ' . $code[$i] . ' not allowed');
+                    throw new InvalidCharacterException('Char '.$code[$i].' not allowed');
                 }
                 $seq .= $codes['C'][$code[$i]];
             }
@@ -189,9 +191,9 @@ abstract class TypeEanUpcBase implements TypeInterface
 
         $clen = strlen($seq);
         $w = 0;
-        for ($i = 0; $i < $clen; ++$i) {
+        for ($i = 0; $i < $clen; $i++) {
             $w += 1;
-            if (($i == ($clen - 1)) OR (($i < ($clen - 1)) AND ($seq[$i] != $seq[($i + 1)]))) {
+            if (($i == ($clen - 1)) or (($i < ($clen - 1)) and ($seq[$i] != $seq[($i + 1)]))) {
                 if ($seq[$i] == '1') {
                     $t = true; // bar
                 } else {

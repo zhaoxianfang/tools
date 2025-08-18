@@ -4,7 +4,6 @@ namespace zxf\Laravel\Trace;
 
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Request;
-use zxf\Laravel\Trace\Handle;
 use Throwable;
 
 /**
@@ -13,7 +12,8 @@ use Throwable;
 class ToolsParseExceptionHandler implements ExceptionHandler
 {
     protected ExceptionHandler $handler;
-    protected                  $e;
+
+    protected $e;
 
     public function __construct(ExceptionHandler $handler)
     {
@@ -23,9 +23,7 @@ class ToolsParseExceptionHandler implements ExceptionHandler
     /**
      * 增强异常报告逻辑
      *
-     * @param Throwable $e
      *
-     * @return void
      * @throws Throwable
      */
     public function report(Throwable $e): void
@@ -43,10 +41,9 @@ class ToolsParseExceptionHandler implements ExceptionHandler
     /**
      * 增强异常渲染逻辑
      *
-     * @param           $request
-     * @param Throwable $e
      *
      * @return \Symfony\Component\HttpFoundation\Response
+     *
      * @throws Throwable
      */
     public function render($request, Throwable $e)
@@ -71,8 +68,10 @@ class ToolsParseExceptionHandler implements ExceptionHandler
 
             /** @var $trace Handle */
             $trace = app('trace');
+
             return $trace->renderTraceStyleAndScript($request, $response);
         }
+
         return $response;
     }
 

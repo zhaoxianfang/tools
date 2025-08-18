@@ -9,12 +9,11 @@ use Exception;
  */
 class FacadeBase
 {
-
     public static function __callStatic($method, $parameters)
     {
-        $facadeClass = get_called_class();// Facade 门面类
-        if (!is_subclass_of($facadeClass, FacadeInterface::class)) {
-            throw new Exception("The class [{$facadeClass}] must be a type of " . FacadeInterface::class . '.');
+        $facadeClass = get_called_class(); // Facade 门面类
+        if (! is_subclass_of($facadeClass, FacadeInterface::class)) {
+            throw new Exception("The class [{$facadeClass}] must be a type of ".FacadeInterface::class.'.');
         }
         $targetClass = $facadeClass::getFacadeAccessor(); // 实际作用的目标类
         if (method_exists($targetClass, 'instance')) {
@@ -25,7 +24,7 @@ class FacadeBase
             }
 
         } else {
-            return (new $targetClass())->$method(...$parameters);
+            return (new $targetClass)->$method(...$parameters);
         }
 
     }
@@ -35,15 +34,15 @@ class FacadeBase
      */
     public function __call($method, $parameters)
     {
-        $facadeClass = get_class();// Facade 门面类
-        if (!is_subclass_of($facadeClass, FacadeInterface::class)) {
-            throw new Exception("The class [{$facadeClass}] must be a type of " . FacadeInterface::class . '.');
+        $facadeClass = get_class(); // Facade 门面类
+        if (! is_subclass_of($facadeClass, FacadeInterface::class)) {
+            throw new Exception("The class [{$facadeClass}] must be a type of ".FacadeInterface::class.'.');
         }
         $targetClass = $facadeClass::getFacadeAccessor(); // 实际作用的目标类
         if (method_exists($targetClass, $method)) {
             return $targetClass::$method(...$parameters);
         } else {
-            throw new Exception($method . ' is not a function.');
+            throw new Exception($method.' is not a function.');
         }
     }
 }

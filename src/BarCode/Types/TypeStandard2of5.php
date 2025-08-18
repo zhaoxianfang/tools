@@ -34,10 +34,10 @@ class TypeStandard2of5 implements TypeInterface
         }
         $seq = '11011010';
 
-        for ($i = 0; $i < strlen($code); ++$i) {
+        for ($i = 0; $i < strlen($code); $i++) {
             $digit = $code[$i];
             if (! isset($chr[$digit])) {
-                throw new InvalidCharacterException('Char ' . $digit . ' is unsupported');
+                throw new InvalidCharacterException('Char '.$digit.' is unsupported');
             }
             $seq .= $chr[$digit];
         }
@@ -49,8 +49,9 @@ class TypeStandard2of5 implements TypeInterface
     /**
      * Checksum for standard 2 of 5 barcodes.
      *
-     * @param $code (string) code to process.
+     * @param  $code  (string) code to process.
      * @return string checksum.
+     *
      * @protected
      */
     protected function checksum_s25(string $code): string

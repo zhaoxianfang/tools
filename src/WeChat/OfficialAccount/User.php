@@ -17,10 +17,8 @@ class User extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/User_Management/Configuring_user_notes.html
      *
-     * @param string $openid
-     * @param string $remark
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function updateMark(string $openid, string $remark)
@@ -33,10 +31,8 @@ class User extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/User_Management/Get_users_basic_information_UnionID.html#UinonId
      *
-     * @param string $openid
-     * @param string $lang
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function getUserInfo(string $openid, string $lang = 'zh_CN')
@@ -49,10 +45,8 @@ class User extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/User_Management/Get_users_basic_information_UnionID.html#UinonId
      *
-     * @param array  $openids
-     * @param string $lang
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function getBatchUserInfo(array $openids, string $lang = 'zh_CN')
@@ -70,9 +64,9 @@ class User extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/User_Management/Getting_a_User_List.html
      *
-     * @param string $next_openid 第一个拉取的OPENID，不填默认从头开始拉取
-     *
+     * @param  string  $next_openid  第一个拉取的OPENID，不填默认从头开始拉取
      * @return array
+     *
      * @throws Exception
      */
     public function getUserList($next_openid = '')
@@ -85,10 +79,10 @@ class User extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/User_Management/User_Tag_Management.html
      *
-     * @param integer $tagid       标签ID
-     * @param string  $next_openid 第一个拉取的OPENID
-     *
+     * @param  int  $tagid  标签ID
+     * @param  string  $next_openid  第一个拉取的OPENID
      * @return array
+     *
      * @throws Exception
      */
     public function getUserListByTag(int $tagid, string $next_openid = '')
@@ -101,9 +95,9 @@ class User extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/User_Management/Manage_blacklist.html
      *
-     * @param string|null $begin_openid 当 begin_openid 为空时，默认从开头拉取。
-     *
+     * @param  string|null  $begin_openid  当 begin_openid 为空时，默认从开头拉取。
      * @return array
+     *
      * @throws Exception
      */
     public function getBlackList(?string $begin_openid = '')
@@ -116,9 +110,8 @@ class User extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/User_Management/Manage_blacklist.html
      *
-     * @param array $openids
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function batchBlackList(array $openids)
@@ -131,9 +124,8 @@ class User extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/User_Management/Manage_blacklist.html
      *
-     * @param array $openids
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function batchUnblackList(array $openids)

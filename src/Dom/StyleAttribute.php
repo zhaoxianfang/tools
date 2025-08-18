@@ -26,13 +26,11 @@ class StyleAttribute
     protected $properties = [];
 
     /**
-     * @param Element $element
-     *
      * @throws InvalidArgumentException if parameter 1 is not an element node
      */
     public function __construct(Element $element)
     {
-        if ( ! $element->isElementNode()) {
+        if (! $element->isElementNode()) {
             throw new InvalidArgumentException(sprintf('The element must contain DOMElement node.'));
         }
 
@@ -46,7 +44,7 @@ class StyleAttribute
      */
     protected function parseStyleAttribute()
     {
-        if ( ! $this->element->hasAttribute('style')) {
+        if (! $this->element->hasAttribute('style')) {
             // possible if style attribute has been removed
             if ($this->styleString !== '') {
                 $this->styleString = '';
@@ -75,7 +73,7 @@ class StyleAttribute
         $properties = explode(';', $styleString);
 
         foreach ($properties as $property) {
-            list($name, $value) = explode(':', $property, 2);
+            [$name, $value] = explode(':', $property, 2);
 
             $name = trim($name);
             $value = trim($value);
@@ -94,26 +92,18 @@ class StyleAttribute
         $this->element->setAttribute('style', $this->styleString);
     }
 
-    /**
-     * @return string
-     */
     protected function buildStyleString(): string
     {
         $properties = [];
 
         foreach ($this->properties as $propertyName => $value) {
-            $properties[] = $propertyName . ': ' . $value;
+            $properties[] = $propertyName.': '.$value;
         }
 
         return implode('; ', $properties);
     }
 
     /**
-     * @param string $name
-     * @param string $value
-     *
-     * @return StyleAttribute
-     *
      * @throws InvalidArgumentException if property name is not a string
      * @throws InvalidArgumentException if property value is not a string
      */
@@ -129,10 +119,6 @@ class StyleAttribute
     }
 
     /**
-     * @param array $properties
-     *
-     * @return StyleAttribute
-     *
      * @throws InvalidArgumentException if property name is not a string
      * @throws InvalidArgumentException if property value is not a string
      */
@@ -141,11 +127,11 @@ class StyleAttribute
         $this->parseStyleAttribute();
 
         foreach ($properties as $propertyName => $value) {
-            if ( ! is_string($propertyName)) {
+            if (! is_string($propertyName)) {
                 throw new InvalidArgumentException(sprintf('Property name must be a string, %s given.', (is_object($propertyName) ? get_class($propertyName) : gettype($propertyName))));
             }
 
-            if ( ! is_string($value)) {
+            if (! is_string($value)) {
                 throw new InvalidArgumentException(sprintf('Property value must be a string, %s given.', (is_object($value) ? get_class($value) : gettype($value))));
             }
 
@@ -158,16 +144,14 @@ class StyleAttribute
     }
 
     /**
-     * @param string $name
-     * @param mixed $default
-     *
+     * @param  mixed  $default
      * @return mixed
      */
     public function getProperty(string $name, $default = null)
     {
         $this->parseStyleAttribute();
 
-        if ( ! array_key_exists($name, $this->properties)) {
+        if (! array_key_exists($name, $this->properties)) {
             return $default;
         }
 
@@ -175,9 +159,7 @@ class StyleAttribute
     }
 
     /**
-     * @param string[] $propertyNames
-     *
-     * @return array
+     * @param  string[]  $propertyNames
      *
      * @throws InvalidArgumentException if property name is not a string
      */
@@ -188,7 +170,7 @@ class StyleAttribute
         $result = [];
 
         foreach ($propertyNames as $propertyName) {
-            if ( ! is_string($propertyName)) {
+            if (! is_string($propertyName)) {
                 throw new InvalidArgumentException(sprintf('Property name must be a string, %s given.', (is_object($propertyName) ? get_class($propertyName) : gettype($propertyName))));
             }
 
@@ -200,9 +182,6 @@ class StyleAttribute
         return $result;
     }
 
-    /**
-     * @return array
-     */
     public function getAllProperties(): array
     {
         $this->parseStyleAttribute();
@@ -210,11 +189,6 @@ class StyleAttribute
         return $this->properties;
     }
 
-    /**
-     * @param string $name
-     *
-     * @return bool
-     */
     public function hasProperty(string $name): bool
     {
         $this->parseStyleAttribute();
@@ -223,10 +197,6 @@ class StyleAttribute
     }
 
     /**
-     * @param string $name
-     *
-     * @return StyleAttribute
-     *
      * @throws InvalidArgumentException if property name is not a string
      */
     public function removeProperty(string $name): self
@@ -241,10 +211,6 @@ class StyleAttribute
     }
 
     /**
-     * @param array $propertyNames
-     *
-     * @return StyleAttribute
-     *
      * @throws InvalidArgumentException if property name is not a string
      */
     public function removeMultipleProperties(array $propertyNames): self
@@ -252,7 +218,7 @@ class StyleAttribute
         $this->parseStyleAttribute();
 
         foreach ($propertyNames as $propertyName) {
-            if ( ! is_string($propertyName)) {
+            if (! is_string($propertyName)) {
                 throw new InvalidArgumentException(sprintf('Property name must be a string, %s given.', (is_object($propertyName) ? get_class($propertyName) : gettype($propertyName))));
             }
 
@@ -265,9 +231,7 @@ class StyleAttribute
     }
 
     /**
-     * @param string[] $preserved
-     *
-     * @return StyleAttribute
+     * @param  string[]  $preserved
      */
     public function removeAllProperties(array $preserved = []): self
     {
@@ -276,11 +240,11 @@ class StyleAttribute
         $preservedProperties = [];
 
         foreach ($preserved as $propertyName) {
-            if ( ! is_string($propertyName)) {
+            if (! is_string($propertyName)) {
                 throw new InvalidArgumentException(sprintf('Property name must be a string, %s given.', (is_object($propertyName) ? get_class($propertyName) : gettype($propertyName))));
             }
 
-            if ( ! array_key_exists($propertyName, $this->properties)) {
+            if (! array_key_exists($propertyName, $this->properties)) {
                 continue;
             }
 
@@ -294,9 +258,6 @@ class StyleAttribute
         return $this;
     }
 
-    /**
-     * @return Element
-     */
     public function getElement(): Element
     {
         return $this->element;

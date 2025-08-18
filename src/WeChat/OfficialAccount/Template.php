@@ -17,10 +17,10 @@ class Template extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Template_Message_Interface.html#0
      *
-     * @param string $industry_id1 公众号模板消息所属行业编号
-     * @param string $industry_id2 公众号模板消息所属行业编号
-     *
+     * @param  string  $industry_id1  公众号模板消息所属行业编号
+     * @param  string  $industry_id2  公众号模板消息所属行业编号
      * @return array
+     *
      * @throws Exception
      */
     public function setIndustry(string $industry_id1, string $industry_id2)
@@ -34,6 +34,7 @@ class Template extends WeChatBase
      * @link https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Template_Message_Interface.html#1
      *
      * @return array
+     *
      * @throws Exception
      */
     public function getIndustry()
@@ -46,10 +47,10 @@ class Template extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Template_Message_Interface.html#2
      *
-     * @param string $templateIdShort 板库中模板的编号，有“TM**”和“OPENTMTM**”等形式
-     * @param array  $keywordNameList 选用的类目模板的关键词
-     *
+     * @param  string  $templateIdShort  板库中模板的编号，有“TM**”和“OPENTMTM**”等形式
+     * @param  array  $keywordNameList  选用的类目模板的关键词
      * @return array
+     *
      * @throws Exception
      */
     public function addTemplate(string $templateIdShort, array $keywordNameList = [])
@@ -63,6 +64,7 @@ class Template extends WeChatBase
      * @link https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Template_Message_Interface.html#3
      *
      * @return array
+     *
      * @throws Exception
      */
     public function getAllPrivateTemplate()
@@ -75,9 +77,9 @@ class Template extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Template_Message_Interface.html#4
      *
-     * @param string $tpl_id 公众帐号下模板消息ID
-     *
+     * @param  string  $tpl_id  公众帐号下模板消息ID
      * @return array
+     *
      * @throws Exception
      */
     public function delPrivateTemplate(string $tpl_id)
@@ -90,9 +92,8 @@ class Template extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Template_Message_Interface.html#5
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function send(array $data)

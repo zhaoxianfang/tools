@@ -57,8 +57,7 @@ class WhereHasIn
     }
 
     /**
-     * @param Relations\Relation $relation
-     *
+     * @param  Relations\Relation  $relation
      * @return Eloquent\Builder
      *
      * @throws \Exception
@@ -155,8 +154,7 @@ class WhereHasIn
     }
 
     /**
-     * @param Relations\Relation $relation
-     *
+     * @param  Relations\Relation  $relation
      * @return \Illuminate\Database\Eloquent\Builder
      */
     protected function getRelationQuery($relation)
@@ -211,8 +209,7 @@ class WhereHasIn
     }
 
     /**
-     * @param Eloquent\Builder $relation
-     *
+     * @param  Eloquent\Builder  $relation
      * @return Eloquent\Builder
      */
     protected function withRelationQueryCallback($relationQuery)

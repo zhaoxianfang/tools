@@ -12,6 +12,7 @@ use zxf\Laravel\BuilderQuery\Macros\WithRecursiveMacro;
  * Macros 宏定义
  *
  * 随机查询出$limit条数据
+ *
  * @method $this random(int $limit = 10, string $primaryKey = 'id')
  *
  * 根据$groupColumn进行分组，然后每组中随机取出$limit条数据

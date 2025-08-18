@@ -4,6 +4,7 @@ namespace zxf\Facade;
 
 /**
  * 数据库操作类
+ *
  * @method static mixed newQuery ()
  * @method mixed connect()
  * @method mixed table()

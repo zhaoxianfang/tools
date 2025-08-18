@@ -2,9 +2,9 @@
 
 namespace zxf\Laravel\Modules\Commands\Database;
 
+use Symfony\Component\Console\Input\InputOption;
 use zxf\Laravel\Modules\Commands\BaseCommand;
 use zxf\Laravel\Modules\Migrations\Migrator;
-use Symfony\Component\Console\Input\InputOption;
 
 class MigrateStatusCommand extends BaseCommand
 {

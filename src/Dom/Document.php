@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace zxf\Dom;
 
-use zxf\Dom\Exceptions\InvalidSelectorException;
 use DOMAttr;
 use DOMCdataSection;
 use DOMComment;
@@ -16,6 +15,7 @@ use DOMXPath;
 use Exception;
 use InvalidArgumentException;
 use RuntimeException;
+use zxf\Dom\Exceptions\InvalidSelectorException;
 
 class Document
 {
@@ -25,6 +25,7 @@ class Document
      * @const string
      */
     const TYPE_HTML = 'html';
+
     const TYPE_XML = 'xml';
 
     /**
@@ -46,14 +47,14 @@ class Document
      * @var array
      */
     protected $namespaces = [
-        'php' => 'http://php.net/xpath'
+        'php' => 'http://php.net/xpath',
     ];
 
     /**
-     * @param DOMDocument|string|null $string An HTML or XML string, a file path or a DOMDocument instance
-     * @param bool $isFile Indicates that the first parameter is a path to a file
-     * @param string $encoding The document encoding
-     * @param string $type The document type
+     * @param  DOMDocument|string|null  $string  An HTML or XML string, a file path or a DOMDocument instance
+     * @param  bool  $isFile  Indicates that the first parameter is a path to a file
+     * @param  string  $encoding  The document encoding
+     * @param  string  $type  The document type
      *
      * @throws InvalidArgumentException if parameter 3 is not a string
      */
@@ -79,11 +80,10 @@ class Document
     /**
      * Creates a new document.
      *
-     * @param DOMDocument|string|null $string An HTML or XML string, a file path or a DOMDocument instance
-     * @param bool $isFile Indicates that the first parameter is a path to a file
-     * @param string $encoding The document encoding
-     * @param string $type The document type
-     *
+     * @param  DOMDocument|string|null  $string  An HTML or XML string, a file path or a DOMDocument instance
+     * @param  bool  $isFile  Indicates that the first parameter is a path to a file
+     * @param  string  $encoding  The document encoding
+     * @param  string  $type  The document type
      * @return Document
      */
     public static function create($string = null, bool $isFile = false, string $encoding = 'UTF-8', string $type = Document::TYPE_HTML)
@@ -94,10 +94,9 @@ class Document
     /**
      * Creates a new element node.
      *
-     * @param string $name The tag name of the element
-     * @param string|null $value The value of the element
-     * @param array $attributes The attributes of the element
-     *
+     * @param  string  $name  The tag name of the element
+     * @param  string|null  $value  The value of the element
+     * @param  array  $attributes  The attributes of the element
      * @return Element created element
      */
     public function createElement(string $name, ?string $value = null, array $attributes = []): Element
@@ -110,11 +109,7 @@ class Document
     /**
      * Creates a new element node by CSS selector.
      *
-     * @param string $selector
-     * @param string|null $value
-     * @param array $attributes
      *
-     * @return Element
      *
      * @throws InvalidSelectorException
      */
@@ -139,39 +134,21 @@ class Document
         return $this->createElement($name, $value, $attributes);
     }
 
-    /**
-     * @param string $content
-     *
-     * @return Element
-     */
     public function createTextNode(string $content): Element
     {
         return new Element(new DOMText($content));
     }
 
-    /**
-     * @param string $data
-     *
-     * @return Element
-     */
     public function createComment(string $data): Element
     {
         return new Element(new DOMComment($data));
     }
 
-    /**
-     * @param string $data
-     *
-     * @return Element
-     */
     public function createCdataSection(string $data): Element
     {
         return new Element(new DOMCdataSection($data));
     }
 
-    /**
-     * @return DocumentFragment
-     */
     public function createDocumentFragment(): DocumentFragment
     {
         return new DocumentFragment($this->document->createDocumentFragment());
@@ -180,8 +157,7 @@ class Document
     /**
      * Adds a new child at the end of the children.
      *
-     * @param Element|DOMNode|array $nodes The appended child
-     *
+     * @param  Element|DOMNode|array  $nodes  The appended child
      * @return Element|Element[]
      *
      * @throws InvalidArgumentException if one of elements of parameter 1 is not an instance of DOMNode or Element
@@ -190,7 +166,7 @@ class Document
     {
         $returnArray = true;
 
-        if ( ! is_array($nodes)) {
+        if (! is_array($nodes)) {
             $nodes = [$nodes];
 
             $returnArray = false;
@@ -203,7 +179,7 @@ class Document
                 $node = $node->getNode();
             }
 
-            if ( ! $node instanceof DOMNode) {
+            if (! $node instanceof DOMNode) {
                 throw new InvalidArgumentException(sprintf('Argument 1 passed to %s must be an instance of %s\Element or DOMNode, %s given.', __METHOD__, __NAMESPACE__, (is_object($node) ? get_class($node) : gettype($node))));
             }
 
@@ -226,10 +202,6 @@ class Document
 
     /**
      * Set preserveWhiteSpace property.
-     *
-     * @param bool $value
-     *
-     * @return Document
      */
     public function preserveWhiteSpace(bool $value = true): self
     {
@@ -241,19 +213,19 @@ class Document
     /**
      * Load HTML or XML.
      *
-     * @param string $string An HTML or XML string or a file path
-     * @param bool $isFile Indicates that the first parameter is a file path
-     * @param string $type The type of a document
-     * @param int|null $options libxml option constants
+     * @param  string  $string  An HTML or XML string or a file path
+     * @param  bool  $isFile  Indicates that the first parameter is a file path
+     * @param  string  $type  The type of a document
+     * @param  int|null  $options  libxml option constants
      *
      * @throws InvalidArgumentException if parameter 1 is not a string
      * @throws InvalidArgumentException if parameter 3 is not a string
      * @throws InvalidArgumentException if parameter 4 is not an integer or null
      * @throws RuntimeException if the document type is invalid (not Document::TYPE_HTML or Document::TYPE_XML)
      */
-    public function load(string $string, bool $isFile = false, string $type = Document::TYPE_HTML, int $options = null): void
+    public function load(string $string, bool $isFile = false, string $type = Document::TYPE_HTML, ?int $options = null): void
     {
-        if ( ! in_array(strtolower($type), [Document::TYPE_HTML, Document::TYPE_XML], true)) {
+        if (! in_array(strtolower($type), [Document::TYPE_HTML, Document::TYPE_XML], true)) {
             throw new RuntimeException(sprintf('Document type must be "xml" or "html", %s given.', $type));
         }
 
@@ -288,9 +260,8 @@ class Document
     /**
      * Load HTML from a string.
      *
-     * @param string $html The HTML string
-     * @param int|null $options Additional parameters
-     *
+     * @param  string  $html  The HTML string
+     * @param  int|null  $options  Additional parameters
      * @return Document
      *
      * @throws InvalidArgumentException if parameter 1 is not a string
@@ -303,8 +274,8 @@ class Document
     /**
      * Load HTML from a file.
      *
-     * @param string $filename The path to the HTML file
-     * @param int|null $options Additional parameters
+     * @param  string  $filename  The path to the HTML file
+     * @param  int|null  $options  Additional parameters
      *
      * @throws InvalidArgumentException if parameter 1 not a string
      * @throws RuntimeException if the file doesn't exist
@@ -318,8 +289,8 @@ class Document
     /**
      * Load XML from a string.
      *
-     * @param string $xml The XML string
-     * @param int|null $options Additional parameters
+     * @param  string  $xml  The XML string
+     * @param  int|null  $options  Additional parameters
      *
      * @throws InvalidArgumentException if parameter 1 is not a string
      */
@@ -331,8 +302,8 @@ class Document
     /**
      * Load XML from a file.
      *
-     * @param string $filename The path to the XML file
-     * @param int|null $options Additional parameters
+     * @param  string  $filename  The path to the XML file
+     * @param  int|null  $options  Additional parameters
      *
      * @throws InvalidArgumentException if the file path is not a string
      * @throws RuntimeException if the file doesn't exist
@@ -346,9 +317,7 @@ class Document
     /**
      * Reads entire file into a string.
      *
-     * @param string $filename The path to the file
-     *
-     * @return string
+     * @param  string  $filename  The path to the file
      *
      * @throws InvalidArgumentException if parameter 1 is not a string
      * @throws RuntimeException if an error occurred
@@ -371,10 +340,8 @@ class Document
     /**
      * Checks the existence of the node.
      *
-     * @param string $expression XPath expression or CSS selector
-     * @param string $type The type of the expression
-     *
-     * @return bool
+     * @param  string  $expression  XPath expression or CSS selector
+     * @param  string  $type  The type of the expression
      */
     public function has(string $expression, string $type = Query::TYPE_CSS): bool
     {
@@ -387,11 +354,10 @@ class Document
     /**
      * Searches for a node in the DOM tree for a given XPath expression or CSS selector.
      *
-     * @param string $expression XPath expression or a CSS selector
-     * @param string $type The type of the expression
-     * @param bool $wrapNode Returns array of Element if true, otherwise array of DOMElement
-     * @param Element|DOMElement|null $contextNode The node in which the search will be performed
-     *
+     * @param  string  $expression  XPath expression or a CSS selector
+     * @param  string  $type  The type of the expression
+     * @param  bool  $wrapNode  Returns array of Element if true, otherwise array of DOMElement
+     * @param  Element|DOMElement|null  $contextNode  The node in which the search will be performed
      * @return Element[]|DOMElement[]
      *
      * @throws InvalidSelectorException if the selector is invalid
@@ -406,12 +372,12 @@ class Document
                 $contextNode = $contextNode->getNode();
             }
 
-            if ( ! $contextNode instanceof DOMElement) {
+            if (! $contextNode instanceof DOMElement) {
                 throw new InvalidArgumentException(sprintf('Argument 4 passed to %s must be an instance of %s\Element or DOMElement, %s given.', __METHOD__, __NAMESPACE__, (is_object($contextNode) ? get_class($contextNode) : gettype($contextNode))));
             }
 
             if ($type === Query::TYPE_CSS) {
-                $expression = '.' . $expression;
+                $expression = '.'.$expression;
             }
         }
 
@@ -435,11 +401,10 @@ class Document
     /**
      * Searches for a node in the DOM tree and returns first element or null.
      *
-     * @param string $expression XPath expression or a CSS selector
-     * @param string $type The type of the expression
-     * @param bool $wrapNode Returns array of Element if true, otherwise array of DOMElement
-     * @param Element|DOMElement|null $contextNode The node in which the search will be performed
-     *
+     * @param  string  $expression  XPath expression or a CSS selector
+     * @param  string  $type  The type of the expression
+     * @param  bool  $wrapNode  Returns array of Element if true, otherwise array of DOMElement
+     * @param  Element|DOMElement|null  $contextNode  The node in which the search will be performed
      * @return Element|DOMElement|null
      *
      * @throws InvalidSelectorException if the selector is invalid
@@ -449,7 +414,7 @@ class Document
         $expression = Query::compile($expression, $type);
 
         if ($contextNode !== null && $type === Query::TYPE_CSS) {
-            $expression = '.' . $expression;
+            $expression = '.'.$expression;
         }
 
         $expression = sprintf('(%s)[1]', $expression);
@@ -464,8 +429,7 @@ class Document
     }
 
     /**
-     * @param DOMElement|DOMText|DOMAttr $node
-     *
+     * @param  DOMElement|DOMText|DOMAttr  $node
      * @return Element|string
      *
      * @throws InvalidArgumentException if parameter 1 is not an instance of DOMElement, DOMText, DOMComment, DOMCdataSection or DOMAttr
@@ -491,10 +455,9 @@ class Document
     /**
      * Searches for a node in the DOM tree for a given XPath expression.
      *
-     * @param string $expression XPath expression
-     * @param bool $wrapNode Returns array of Element if true, otherwise array of DOMElement
-     * @param Element|DOMElement $contextNode The node in which the search will be performed
-     *
+     * @param  string  $expression  XPath expression
+     * @param  bool  $wrapNode  Returns array of Element if true, otherwise array of DOMElement
+     * @param  Element|DOMElement  $contextNode  The node in which the search will be performed
      * @return Element[]|DOMElement[]
      */
     public function xpath(string $expression, bool $wrapNode = true, $contextNode = null): array
@@ -505,10 +468,8 @@ class Document
     /**
      * Counts nodes for a given XPath expression or CSS selector.
      *
-     * @param string $expression XPath expression or CSS selector
-     * @param string $type The type of the expression
-     *
-     * @return int
+     * @param  string  $expression  XPath expression or CSS selector
+     * @param  string  $type  The type of the expression
      *
      * @throws InvalidSelectorException
      */
@@ -520,9 +481,6 @@ class Document
         return (int) $this->createXpath()->evaluate($expression);
     }
 
-    /**
-     * @return DOMXPath
-     */
     public function createXpath(): DOMXPath
     {
         $xpath = new DOMXPath($this->document);
@@ -538,9 +496,6 @@ class Document
 
     /**
      * Register a namespace.
-     *
-     * @param string $prefix
-     * @param string $namespace
      */
     public function registerNamespace(string $prefix, string $namespace)
     {
@@ -560,8 +515,7 @@ class Document
     /**
      * Dumps the internal document into a string using XML formatting.
      *
-     * @param int|null $options Additional options
-     *
+     * @param  int|null  $options  Additional options
      * @return string The document xml
      */
     public function xml(?int $options = 0): string
@@ -572,9 +526,7 @@ class Document
     /**
      * Nicely formats output with indentation and extra space.
      *
-     * @param bool $format Formats output if true
-     *
-     * @return Document
+     * @param  bool  $format  Formats output if true
      */
     public function format(bool $format = true): self
     {
@@ -585,8 +537,6 @@ class Document
 
     /**
      * Get the text content of this node and its descendants.
-     *
-     * @return string
      */
     public function text(): string
     {
@@ -596,9 +546,7 @@ class Document
     /**
      * Indicates if two documents are the same document.
      *
-     * @param Document|DOMDocument $document The compared document
-     *
-     * @return bool
+     * @param  Document|DOMDocument  $document  The compared document
      *
      * @throws InvalidArgumentException if parameter 1 is not an instance of DOMDocument or Document
      */
@@ -607,7 +555,7 @@ class Document
         if ($document instanceof Document) {
             $element = $document->getElement();
         } else {
-            if ( ! $document instanceof DOMDocument) {
+            if (! $document instanceof DOMDocument) {
                 throw new InvalidArgumentException(sprintf('Argument 1 passed to %s must be an instance of %s or DOMDocument, %s given.', __METHOD__, __CLASS__, (is_object($document) ? get_class($document) : gettype($document))));
             }
 
@@ -623,8 +571,6 @@ class Document
 
     /**
      * Returns the type of the document (XML or HTML).
-     *
-     * @return string|null
      */
     public function getType(): ?string
     {
@@ -633,33 +579,22 @@ class Document
 
     /**
      * Returns the encoding of the document.
-     *
-     * @return string|null
      */
     public function getEncoding(): ?string
     {
         return $this->encoding;
     }
 
-    /**
-     * @return DOMDocument
-     */
     public function getDocument(): DOMDocument
     {
         return $this->document;
     }
 
-    /**
-     * @return DOMElement|null
-     */
     public function getElement(): ?DOMElement
     {
         return $this->document->documentElement;
     }
 
-    /**
-     * @return Element
-     */
     public function toElement(): Element
     {
         if ($this->document->documentElement === null) {
@@ -671,8 +606,6 @@ class Document
 
     /**
      * Convert the document to its string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {

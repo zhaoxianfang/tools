@@ -17,17 +17,17 @@ class Media extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/Asset_Management/New_temporary_materials.html
      *
-     * @param string $filePath
-     * @param string $type 媒体文件类型，分别有图片（image）、语音（voice）、视频（video）和缩略图（thumb）
-     *
+     * @param  string  $type  媒体文件类型，分别有图片（image）、语音（voice）、视频（video）和缩略图（thumb）
      * @return array
+     *
      * @throws Exception
      */
     public function add(string $filePath, string $type = 'image')
     {
-        if (!in_array($type, ['image', 'voice', 'video', 'thumb'])) {
+        if (! in_array($type, ['image', 'voice', 'video', 'thumb'])) {
             return $this->error('Invalid Media Type.');
         }
+
         return $this->httpUpload('cgi-bin/media/upload', $filePath, ['type' => $type]);
     }
 
@@ -36,9 +36,8 @@ class Media extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/Asset_Management/Get_temporary_materials.html
      *
-     * @param string $media_id
-     *
      * @return array|string
+     *
      * @throws Exception
      */
     public function getMedia(string $media_id)
@@ -46,13 +45,12 @@ class Media extends WeChatBase
         return $this->get('cgi-bin/media/get', [], ['media_id' => $media_id]);
     }
 
-
     /**
      * 上传图文消息内的图片获取URL
      *
-     * @param string $filename
      *
      * @return array
+     *
      * @throws Exception
      */
     public function uploadImg(string $filename)
@@ -63,19 +61,18 @@ class Media extends WeChatBase
     /**
      * 新增其他类型永久素材
      *
-     * @param string      $filename 文件名称
-     * @param string      $type     媒体文件类型(image|voice|video|thumb)
-     * @param string|null $videoTitle
-     * @param string|null $videoDescription
-     *
+     * @param  string  $filename  文件名称
+     * @param  string  $type  媒体文件类型(image|voice|video|thumb)
      * @return array
+     *
      * @throws Exception
      */
-    public function addMaterial(string $filename, string $type = 'image', ?string $videoTitle = "", ?string $videoDescription = "")
+    public function addMaterial(string $filename, string $type = 'image', ?string $videoTitle = '', ?string $videoDescription = '')
     {
-        if (!in_array($type, ['image', 'voice', 'video', 'thumb'])) {
+        if (! in_array($type, ['image', 'voice', 'video', 'thumb'])) {
             return $this->error('Invalid Media Type.');
         }
+
         return $this->upload(21, $filename, $type, $videoTitle, $videoDescription);
     }
 
@@ -84,9 +81,8 @@ class Media extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/Asset_Management/Getting_Permanent_Assets.html
      *
-     * @param string $media_id
-     *
      * @return array|string
+     *
      * @throws Exception
      */
     public function getMaterial(string $media_id)
@@ -94,15 +90,13 @@ class Media extends WeChatBase
         return $this->post('cgi-bin/material/get_material', ['media_id' => $media_id]);
     }
 
-
     /**
      * 删除永久素材
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/Asset_Management/Deleting_Permanent_Assets.html
      *
-     * @param string $media_id
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function delMaterial(string $media_id)
@@ -116,6 +110,7 @@ class Media extends WeChatBase
      * @link https://developers.weixin.qq.com/doc/offiaccount/Asset_Management/Get_the_total_of_all_materials.html
      *
      * @return array
+     *
      * @throws Exception
      */
     public function getMaterialCount()
@@ -128,19 +123,16 @@ class Media extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/Asset_Management/Get_materials_list.html
      *
-     * @param string $type
-     * @param int    $offset
-     * @param int    $count
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function batchGetMaterial(string $type = 'image', int $offset = 0, int $count = 20)
     {
-        if (!in_array($type, ['image', 'voice', 'video', 'news'])) {
+        if (! in_array($type, ['image', 'voice', 'video', 'news'])) {
             return $this->error('Invalid Media Type.');
         }
+
         return $this->post('cgi-bin/material/batchget_material', ['type' => $type, 'offset' => $offset, 'count' => $count]);
     }
-
 }

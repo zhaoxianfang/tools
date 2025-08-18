@@ -19,12 +19,10 @@ namespace zxf\Facade;
  * @method Model findOrFail($id)
  * @method Model first()
  * @method Model get()
- *
  * @method Model hasMany($table, $foreignKey, $localKey, $field)
  * @method Model belongsTo($table, $foreignKey, $ownerKey, $field)
  * @method Model hasOne($table, $foreignKey, $field = '*')
  * @method Model belongsToMany($table, $throughTable, $ownerForeignKey, $throughForeignKey, $ownerKey = "id",$throughKey = "id", $field = '*')
- *
  * @method Model setData($data = [], $multi = false)
  * @method Model toArray()
  */

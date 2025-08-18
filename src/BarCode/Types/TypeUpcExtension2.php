@@ -25,12 +25,12 @@ class TypeUpcExtension2 implements TypeInterface
 
         // Calculate check digit
         if ($len == 2) {
-            $r = (int)$code % 4;
+            $r = (int) $code % 4;
         } elseif ($len == 5) {
-            $r = (3 * intval($code[0] . $code[2] . $code[4])) + (9 * intval($code[1] . $code[3]));
+            $r = (3 * intval($code[0].$code[2].$code[4])) + (9 * intval($code[1].$code[3]));
             $r %= 10;
         } else {
-            throw new InvalidCheckDigitException();
+            throw new InvalidCheckDigitException;
         }
 
         // Convert digits to bars
@@ -45,7 +45,7 @@ class TypeUpcExtension2 implements TypeInterface
                 '6' => '0101111',
                 '7' => '0111011',
                 '8' => '0110111',
-                '9' => '0001011'
+                '9' => '0001011',
             ],
             'B' => [ // left even parity
                 '0' => '0100111',
@@ -57,16 +57,16 @@ class TypeUpcExtension2 implements TypeInterface
                 '6' => '0000101',
                 '7' => '0010001',
                 '8' => '0001001',
-                '9' => '0010111'
-            ]
+                '9' => '0010111',
+            ],
         ];
 
         $parities = [
-            2 =>[
+            2 => [
                 '0' => ['A', 'A'],
                 '1' => ['A', 'B'],
                 '2' => ['B', 'A'],
-                '3' => ['B', 'B']
+                '3' => ['B', 'B'],
             ],
             5 => [
                 '0' => ['B', 'B', 'A', 'A', 'A'],
@@ -78,14 +78,14 @@ class TypeUpcExtension2 implements TypeInterface
                 '6' => ['A', 'A', 'A', 'B', 'B'],
                 '7' => ['A', 'B', 'A', 'B', 'A'],
                 '8' => ['A', 'B', 'A', 'A', 'B'],
-                '9' => ['A', 'A', 'B', 'A', 'B']
-            ]
+                '9' => ['A', 'A', 'B', 'A', 'B'],
+            ],
         ];
 
         $p = $parities[$len][$r];
         $seq = '1011'; // left guard bar
         $seq .= $codes[$p[0]][$code[0]];
-        for ($i = 1; $i < $len; ++$i) {
+        for ($i = 1; $i < $len; $i++) {
             $seq .= '01'; // separator
             $seq .= $codes[$p[$i]][$code[$i]];
         }

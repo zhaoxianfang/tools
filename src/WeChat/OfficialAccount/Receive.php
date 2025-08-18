@@ -14,152 +14,152 @@ class Receive extends WechatPushEvent
     /**
      * 转发多客服消息
      *
-     * @param string $account
      *
      * @return $this
      */
     public function transferCustomerService(string $account = '')
     {
         $this->message = [
-            'CreateTime'   => time(),
-            'ToUserName'   => $this->getOpenid(),
+            'CreateTime' => time(),
+            'ToUserName' => $this->getOpenid(),
             'FromUserName' => $this->getToOpenid(),
-            'MsgType'      => 'transfer_customer_service',
+            'MsgType' => 'transfer_customer_service',
         ];
         empty($account) || $this->message['TransInfo'] = ['KfAccount' => $account];
+
         return $this;
     }
 
     /**
      * 设置文本消息
      *
-     * @param string $content 文本内容
-     *
+     * @param  string  $content  文本内容
      * @return $this
      */
     public function text(string $content = '')
     {
         $this->message = [
-            'MsgType'      => 'text',
-            'CreateTime'   => time(),
-            'Content'      => $content,
-            'ToUserName'   => $this->getOpenid(),
+            'MsgType' => 'text',
+            'CreateTime' => time(),
+            'Content' => $content,
+            'ToUserName' => $this->getOpenid(),
             'FromUserName' => $this->getToOpenid(),
         ];
+
         return $this;
     }
 
     /**
      * 设置回复图文
      *
-     * @param array $newsData
      *
      * @return $this
      */
     public function news(array $newsData = [])
     {
         $this->message = [
-            'CreateTime'   => time(),
-            'MsgType'      => 'news',
-            'Articles'     => $newsData,
-            'ToUserName'   => $this->getOpenid(),
+            'CreateTime' => time(),
+            'MsgType' => 'news',
+            'Articles' => $newsData,
+            'ToUserName' => $this->getOpenid(),
             'FromUserName' => $this->getToOpenid(),
             'ArticleCount' => count($newsData),
         ];
+
         return $this;
     }
 
     /**
      * 设置图片消息
      *
-     * @param string $mediaId 图片媒体ID
-     *
+     * @param  string  $mediaId  图片媒体ID
      * @return $this
      */
     public function image(string $mediaId = '')
     {
         $this->message = [
-            'MsgType'      => 'image',
-            'CreateTime'   => time(),
-            'ToUserName'   => $this->getOpenid(),
+            'MsgType' => 'image',
+            'CreateTime' => time(),
+            'ToUserName' => $this->getOpenid(),
             'FromUserName' => $this->getToOpenid(),
-            'Image'        => ['MediaId' => $mediaId],
+            'Image' => ['MediaId' => $mediaId],
         ];
+
         return $this;
     }
 
     /**
      * 设置语音回复消息
      *
-     * @param string $mediaid 语音媒体ID
-     *
+     * @param  string  $mediaid  语音媒体ID
      * @return $this
      */
     public function voice(string $mediaid = '')
     {
         $this->message = [
-            'CreateTime'   => time(),
-            'MsgType'      => 'voice',
-            'ToUserName'   => $this->getOpenid(),
+            'CreateTime' => time(),
+            'MsgType' => 'voice',
+            'ToUserName' => $this->getOpenid(),
             'FromUserName' => $this->getToOpenid(),
-            'Voice'        => ['MediaId' => $mediaid],
+            'Voice' => ['MediaId' => $mediaid],
         ];
+
         return $this;
     }
 
     /**
      * 设置视频回复消息
      *
-     * @param string $mediaid     视频媒体ID
-     * @param string $title       视频标题
-     * @param string $description 视频描述
-     *
+     * @param  string  $mediaid  视频媒体ID
+     * @param  string  $title  视频标题
+     * @param  string  $description  视频描述
      * @return $this
      */
     public function video(string $mediaid = '', string $title = '', string $description = '')
     {
         $this->message = [
-            'CreateTime'   => time(),
-            'MsgType'      => 'video',
-            'ToUserName'   => $this->getOpenid(),
+            'CreateTime' => time(),
+            'MsgType' => 'video',
+            'ToUserName' => $this->getOpenid(),
             'FromUserName' => $this->getToOpenid(),
-            'Video'        => [
-                'Title'       => $title,
-                'MediaId'     => $mediaid,
+            'Video' => [
+                'Title' => $title,
+                'MediaId' => $mediaid,
                 'Description' => $description,
             ],
         ];
+
         return $this;
     }
 
     /**
      * 设置音乐回复消息
      *
-     * @param string $title        音乐标题
-     * @param string $desc         音乐描述
-     * @param string $musicurl     音乐地址
-     * @param string $hgmusicurl   高清音乐地址
-     * @param string $thumbmediaid 音乐图片缩略图的媒体id（可选）
-     *
+     * @param  string  $title  音乐标题
+     * @param  string  $desc  音乐描述
+     * @param  string  $musicurl  音乐地址
+     * @param  string  $hgmusicurl  高清音乐地址
+     * @param  string  $thumbmediaid  音乐图片缩略图的媒体id（可选）
      * @return $this
      */
     public function music(string $title, string $desc, string $musicurl, string $hgmusicurl = '', string $thumbmediaid = '')
     {
         $this->message = [
-            'CreateTime'   => time(),
-            'MsgType'      => 'music',
-            'ToUserName'   => $this->getOpenid(),
+            'CreateTime' => time(),
+            'MsgType' => 'music',
+            'ToUserName' => $this->getOpenid(),
             'FromUserName' => $this->getToOpenid(),
-            'Music'        => [
-                'Title'       => $title,
+            'Music' => [
+                'Title' => $title,
                 'Description' => $desc,
-                'MusicUrl'    => $musicurl,
-                'HQMusicUrl'  => $hgmusicurl,
+                'MusicUrl' => $musicurl,
+                'HQMusicUrl' => $hgmusicurl,
             ],
         ];
         if ($thumbmediaid) {
             $this->message['Music']['ThumbMediaId'] = $thumbmediaid;
         }
+
         return $this;
     }
 }

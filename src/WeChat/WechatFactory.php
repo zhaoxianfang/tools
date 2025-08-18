@@ -2,7 +2,6 @@
 
 namespace zxf\WeChat;
 
-
 use zxf\WeChat\Contracts\WeChatBase;
 use zxf\WeChat\Contracts\WechatPushEvent;
 use zxf\WeChat\Contracts\WeChatWorkBase;

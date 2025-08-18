@@ -12,11 +12,11 @@ class AssetController
 
     public function __construct()
     {
-        $this->jsFiles  = [
-            dirname(__DIR__, 2) . '/resource/js/trace.js',
+        $this->jsFiles = [
+            dirname(__DIR__, 2).'/resource/js/trace.js',
         ];
         $this->cssFiles = [
-            dirname(__DIR__, 2) . '/resource/css/trace.css',
+            dirname(__DIR__, 2).'/resource/css/trace.css',
         ];
     }
 
@@ -27,7 +27,7 @@ class AssetController
     {
         $content = '';
         foreach ($this->jsFiles as $file) {
-            $content .= file_get_contents($file) . "\n";
+            $content .= file_get_contents($file)."\n";
         }
 
         $response = new Response($content, 200, [
@@ -44,7 +44,7 @@ class AssetController
     {
         $content = '';
         foreach ($this->cssFiles as $file) {
-            $content .= file_get_contents($file) . "\n";
+            $content .= file_get_contents($file)."\n";
         }
 
         $response = new Response($content, 200, [
@@ -62,6 +62,7 @@ class AssetController
         $response->setSharedMaxAge(31536000);
         $response->setMaxAge(31536000);
         $response->setExpires(new \DateTime('+1 year'));
+
         return $response;
     }
 }

@@ -17,20 +17,21 @@ class Soter extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/soter/verifySignature.html
      *
-     * @param string $openid         用户 openid
-     * @param string $json_string    通过 wx.startSoterAuthentication 成功回调获得的 resultJSON 字段
-     * @param string $json_signature 通过 wx.startSoterAuthentication 成功回调获得的 resultJSONSignature 字段
-     *
+     * @param  string  $openid  用户 openid
+     * @param  string  $json_string  通过 wx.startSoterAuthentication 成功回调获得的 resultJSON 字段
+     * @param  string  $json_signature  通过 wx.startSoterAuthentication 成功回调获得的 resultJSONSignature 字段
      * @return array
+     *
      * @throws Exception
      */
     public function verifySignature(string $openid, string $json_string, string $json_signature)
     {
         $data = [
-            'openid'         => $openid,
-            'json_string'    => $json_string,
+            'openid' => $openid,
+            'json_string' => $json_string,
             'json_signature' => $json_signature,
         ];
+
         return $this->post('cgi-bin/soter/verify_signature', $data);
     }
 }

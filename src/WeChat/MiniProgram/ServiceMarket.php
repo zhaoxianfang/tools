@@ -17,9 +17,9 @@ class ServiceMarket extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/wx-service-market/invokeService.html
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return array
+     *
      * @throws Exception
      */
     public function invokeService($data)

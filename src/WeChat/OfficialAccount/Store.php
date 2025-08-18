@@ -17,9 +17,9 @@ class Store extends WeChatBase
     /**
      * 上传图片
      *
-     * @param string $imagePath
      *
      * @return array
+     *
      * @throws Exception
      */
     public function uploadImg(string $imagePath)

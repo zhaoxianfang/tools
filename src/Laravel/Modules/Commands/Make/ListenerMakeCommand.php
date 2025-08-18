@@ -3,12 +3,12 @@
 namespace zxf\Laravel\Modules\Commands\Make;
 
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use zxf\Laravel\Modules\Module;
 use zxf\Laravel\Modules\Support\Config\GenerateConfigReader;
 use zxf\Laravel\Modules\Support\Stub;
 use zxf\Laravel\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 
 class ListenerMakeCommand extends GeneratorCommand
 {

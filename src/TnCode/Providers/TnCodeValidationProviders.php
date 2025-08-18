@@ -23,9 +23,8 @@ class TnCodeValidationProviders extends \Illuminate\Support\ServiceProvider
         // $validator : Illuminate\Validation\Validator
         Validator::extend('TnCode', function ($attribute, $value, $parameters, $validator) {
             // 进行二次验证
-            return (new TnCode())->recheck($value);
+            return (new TnCode)->recheck($value);
         });
-
 
         // 设置自定义验证消息
         Validator::replacer('TnCode', function ($message, $attribute, $rule, $parameters) {

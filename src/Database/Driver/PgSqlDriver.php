@@ -13,5 +13,4 @@ class PgSqlDriver extends PdoDriver
 
     // 连接数据库的驱动扩展名称 eg: mysqli、pdo 等
     protected string $extensionName = 'pgsql';
-
 }

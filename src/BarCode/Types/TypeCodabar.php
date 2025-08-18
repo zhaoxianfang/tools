@@ -33,22 +33,22 @@ class TypeCodabar implements TypeInterface
         'A' => '11221211',
         'B' => '12121121',
         'C' => '11121221',
-        'D' => '11122211'
+        'D' => '11122211',
     ];
 
     public function getBarcode(string $code): Barcode
     {
         $barcode = new Barcode($code);
 
-        $code = 'A' . strtoupper($code) . 'A';
+        $code = 'A'.strtoupper($code).'A';
 
-        for ($i = 0; $i < strlen($code); ++$i) {
-            if (! isset($this->conversionTable[(string)$code[$i]])) {
-                throw new InvalidCharacterException('Char ' . $code[$i] . ' is unsupported');
+        for ($i = 0; $i < strlen($code); $i++) {
+            if (! isset($this->conversionTable[(string) $code[$i]])) {
+                throw new InvalidCharacterException('Char '.$code[$i].' is unsupported');
             }
 
-            $seq = $this->conversionTable[(string)$code[$i]];
-            for ($j = 0; $j < 8; ++$j) {
+            $seq = $this->conversionTable[(string) $code[$i]];
+            for ($j = 0; $j < 8; $j++) {
                 if (($j % 2) == 0) {
                     $drawBar = true;
                 } else {

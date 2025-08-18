@@ -5,8 +5,11 @@ namespace zxf\BarCode;
 class Barcode
 {
     protected string $barcode;
+
     protected int $width = 0;
+
     protected int $height = 0;
+
     protected array $bars = [];
 
     public function __construct(string $barcode)

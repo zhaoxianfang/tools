@@ -17,9 +17,8 @@ class Poi extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/nearby-poi/addNearbyPoi.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function addBearByPoi(array $data)
@@ -32,10 +31,10 @@ class Poi extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/nearby-poi/getNearbyPoiList.html
      *
-     * @param integer $page      起始页id（从1开始计数）
-     * @param integer $page_rows 每页展示个数（最多1000个）
-     *
+     * @param  int  $page  起始页id（从1开始计数）
+     * @param  int  $page_rows  每页展示个数（最多1000个）
      * @return array
+     *
      * @throws Exception
      */
     public function getNearByPoiList(int $page = 1, int $page_rows = 1000)
@@ -48,9 +47,9 @@ class Poi extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/nearby-poi/deleteNearbyPoi.html
      *
-     * @param string $poi_id 附近地点ID
-     *
+     * @param  string  $poi_id  附近地点ID
      * @return array
+     *
      * @throws Exception
      */
     public function delNearByPoiList(string $poi_id)
@@ -63,10 +62,10 @@ class Poi extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/nearby-poi/setShowStatus.html
      *
-     * @param string $poi_id 附近地点ID
-     * @param int    $status 0：取消展示；1：展示
-     *
+     * @param  string  $poi_id  附近地点ID
+     * @param  int  $status  0：取消展示；1：展示
      * @return array
+     *
      * @throws Exception
      */
     public function setNearByPoiShowStatus(string $poi_id, int $status)

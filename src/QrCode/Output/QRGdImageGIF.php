@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class QRGdImageGIF
  *
  * @created      25.10.2023
+ *
  * @author       smiley <smiley@chillerlan.net>
  * @copyright    2023 smiley
  * @license      MIT
@@ -20,17 +22,17 @@ use function imagegif;
  *
  * @see \imagegif()
  */
-class QRGdImageGIF extends QRGdImage{
+class QRGdImageGIF extends QRGdImage
+{
+    final public const MIME_TYPE = 'image/gif';
 
-	final public const MIME_TYPE = 'image/gif';
-
-	/**
-	 * @throws \zxf\QrCode\Output\QRCodeOutputException
-	 */
-	protected function renderImage():void{
-		if(imagegif(image: $this->image) === false){
-			throw new QRCodeOutputException('imagegif() error');
-		}
-	}
-
+    /**
+     * @throws \zxf\QrCode\Output\QRCodeOutputException
+     */
+    protected function renderImage(): void
+    {
+        if (imagegif(image: $this->image) === false) {
+            throw new QRCodeOutputException('imagegif() error');
+        }
+    }
 }

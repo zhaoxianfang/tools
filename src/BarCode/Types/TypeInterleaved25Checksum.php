@@ -35,28 +35,28 @@ class TypeInterleaved25Checksum implements TypeInterface
 
         if ((strlen($code) % 2) != 0) {
             // add leading zero if code-length is odd
-            $code = '0' . $code;
+            $code = '0'.$code;
         }
 
         // add start and stop codes
-        $code = 'AA' . strtolower($code) . 'ZA';
+        $code = 'AA'.strtolower($code).'ZA';
 
         $barcode = new Barcode($code);
         for ($i = 0; $i < strlen($code); $i = ($i + 2)) {
             $char_bar = $code[$i];
             $char_space = $code[$i + 1];
             if (! isset($chr[$char_bar]) || ! isset($chr[$char_space])) {
-                throw new InvalidCharacterException();
+                throw new InvalidCharacterException;
             }
 
             // create a bar-space sequence
             $seq = '';
             $chrlen = strlen($chr[$char_bar]);
             for ($s = 0; $s < $chrlen; $s++) {
-                $seq .= $chr[$char_bar][$s] . $chr[$char_space][$s];
+                $seq .= $chr[$char_bar][$s].$chr[$char_space][$s];
             }
 
-            for ($j = 0; $j < strlen($seq); ++$j) {
+            for ($j = 0; $j < strlen($seq); $j++) {
                 if (($j % 2) == 0) {
                     $t = true; // bar
                 } else {
@@ -86,6 +86,6 @@ class TypeInterleaved25Checksum implements TypeInterface
             $r = (10 - $r);
         }
 
-        return (string)$r;
+        return (string) $r;
     }
 }

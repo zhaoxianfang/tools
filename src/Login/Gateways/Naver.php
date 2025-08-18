@@ -101,9 +101,6 @@ class Naver extends Gateway
     /**
      * 发起请求
      *
-     * @param string $api
-     * @param array  $params
-     * @param string $method
      *
      * @return array
      */

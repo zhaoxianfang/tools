@@ -260,8 +260,10 @@ abstract class Gateway implements GatewayInterface
             } catch (\Exception $e) {
                 $this->callbackState = '';
             }
+
             return $this->callbackState != 'null' ? $this->callbackState : '';
         }
+
         return '';
     }
 

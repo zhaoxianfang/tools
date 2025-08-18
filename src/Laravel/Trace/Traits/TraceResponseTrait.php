@@ -12,7 +12,7 @@ trait TraceResponseTrait
     // 返回在页面只渲染调试页面
     public function randerPage($trace)
     {
-        $html = <<<EOT
+        $html = <<<'EOT'
     <div id="tools_trace">
     <div class="trace-logo">
       <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAcBJREFUOE/F1MtKAlEYB/DvaI1OlJIuhBYKFbSzi9lKcIJadnkIoQeoTYvw0mu0laBlPYAOQUG2cFGEQdioQXbTUcsy9cQZm+HkXBRcdEAGjt/8zn/OzHcQ9DEwH4qQMhQ8kK5GAxn9iRMhDsw4DBi4Th2K9kI1QTXUvaw+rAI7j4fDvR5NL7ECSqlMOKEJ2WcAxIz2GgiSgBEvb4UE5g8DHGsdizgdE8Huu7B3B4CAZOROAAnHf0rE50pauCnA7N75vLTLMohwJ52VtfEExp51APeadqpfOHuV40vFshTCF0tJlgokkzb/dnF0atOlt49NsdDIHu3mag+303KNIch6t8BsnwTLECNaXIt2+aZW6b7+ep2sm0fGHU9ncfh8EZQ1+wLlaqb9VawIwjCB5LmBwGb1sY4/zCy9Bf8LMp5VYNwrSqCBExKJvBQCkysNiplTIL/uYfhS6GICmpxLb9W7rEMLkr49DMmF/dSy8h3KQD4eiCCk7uNGrZ0uFZpzOr0X9cUulGNNdTiQNoQ2cDSsBdKp6IV0z0M6LQ0SqGXCUX/0MqmV2PCAlfo8Hoh8v7c2yvlm2QiS8Z6gXj/rzf8AmFQQJJO/2LAAAAAASUVORK5CYII=" alt="Logo" style="height: 18px;" class="logo">
@@ -31,7 +31,7 @@ EOT;
             $html .= "<div class='tabs-item ".($key < 1 ? 'active' : '')."' data-tab='tab".$tabKey."'>".$name.'</div>';
         }
 
-        $html .= <<<EOT
+        $html .= <<<'EOT'
         </div>
         <div class="tabs-close">关闭</div>
       </div>
@@ -101,13 +101,13 @@ EOT;
                 $html .= '</li>';
             }
 
-            $html .= <<<EOT
+            $html .= <<<'EOT'
         </ul>
        </div>
 EOT;
         }
 
-        $html .= <<<EOT
+        $html .= <<<'EOT'
       </div></div>
 EOT;
 

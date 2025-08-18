@@ -15,6 +15,7 @@ use zxf\BarCode\Exceptions\InvalidLengthException;
 class TypeCode39 implements TypeInterface
 {
     protected bool $extended = false;
+
     protected bool $checksum = false;
 
     protected array $conversionTable = [
@@ -81,17 +82,17 @@ class TypeCode39 implements TypeInterface
         }
 
         // add start and stop codes
-        $code = '*' . $code . '*';
+        $code = '*'.$code.'*';
 
         $barcode = new Barcode($code);
 
-        for ($i = 0; $i < strlen($code); ++$i) {
+        for ($i = 0; $i < strlen($code); $i++) {
             $char = $code[$i];
             if (! isset($this->conversionTable[$char])) {
-                throw new InvalidCharacterException('Char ' . $char . ' is unsupported');
+                throw new InvalidCharacterException('Char '.$char.' is unsupported');
             }
 
-            for ($j = 0; $j < 9; ++$j) {
+            for ($j = 0; $j < 9; $j++) {
                 if (($j % 2) == 0) {
                     $drawBar = true;
                 } else {
@@ -108,13 +109,14 @@ class TypeCode39 implements TypeInterface
         return $barcode;
     }
 
-
     /**
      * Encode a string to be used for CODE 39 Extended mode.
      *
-     * @param string $code code to represent.
+     * @param  string  $code  code to represent.
      * @return string encoded string.
+     *
      * @protected
+     *
      * @throws InvalidCharacterException
      */
     protected function encode_code39_ext(string $code): string
@@ -247,11 +249,11 @@ class TypeCode39 implements TypeInterface
             chr(124) => '%Q',
             chr(125) => '%R',
             chr(126) => '%S',
-            chr(127) => '%T'
+            chr(127) => '%T',
         ];
 
         $code_ext = '';
-        for ($i = 0; $i < strlen($code); ++$i) {
+        for ($i = 0; $i < strlen($code); $i++) {
             if (ord($code[$i]) > 127) {
                 throw new InvalidCharacterException('Only supports till char 127');
             }
@@ -262,12 +264,12 @@ class TypeCode39 implements TypeInterface
         return $code_ext;
     }
 
-
     /**
      * Calculate CODE 39 checksum (modulo 43).
      *
-     * @param string $code code to represent.
+     * @param  string  $code  code to represent.
      * @return string char checksum.
+     *
      * @protected
      */
     protected function checksum_code39($code)
@@ -315,11 +317,11 @@ class TypeCode39 implements TypeInterface
             '$',
             '/',
             '+',
-            '%'
+            '%',
         ];
 
         $checksum = 0;
-        for ($index = 0; $index < strlen($code); ++$index) {
+        for ($index = 0; $index < strlen($code); $index++) {
             $charPosition = array_keys($chars, $code[$index]);
             $checksum += $charPosition[0];
         }

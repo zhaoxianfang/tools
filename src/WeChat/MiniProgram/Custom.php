@@ -17,9 +17,9 @@ class Custom extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/kf-mgnt/kf-message/getTempMedia.html
      *
-     * @param string $media_id 媒体文件 ID。可通过uploadTempMedia接口获得media_id
-     *
+     * @param  string  $media_id  媒体文件 ID。可通过uploadTempMedia接口获得media_id
      * @return array
+     *
      * @throws Exception
      */
     public function getTempMedia(string $media_id)
@@ -32,10 +32,10 @@ class Custom extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/kf-mgnt/kf-message/setTyping.html
      *
-     * @param string $touser  用户的 OpenID
-     * @param string $command 命令。Typing表示对用户下发"正在输入"状态 ；CancelTyping表示取消对用户的"正在输入"状态
-     *
+     * @param  string  $touser  用户的 OpenID
+     * @param  string  $command  命令。Typing表示对用户下发"正在输入"状态 ；CancelTyping表示取消对用户的"正在输入"状态
      * @return array
+     *
      * @throws Exception
      */
     public function setTyping(string $touser, string $command = 'Typing')
@@ -48,10 +48,9 @@ class Custom extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/kf-mgnt/kf-message/uploadTempMedia.html
      *
-     * @param string $type 文件类型,可填“ image”，表示图片
-     * @param string $filePath
-     *
+     * @param  string  $type  文件类型,可填“ image”，表示图片
      * @return array
+     *
      * @throws Exception
      */
     public function uploadTempMedia(string $type, string $filePath)
@@ -64,14 +63,12 @@ class Custom extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/kf-mgnt/kf-message/sendCustomMessage.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function sendCustomMessage(array $data)
     {
         return $this->post('cgi-bin/message/custom/send', $data);
     }
-
 }

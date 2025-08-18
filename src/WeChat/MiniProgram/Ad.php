@@ -17,9 +17,8 @@ class Ad extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/ad/ad.addUserAction.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function addUserAction(array $data)
@@ -32,9 +31,8 @@ class Ad extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/ad/ad.addUserActionSet.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function addUserActionSet(array $data)
@@ -47,9 +45,8 @@ class Ad extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/ad/ad.getUserActionSetReports.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function getUserActionSetReports(array $data)
@@ -62,9 +59,8 @@ class Ad extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/ad/ad.getUserActionSets.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function getUserActionSets(array $data)

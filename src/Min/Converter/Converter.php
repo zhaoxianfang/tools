@@ -9,7 +9,6 @@ namespace zxf\Min\Converter;
  *     ../../images/icon.jpg relative to /css/imports/icons.css
  * becomes
  *     ../images/icon.jpg relative to /css/minified.css
- *
  */
 class Converter implements ConverterInterface
 {
@@ -24,9 +23,9 @@ class Converter implements ConverterInterface
     protected $to;
 
     /**
-     * @param string $from The original base path (directory, not file!)
-     * @param string $to   The new base path (directory, not file!)
-     * @param string $root Root directory (defaults to `getcwd`)
+     * @param  string  $from  The original base path (directory, not file!)
+     * @param  string  $to  The new base path (directory, not file!)
+     * @param  string  $root  Root directory (defaults to `getcwd`)
      */
     public function __construct($from, $to, $root = '')
     {
@@ -35,30 +34,29 @@ class Converter implements ConverterInterface
             // when both paths have nothing in common, one of them is probably
             // absolute while the other is relative
             $root = $root ?: getcwd();
-            $from = strpos($from, $root) === 0 ? $from : preg_replace('/\/+/', '/', $root . '/' . $from);
-            $to   = strpos($to, $root) === 0 ? $to : preg_replace('/\/+/', '/', $root . '/' . $to);
+            $from = strpos($from, $root) === 0 ? $from : preg_replace('/\/+/', '/', $root.'/'.$from);
+            $to = strpos($to, $root) === 0 ? $to : preg_replace('/\/+/', '/', $root.'/'.$to);
 
             // or traveling the tree via `..`
             // attempt to resolve path, or assume it's fine if it doesn't exist
             $from = @realpath($from) ?: $from;
-            $to   = @realpath($to) ?: $to;
+            $to = @realpath($to) ?: $to;
         }
 
         $from = $this->dirname($from);
-        $to   = $this->dirname($to);
+        $to = $this->dirname($to);
 
         $from = $this->normalize($from);
-        $to   = $this->normalize($to);
+        $to = $this->normalize($to);
 
         $this->from = $from;
-        $this->to   = $to;
+        $this->to = $to;
     }
 
     /**
      * Normalize path.
      *
-     * @param string $path
-     *
+     * @param  string  $path
      * @return string
      */
     protected function normalize($path)
@@ -97,9 +95,8 @@ class Converter implements ConverterInterface
      * share
      *     /home/forkcms/frontend
      *
-     * @param string $path1
-     * @param string $path2
-     *
+     * @param  string  $path1
+     * @param  string  $path2
      * @return string
      */
     protected function shared($path1, $path2)
@@ -107,10 +104,10 @@ class Converter implements ConverterInterface
         // $path could theoretically be empty (e.g. no path is given), in which
         // case it shouldn't expand to array(''), which would compare to one's
         // root /
-        $path1 = $path1 ? explode('/', $path1) : array();
-        $path2 = $path2 ? explode('/', $path2) : array();
+        $path1 = $path1 ? explode('/', $path1) : [];
+        $path2 = $path2 ? explode('/', $path2) : [];
 
-        $shared = array();
+        $shared = [];
 
         // compare paths & strip identical ancestors
         foreach ($path1 as $i => $chunk) {
@@ -133,8 +130,7 @@ class Converter implements ConverterInterface
      *     ../../core/layout/images/img.gif relative to
      *     /home/forkcms/frontend/cache/minified_css
      *
-     * @param string $path The relative path that needs to be converted
-     *
+     * @param  string  $path  The relative path that needs to be converted
      * @return string The new relative path
      */
     public function convert($path)
@@ -151,24 +147,23 @@ class Converter implements ConverterInterface
         }
 
         // normalize paths
-        $path = $this->normalize($this->from . '/' . $path);
+        $path = $this->normalize($this->from.'/'.$path);
 
         // strip shared ancestor paths
         $shared = $this->shared($path, $this->to);
-        $path   = mb_substr($path, mb_strlen($shared));
-        $to     = mb_substr($this->to, mb_strlen($shared));
+        $path = mb_substr($path, mb_strlen($shared));
+        $to = mb_substr($this->to, mb_strlen($shared));
 
         // add .. for every directory that needs to be traversed to new path
         $to = str_repeat('../', count(array_filter(explode('/', $to))));
 
-        return $to . ltrim($path, '/');
+        return $to.ltrim($path, '/');
     }
 
     /**
      * Attempt to get the directory name from a path.
      *
-     * @param string $path
-     *
+     * @param  string  $path
      * @return string
      */
     protected function dirname($path)

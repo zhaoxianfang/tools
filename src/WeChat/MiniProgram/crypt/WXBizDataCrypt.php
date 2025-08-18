@@ -2,35 +2,33 @@
 
 namespace zxf\WeChat\MiniProgram\crypt;
 
-use zxf\WeChat\MiniProgram\crypt\ErrorCode;
-
 /**
  * 对微信小程序用户加密数据的解密示例代码
  */
 class WXBizDataCrypt
 {
     private $appid;
+
     private $sessionKey;
 
     /**
      * 构造函数
      *
-     * @param $sessionKey string 用户在小程序登录后获取的会话密钥
-     * @param $appid      string 小程序的appid
+     * @param  $sessionKey  string 用户在小程序登录后获取的会话密钥
+     * @param  $appid  string 小程序的appid
      */
     public function __construct($appid, $sessionKey)
     {
-        $this->appid      = $appid;
+        $this->appid = $appid;
         $this->sessionKey = $sessionKey;
     }
 
     /**
      * 检验数据的真实性，并且获取解密后的明文.
      *
-     * @param $encryptedData string 加密的用户数据
-     * @param $iv            string 与用户数据一同返回的初始向量
-     * @param $data          string 解密后的原文
-     *
+     * @param  $encryptedData  string 加密的用户数据
+     * @param  $iv  string 与用户数据一同返回的初始向量
+     * @param  $data  string 解密后的原文
      * @return int 成功0，失败返回对应的错误码
      */
     public function decryptData($encryptedData, $iv, &$data)
@@ -42,10 +40,10 @@ class WXBizDataCrypt
         if (strlen($iv) != 24) {
             return ErrorCode::$IllegalIv;
         }
-        $aesIV     = base64_decode($iv);
+        $aesIV = base64_decode($iv);
         $aesCipher = base64_decode($encryptedData);
-        $result    = openssl_decrypt($aesCipher, "AES-128-CBC", $aesKey, 1, $aesIV);
-        $dataObj   = json_decode($result);
+        $result = openssl_decrypt($aesCipher, 'AES-128-CBC', $aesKey, 1, $aesIV);
+        $dataObj = json_decode($result);
         if ($dataObj == null) {
             return ErrorCode::$IllegalBuffer;
         }
@@ -54,8 +52,7 @@ class WXBizDataCrypt
             return ErrorCode::$IllegalBuffer;
         }
         $data = $result;
+
         return ErrorCode::$OK;
     }
-
 }
-

@@ -10,5 +10,6 @@ namespace zxf\BarCode\Types;
 class TypeCode39Checksum extends TypeCode39
 {
     protected bool $extended = false;
+
     protected bool $checksum = true;
 }

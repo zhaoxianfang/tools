@@ -76,29 +76,29 @@ class AliYunSms extends Base
      */
     public function getData()
     {
-        $data                  = [
-            'RegionId'         => $this->region,
-            'TemplateCode'     => $this->template,
-            'Format'           => $this->format,
-            'SignatureMethod'  => $this->signMethod,
+        $data = [
+            'RegionId' => $this->region,
+            'TemplateCode' => $this->template,
+            'Format' => $this->format,
+            'SignatureMethod' => $this->signMethod,
             'SignatureVersion' => $this->signVersion,
-            'SignatureNonce'   => $this->uuid($this->product . $this->region),
-            'Timestamp'        => gmdate($this->dateTimeFormat),
-            'Action'           => 'SendSms',
-            'AccessKeyId'      => $this->key,
-            'Version'          => $this->version,
+            'SignatureNonce' => $this->uuid($this->product.$this->region),
+            'Timestamp' => gmdate($this->dateTimeFormat),
+            'Action' => 'SendSms',
+            'AccessKeyId' => $this->key,
+            'Version' => $this->version,
         ];
-        $data['PhoneNumbers']  = implode(',', $this->mobiles);
-        $data['SignName']      = !empty($this->sign) ? $this->sign : config('tools_other.sms.aliyun.sign');
+        $data['PhoneNumbers'] = implode(',', $this->mobiles);
+        $data['SignName'] = ! empty($this->sign) ? $this->sign : config('tools_other.sms.aliyun.sign');
         $data['TemplateParam'] = json_encode($this->params);
+
         return $data;
     }
 
     /**
      * 生成签名
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return string
      */
     public function sign($data)
@@ -106,17 +106,17 @@ class AliYunSms extends Base
         ksort($data);
         $string = '';
         foreach ($data as $key => $value) {
-            $string .= '&' . $this->encode($key) . '=' . $this->encode($value);
+            $string .= '&'.$this->encode($key).'='.$this->encode($value);
         }
-        $string = $this->method . '&%2F&' . $this->encode(substr($string, 1));
-        return base64_encode(hash_hmac('sha1', $string, $this->secret . '&', true));
+        $string = $this->method.'&%2F&'.$this->encode(substr($string, 1));
+
+        return base64_encode(hash_hmac('sha1', $string, $this->secret.'&', true));
     }
 
     /**
      * 处理响应
      *
-     * @param array $response
-     *
+     * @param  array  $response
      * @return array
      */
     protected function handleResponse($response)
@@ -137,20 +137,18 @@ class AliYunSms extends Base
     /**
      * 生成uuid
      *
-     * @param string $salt
-     *
+     * @param  string  $salt
      * @return string
      */
     private function uuid($salt)
     {
-        return md5($salt . uniqid(md5(microtime(true)), true)) . microtime();
+        return md5($salt.uniqid(md5(microtime(true)), true)).microtime();
     }
 
     /**
      * 转码
      *
-     * @param string $string
-     *
+     * @param  string  $string
      * @return string
      */
     private function encode($string)
@@ -158,6 +156,7 @@ class AliYunSms extends Base
         $string = urlencode($string);
         $string = str_replace(['+', '*'], ['%20', '%2A'], $string);
         $string = preg_replace('/%7E/', '~', $string);
+
         return $string;
     }
 }

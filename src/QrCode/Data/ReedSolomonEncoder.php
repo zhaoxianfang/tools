@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class ReedSolomonEncoder
  *
  * @created      07.01.2021
+ *
  * @author       smiley <smiley@chillerlan.net>
  * @copyright    2021 smiley
  * @license      MIT
@@ -11,120 +13,134 @@ declare(strict_types=1);
 
 namespace zxf\QrCode\Data;
 
-use zxf\QrCode\Common\{BitBuffer, EccLevel, GenericGFPoly, GF256, Version};
-use function array_fill, array_merge, count, max;
+use zxf\QrCode\Common\BitBuffer;
+use zxf\QrCode\Common\EccLevel;
+use zxf\QrCode\Common\GenericGFPoly;
+use zxf\QrCode\Common\GF256;
+use zxf\QrCode\Common\Version;
+
+use function array_fill;
+use function array_merge;
+use function count;
+use function max;
 
 /**
  * Reed-Solomon encoding - ISO/IEC 18004:2000 Section 8.5 ff
  *
  * @see http://www.thonky.com/qr-code-tutorial/error-correction-coding
  */
-final class ReedSolomonEncoder{
+final class ReedSolomonEncoder
+{
+    private Version $version;
 
-	private Version  $version;
-	private EccLevel $eccLevel;
-	/** @var int[] */
-	private array    $interleavedData;
-	private int      $interleavedDataIndex;
+    private EccLevel $eccLevel;
 
-	/**
-	 * ReedSolomonDecoder constructor
-	 */
-	public function __construct(Version $version, EccLevel $eccLevel){
-		$this->version  = $version;
-		$this->eccLevel = $eccLevel;
-	}
+    /** @var int[] */
+    private array $interleavedData;
 
-	/**
-	 * ECC encoding and interleaving
-	 *
-	 * @return int[]
-	 * @throws \zxf\QrCode\QRCodeException
-	 */
-	public function interleaveEcBytes(BitBuffer $bitBuffer):array{
-		[$numEccCodewords, [[$l1, $b1], [$l2, $b2]]] = $this->version->getRSBlocks($this->eccLevel);
+    private int $interleavedDataIndex;
 
-		$rsBlocks = array_fill(0, $l1, [($numEccCodewords + $b1), $b1]);
+    /**
+     * ReedSolomonDecoder constructor
+     */
+    public function __construct(Version $version, EccLevel $eccLevel)
+    {
+        $this->version = $version;
+        $this->eccLevel = $eccLevel;
+    }
 
-		if($l2 > 0){
-			$rsBlocks = array_merge($rsBlocks, array_fill(0, $l2, [($numEccCodewords + $b2), $b2]));
-		}
+    /**
+     * ECC encoding and interleaving
+     *
+     * @return int[]
+     *
+     * @throws \zxf\QrCode\QRCodeException
+     */
+    public function interleaveEcBytes(BitBuffer $bitBuffer): array
+    {
+        [$numEccCodewords, [[$l1, $b1], [$l2, $b2]]] = $this->version->getRSBlocks($this->eccLevel);
 
-		$bitBufferData  = $bitBuffer->getBuffer();
-		$dataBytes      = [];
-		$ecBytes        = [];
-		$maxDataBytes   = 0;
-		$maxEcBytes     = 0;
-		$dataByteOffset = 0;
+        $rsBlocks = array_fill(0, $l1, [($numEccCodewords + $b1), $b1]);
 
-		foreach($rsBlocks as $key => [$rsBlockTotal, $dataByteCount]){
-			$dataBytes[$key] = [];
+        if ($l2 > 0) {
+            $rsBlocks = array_merge($rsBlocks, array_fill(0, $l2, [($numEccCodewords + $b2), $b2]));
+        }
 
-			for($i = 0; $i < $dataByteCount; $i++){
-				$dataBytes[$key][$i] = ($bitBufferData[($i + $dataByteOffset)] & 0xff);
-			}
+        $bitBufferData = $bitBuffer->getBuffer();
+        $dataBytes = [];
+        $ecBytes = [];
+        $maxDataBytes = 0;
+        $maxEcBytes = 0;
+        $dataByteOffset = 0;
 
-			$ecByteCount    = ($rsBlockTotal - $dataByteCount);
-			$ecBytes[$key]  = $this->encode($dataBytes[$key], $ecByteCount);
-			$maxDataBytes   = max($maxDataBytes, $dataByteCount);
-			$maxEcBytes     = max($maxEcBytes, $ecByteCount);
-			$dataByteOffset += $dataByteCount;
-		}
+        foreach ($rsBlocks as $key => [$rsBlockTotal, $dataByteCount]) {
+            $dataBytes[$key] = [];
 
-		$this->interleavedData      = array_fill(0, $this->version->getTotalCodewords(), 0);
-		$this->interleavedDataIndex = 0;
-		$numRsBlocks                = ($l1 + $l2);
+            for ($i = 0; $i < $dataByteCount; $i++) {
+                $dataBytes[$key][$i] = ($bitBufferData[($i + $dataByteOffset)] & 0xFF);
+            }
 
-		$this->interleave($dataBytes, $maxDataBytes, $numRsBlocks);
-		$this->interleave($ecBytes, $maxEcBytes, $numRsBlocks);
+            $ecByteCount = ($rsBlockTotal - $dataByteCount);
+            $ecBytes[$key] = $this->encode($dataBytes[$key], $ecByteCount);
+            $maxDataBytes = max($maxDataBytes, $dataByteCount);
+            $maxEcBytes = max($maxEcBytes, $ecByteCount);
+            $dataByteOffset += $dataByteCount;
+        }
 
-		return $this->interleavedData;
-	}
+        $this->interleavedData = array_fill(0, $this->version->getTotalCodewords(), 0);
+        $this->interleavedDataIndex = 0;
+        $numRsBlocks = ($l1 + $l2);
 
-	/**
-	 * @param  int[] $dataBytes
-	 * @return int[]
-	 */
-	private function encode(array $dataBytes, int $ecByteCount):array{
-		$rsPoly = new GenericGFPoly([1]);
+        $this->interleave($dataBytes, $maxDataBytes, $numRsBlocks);
+        $this->interleave($ecBytes, $maxEcBytes, $numRsBlocks);
 
-		for($i = 0; $i < $ecByteCount; $i++){
-			$rsPoly = $rsPoly->multiply(new GenericGFPoly([1, GF256::exp($i)]));
-		}
+        return $this->interleavedData;
+    }
 
-		$rsPolyDegree = $rsPoly->getDegree();
+    /**
+     * @param  int[]  $dataBytes
+     * @return int[]
+     */
+    private function encode(array $dataBytes, int $ecByteCount): array
+    {
+        $rsPoly = new GenericGFPoly([1]);
 
-		$modCoefficients = (new GenericGFPoly($dataBytes, $rsPolyDegree))
-			->mod($rsPoly)
-			->getCoefficients()
-		;
+        for ($i = 0; $i < $ecByteCount; $i++) {
+            $rsPoly = $rsPoly->multiply(new GenericGFPoly([1, GF256::exp($i)]));
+        }
 
-		$ecBytes = array_fill(0, $rsPolyDegree, 0);
-		$count   = (count($modCoefficients) - $rsPolyDegree);
+        $rsPolyDegree = $rsPoly->getDegree();
 
-		foreach($ecBytes as $i => &$val){
-			$modIndex = ($i + $count);
-			$val      = 0;
+        $modCoefficients = (new GenericGFPoly($dataBytes, $rsPolyDegree))
+            ->mod($rsPoly)
+            ->getCoefficients();
 
-			if($modIndex >= 0){
-				$val = $modCoefficients[$modIndex];
-			}
-		}
+        $ecBytes = array_fill(0, $rsPolyDegree, 0);
+        $count = (count($modCoefficients) - $rsPolyDegree);
 
-		return $ecBytes;
-	}
+        foreach ($ecBytes as $i => &$val) {
+            $modIndex = ($i + $count);
+            $val = 0;
 
-	/**
-	 * @param int[][] $byteArray
-	 */
-	private function interleave(array $byteArray, int $maxBytes, int $numRsBlocks):void{
-		for($x = 0; $x < $maxBytes; $x++){
-			for($y = 0; $y < $numRsBlocks; $y++){
-				if($x < count($byteArray[$y])){
-					$this->interleavedData[$this->interleavedDataIndex++] = $byteArray[$y][$x];
-				}
-			}
-		}
-	}
+            if ($modIndex >= 0) {
+                $val = $modCoefficients[$modIndex];
+            }
+        }
 
+        return $ecBytes;
+    }
+
+    /**
+     * @param  int[][]  $byteArray
+     */
+    private function interleave(array $byteArray, int $maxBytes, int $numRsBlocks): void
+    {
+        for ($x = 0; $x < $maxBytes; $x++) {
+            for ($y = 0; $y < $numRsBlocks; $y++) {
+                if ($x < count($byteArray[$y])) {
+                    $this->interleavedData[$this->interleavedDataIndex++] = $byteArray[$y][$x];
+                }
+            }
+        }
+    }
 }

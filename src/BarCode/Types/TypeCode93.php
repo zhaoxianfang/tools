@@ -9,7 +9,7 @@ use zxf\BarCode\Exceptions\InvalidCharacterException;
 /*
  * CODE 93 - USS-93
  * Compact code similar to Code 39
- * 
+ *
  * reference: https://en.wikipedia.org/wiki/Code_93#Full_ASCII_Code_93
  */
 
@@ -201,7 +201,7 @@ class TypeCode93 implements TypeInterface
 
         $code_ext = '';
         $clen = strlen($code);
-        for ($i = 0; $i < $clen; ++$i) {
+        for ($i = 0; $i < $clen; $i++) {
             if (ord($code[$i]) > 127) {
                 throw new InvalidCharacterException('Only supports till char 127');
             }
@@ -212,17 +212,17 @@ class TypeCode93 implements TypeInterface
         $code_ext .= $this->checksum_code93($code_ext);
 
         // add start and stop codes
-        $code = '*' . $code_ext . '*';
+        $code = '*'.$code_ext.'*';
 
         $barcode = new Barcode($code);
 
-        for ($i = 0; $i < strlen($code); ++$i) {
+        for ($i = 0; $i < strlen($code); $i++) {
             $char = ord($code[$i]);
             if (! isset($this->conversionTable[$char])) {
-                throw new InvalidCharacterException('Char ' . $char . ' is unsupported');
+                throw new InvalidCharacterException('Char '.$char.' is unsupported');
             }
 
-            for ($j = 0; $j < 6; ++$j) {
+            for ($j = 0; $j < 6; $j++) {
                 if (($j % 2) == 0) {
                     $drawBar = true;
                 } else {
@@ -242,8 +242,9 @@ class TypeCode93 implements TypeInterface
     /**
      * Calculate CODE 93 checksum (modulo 47).
      *
-     * @param $code (string) code to represent.
+     * @param  $code  (string) code to represent.
      * @return string checksum code.
+     *
      * @protected
      */
     protected function checksum_code93(string $code): string
@@ -254,25 +255,25 @@ class TypeCode93 implements TypeInterface
         $codeLength = strlen($code);
         $weight = 1;
         $checksum = 0;
-        for ($i = ($codeLength - 1); $i >= 0; --$i) {
+        for ($i = ($codeLength - 1); $i >= 0; $i--) {
             $charIndex = array_keys($chars, $code[$i]);
             $checksum += ($charIndex[0] * $weight);
-            ++$weight;
+            $weight++;
             if ($weight > 20) {
                 $weight = 1;
             }
         }
         $checksumC = $checksum % 47;
         $checkDigitC = $chars[$checksumC];
-        $codeWithC = $code . $checkDigitC;
+        $codeWithC = $code.$checkDigitC;
 
         // calculate check digit K
         $weight = 1;
         $checksum = 0;
-        for ($i = $codeLength; $i >= 0; --$i) {
+        for ($i = $codeLength; $i >= 0; $i--) {
             $charIndex = array_keys($chars, $codeWithC[$i]);
             $checksum += ($charIndex[0] * $weight);
-            ++$weight;
+            $weight++;
             if ($weight > 15) {
                 $weight = 1;
             }
@@ -280,6 +281,6 @@ class TypeCode93 implements TypeInterface
         $checksumK = $checksum % 47;
         $checkDigitK = $chars[$checksumK];
 
-        return $checkDigitC . $checkDigitK;
+        return $checkDigitC.$checkDigitK;
     }
 }

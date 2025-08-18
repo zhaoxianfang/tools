@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace zxf\Dom;
 
-use zxf\Dom\Exceptions\InvalidSelectorException;
 use DOMCdataSection;
 use DOMComment;
 use DOMDocument;
@@ -15,6 +14,7 @@ use DOMText;
 use InvalidArgumentException;
 use LogicException;
 use RuntimeException;
+use zxf\Dom\Exceptions\InvalidSelectorException;
 
 /**
  * @property string $tag
@@ -31,8 +31,7 @@ abstract class Node
     /**
      * Adds a new child at the start of the children.
      *
-     * @param Node|DOMNode|array $nodes The prepended child
-     *
+     * @param  Node|DOMNode|array  $nodes  The prepended child
      * @return Element|Element[]
      *
      * @throws LogicException if the current node has no owner document
@@ -46,7 +45,7 @@ abstract class Node
 
         $returnArray = true;
 
-        if ( ! is_array($nodes)) {
+        if (! is_array($nodes)) {
             $nodes = [$nodes];
 
             $returnArray = false;
@@ -70,8 +69,7 @@ abstract class Node
     /**
      * Adds a new child at the end of the children.
      *
-     * @param Node|DOMNode|array $nodes The appended child
-     *
+     * @param  Node|DOMNode|array  $nodes  The appended child
      * @return Element|Element[]
      *
      * @throws LogicException if the current node has no owner document
@@ -85,7 +83,7 @@ abstract class Node
 
         $returnArray = true;
 
-        if ( ! is_array($nodes)) {
+        if (! is_array($nodes)) {
             $nodes = [$nodes];
 
             $returnArray = false;
@@ -100,7 +98,7 @@ abstract class Node
                 $node = $node->getNode();
             }
 
-            if ( ! $node instanceof DOMNode) {
+            if (! $node instanceof DOMNode) {
                 throw new InvalidArgumentException(sprintf('Argument 1 passed to %s must be an instance of %s or DOMNode, %s given.', __METHOD__, __CLASS__, (is_object($node) ? get_class($node) : gettype($node))));
             }
 
@@ -122,9 +120,8 @@ abstract class Node
     /**
      * Adds a new child before a reference node.
      *
-     * @param Node|DOMNode $node The new node
-     * @param Element|DOMNode|null $referenceNode The reference node
-     *
+     * @param  Node|DOMNode  $node  The new node
+     * @param  Element|DOMNode|null  $referenceNode  The reference node
      * @return Element
      *
      * @throws LogicException if the current node has no owner document
@@ -141,7 +138,7 @@ abstract class Node
             $node = $node->getNode();
         }
 
-        if ( ! $node instanceof DOMNode) {
+        if (! $node instanceof DOMNode) {
             throw new InvalidArgumentException(sprintf('Argument 1 passed to %s must be an instance of %s or DOMNode, %s given.', __METHOD__, __CLASS__, (is_object($node) ? get_class($node) : gettype($node))));
         }
 
@@ -150,7 +147,7 @@ abstract class Node
                 $referenceNode = $referenceNode->getNode();
             }
 
-            if ( ! $referenceNode instanceof DOMNode) {
+            if (! $referenceNode instanceof DOMNode) {
                 throw new InvalidArgumentException(sprintf('Argument 2 passed to %s must be an instance of %s or DOMNode, %s given.', __METHOD__, __CLASS__, (is_object($referenceNode) ? get_class($referenceNode) : gettype($referenceNode))));
             }
         }
@@ -170,9 +167,8 @@ abstract class Node
     /**
      * Adds a new child after a reference node.
      *
-     * @param Node|DOMNode $node The new node
-     * @param Element|DOMNode|null $referenceNode The reference node
-     *
+     * @param  Node|DOMNode  $node  The new node
+     * @param  Element|DOMNode|null  $referenceNode  The reference node
      * @return Element
      *
      * @throws LogicException if the current node has no owner document
@@ -189,7 +185,7 @@ abstract class Node
             $referenceNode = $referenceNode->getNode();
         }
 
-        if ( ! $referenceNode instanceof DOMNode) {
+        if (! $referenceNode instanceof DOMNode) {
             throw new InvalidArgumentException(sprintf('Argument 2 passed to %s must be an instance of %s or DOMNode, %s given.', __METHOD__, __CLASS__, (is_object($referenceNode) ? get_class($referenceNode) : gettype($referenceNode))));
         }
 
@@ -199,8 +195,7 @@ abstract class Node
     /**
      * Adds a new sibling before a reference node.
      *
-     * @param Node|DOMNode $node The new node
-     *
+     * @param  Node|DOMNode  $node  The new node
      * @return Element
      *
      * @throws LogicException if the current node has no owner document
@@ -221,7 +216,7 @@ abstract class Node
             $node = $node->getNode();
         }
 
-        if ( ! $node instanceof DOMNode) {
+        if (! $node instanceof DOMNode) {
             throw new InvalidArgumentException(sprintf('Argument 1 passed to %s must be an instance of %s or DOMNode, %s given.', __METHOD__, __CLASS__, (is_object($node) ? get_class($node) : gettype($node))));
         }
 
@@ -240,8 +235,7 @@ abstract class Node
     /**
      * Adds a new sibling after a reference node.
      *
-     * @param Node|DOMNode $node The new node
-     *
+     * @param  Node|DOMNode  $node  The new node
      * @return Element
      *
      * @throws LogicException if the current node has no owner document
@@ -271,10 +265,8 @@ abstract class Node
     /**
      * Checks the existence of the node.
      *
-     * @param string $expression XPath expression or CSS selector
-     * @param string $type The type of the expression
-     *
-     * @return bool
+     * @param  string  $expression  XPath expression or CSS selector
+     * @param  string  $type  The type of the expression
      */
     public function has(string $expression, string $type = Query::TYPE_CSS): bool
     {
@@ -284,10 +276,9 @@ abstract class Node
     /**
      * Searches for a node in the DOM tree for a given XPath expression or CSS selector.
      *
-     * @param string $expression XPath expression or CSS selector
-     * @param string $type The type of the expression
-     * @param bool $wrapElement Returns array of Element if true, otherwise array of DOMElement
-     *
+     * @param  string  $expression  XPath expression or CSS selector
+     * @param  string  $type  The type of the expression
+     * @param  bool  $wrapElement  Returns array of Element if true, otherwise array of DOMElement
      * @return Element[]|DOMElement[]
      *
      * @throws InvalidSelectorException
@@ -300,10 +291,9 @@ abstract class Node
     /**
      * Searches for a node in the owner document using current node as context.
      *
-     * @param string $expression XPath expression or CSS selector
-     * @param string $type The type of the expression
-     * @param bool $wrapNode Returns array of Element if true, otherwise array of DOMElement
-     *
+     * @param  string  $expression  XPath expression or CSS selector
+     * @param  string  $type  The type of the expression
+     * @param  bool  $wrapNode  Returns array of Element if true, otherwise array of DOMElement
      * @return Element[]|DOMElement[]
      *
      * @throws LogicException if the current node has no owner document
@@ -323,10 +313,9 @@ abstract class Node
     /**
      * Searches for a node in the DOM tree and returns first element or null.
      *
-     * @param string $expression XPath expression or CSS selector
-     * @param string $type The type of the expression
-     * @param bool $wrapNode Returns Element if true, otherwise DOMElement
-     *
+     * @param  string  $expression  XPath expression or CSS selector
+     * @param  string  $type  The type of the expression
+     * @param  bool  $wrapNode  Returns Element if true, otherwise DOMElement
      * @return Element|DOMElement|null
      *
      * @throws InvalidSelectorException
@@ -339,10 +328,9 @@ abstract class Node
     /**
      * Searches for a node in the owner document using current node as context and returns first element or null.
      *
-     * @param string $expression XPath expression or CSS selector
-     * @param string $type The type of the expression
-     * @param bool $wrapNode Returns Element if true, otherwise DOMElement
-     *
+     * @param  string  $expression  XPath expression or CSS selector
+     * @param  string  $type  The type of the expression
+     * @param  bool  $wrapNode  Returns Element if true, otherwise DOMElement
      * @return Element|DOMElement|null
      *
      * @throws InvalidSelectorException
@@ -361,9 +349,8 @@ abstract class Node
     /**
      * Searches for a node in the DOM tree for a given XPath expression.
      *
-     * @param string $expression XPath expression
-     * @param bool $wrapNode Returns array of Element if true, otherwise array of DOMElement
-     *
+     * @param  string  $expression  XPath expression
+     * @param  bool  $wrapNode  Returns array of Element if true, otherwise array of DOMElement
      * @return Element[]|DOMElement[]
      *
      * @throws InvalidSelectorException
@@ -376,10 +363,8 @@ abstract class Node
     /**
      * Counts nodes for a given XPath expression or CSS selector.
      *
-     * @param string $expression XPath expression or CSS selector
-     * @param string $type The type of the expression
-     *
-     * @return int
+     * @param  string  $expression  XPath expression or CSS selector
+     * @param  string  $type  The type of the expression
      *
      * @throws InvalidSelectorException
      */
@@ -390,8 +375,6 @@ abstract class Node
 
     /**
      * Dumps the node into a string using HTML formatting (including child nodes).
-     *
-     * @return string
      */
     public function html(): string
     {
@@ -400,12 +383,10 @@ abstract class Node
 
     /**
      * Dumps the node into a string using HTML formatting (without child nodes).
-     *
-     * @return string
      */
     public function outerHtml(): string
     {
-        $document = new DOMDocument();
+        $document = new DOMDocument;
 
         $importedNode = $document->importNode($this->node);
 
@@ -414,10 +395,6 @@ abstract class Node
 
     /**
      * Dumps the node descendants into a string using HTML formatting.
-     *
-     * @param string $delimiter
-     *
-     * @return string
      */
     public function innerHtml(string $delimiter = ''): string
     {
@@ -432,10 +409,6 @@ abstract class Node
 
     /**
      * Dumps the node descendants into a string using XML formatting.
-     *
-     * @param string $delimiter
-     *
-     * @return string
      */
     public function innerXml(string $delimiter = ''): string
     {
@@ -451,7 +424,6 @@ abstract class Node
     /**
      * Sets inner HTML.
      *
-     * @param string $html
      *
      * @return static
      *
@@ -465,7 +437,6 @@ abstract class Node
     /**
      * Sets inner HTML.
      *
-     * @param string $xml
      *
      * @return static
      *
@@ -502,8 +473,7 @@ abstract class Node
     /**
      * Dumps the node into a string using XML formatting.
      *
-     * @param int $options Additional options
-     *
+     * @param  int  $options  Additional options
      * @return string The node XML
      */
     public function xml(int $options = 0): string
@@ -524,8 +494,7 @@ abstract class Node
     /**
      * Set the value of this node.
      *
-     * @param string|integer|float $value The new value of the node
-     *
+     * @param  string|int|float  $value  The new value of the node
      * @return static
      *
      * @throws InvalidArgumentException if parameter 1 is not a string
@@ -536,7 +505,7 @@ abstract class Node
             $value = (string) $value;
         }
 
-        if ( ! is_string($value)) {
+        if (! is_string($value)) {
             throw new InvalidArgumentException(sprintf('%s expects parameter 1 to be string, integer or float, %s given', __METHOD__, (is_object($value) ? get_class($value) : gettype($value))));
         }
 
@@ -547,8 +516,6 @@ abstract class Node
 
     /**
      * Returns true if the current node is a DOMElement instance.
-     *
-     * @return bool
      */
     public function isElementNode(): bool
     {
@@ -557,8 +524,6 @@ abstract class Node
 
     /**
      * Returns true if the current node is a a DOMText instance.
-     *
-     * @return bool
      */
     public function isTextNode(): bool
     {
@@ -567,8 +532,6 @@ abstract class Node
 
     /**
      * Returns true if the current node is a DOMComment instance.
-     *
-     * @return bool
      */
     public function isCommentNode(): bool
     {
@@ -577,8 +540,6 @@ abstract class Node
 
     /**
      * Returns true if the current node is a DOMCdataSection instance.
-     *
-     * @return bool
      */
     public function isCdataSectionNode(): bool
     {
@@ -588,9 +549,7 @@ abstract class Node
     /**
      * Indicates if two nodes are the same node.
      *
-     * @param Element|DOMNode $node
-     *
-     * @return bool
+     * @param  Element|DOMNode  $node
      *
      * @throws InvalidArgumentException if parameter 1 is not an instance of DOMNode
      */
@@ -600,7 +559,7 @@ abstract class Node
             $node = $node->getNode();
         }
 
-        if ( ! $node instanceof DOMNode) {
+        if (! $node instanceof DOMNode) {
             throw new InvalidArgumentException(sprintf('Argument 1 passed to %s must be an instance of %s or DOMNode, %s given.', __METHOD__, __CLASS__, (is_object($node) ? get_class($node) : gettype($node))));
         }
 
@@ -626,10 +585,7 @@ abstract class Node
     /**
      * Returns first parent node matches passed selector.
      *
-     * @param string $selector
-     * @param bool $strict
      *
-     * @return Element|null
      *
      * @throws InvalidSelectorException if the selector is invalid
      */
@@ -653,11 +609,6 @@ abstract class Node
     }
 
     /**
-     * @param string|null $selector
-     * @param string|null $nodeType
-     *
-     * @return Element|null
-     *
      * @throws InvalidArgumentException if parameter 2 is not a string
      * @throws RuntimeException if the node type is invalid
      * @throws LogicException if the selector used with non DOMElement node type
@@ -679,7 +630,7 @@ abstract class Node
 
         $allowedTypes = ['DOMElement', 'DOMText', 'DOMComment', 'DOMCdataSection'];
 
-        if ( ! in_array($nodeType, $allowedTypes, true)) {
+        if (! in_array($nodeType, $allowedTypes, true)) {
             throw new RuntimeException(sprintf('Unknown node type "%s". Allowed types: %s', $nodeType, implode(', ', $allowedTypes)));
         }
 
@@ -709,9 +660,6 @@ abstract class Node
     }
 
     /**
-     * @param string|null $selector
-     * @param string|null $nodeType
-     *
      * @return Element[]
      *
      * @throws InvalidArgumentException if parameter 2 is not a string
@@ -732,7 +680,7 @@ abstract class Node
         if ($nodeType !== null) {
             $allowedTypes = ['DOMElement', 'DOMText', 'DOMComment', 'DOMCdataSection'];
 
-            if ( ! in_array($nodeType, $allowedTypes, true)) {
+            if (! in_array($nodeType, $allowedTypes, true)) {
                 throw new RuntimeException(sprintf('Unknown node type "%s". Allowed types: %s', $nodeType, implode(', ', $allowedTypes)));
             }
         }
@@ -781,11 +729,6 @@ abstract class Node
     }
 
     /**
-     * @param string|null $selector
-     * @param string|null $nodeType
-     *
-     * @return Element|null
-     *
      * @throws InvalidArgumentException if parameter 2 is not a string
      * @throws RuntimeException if the node type is invalid
      * @throws LogicException if the selector used with non DOMElement node type
@@ -807,7 +750,7 @@ abstract class Node
 
         $allowedTypes = ['DOMElement', 'DOMText', 'DOMComment', 'DOMCdataSection'];
 
-        if ( ! in_array($nodeType, $allowedTypes, true)) {
+        if (! in_array($nodeType, $allowedTypes, true)) {
             throw new RuntimeException(sprintf('Unknown node type "%s". Allowed types: %s', $nodeType, implode(', ', $allowedTypes)));
         }
 
@@ -837,9 +780,6 @@ abstract class Node
     }
 
     /**
-     * @param string|null $selector
-     * @param string|null $nodeType
-     *
      * @return Element[]
      *
      * @throws InvalidArgumentException if parameter 2 is not a string
@@ -906,11 +846,6 @@ abstract class Node
         return $result;
     }
 
-    /**
-     * @param int $index
-     *
-     * @return Element|null
-     */
     public function child(int $index): ?Element
     {
         $child = $this->node->childNodes->item($index);
@@ -918,9 +853,6 @@ abstract class Node
         return $child === null ? null : new Element($child);
     }
 
-    /**
-     * @return Element|null
-     */
     public function firstChild(): ?Element
     {
         if ($this->node->firstChild === null) {
@@ -930,9 +862,6 @@ abstract class Node
         return new Element($this->node->firstChild);
     }
 
-    /**
-     * @return Element|null
-     */
     public function lastChild(): ?Element
     {
         if ($this->node->lastChild === null) {
@@ -942,9 +871,6 @@ abstract class Node
         return new Element($this->node->lastChild);
     }
 
-    /**
-     * @return bool
-     */
     public function hasChildren(): bool
     {
         return $this->node->hasChildNodes();
@@ -967,8 +893,7 @@ abstract class Node
     /**
      * Removes child from list of children.
      *
-     * @param Node|DOMNode $childNode
-     *
+     * @param  Node|DOMNode  $childNode
      * @return Element the node that has been removed
      */
     public function removeChild($childNode): Element
@@ -977,7 +902,7 @@ abstract class Node
             $childNode = $childNode->getNode();
         }
 
-        if ( ! $childNode instanceof DOMNode) {
+        if (! $childNode instanceof DOMNode) {
             throw new InvalidArgumentException(sprintf('Argument 1 passed to %s must be an instance of %s or DOMNode, %s given.', __METHOD__, __CLASS__, (is_object($childNode) ? get_class($childNode) : gettype($childNode))));
         }
 
@@ -1033,9 +958,8 @@ abstract class Node
     /**
      * Replaces a child.
      *
-     * @param Node|DOMNode $newNode The new node
-     * @param bool $clone Clone the node if true, otherwise move it
-     *
+     * @param  Node|DOMNode  $newNode  The new node
+     * @param  bool  $clone  Clone the node if true, otherwise move it
      * @return Element The node that has been replaced
      *
      * @throws LogicException if the current node has no parent node
@@ -1050,7 +974,7 @@ abstract class Node
             $newNode = $newNode->getNode();
         }
 
-        if ( ! $newNode instanceof DOMNode) {
+        if (! $newNode instanceof DOMNode) {
             throw new InvalidArgumentException(sprintf('Argument 1 passed to %s must be an instance of %s or DOMNode, %s given.', __METHOD__, __CLASS__, (is_object($newNode) ? get_class($newNode) : gettype($newNode))));
         }
 
@@ -1069,8 +993,6 @@ abstract class Node
 
     /**
      * Get line number for a node.
-     *
-     * @return int
      */
     public function getLineNo(): int
     {
@@ -1080,8 +1002,7 @@ abstract class Node
     /**
      * Clones a node.
      *
-     * @param bool $deep Indicates whether to copy all descendant nodes
-     *
+     * @param  bool  $deep  Indicates whether to copy all descendant nodes
      * @return Element The cloned node
      */
     public function cloneNode(bool $deep = true): Element
@@ -1092,15 +1013,14 @@ abstract class Node
     /**
      * Sets current node instance.
      *
-     * @param DOMElement|DOMText|DOMComment|DOMCdataSection|DOMDocumentFragment $node
-     *
+     * @param  DOMElement|DOMText|DOMComment|DOMCdataSection|DOMDocumentFragment  $node
      * @return static
      */
     protected function setNode($node): self
     {
         $allowedClasses = ['DOMElement', 'DOMText', 'DOMComment', 'DOMCdataSection', 'DOMDocumentFragment'];
 
-        if ( ! is_object($node) || ! in_array(get_class($node), $allowedClasses, true)) {
+        if (! is_object($node) || ! in_array(get_class($node), $allowedClasses, true)) {
             throw new InvalidArgumentException(sprintf('Argument 1 passed to %s must be an instance of DOMElement, DOMText, DOMComment, DOMCdataSection or DOMDocumentFragment, %s given.', __METHOD__, (is_object($node) ? get_class($node) : gettype($node))));
         }
 
@@ -1121,8 +1041,6 @@ abstract class Node
 
     /**
      * Returns the document associated with this node.
-     *
-     * @return Document|null
      */
     public function ownerDocument(): ?Document
     {
@@ -1136,9 +1054,7 @@ abstract class Node
     /**
      * Get the DOM document with the current element.
      *
-     * @param string $encoding The document encoding
-     *
-     * @return Document
+     * @param  string  $encoding  The document encoding
      */
     public function toDocument(string $encoding = 'UTF-8'): Document
     {
@@ -1151,8 +1067,6 @@ abstract class Node
 
     /**
      * Convert the element to its string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {

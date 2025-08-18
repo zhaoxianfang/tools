@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class Byte
  *
  * @created      25.11.2015
+ *
  * @author       Smiley <smiley@chillerlan.net>
  * @copyright    2015 Smiley
  * @license      MIT
@@ -11,8 +13,11 @@ declare(strict_types=1);
 
 namespace zxf\QrCode\Data;
 
-use zxf\QrCode\Common\{BitBuffer, Mode};
-use function chr, ord;
+use zxf\QrCode\Common\BitBuffer;
+use zxf\QrCode\Common\Mode;
+
+use function chr;
+use function ord;
 
 /**
  * 8-bit Byte mode, ISO-8859-1 or UTF-8
@@ -20,55 +25,57 @@ use function chr, ord;
  * ISO/IEC 18004:2000 Section 8.3.4
  * ISO/IEC 18004:2000 Section 8.4.4
  */
-final class Byte extends QRDataModeAbstract{
+final class Byte extends QRDataModeAbstract
+{
+    public const DATAMODE = Mode::BYTE;
 
-	public const DATAMODE = Mode::BYTE;
+    public function getLengthInBits(): int
+    {
+        return $this->getCharCount() * 8;
+    }
 
-	public function getLengthInBits():int{
-		return ($this->getCharCount() * 8);
-	}
+    public static function validateString(string $string): bool
+    {
+        return $string !== '';
+    }
 
-	public static function validateString(string $string):bool{
-		return $string !== '';
-	}
+    public function write(BitBuffer $bitBuffer, int $versionNumber): static
+    {
+        $len = $this->getCharCount();
 
-	public function write(BitBuffer $bitBuffer, int $versionNumber):static{
-		$len = $this->getCharCount();
+        $bitBuffer
+            ->put(self::DATAMODE, 4)
+            ->put($len, $this::getLengthBits($versionNumber));
 
-		$bitBuffer
-			->put(self::DATAMODE, 4)
-			->put($len, $this::getLengthBits($versionNumber))
-		;
+        $i = 0;
 
-		$i = 0;
+        while ($i < $len) {
+            $bitBuffer->put(ord($this->data[$i]), 8);
+            $i++;
+        }
 
-		while($i < $len){
-			$bitBuffer->put(ord($this->data[$i]), 8);
-			$i++;
-		}
+        return $this;
+    }
 
-		return $this;
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @throws \zxf\QrCode\Data\QRCodeDataException
+     */
+    public static function decodeSegment(BitBuffer $bitBuffer, int $versionNumber): string
+    {
+        $length = $bitBuffer->read(self::getLengthBits($versionNumber));
 
-	/**
-	 * @inheritDoc
-	 *
-	 * @throws \zxf\QrCode\Data\QRCodeDataException
-	 */
-	public static function decodeSegment(BitBuffer $bitBuffer, int $versionNumber):string{
-		$length = $bitBuffer->read(self::getLengthBits($versionNumber));
+        if ($bitBuffer->available() < (8 * $length)) {
+            throw new QRCodeDataException('not enough bits available'); // @codeCoverageIgnore
+        }
 
-		if($bitBuffer->available() < (8 * $length)){
-			throw new QRCodeDataException('not enough bits available'); // @codeCoverageIgnore
-		}
+        $readBytes = '';
 
-		$readBytes = '';
+        for ($i = 0; $i < $length; $i++) {
+            $readBytes .= chr($bitBuffer->read(8));
+        }
 
-		for($i = 0; $i < $length; $i++){
-			$readBytes .= chr($bitBuffer->read(8));
-		}
-
-		return $readBytes;
-	}
-
+        return $readBytes;
+    }
 }

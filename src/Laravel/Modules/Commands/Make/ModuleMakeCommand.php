@@ -4,10 +4,10 @@ namespace zxf\Laravel\Modules\Commands\Make;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Process;
-use zxf\Laravel\Modules\Contracts\ActivatorInterface;
-use zxf\Laravel\Modules\Generators\ModuleGenerator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use zxf\Laravel\Modules\Contracts\ActivatorInterface;
+use zxf\Laravel\Modules\Generators\ModuleGenerator;
 
 class ModuleMakeCommand extends Command
 {

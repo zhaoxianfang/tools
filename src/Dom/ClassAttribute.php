@@ -26,13 +26,11 @@ class ClassAttribute
     protected $classes = [];
 
     /**
-     * @param Element $element
-     *
      * @throws InvalidArgumentException if parameter 1 is not an element node
      */
     public function __construct(Element $element)
     {
-        if ( ! $element->isElementNode()) {
+        if (! $element->isElementNode()) {
             throw new InvalidArgumentException(sprintf('The element must contain DOMElement node.'));
         }
 
@@ -46,7 +44,7 @@ class ClassAttribute
      */
     protected function parseClassAttribute()
     {
-        if ( ! $this->element->hasAttribute('class')) {
+        if (! $this->element->hasAttribute('class')) {
             // possible if class attribute has been removed
             if ($this->classesString !== '') {
                 $this->classesString = '';
@@ -92,10 +90,6 @@ class ClassAttribute
     }
 
     /**
-     * @param string $className
-     *
-     * @return ClassAttribute
-     *
      * @throws InvalidArgumentException if class name is not a string
      */
     public function add(string $className): self
@@ -114,10 +108,6 @@ class ClassAttribute
     }
 
     /**
-     * @param array $classNames
-     *
-     * @return ClassAttribute
-     *
      * @throws InvalidArgumentException if class name is not a string
      */
     public function addMultiple(array $classNames): self
@@ -125,7 +115,7 @@ class ClassAttribute
         $this->parseClassAttribute();
 
         foreach ($classNames as $className) {
-            if ( ! is_string($className)) {
+            if (! is_string($className)) {
                 throw new InvalidArgumentException(sprintf('Class name must be a string, %s given.', (is_object($className) ? get_class($className) : gettype($className))));
             }
 
@@ -151,11 +141,6 @@ class ClassAttribute
         return $this->classes;
     }
 
-    /**
-     * @param string $className
-     *
-     * @return bool
-     */
     public function contains(string $className): bool
     {
         $this->parseClassAttribute();
@@ -164,10 +149,6 @@ class ClassAttribute
     }
 
     /**
-     * @param string $className
-     *
-     * @return ClassAttribute
-     *
      * @throws InvalidArgumentException if class name is not a string
      */
     public function remove(string $className): self
@@ -188,10 +169,6 @@ class ClassAttribute
     }
 
     /**
-     * @param array $classNames
-     *
-     * @return ClassAttribute
-     *
      * @throws InvalidArgumentException if class name is not a string
      */
     public function removeMultiple(array $classNames): self
@@ -199,7 +176,7 @@ class ClassAttribute
         $this->parseClassAttribute();
 
         foreach ($classNames as $className) {
-            if ( ! is_string($className)) {
+            if (! is_string($className)) {
                 throw new InvalidArgumentException(sprintf('Class name must be a string, %s given.', (is_object($className) ? get_class($className) : gettype($className))));
             }
 
@@ -218,9 +195,7 @@ class ClassAttribute
     }
 
     /**
-     * @param string[] $preserved
-     *
-     * @return ClassAttribute
+     * @param  string[]  $preserved
      */
     public function removeAll(array $preserved = []): self
     {
@@ -229,11 +204,11 @@ class ClassAttribute
         $preservedClasses = [];
 
         foreach ($preserved as $className) {
-            if ( ! is_string($className)) {
+            if (! is_string($className)) {
                 throw new InvalidArgumentException(sprintf('Class name must be a string, %s given.', (is_object($className) ? get_class($className) : gettype($className))));
             }
 
-            if ( ! in_array($className, $this->classes, true)) {
+            if (! in_array($className, $this->classes, true)) {
                 continue;
             }
 
@@ -247,9 +222,6 @@ class ClassAttribute
         return $this;
     }
 
-    /**
-     * @return Element
-     */
     public function getElement(): Element
     {
         return $this->element;

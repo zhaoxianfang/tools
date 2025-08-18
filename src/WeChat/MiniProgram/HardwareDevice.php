@@ -17,9 +17,8 @@ class HardwareDevice extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/hardware-device/sendHardwareDeviceMessage.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function sendHardwareDeviceMessage(array $data)
@@ -32,17 +31,17 @@ class HardwareDevice extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/hardware-device/getSnTicket.html
      *
-     * @param string $sn       sn 设备唯一序列号。由厂商分配，长度不能超过128字节。字符只接受数字，大小写字母，下划线（_）和连字符（-）。
-     * @param string $model_id 设备型号 id ，通过注册设备获得。
-     *
+     * @param  string  $sn  sn 设备唯一序列号。由厂商分配，长度不能超过128字节。字符只接受数字，大小写字母，下划线（_）和连字符（-）。
+     * @param  string  $model_id  设备型号 id ，通过注册设备获得。
      * @return array
+     *
      * @throws Exception
      */
     public function getSnTicket(string $sn, string $model_id)
     {
         return $this->post('wxa/getsnticket', [
             'device_id' => $sn,
-            'model_id'  => $model_id,
+            'model_id' => $model_id,
         ]);
     }
 
@@ -51,16 +50,16 @@ class HardwareDevice extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/hardware-device/createIotGroupId.html
      *
-     * @param string $model_id   设备型号的唯一标识
-     * @param string $group_name 设备组的名称（创建时时决定，无法修改）
-     *
+     * @param  string  $model_id  设备型号的唯一标识
+     * @param  string  $group_name  设备组的名称（创建时时决定，无法修改）
      * @return array
+     *
      * @throws Exception
      */
     public function createIotGroupId(string $model_id, string $group_name)
     {
         return $this->post('wxa/business/group/createid', [
-            'model_id'   => $model_id,
+            'model_id' => $model_id,
             'group_name' => $group_name,
         ]);
     }
@@ -70,9 +69,8 @@ class HardwareDevice extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/hardware-device/removeIotGroupDevice.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function removeIotGroupDevice(array $data)
@@ -85,9 +83,8 @@ class HardwareDevice extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/hardware-device/addIotGroupDevice.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function addIotGroupDevice(array $data)
@@ -100,14 +97,13 @@ class HardwareDevice extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/hardware-device/getIotGroupInfo.html
      *
-     * @param string $group_id 设备组的唯一标识
-     *
+     * @param  string  $group_id  设备组的唯一标识
      * @return array
+     *
      * @throws Exception
      */
     public function getIotGroupInfo(string $group_id)
     {
         return $this->post('wxa/business/group/getinfo', ['group_id' => $group_id]);
     }
-
 }

@@ -15,6 +15,8 @@ namespace zxf\BarCode\Types;
 class TypeEan8 extends TypeEanUpcBase
 {
     protected int $length = 8;
+
     protected bool $upca = false;
+
     protected bool $upce = false;
 }

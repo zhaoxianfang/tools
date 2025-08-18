@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class QRGdImageWEBP
  *
  * @created      25.10.2023
+ *
  * @author       smiley <smiley@chillerlan.net>
  * @copyright    2023 smiley
  * @license      MIT
@@ -13,24 +15,24 @@ declare(strict_types=1);
 
 namespace zxf\QrCode\Output;
 
-use function imagewebp, max, min;
+use function imagewebp;
 
 /**
  * GdImage webp output
  *
  * @see \imagewebp()
  */
-class QRGdImageWEBP extends QRGdImage{
+class QRGdImageWEBP extends QRGdImage
+{
+    final public const MIME_TYPE = 'image/webp';
 
-	final public const MIME_TYPE = 'image/webp';
-
-	/**
-	 * @throws \zxf\QrCode\Output\QRCodeOutputException
-	 */
-	protected function renderImage():void{
-		if(imagewebp(image: $this->image, quality: $this->getQuality()) === false){
-			throw new QRCodeOutputException('imagewebp() error');
-		}
-	}
-
+    /**
+     * @throws \zxf\QrCode\Output\QRCodeOutputException
+     */
+    protected function renderImage(): void
+    {
+        if (imagewebp(image: $this->image, quality: $this->getQuality()) === false) {
+            throw new QRCodeOutputException('imagewebp() error');
+        }
+    }
 }

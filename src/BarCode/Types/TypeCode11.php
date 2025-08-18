@@ -35,15 +35,15 @@ class TypeCode11 implements TypeInterface
         $code .= $this->getCheckDigitC($code);
         $code .= $this->getCheckDigitK($code);
 
-        $code = 'S' . $code . 'S';
+        $code = 'S'.$code.'S';
 
-        for ($i = 0; $i < strlen($code); ++$i) {
+        for ($i = 0; $i < strlen($code); $i++) {
             if (! isset($this->conversionTable[$code[$i]])) {
-                throw new InvalidCharacterException('Char ' . $code[$i] . ' is unsupported');
+                throw new InvalidCharacterException('Char '.$code[$i].' is unsupported');
             }
 
             $seq = $this->conversionTable[$code[$i]];
-            for ($j = 0; $j < strlen($seq); ++$j) {
+            for ($j = 0; $j < strlen($seq); $j++) {
                 if (($j % 2) == 0) {
                     $drawBar = true;
                 } else {
@@ -62,7 +62,7 @@ class TypeCode11 implements TypeInterface
     {
         $weight = 1;
         $checksum = 0;
-        for ($i = (strlen($code) - 1); $i >= 0; --$i) {
+        for ($i = (strlen($code) - 1); $i >= 0; $i--) {
             $digit = $code[$i];
             if ($digit == '-') {
                 $digitValue = 10;
@@ -70,7 +70,7 @@ class TypeCode11 implements TypeInterface
                 $digitValue = intval($digit);
             }
             $checksum += ($digitValue * $weight);
-            ++$weight;
+            $weight++;
             if ($weight > 10) {
                 $weight = 1;
             }
@@ -91,7 +91,7 @@ class TypeCode11 implements TypeInterface
 
         $weight = 1;
         $checksum = 0;
-        for ($i = (strlen($code) - 1); $i >= 0; --$i) {
+        for ($i = (strlen($code) - 1); $i >= 0; $i--) {
             $digit = $code[$i];
             if ($digit == '-') {
                 $digitValue = 10;
@@ -99,13 +99,13 @@ class TypeCode11 implements TypeInterface
                 $digitValue = intval($digit);
             }
             $checksum += ($digitValue * $weight);
-            ++$weight;
+            $weight++;
             if ($weight > 9) {
                 $weight = 1;
             }
         }
         $checksum %= 11;
 
-        return (string)$checksum;
+        return (string) $checksum;
     }
 }

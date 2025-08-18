@@ -14,10 +14,10 @@ class RedPacket extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/red-packet-cover/getRedPacketCoverUrl.html
      *
-     * @param string $openid 可领取用户的openid
-     * @param string $ctoken 在红包封面平台获取发放ctoken（需要指定可以发放的appid）
-     *
+     * @param  string  $openid  可领取用户的openid
+     * @param  string  $ctoken  在红包封面平台获取发放ctoken（需要指定可以发放的appid）
      * @return array
+     *
      * @throws Exception
      */
     public function getRedPacketCoverUrl(string $openid, string $ctoken)

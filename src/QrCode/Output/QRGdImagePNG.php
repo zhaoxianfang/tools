@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class QRGdImagePNG
  *
  * @created      25.10.2023
+ *
  * @author       smiley <smiley@chillerlan.net>
  * @copyright    2023 smiley
  * @license      MIT
@@ -13,28 +15,31 @@ declare(strict_types=1);
 
 namespace zxf\QrCode\Output;
 
-use function imagepng, max, min;
+use function imagepng;
+use function max;
+use function min;
 
 /**
  * GdImage png output
  *
  * @see \imagepng()
  */
-class QRGdImagePNG extends QRGdImage{
+class QRGdImagePNG extends QRGdImage
+{
+    final public const MIME_TYPE = 'image/png';
 
-	final public const MIME_TYPE = 'image/png';
+    protected function getQuality(): int
+    {
+        return max(-1, min(9, $this->options->quality));
+    }
 
-	protected function getQuality():int{
-		return max(-1, min(9, $this->options->quality));
-	}
-
-	/**
-	 * @throws \zxf\QrCode\Output\QRCodeOutputException
-	 */
-	protected function renderImage():void{
-		if(imagepng(image: $this->image, quality: $this->getQuality()) === false){
-			throw new QRCodeOutputException('imagepng() error');
-		}
-	}
-
+    /**
+     * @throws \zxf\QrCode\Output\QRCodeOutputException
+     */
+    protected function renderImage(): void
+    {
+        if (imagepng(image: $this->image, quality: $this->getQuality()) === false) {
+            throw new QRCodeOutputException('imagepng() error');
+        }
+    }
 }

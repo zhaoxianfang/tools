@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class ResultPoint
  *
  * @created      17.01.2021
+ *
  * @author       ZXing Authors
  * @author       Smiley <smiley@chillerlan.net>
  * @copyright    2021 Smiley
@@ -20,43 +22,49 @@ use function abs;
  *
  * @author Sean Owen
  */
-abstract class ResultPoint{
+abstract class ResultPoint
+{
+    protected float $x;
 
-	protected float $x;
-	protected float $y;
-	protected float $estimatedModuleSize;
+    protected float $y;
 
-	public function __construct(float $x, float $y, float $estimatedModuleSize){
-		$this->x                   = $x;
-		$this->y                   = $y;
-		$this->estimatedModuleSize = $estimatedModuleSize;
-	}
+    protected float $estimatedModuleSize;
 
-	public function getX():float{
-		return $this->x;
-	}
+    public function __construct(float $x, float $y, float $estimatedModuleSize)
+    {
+        $this->x = $x;
+        $this->y = $y;
+        $this->estimatedModuleSize = $estimatedModuleSize;
+    }
 
-	public function getY():float{
-		return $this->y;
-	}
+    public function getX(): float
+    {
+        return $this->x;
+    }
 
-	public function getEstimatedModuleSize():float{
-		return $this->estimatedModuleSize;
-	}
+    public function getY(): float
+    {
+        return $this->y;
+    }
 
-	/**
-	 * Determines if this finder pattern "about equals" a finder pattern at the stated
-	 * position and size -- meaning, it is at nearly the same center with nearly the same size.
-	 */
-	public function aboutEquals(float $moduleSize, float $i, float $j):bool{
+    public function getEstimatedModuleSize(): float
+    {
+        return $this->estimatedModuleSize;
+    }
 
-		if(abs($i - $this->y) <= $moduleSize && abs($j - $this->x) <= $moduleSize){
-			$moduleSizeDiff = abs($moduleSize - $this->estimatedModuleSize);
+    /**
+     * Determines if this finder pattern "about equals" a finder pattern at the stated
+     * position and size -- meaning, it is at nearly the same center with nearly the same size.
+     */
+    public function aboutEquals(float $moduleSize, float $i, float $j): bool
+    {
 
-			return $moduleSizeDiff <= 1.0 || $moduleSizeDiff <= $this->estimatedModuleSize;
-		}
+        if (abs($i - $this->y) <= $moduleSize && abs($j - $this->x) <= $moduleSize) {
+            $moduleSizeDiff = abs($moduleSize - $this->estimatedModuleSize);
 
-		return false;
-	}
+            return $moduleSizeDiff <= 1.0 || $moduleSizeDiff <= $this->estimatedModuleSize;
+        }
 
+        return false;
+    }
 }

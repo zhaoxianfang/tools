@@ -90,5 +90,4 @@ class ConsoleServiceProvider extends ServiceProvider
             Commands\Database\MigrateFreshCommand::class,
         ]);
     }
-
 }

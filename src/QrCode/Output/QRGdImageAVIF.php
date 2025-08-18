@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class QRGdImageAVIF
  *
  * @created      26.11.2023
+ *
  * @author       smiley <smiley@chillerlan.net>
  * @copyright    2023 smiley
  * @license      MIT
@@ -13,24 +15,24 @@ declare(strict_types=1);
 
 namespace zxf\QrCode\Output;
 
-use function imageavif, max, min;
+use function imageavif;
 
 /**
  * GDImage avif output
  *
  * @see \imageavif()
  */
-class QRGdImageAVIF extends QRGdImage{
+class QRGdImageAVIF extends QRGdImage
+{
+    final public const MIME_TYPE = 'image/avif';
 
-	final public const MIME_TYPE = 'image/avif';
-
-	/**
-	 * @throws \zxf\QrCode\Output\QRCodeOutputException
-	 */
-	protected function renderImage():void{
-		if(imageavif(image: $this->image, quality: $this->getQuality()) === false){
-			throw new QRCodeOutputException('imageavif() error');
-		}
-	}
-
+    /**
+     * @throws \zxf\QrCode\Output\QRCodeOutputException
+     */
+    protected function renderImage(): void
+    {
+        if (imageavif(image: $this->image, quality: $this->getQuality()) === false) {
+            throw new QRCodeOutputException('imageavif() error');
+        }
+    }
 }

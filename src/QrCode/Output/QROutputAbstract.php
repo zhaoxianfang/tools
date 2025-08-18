@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class QROutputAbstract
  *
  * @created      09.12.2015
+ *
  * @author       Smiley <smiley@chillerlan.net>
  * @copyright    2015 Smiley
  * @license      MIT
@@ -13,287 +15,316 @@ declare(strict_types=1);
 
 namespace zxf\QrCode\Output;
 
-use zxf\QrCode\QROptions;
-use zxf\QrCode\Data\QRMatrix;
-use zxf\QrCode\Settings\SettingsContainerInterface;
-use Closure, finfo;
-use function base64_encode, dirname, extension_loaded, file_put_contents, is_writable, ksort, sprintf;
 use const FILEINFO_MIME_TYPE;
+
+use Closure;
+use finfo;
+use zxf\QrCode\Data\QRMatrix;
+use zxf\QrCode\QROptions;
+use zxf\QrCode\Settings\SettingsContainerInterface;
+
+use function base64_encode;
+use function dirname;
+use function extension_loaded;
+use function file_put_contents;
+use function is_writable;
+use function ksort;
+use function sprintf;
 
 /**
  * common output abstract
  */
-abstract class QROutputAbstract implements QROutputInterface{
+abstract class QROutputAbstract implements QROutputInterface
+{
+    /**
+     * the current size of the QR matrix
+     *
+     * @see \zxf\QrCode\Data\QRMatrix::getSize()
+     */
+    protected int $moduleCount;
 
-	/**
-	 * the current size of the QR matrix
-	 *
-	 * @see \zxf\QrCode\Data\QRMatrix::getSize()
-	 */
-	protected int $moduleCount;
+    /**
+     * the side length of the QR image (modules * scale)
+     */
+    protected int $length;
 
-	/**
-	 * the side length of the QR image (modules * scale)
-	 */
-	protected int $length;
+    /**
+     * an (optional) array of color values for the several QR matrix parts
+     *
+     * @phpstan-var array<int, mixed>
+     */
+    protected array $moduleValues;
 
-	/**
-	 * an (optional) array of color values for the several QR matrix parts
-	 *
-	 * @phpstan-var array<int, mixed>
-	 */
-	protected array $moduleValues;
+    /**
+     * the (filled) data matrix object
+     */
+    protected QRMatrix $matrix;
 
-	/**
-	 * the (filled) data matrix object
-	 */
-	protected QRMatrix $matrix;
+    /**
+     * the options instance
+     */
+    protected SettingsContainerInterface|QROptions $options;
 
-	/**
-	 * the options instance
-	 */
-	protected SettingsContainerInterface|QROptions $options;
+    /**
+     * @see \zxf\QrCode\QROptions::$excludeFromConnect
+     *
+     * @var int[]
+     */
+    protected array $excludeFromConnect;
 
-	/**
-	 * @see \zxf\QrCode\QROptions::$excludeFromConnect
-	 * @var int[]
-	 */
-	protected array $excludeFromConnect;
-	/**
-	 * @see \zxf\QrCode\QROptions::$keepAsSquare
-	 * @var int[]
-	 */
-	protected array $keepAsSquare;
-	/** @see \zxf\QrCode\QROptions::$scale */
-	protected int $scale;
-	/** @see \zxf\QrCode\QROptions::$connectPaths */
-	protected bool $connectPaths;
-	/** @see \zxf\QrCode\QROptions::$eol */
-	protected string $eol;
-	/** @see \zxf\QrCode\QROptions::$drawLightModules */
-	protected bool $drawLightModules;
-	/** @see \zxf\QrCode\QROptions::$drawCircularModules */
-	protected bool $drawCircularModules;
-	/** @see \zxf\QrCode\QROptions::$circleRadius */
-	protected float $circleRadius;
-	protected float $circleDiameter;
+    /**
+     * @see \zxf\QrCode\QROptions::$keepAsSquare
+     *
+     * @var int[]
+     */
+    protected array $keepAsSquare;
 
-	/**
-	 * QROutputAbstract constructor.
-	 */
-	public function __construct(SettingsContainerInterface|QROptions $options, QRMatrix $matrix){
-		$this->options = $options;
-		$this->matrix  = $matrix;
+    /** @see \zxf\QrCode\QROptions::$scale */
+    protected int $scale;
 
-		if($this->options->invertMatrix){
-			$this->matrix->invert();
-		}
+    /** @see \zxf\QrCode\QROptions::$connectPaths */
+    protected bool $connectPaths;
 
-		$this->copyVars();
-		$this->setMatrixDimensions();
-		$this->setModuleValues();
-	}
+    /** @see \zxf\QrCode\QROptions::$eol */
+    protected string $eol;
 
-	/**
-	 * Creates copies of several QROptions values to avoid calling the magic getters
-	 * in long loops for a significant performance increase.
-	 *
-	 * These variables are usually used in the "module" methods and are called up to 31329 times (at version 40).
-	 */
-	protected function copyVars():void{
+    /** @see \zxf\QrCode\QROptions::$drawLightModules */
+    protected bool $drawLightModules;
 
-		$vars = [
-			'connectPaths',
-			'excludeFromConnect',
-			'eol',
-			'drawLightModules',
-			'drawCircularModules',
-			'keepAsSquare',
-			'circleRadius',
-		];
+    /** @see \zxf\QrCode\QROptions::$drawCircularModules */
+    protected bool $drawCircularModules;
 
-		foreach($vars as $property){
-			$this->{$property} = $this->options->{$property};
-		}
+    /** @see \zxf\QrCode\QROptions::$circleRadius */
+    protected float $circleRadius;
 
-		$this->circleDiameter = ($this->circleRadius * 2);
-	}
+    protected float $circleDiameter;
 
-	/**
-	 * Sets/updates the matrix dimensions
-	 *
-	 * Call this method if you modify the matrix from within your custom module in case the dimensions have been changed
-	 */
-	protected function setMatrixDimensions():void{
-		$this->moduleCount = $this->matrix->getSize();
-		$this->scale       = $this->options->scale;
-		$this->length      = ($this->moduleCount * $this->scale);
-	}
+    /**
+     * QROutputAbstract constructor.
+     */
+    public function __construct(SettingsContainerInterface|QROptions $options, QRMatrix $matrix)
+    {
+        $this->options = $options;
+        $this->matrix = $matrix;
 
-	/**
-	 * Returns a 2 element array with the current output width and height
-	 *
-	 * The type and units of the values depend on the output class. The default value is the current module count * scale.
-	 *
-	 * @return int[]
-	 */
-	protected function getOutputDimensions():array{
-		return [$this->length, $this->length];
-	}
+        if ($this->options->invertMatrix) {
+            $this->matrix->invert();
+        }
 
-	/**
-	 * Sets the initial module values
-	 */
-	protected function setModuleValues():void{
+        $this->copyVars();
+        $this->setMatrixDimensions();
+        $this->setModuleValues();
+    }
 
-		// first fill the map with the default values
-		foreach($this::DEFAULT_MODULE_VALUES as $M_TYPE => $defaultValue){
-			$this->moduleValues[$M_TYPE] = $this->getDefaultModuleValue($defaultValue);
-		}
+    /**
+     * Creates copies of several QROptions values to avoid calling the magic getters
+     * in long loops for a significant performance increase.
+     *
+     * These variables are usually used in the "module" methods and are called up to 31329 times (at version 40).
+     */
+    protected function copyVars(): void
+    {
 
-		// now loop over the options values to replace defaults and add extra values
-		/** @var int $M_TYPE */
-		foreach($this->options->moduleValues as $M_TYPE => $value){
-			if($this::moduleValueIsValid($value)){
-				$this->moduleValues[$M_TYPE] = $this->prepareModuleValue($value);
-			}
-		}
+        $vars = [
+            'connectPaths',
+            'excludeFromConnect',
+            'eol',
+            'drawLightModules',
+            'drawCircularModules',
+            'keepAsSquare',
+            'circleRadius',
+        ];
 
-	}
+        foreach ($vars as $property) {
+            $this->{$property} = $this->options->{$property};
+        }
 
-	/**
-	 * Prepares the value for the given input (return value depends on the output class)
-	 */
-	abstract protected function prepareModuleValue(mixed $value):mixed;
+        $this->circleDiameter = ($this->circleRadius * 2);
+    }
 
-	/**
-	 * Returns a default value for either dark or light modules (return value depends on the output class)
-	 */
-	abstract protected function getDefaultModuleValue(bool $isDark):mixed;
+    /**
+     * Sets/updates the matrix dimensions
+     *
+     * Call this method if you modify the matrix from within your custom module in case the dimensions have been changed
+     */
+    protected function setMatrixDimensions(): void
+    {
+        $this->moduleCount = $this->matrix->getSize();
+        $this->scale = $this->options->scale;
+        $this->length = ($this->moduleCount * $this->scale);
+    }
 
-	/**
-	 * Returns the prepared value for the given $M_TYPE
-	 *
-	 * @throws \zxf\QrCode\Output\QRCodeOutputException if $moduleValues[$M_TYPE] doesn't exist
-	 */
-	protected function getModuleValue(int $M_TYPE):mixed{
+    /**
+     * Returns a 2 element array with the current output width and height
+     *
+     * The type and units of the values depend on the output class. The default value is the current module count * scale.
+     *
+     * @return int[]
+     */
+    protected function getOutputDimensions(): array
+    {
+        return [$this->length, $this->length];
+    }
 
-		if(!isset($this->moduleValues[$M_TYPE])){
-			throw new QRCodeOutputException(sprintf('$M_TYPE %012b not found in module values map', $M_TYPE));
-		}
+    /**
+     * Sets the initial module values
+     */
+    protected function setModuleValues(): void
+    {
 
-		return $this->moduleValues[$M_TYPE];
-	}
+        // first fill the map with the default values
+        foreach ($this::DEFAULT_MODULE_VALUES as $M_TYPE => $defaultValue) {
+            $this->moduleValues[$M_TYPE] = $this->getDefaultModuleValue($defaultValue);
+        }
 
-	/**
-	 * Returns the prepared module value at the given coordinate [$x, $y] (convenience)
-	 */
-	protected function getModuleValueAt(int $x, int $y):mixed{
-		return $this->getModuleValue($this->matrix->get($x, $y));
-	}
+        // now loop over the options values to replace defaults and add extra values
+        /** @var int $M_TYPE */
+        foreach ($this->options->moduleValues as $M_TYPE => $value) {
+            if ($this::moduleValueIsValid($value)) {
+                $this->moduleValues[$M_TYPE] = $this->prepareModuleValue($value);
+            }
+        }
 
-	/**
-	 * Returns a base64 data URI for the given string and mime type
-	 *
-	 * The mime type can be set via class constant MIME_TYPE in child classes,
-	 * or given via $mime, otherwise it is guessed from the image $data.
-	 */
-	protected function toBase64DataURI(string $data, string|null $mime = null):string{
-		$mime ??= static::MIME_TYPE;
+    }
 
-		if($mime === ''){
-			$mime = $this->guessMimeType($data);
-		}
+    /**
+     * Prepares the value for the given input (return value depends on the output class)
+     */
+    abstract protected function prepareModuleValue(mixed $value): mixed;
 
-		return sprintf('data:%s;base64,%s', $mime, base64_encode($data));
-	}
+    /**
+     * Returns a default value for either dark or light modules (return value depends on the output class)
+     */
+    abstract protected function getDefaultModuleValue(bool $isDark): mixed;
 
-	/**
-	 * Guesses the mime type from the given $imageData
-	 *
-	 * @throws \zxf\QrCode\Output\QRCodeOutputException
-	 */
-	protected function guessMimeType(string $imageData):string{
+    /**
+     * Returns the prepared value for the given $M_TYPE
+     *
+     * @throws \zxf\QrCode\Output\QRCodeOutputException if $moduleValues[$M_TYPE] doesn't exist
+     */
+    protected function getModuleValue(int $M_TYPE): mixed
+    {
 
-		if(!extension_loaded('fileinfo')){
-			throw new QRCodeOutputException('ext-fileinfo not loaded, cannot guess mime type');
-		}
+        if (! isset($this->moduleValues[$M_TYPE])) {
+            throw new QRCodeOutputException(sprintf('$M_TYPE %012b not found in module values map', $M_TYPE));
+        }
 
-		$mime = (new finfo(FILEINFO_MIME_TYPE))->buffer($imageData);
+        return $this->moduleValues[$M_TYPE];
+    }
 
-		if($mime === false){
-			throw new QRCodeOutputException('unable to detect mime type');
-		}
+    /**
+     * Returns the prepared module value at the given coordinate [$x, $y] (convenience)
+     */
+    protected function getModuleValueAt(int $x, int $y): mixed
+    {
+        return $this->getModuleValue($this->matrix->get($x, $y));
+    }
 
-		return $mime;
-	}
+    /**
+     * Returns a base64 data URI for the given string and mime type
+     *
+     * The mime type can be set via class constant MIME_TYPE in child classes,
+     * or given via $mime, otherwise it is guessed from the image $data.
+     */
+    protected function toBase64DataURI(string $data, ?string $mime = null): string
+    {
+        $mime ??= static::MIME_TYPE;
 
-	/**
-	 * Saves the qr $data to a $file. If $file is null, nothing happens.
-	 *
-	 * @see file_put_contents()
-	 * @see \zxf\QrCode\QROptions::$cachefile
-	 *
-	 * @throws \zxf\QrCode\Output\QRCodeOutputException
-	 */
-	protected function saveToFile(string $data, string|null $file = null):void{
+        if ($mime === '') {
+            $mime = $this->guessMimeType($data);
+        }
 
-		if($file === null){
-			return;
-		}
+        return sprintf('data:%s;base64,%s', $mime, base64_encode($data));
+    }
 
-		if(!is_writable(dirname($file))){
-			throw new QRCodeOutputException(sprintf('Cannot write data to cache file: %s', $file));
-		}
+    /**
+     * Guesses the mime type from the given $imageData
+     *
+     * @throws \zxf\QrCode\Output\QRCodeOutputException
+     */
+    protected function guessMimeType(string $imageData): string
+    {
 
-		if(file_put_contents($file, $data) === false){
-			throw new QRCodeOutputException(sprintf('Cannot write data to cache file: %s (file_put_contents error)', $file));
-		}
-	}
+        if (! extension_loaded('fileinfo')) {
+            throw new QRCodeOutputException('ext-fileinfo not loaded, cannot guess mime type');
+        }
 
-	/**
-	 * collects the modules per QRMatrix::M_* type and runs a $transform function on each module and
-	 * returns an array with the transformed modules
-	 *
-	 * The transform callback is called with the following parameters:
-	 *
-	 *   $x            - current column
-	 *   $y            - current row
-	 *   $M_TYPE       - field value
-	 *   $M_TYPE_LAYER - (possibly modified) field value that acts as layer id
-	 *
-	 * @return array<int, mixed>
-	 */
-	protected function collectModules(Closure $transform):array{
-		$paths = [];
+        $mime = (new finfo(FILEINFO_MIME_TYPE))->buffer($imageData);
 
-		// collect the modules for each type
-		foreach($this->matrix->getMatrix() as $y => $row){
-			foreach($row as $x => $M_TYPE){
-				$M_TYPE_LAYER = $M_TYPE;
+        if ($mime === false) {
+            throw new QRCodeOutputException('unable to detect mime type');
+        }
 
-				if($this->connectPaths && !$this->matrix->checkTypeIn($x, $y, $this->excludeFromConnect)){
-					// to connect paths we'll redeclare the $M_TYPE_LAYER to data only
-					$M_TYPE_LAYER = QRMatrix::M_DATA;
+        return $mime;
+    }
 
-					if($this->matrix->isDark($M_TYPE)){
-						$M_TYPE_LAYER = QRMatrix::M_DATA_DARK;
-					}
-				}
+    /**
+     * Saves the qr $data to a $file. If $file is null, nothing happens.
+     *
+     * @see file_put_contents()
+     * @see \zxf\QrCode\QROptions::$cachefile
+     *
+     * @throws \zxf\QrCode\Output\QRCodeOutputException
+     */
+    protected function saveToFile(string $data, ?string $file = null): void
+    {
 
-				// collect the modules per $M_TYPE
-				$module = $transform($x, $y, $M_TYPE, $M_TYPE_LAYER);
+        if ($file === null) {
+            return;
+        }
 
-				if(!empty($module)){
-					$paths[$M_TYPE_LAYER][] = $module;
-				}
-			}
-		}
+        if (! is_writable(dirname($file))) {
+            throw new QRCodeOutputException(sprintf('Cannot write data to cache file: %s', $file));
+        }
 
-		// beautify output
-		ksort($paths);
+        if (file_put_contents($file, $data) === false) {
+            throw new QRCodeOutputException(sprintf('Cannot write data to cache file: %s (file_put_contents error)', $file));
+        }
+    }
 
-		return $paths;
-	}
+    /**
+     * collects the modules per QRMatrix::M_* type and runs a $transform function on each module and
+     * returns an array with the transformed modules
+     *
+     * The transform callback is called with the following parameters:
+     *
+     *   $x            - current column
+     *   $y            - current row
+     *   $M_TYPE       - field value
+     *   $M_TYPE_LAYER - (possibly modified) field value that acts as layer id
+     *
+     * @return array<int, mixed>
+     */
+    protected function collectModules(Closure $transform): array
+    {
+        $paths = [];
 
+        // collect the modules for each type
+        foreach ($this->matrix->getMatrix() as $y => $row) {
+            foreach ($row as $x => $M_TYPE) {
+                $M_TYPE_LAYER = $M_TYPE;
+
+                if ($this->connectPaths && ! $this->matrix->checkTypeIn($x, $y, $this->excludeFromConnect)) {
+                    // to connect paths we'll redeclare the $M_TYPE_LAYER to data only
+                    $M_TYPE_LAYER = QRMatrix::M_DATA;
+
+                    if ($this->matrix->isDark($M_TYPE)) {
+                        $M_TYPE_LAYER = QRMatrix::M_DATA_DARK;
+                    }
+                }
+
+                // collect the modules per $M_TYPE
+                $module = $transform($x, $y, $M_TYPE, $M_TYPE_LAYER);
+
+                if (! empty($module)) {
+                    $paths[$M_TYPE_LAYER][] = $module;
+                }
+            }
+        }
+
+        // beautify output
+        ksort($paths);
+
+        return $paths;
+    }
 }

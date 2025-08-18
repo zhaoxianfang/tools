@@ -4,7 +4,6 @@ namespace zxf\WeChat\OfficialAccount;
 
 use zxf\WeChat\Contracts\WeChatBase;
 
-
 /**
  * 微信发票
  *
@@ -13,5 +12,4 @@ use zxf\WeChat\Contracts\WeChatBase;
 class Invoice extends WeChatBase
 {
     public bool $useToken = true;
-
 }

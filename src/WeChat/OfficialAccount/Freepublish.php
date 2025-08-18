@@ -18,9 +18,9 @@ class Freepublish extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/Publish/Publish.html
      *
-     * @param mixed $media_id 要发布的草稿的media_id
-     *
+     * @param  mixed  $media_id  要发布的草稿的media_id
      * @return array
+     *
      * @throws Exception
      */
     public function submit($media_id)
@@ -33,9 +33,9 @@ class Freepublish extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/Publish/Get_status.html
      *
-     * @param string $publish_id 发布任务id
-     *
+     * @param  string  $publish_id  发布任务id
      * @return array
+     *
      * @throws Exception
      */
     public function getStatus(string $publish_id)
@@ -50,10 +50,10 @@ class Freepublish extends WeChatBase
      *
      * 发布成功之后，随时可以通过该接口删除。此操作不可逆，请谨慎操作。
      *
-     * @param mixed    $article_id 成功发布时返回的 article_id
-     * @param int|null $index      要删除的文章在图文消息中的位置，第一篇编号为1，该字段不填或填0会删除全部文章
-     *
+     * @param  mixed  $article_id  成功发布时返回的 article_id
+     * @param  int|null  $index  要删除的文章在图文消息中的位置，第一篇编号为1，该字段不填或填0会删除全部文章
      * @return array
+     *
      * @throws Exception
      */
     public function delete(string $article_id, ?int $index = 0)
@@ -66,9 +66,9 @@ class Freepublish extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/Publish/Get_article_from_id.html
      *
-     * @param mixed $article_id 要获取的草稿的article_id
-     *
+     * @param  mixed  $article_id  要获取的草稿的article_id
      * @return array
+     *
      * @throws Exception
      */
     public function getArticle(string $article_id)
@@ -81,11 +81,11 @@ class Freepublish extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/Publish/Get_publication_records.html
      *
-     * @param int      $offset     从全部素材的该偏移位置开始返回，0表示从第一个素材返回
-     * @param int      $count      返回素材的数量，取值在1到20之间
-     * @param int|null $no_content 1 表示不返回 content 字段，0 表示正常返回，默认为 0
-     *
+     * @param  int  $offset  从全部素材的该偏移位置开始返回，0表示从第一个素材返回
+     * @param  int  $count  返回素材的数量，取值在1到20之间
+     * @param  int|null  $no_content  1 表示不返回 content 字段，0 表示正常返回，默认为 0
      * @return array
+     *
      * @throws Exception
      */
     public function batchGet(int $offset = 0, int $count = 20, ?int $no_content = 0)

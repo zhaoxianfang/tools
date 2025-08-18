@@ -8,7 +8,8 @@ class ColorHelper
 {
     // Convert textual color values, to array of 3 colors 0-255
     // Can be "red", "#333" or "#009945" styles
-    public static function getArrayFromColorString(string $color): array {
+    public static function getArrayFromColorString(string $color): array
+    {
         if ($color == 'black') {
             return [0, 0, 0];
         } elseif ($color == 'white') {
@@ -26,9 +27,9 @@ class ColorHelper
         // #333 style
         if (str_starts_with($color, '#') && strlen($color) === 4) {
             return [
-                hexdec(substr($color, 1, 1) . substr($color, 1, 1)),
-                hexdec(substr($color, 2, 1) . substr($color, 2, 1)),
-                hexdec(substr($color, 3, 1) . substr($color, 3, 1)),
+                hexdec(substr($color, 1, 1).substr($color, 1, 1)),
+                hexdec(substr($color, 2, 1).substr($color, 2, 1)),
+                hexdec(substr($color, 3, 1).substr($color, 3, 1)),
             ];
         }
 

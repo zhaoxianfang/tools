@@ -3,13 +3,13 @@
 namespace zxf\Laravel\Modules\Commands\Make;
 
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use zxf\Laravel\Modules\Support\Config\GenerateConfigReader;
 use zxf\Laravel\Modules\Support\Migrations\NameParser;
 use zxf\Laravel\Modules\Support\Migrations\SchemaParser;
 use zxf\Laravel\Modules\Support\Stub;
 use zxf\Laravel\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 
 class MigrationMakeCommand extends GeneratorCommand
 {

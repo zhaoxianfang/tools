@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class SettingsContainerAbstract
  *
  * @created      28.08.2018
+ *
  * @author       Smiley <smiley@chillerlan.net>
  * @copyright    2018 Smiley
  * @license      MIT
@@ -11,21 +13,35 @@ declare(strict_types=1);
 
 namespace zxf\QrCode\Settings;
 
-use InvalidArgumentException, JsonException, ReflectionClass, ReflectionProperty;
-use function array_keys, get_object_vars, is_object, json_decode, json_encode,
-    json_last_error_msg, method_exists, property_exists, serialize, unserialize;
 use const JSON_THROW_ON_ERROR;
 
-abstract class SettingsContainerAbstract implements SettingsContainerInterface{
+use InvalidArgumentException;
+use JsonException;
+use ReflectionClass;
+use ReflectionProperty;
 
+use function array_keys;
+use function get_object_vars;
+use function is_object;
+use function json_decode;
+use function json_encode;
+use function json_last_error_msg;
+use function method_exists;
+use function property_exists;
+use function serialize;
+use function unserialize;
+
+abstract class SettingsContainerAbstract implements SettingsContainerInterface
+{
     /**
      * SettingsContainerAbstract constructor.
      *
      * @phpstan-param array<string, mixed> $properties
      */
-    public function __construct(iterable|null $properties = null){
+    public function __construct(?iterable $properties = null)
+    {
 
-        if(!empty($properties)){
+        if (! empty($properties)) {
             $this->fromIterable($properties);
         }
 
@@ -36,13 +52,14 @@ abstract class SettingsContainerAbstract implements SettingsContainerInterface{
      * calls a method with trait name as replacement constructor for each used trait
      * (remember pre-php5 classname constructors? yeah, basically this.)
      */
-    protected function construct():void{
+    protected function construct(): void
+    {
         $traits = (new ReflectionClass($this))->getTraits();
 
-        foreach($traits as $trait){
+        foreach ($traits as $trait) {
             $method = $trait->getShortName();
 
-            if(method_exists($this, $method)){
+            if (method_exists($this, $method)) {
                 $this->{$method}();
             }
         }
@@ -50,17 +67,18 @@ abstract class SettingsContainerAbstract implements SettingsContainerInterface{
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function __get(string $property):mixed{
+    public function __get(string $property): mixed
+    {
 
-        if(!property_exists($this, $property) || $this->isPrivate($property)){
+        if (! property_exists($this, $property) || $this->isPrivate($property)) {
             return null;
         }
 
         $method = 'get_'.$property;
 
-        if(method_exists($this, $method)){
+        if (method_exists($this, $method)) {
             return $this->{$method}();
         }
 
@@ -68,17 +86,18 @@ abstract class SettingsContainerAbstract implements SettingsContainerInterface{
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function __set(string $property, mixed $value):void{
+    public function __set(string $property, mixed $value): void
+    {
 
-        if(!property_exists($this, $property) || $this->isPrivate($property)){
+        if (! property_exists($this, $property) || $this->isPrivate($property)) {
             return;
         }
 
         $method = 'set_'.$property;
 
-        if(method_exists($this, $method)){
+        if (method_exists($this, $method)) {
             $this->{$method}($value);
 
             return;
@@ -88,44 +107,49 @@ abstract class SettingsContainerAbstract implements SettingsContainerInterface{
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function __isset(string $property):bool{
-        return isset($this->{$property}) && !$this->isPrivate($property);
+    public function __isset(string $property): bool
+    {
+        return isset($this->{$property}) && ! $this->isPrivate($property);
     }
 
     /**
      * @internal Checks if a property is private
      */
-    protected function isPrivate(string $property):bool{
+    protected function isPrivate(string $property): bool
+    {
         return (new ReflectionProperty($this, $property))->isPrivate();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function __unset(string $property):void{
+    public function __unset(string $property): void
+    {
 
-        if($this->__isset($property)){
+        if ($this->__isset($property)) {
             unset($this->{$property});
         }
 
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function __toString():string{
+    public function __toString(): string
+    {
         return $this->toJSON();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function toArray():array{
+    public function toArray(): array
+    {
         $properties = [];
 
-        foreach(array_keys(get_object_vars($this)) as $key){
+        foreach (array_keys(get_object_vars($this)) as $key) {
             $properties[$key] = $this->__get($key);
         }
 
@@ -133,11 +157,12 @@ abstract class SettingsContainerAbstract implements SettingsContainerInterface{
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function fromIterable(iterable $properties):static{
+    public function fromIterable(iterable $properties): static
+    {
 
-        foreach($properties as $key => $value){
+        foreach ($properties as $key => $value) {
             $this->__set($key, $value);
         }
 
@@ -145,12 +170,13 @@ abstract class SettingsContainerAbstract implements SettingsContainerInterface{
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function toJSON(int|null $jsonOptions = null):string{
+    public function toJSON(?int $jsonOptions = null): string
+    {
         $json = json_encode($this, ($jsonOptions ?? 0));
 
-        if($json === false){
+        if ($json === false) {
             throw new JsonException(json_last_error_msg());
         }
 
@@ -158,9 +184,10 @@ abstract class SettingsContainerAbstract implements SettingsContainerInterface{
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function fromJSON(string $json):static{
+    public function fromJSON(string $json): static
+    {
         /** @phpstan-var array<string, mixed> $data */
         $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
 
@@ -168,45 +195,51 @@ abstract class SettingsContainerAbstract implements SettingsContainerInterface{
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @return array<string, mixed>
      */
-    public function jsonSerialize():array{
+    public function jsonSerialize(): array
+    {
         return $this->toArray();
     }
 
     /**
      * Returns a serialized string representation of the object in its current state (except static/readonly properties)
      *
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @see \zxf\QrCode\Settings\SettingsContainerInterface::toArray()
      */
-    public function serialize():string{
+    public function serialize(): string
+    {
         return serialize($this);
     }
 
     /**
      * Restores the data (except static/readonly properties) from the given serialized object to the current instance
      *
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @see \zxf\QrCode\Settings\SettingsContainerInterface::fromIterable()
      */
-    public function unserialize(string $data):void{
+    public function unserialize(string $data): void
+    {
         $obj = unserialize($data);
 
-        if($obj === false || !is_object($obj)){
+        if ($obj === false || ! is_object($obj)) {
             throw new InvalidArgumentException('The given serialized string is invalid');
         }
 
         $reflection = new ReflectionClass($obj);
 
-        if(!$reflection->isInstance($this)){
+        if (! $reflection->isInstance($this)) {
             throw new InvalidArgumentException('The unserialized object does not match the class of this container');
         }
 
         $properties = $reflection->getProperties(~(ReflectionProperty::IS_STATIC | ReflectionProperty::IS_READONLY));
 
-        foreach($properties as $reflectionProperty){
+        foreach ($properties as $reflectionProperty) {
             $this->{$reflectionProperty->name} = $reflectionProperty->getValue($obj);
         }
 
@@ -215,18 +248,19 @@ abstract class SettingsContainerAbstract implements SettingsContainerInterface{
     /**
      * Returns a serialized string representation of the object in its current state (except static/readonly properties)
      *
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @see \zxf\QrCode\Settings\SettingsContainerInterface::toArray()
      */
-    public function __serialize():array{
+    public function __serialize(): array
+    {
 
         $properties = (new ReflectionClass($this))
-            ->getProperties(~(ReflectionProperty::IS_STATIC | ReflectionProperty::IS_READONLY))
-        ;
+            ->getProperties(~(ReflectionProperty::IS_STATIC | ReflectionProperty::IS_READONLY));
 
         $data = [];
 
-        foreach($properties as $reflectionProperty){
+        foreach ($properties as $reflectionProperty) {
             $data[$reflectionProperty->name] = $reflectionProperty->getValue($this);
         }
 
@@ -236,17 +270,18 @@ abstract class SettingsContainerAbstract implements SettingsContainerInterface{
     /**
      * Restores the data from the given array to the current instance
      *
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @see \zxf\QrCode\Settings\SettingsContainerInterface::fromIterable()
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
-    public function __unserialize(array $data):void{
+    public function __unserialize(array $data): void
+    {
 
-        foreach($data as $key => $value){
+        foreach ($data as $key => $value) {
             $this->{$key} = $value;
         }
 
     }
-
 }

@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class QREps
  *
  * @created      09.05.2022
+ *
  * @author       smiley <smiley@chillerlan.net>
  * @copyright    2022 smiley
  * @license      MIT
@@ -11,7 +13,16 @@ declare(strict_types=1);
 
 namespace zxf\QrCode\Output;
 
-use function array_values, count, date, implode, is_array, is_numeric, max, min, round, sprintf;
+use function array_values;
+use function count;
+use function date;
+use function implode;
+use function is_array;
+use function is_numeric;
+use function max;
+use function min;
+use function round;
+use function sprintf;
 
 /**
  * Encapsulated Postscript (EPS) output
@@ -21,153 +32,160 @@ use function array_values, count, date, implode, is_array, is_numeric, max, min,
  * @see https://web.archive.org/web/20210419003859/https://www.adobe.com/content/dam/acom/en/devnet/actionscript/articles/PLRM.pdf
  * @see https://github.com/chillerlan/php-qrcode/discussions/148
  */
-class QREps extends QROutputAbstract{
+class QREps extends QROutputAbstract
+{
+    final public const MIME_TYPE = 'application/postscript';
 
-	final public const MIME_TYPE = 'application/postscript';
+    public static function moduleValueIsValid(mixed $value): bool
+    {
 
-	public static function moduleValueIsValid(mixed $value):bool{
+        if (! is_array($value) || count($value) < 3) {
+            return false;
+        }
 
-		if(!is_array($value) || count($value) < 3){
-			return false;
-		}
+        // check the first values of the array
+        foreach (array_values($value) as $i => $val) {
 
-		// check the first values of the array
-		foreach(array_values($value) as $i => $val){
+            if ($i > 3) {
+                break;
+            }
 
-			if($i > 3){
-				break;
-			}
+            if (! is_numeric($val)) {
+                return false;
+            }
 
-			if(!is_numeric($val)){
-				return false;
-			}
+        }
 
-		}
+        return true;
+    }
 
-		return true;
-	}
+    protected function prepareModuleValue(mixed $value): string
+    {
+        $values = [];
 
-	protected function prepareModuleValue(mixed $value):string{
-		$values = [];
+        foreach (array_values($value) as $i => $val) {
 
-		foreach(array_values($value) as $i => $val){
+            if ($i > 3) {
+                break;
+            }
 
-			if($i > 3){
-				break;
-			}
+            // clamp value and convert from int 0-255 to float 0-1 RGB/CMYK range
+            $values[] = round((max(0, min(255, intval($val))) / 255), 6);
+        }
 
-			// clamp value and convert from int 0-255 to float 0-1 RGB/CMYK range
-			$values[] = round((max(0, min(255, intval($val))) / 255), 6);
-		}
+        return $this->formatColor($values);
+    }
 
-		return $this->formatColor($values);
-	}
+    protected function getDefaultModuleValue(bool $isDark): string
+    {
+        return $this->formatColor(($isDark) ? [0.0, 0.0, 0.0] : [1.0, 1.0, 1.0]);
+    }
 
-	protected function getDefaultModuleValue(bool $isDark):string{
-		return $this->formatColor(($isDark) ? [0.0, 0.0, 0.0] : [1.0, 1.0, 1.0]);
-	}
+    /**
+     * Set the color format string
+     *
+     * 4 values in the color array will be interpreted as CMYK, 3 as RGB
+     *
+     *
+     * @param  float[]  $values
+     *
+     * @throws \zxf\QrCode\Output\QRCodeOutputException
+     */
+    protected function formatColor(array $values): string
+    {
+        $count = count($values);
 
-	/**
-	 * Set the color format string
-	 *
-	 * 4 values in the color array will be interpreted as CMYK, 3 as RGB
-	 *
-	 * @throws \zxf\QrCode\Output\QRCodeOutputException
-	 *
-	 * @param float[] $values
-	 */
-	protected function formatColor(array $values):string{
-		$count = count($values);
+        if ($count < 3) {
+            throw new QRCodeOutputException('invalid color value');
+        }
 
-		if($count < 3){
-			throw new QRCodeOutputException('invalid color value');
-		}
+        $format = ($count === 4)
+            // CMYK
+            ? '%f %f %f %f C'
+            // RGB
+            : '%f %f %f R';
 
-		$format = ($count === 4)
-			// CMYK
-			? '%f %f %f %f C'
-			// RGB
-			: '%f %f %f R';
+        return sprintf($format, ...$values);
+    }
 
-		return sprintf($format, ...$values);
-	}
+    public function dump(?string $file = null): string
+    {
+        $eps = $this->header();
 
-	public function dump(string|null $file = null):string{
-		$eps = $this->header();
+        // create the path elements
+        $paths = $this->collectModules($this->module(...));
 
-		// create the path elements
-		$paths = $this->collectModules($this->module(...));
+        foreach ($paths as $M_TYPE => $path) {
 
-		foreach($paths as $M_TYPE => $path){
+            if (empty($path)) {
+                continue;
+            }
 
-			if(empty($path)){
-				continue;
-			}
+            $eps[] = $this->getModuleValue($M_TYPE);
+            $eps[] = implode("\n", $path);
+        }
 
-			$eps[] = $this->getModuleValue($M_TYPE);
-			$eps[] = implode("\n", $path);
-		}
+        // end file
+        $eps[] = '%%EOF';
 
-		// end file
-		$eps[] = '%%EOF';
+        $data = implode("\n", $eps);
 
-		$data = implode("\n", $eps);
+        $this->saveToFile($data, $file);
 
-		$this->saveToFile($data, $file);
+        return $data;
+    }
 
-		return $data;
-	}
+    /**
+     * Returns the main header for the EPS file, including function definitions and background
+     *
+     * @return array<int, string>
+     */
+    protected function header(): array
+    {
+        [$width, $height] = $this->getOutputDimensions();
 
-	/**
-	 * Returns the main header for the EPS file, including function definitions and background
-	 *
-	 * @return array<int, string>
-	 */
-	protected function header():array{
-		[$width, $height] = $this->getOutputDimensions();
+        $header = [
+            // main header
+            '%!PS-Adobe-3.0 EPSF-3.0',
+            '%%Creator: php-qrcode (https://github.com/chillerlan/php-qrcode)',
+            '%%Title: QR Code',
+            sprintf('%%%%CreationDate: %1$s', date('c')),
+            '%%DocumentData: Clean7Bit',
+            '%%LanguageLevel: 3',
+            sprintf('%%%%BoundingBox: 0 0 %s %s', $width, $height),
+            '%%EndComments',
+            // function definitions
+            '%%BeginProlog',
+            '/F { rectfill } def',
+            '/R { setrgbcolor } def',
+            '/C { setcmykcolor } def',
+            '%%EndProlog',
+        ];
 
-		$header = [
-			// main header
-			'%!PS-Adobe-3.0 EPSF-3.0',
-			'%%Creator: php-qrcode (https://github.com/chillerlan/php-qrcode)',
-			'%%Title: QR Code',
-			sprintf('%%%%CreationDate: %1$s', date('c')),
-			'%%DocumentData: Clean7Bit',
-			'%%LanguageLevel: 3',
-			sprintf('%%%%BoundingBox: 0 0 %s %s', $width, $height),
-			'%%EndComments',
-			// function definitions
-			'%%BeginProlog',
-			'/F { rectfill } def',
-			'/R { setrgbcolor } def',
-			'/C { setcmykcolor } def',
-			'%%EndProlog',
-		];
+        if ($this::moduleValueIsValid($this->options->bgColor)) {
+            $header[] = $this->prepareModuleValue($this->options->bgColor);
+            $header[] = sprintf('0 0 %s %s F', $width, $height);
+        }
 
-		if($this::moduleValueIsValid($this->options->bgColor)){
-			$header[] = $this->prepareModuleValue($this->options->bgColor);
-			$header[] = sprintf('0 0 %s %s F', $width, $height);
-		}
+        return $header;
+    }
 
-		return $header;
-	}
+    /**
+     * Returns a path segment for a single module
+     */
+    protected function module(int $x, int $y, int $M_TYPE): string
+    {
 
-	/**
-	 * Returns a path segment for a single module
-	 */
-	protected function module(int $x, int $y, int $M_TYPE):string{
+        if (! $this->drawLightModules && ! $this->matrix->isDark($M_TYPE)) {
+            return '';
+        }
 
-		if(!$this->drawLightModules && !$this->matrix->isDark($M_TYPE)){
-			return '';
-		}
+        $outputX = ($x * $this->scale);
+        // Actual size - one block = Topmost y pos.
+        $top = ($this->length - $this->scale);
+        // Apparently y-axis is inverted (y0 is at bottom and not top) in EPS, so we have to switch the y-axis here
+        $outputY = ($top - ($y * $this->scale));
 
-		$outputX = ($x * $this->scale);
-		// Actual size - one block = Topmost y pos.
-		$top     = ($this->length - $this->scale);
-		// Apparently y-axis is inverted (y0 is at bottom and not top) in EPS, so we have to switch the y-axis here
-		$outputY = ($top - ($y * $this->scale));
-
-		return sprintf('%d %d %d %d F', $outputX, $outputY, $this->scale, $this->scale);
-	}
-
+        return sprintf('%d %d %d %d F', $outputX, $outputY, $this->scale, $this->scale);
+    }
 }

@@ -14,9 +14,9 @@ use zxf\Laravel\Trace\Traits\TraceResponseTrait;
 class Handle
 {
     use AppEndTrait;
-    use TraceResponseTrait;
-    use ExceptionShowDebugHtmlTrait;
     use ExceptionCodeTrait;
+    use ExceptionShowDebugHtmlTrait;
+    use TraceResponseTrait;
 
     /**
      * @var \Illuminate\Foundation\Application
@@ -486,7 +486,7 @@ class Handle
 
         $sqlTimes = 0;
         foreach ($this->sqlList as &$item) {
-            if(!isset($item['time'])){
+            if (! isset($item['time'])) {
                 continue;
             }
             $sqlTimes = bcadd($sqlTimes, $item['time'], 3);

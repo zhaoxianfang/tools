@@ -3,8 +3,8 @@
 namespace zxf\Laravel\Modules\Commands\Actions;
 
 use Illuminate\Console\Command;
-use zxf\Laravel\Modules\Module;
 use Symfony\Component\Console\Input\InputOption;
+use zxf\Laravel\Modules\Module;
 
 class ListCommand extends Command
 {

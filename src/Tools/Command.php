@@ -57,14 +57,15 @@ use InvalidArgumentException;
  * 扩展方法
  * $cmd->info('打印一个info');
  * $name = $cmd->input('请输入您的名字');
- *
  */
 class Command
 {
     // store options
     private static array $optsArr = [];
+
     // store args
     private static array $argsArr = [];
+
     // 是否解析过
     private static bool $isParse = false;
 
@@ -73,8 +74,9 @@ class Command
      */
     protected static $instance;
 
-    protected CliInput|null  $cliInput;
-    protected CliOutput|null $cliOutput;
+    protected ?CliInput $cliInput;
+
+    protected ?CliOutput $cliOutput;
 
     public function __construct()
     {
@@ -83,13 +85,13 @@ class Command
             exit('Please run under command line.');
         }
         if (class_exists('CliInput')) {
-            $this->cliInput = new CliInput();
+            $this->cliInput = new CliInput;
         }
         if (class_exists('CliOutput')) {
-            $this->cliOutput = new CliOutput();
+            $this->cliOutput = new CliOutput;
         }
 
-        if (!self::$isParse) {
+        if (! self::$isParse) {
             self::parseArgs();
         }
     }
@@ -101,8 +103,8 @@ class Command
      */
     public static function instance()
     {
-        if (!isset(self::$instance) || is_null(self::$instance)) {
-            self::$instance = new static();
+        if (! isset(self::$instance) || is_null(self::$instance)) {
+            self::$instance = new static;
         }
 
         return self::$instance;
@@ -110,12 +112,8 @@ class Command
 
     /**
      * 获取选项值
-     *
-     * @param string|NULL $opt
-     *
-     * @return array|string|NULL
      */
-    public function getOptVal(string|null $opt = null): array|string|null
+    public function getOptVal(?string $opt = null): array|string|null
     {
         if (is_null($opt)) {
             return self::$optsArr;
@@ -124,39 +122,37 @@ class Command
                 return self::$optsArr[$opt];
             }
         }
+
         return null;
     }
 
     /**
      * 获取命令行参数值
-     *
-     * @param string|null $arg
-     *
-     * @return bool|array|string|null
      */
-    public function getArgVal(string|null $arg = null): bool|array|string|null
+    public function getArgVal(?string $arg = null): bool|array|string|null
     {
         if (is_null($arg)) {
             return self::$argsArr;
-        } elseif (!empty(self::$argsArr) && in_array($arg, self::$argsArr)) {
+        } elseif (! empty(self::$argsArr) && in_array($arg, self::$argsArr)) {
             return true;
         }
+
         return false;
     }
 
     /**
      * 注册选项对应的回调处理函数, $callback 应该有一个参数, 用于接收选项值
      *
-     * @param string   $opt      解析的opts参数名称
-     * @param callable $callback 回调函数
-     *
+     * @param  string  $opt  解析的opts参数名称
+     * @param  callable  $callback  回调函数
      * @return void 解析到值返回解析值，否则返回 null
+     *
      * @throws InvalidArgumentException
      */
     public function option($opt, callable $callback)
     {
         // check
-        if (!is_callable($callback)) {
+        if (! is_callable($callback)) {
             throw new InvalidArgumentException(sprintf('Not a valid callback <%s>.', $callback));
         }
         if (isset(self::$optsArr[$opt])) {
@@ -169,19 +165,19 @@ class Command
     /**
      * 注册参数对应的回调处理函数, $callback 应该有一个参数, 用于接收参数值
      *
-     * @param string   $arg      解析的arg参数名称
-     * @param callable $callback 回调函数
-     *
+     * @param  string  $arg  解析的arg参数名称
+     * @param  callable  $callback  回调函数
      * @return void 解析到参数返回true，否则返回 false
+     *
      * @throws InvalidArgumentException
      */
     public function args($arg, callable $callback)
     {
         // check
-        if (!is_callable($callback)) {
+        if (! is_callable($callback)) {
             throw new InvalidArgumentException(sprintf('Not a valid callback <%s>.', $callback));
         }
-        if (!empty(self::$argsArr) && in_array($arg, self::$argsArr)) {
+        if (! empty(self::$argsArr) && in_array($arg, self::$argsArr)) {
             call_user_func($callback, true);
         } else {
             call_user_func($callback, false);
@@ -190,8 +186,6 @@ class Command
 
     /**
      * 获取所有 opts 和 args 的值
-     *
-     * @return array
      */
     public function all(): array
     {
@@ -201,73 +195,69 @@ class Command
     /**
      * 是否是 -s 形式的短选项
      *
-     * @param string $opt
      *
-     * @return string|boolean 返回短选项名
+     * @return string|bool 返回短选项名
      */
     private static function isShortOptions(string $opt): bool|string
     {
         if (preg_match('/^\-([a-zA-Z0-9])$/', $opt, $matchs)) {
             return $matchs[1];
         }
+
         return false;
     }
 
     /**
      * 是否是 -svalue 形式的短选项
      *
-     * @param string $opt
      *
-     * @return array|boolean 返回短选项名以及选项值
+     * @return array|bool 返回短选项名以及选项值
      */
     private static function isShortOptionsWithValue(string $opt): bool|array
     {
         if (preg_match('/^\-([a-zA-Z0-9])(\S+)$/', $opt, $matchs)) {
             return [$matchs[1], $matchs[2]];
         }
+
         return false;
     }
 
     /**
      * 是否是 --longopts 形式的长选项
      *
-     * @param string $opt
      *
-     * @return string|boolean 返回长选项名
+     * @return string|bool 返回长选项名
      */
     private static function isLongOptions(string $opt): bool|string
     {
         if (preg_match('/^\-\-([a-zA-Z0-9\-_]{2,})$/', $opt, $matchs)) {
             return $matchs[1];
         }
+
         return false;
     }
 
     /**
      * 是否是 --longopts=value 形式的长选项
      *
-     * @param string $opt
-     *
-     * @return array|boolean 返回长选项名及选项值
+     * @param  string  $opt
+     * @return array|bool 返回长选项名及选项值
      */
     private static function isLongOptionsWithValue($opt): bool|array
     {
         if (preg_match('/^\-\-([a-zA-Z0-9\-_]{2,})(?:\=(.*?))$/', $opt, $matchs)) {
             return [$matchs[1], $matchs[2]];
         }
+
         return false;
     }
 
     /**
      * 是否是命令行参数
-     *
-     * @param string $value
-     *
-     * @return boolean
      */
     private static function isArg(string $value): bool
     {
-        return !preg_match('/^\-/', $value);
+        return ! preg_match('/^\-/', $value);
     }
 
     /**
@@ -278,8 +268,8 @@ class Command
     private static function parseArgs(): void
     {
         global $argv;
-        if (!self::$isParse) {
-            $index  = 1;
+        if (! self::$isParse) {
+            $index = 1;
             $length = count($argv);
             while ($index < $length) {
                 // current value
@@ -313,23 +303,19 @@ class Command
     /**
      * 调用本类中不存在的方法，尝试去调用 cliInput 或者 cliOutput 的方法
      *
-     * @param $methodName
-     * @param $arguments
      *
      * @return mixed
+     *
      * @throws Exception
      */
     public function __call($methodName, $arguments)
     {
-        if (!empty($this->cliInput) && method_exists($this->cliInput, $methodName)) {
-            return call_user_func_array(array($this->cliInput, $methodName), $arguments);
+        if (! empty($this->cliInput) && method_exists($this->cliInput, $methodName)) {
+            return call_user_func_array([$this->cliInput, $methodName], $arguments);
         }
-        if (!empty($this->cliOutput) && method_exists($this->cliOutput, $methodName)) {
-            return call_user_func_array(array($this->cliOutput, $methodName), $arguments);
+        if (! empty($this->cliOutput) && method_exists($this->cliOutput, $methodName)) {
+            return call_user_func_array([$this->cliOutput, $methodName], $arguments);
         }
         throw new Exception("method $methodName not exists");
     }
 }
-
-
-

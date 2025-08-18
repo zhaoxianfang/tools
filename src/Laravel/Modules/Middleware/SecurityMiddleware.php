@@ -77,19 +77,19 @@ class SecurityMiddleware
     protected const ILLEGAL_URL_PATTERNS = [
         // 将正则表达式编译为一次匹配
         '~/(?:'
-        . '(\.+[^/]*)(?=/|$)|'             // 点开头的文件/目录
-        . '\.config(\.php)?$|'             // .config 文件
-        . 'composer\.(json|lock)$|'        // composer 文件
-        . 'package\.json$|'               // package.json
-        . '\.(php|jsp|asp|aspx|pl|py|rb|sh|cgi|cfm|bash|c(pp)?|java|sql)$|' // 源代码文件
-        . '\.(ya?ml)$|'                   // yaml/yml
-        . '\.(sql|db3?|mdb|accdb|sqlite3?|dbf)$|' // 数据库
-        . '\.(bak|old|save|back?up|orig|temp|tmp|sdk|debug|sample|secret|private|log)$|' // 备份文件
+        .'(\.+[^/]*)(?=/|$)|'             // 点开头的文件/目录
+        .'\.config(\.php)?$|'             // .config 文件
+        .'composer\.(json|lock)$|'        // composer 文件
+        .'package\.json$|'               // package.json
+        .'\.(php|jsp|asp|aspx|pl|py|rb|sh|cgi|cfm|bash|c(pp)?|java|sql)$|' // 源代码文件
+        .'\.(ya?ml)$|'                   // yaml/yml
+        .'\.(sql|db3?|mdb|accdb|sqlite3?|dbf)$|' // 数据库
+        .'\.(bak|old|save|back?up|orig|temp|tmp|sdk|debug|sample|secret|private|log)$|' // 备份文件
         // . '^(readme|license|changelog)\.(md|txt)$|' // 说明文件
         // . '/\.(zip|rar|tar|gz|7z)$/'  // 匹配常见压缩文件格式
-        . '(backup|node_modules|vendor)|'  // 敏感目录
-        . 'System Volume Information'      // Windows 目录
-        . ')~i',                           // 不区分大小写
+        .'(backup|node_modules|vendor)|'  // 敏感目录
+        .'System Volume Information'      // Windows 目录
+        .')~i',                           // 不区分大小写
         // 其他正则表达式
     ];
 
@@ -120,30 +120,30 @@ class SecurityMiddleware
      */
     protected const SUSPICIOUS_USER_AGENTS = [
         '/'
-        . 'sqlmap|'         // SQL注入工具
-        . 'nikto|'          // 漏洞扫描器
-        . 'metasploit|'     // 渗透测试框架
-        . 'nessus|'         // 漏洞扫描器
-        . 'wpscan|'         // WordPress扫描器
-        . 'acunetix|'       // Web漏洞扫描器
-        . 'burp|'           // 渗透测试工具
-        . 'dirbuster|'      // 目录爆破工具
-        . 'hydra|'          // 暴力破解工具
-        . 'havij|'          // SQL注入工具
-        . 'zap|'            // OWASP ZAP代理
-        . 'arachni|'        // Web应用扫描器
-        . 'nmap|'           // 端口扫描工具
-        . 'netsparker|'     // Web漏洞扫描器
-        . 'w3af|'           // Web应用攻击框架
-        . 'fimap|'          // 文件包含工具
-        . 'skipfish|'       // Web应用扫描器
-        . 'webshag|'        // 多线程扫描器
-        . 'webinspect|'     // Web应用扫描器
-        . 'paros|'          // Web代理扫描器
-        . 'appscan|'        // IBM安全扫描器
-        . 'webscarab|'      // OWASP WebScarab
-        . 'beef'            // 浏览器攻击框架
-        . '/i',             // 不区分大小写匹配
+        .'sqlmap|'         // SQL注入工具
+        .'nikto|'          // 漏洞扫描器
+        .'metasploit|'     // 渗透测试框架
+        .'nessus|'         // 漏洞扫描器
+        .'wpscan|'         // WordPress扫描器
+        .'acunetix|'       // Web漏洞扫描器
+        .'burp|'           // 渗透测试工具
+        .'dirbuster|'      // 目录爆破工具
+        .'hydra|'          // 暴力破解工具
+        .'havij|'          // SQL注入工具
+        .'zap|'            // OWASP ZAP代理
+        .'arachni|'        // Web应用扫描器
+        .'nmap|'           // 端口扫描工具
+        .'netsparker|'     // Web漏洞扫描器
+        .'w3af|'           // Web应用攻击框架
+        .'fimap|'          // 文件包含工具
+        .'skipfish|'       // Web应用扫描器
+        .'webshag|'        // 多线程扫描器
+        .'webinspect|'     // Web应用扫描器
+        .'paros|'          // Web代理扫描器
+        .'appscan|'        // IBM安全扫描器
+        .'webscarab|'      // OWASP WebScarab
+        .'beef'            // 浏览器攻击框架
+        .'/i',             // 不区分大小写匹配
 
         // '/curl/i',         // 可疑的curl请求
         // '/wget/i',         // 可疑的wget请求
@@ -211,7 +211,7 @@ class SecurityMiddleware
                     $request,
                     '请求方式拦截',
                     '请求方式拦截',
-                    '不被允许的请求方式:' . $request->method()
+                    '不被允许的请求方式:'.$request->method()
                 );
             }
         }
@@ -439,7 +439,7 @@ class SecurityMiddleware
 
         // 不进行验证的白名单地址
         $whitelistPath = $this->getMiddlewareConfig($request, 'whitelist_path_of_not_verify_body');
-        if(is_array($whitelistPath) && ! empty($whitelistPath)){
+        if (is_array($whitelistPath) && ! empty($whitelistPath)) {
             if (in_array($path, $whitelistPath)) {
                 return false;
             }
@@ -658,7 +658,7 @@ class SecurityMiddleware
             '/\*.*?\*/',             // 斜体
             '/<!--[\s\S]*?-->/',     // HTML注释
             '/\/\*[\s\S]*?\*\//',   // CSS/JS注释
-            '/\/\/.*?(\n|$)/'        // 单行注释
+            '/\/\/.*?(\n|$)/',        // 单行注释
         ], '', $content);
 
         // 清理多余空行（保留最多两个连续换行）

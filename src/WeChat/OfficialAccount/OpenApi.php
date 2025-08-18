@@ -18,6 +18,7 @@ class OpenApi extends WeChatBase
      * @link https://developers.weixin.qq.com/doc/offiaccount/openApi/clear_quota.html#%E8%AF%B7%E6%B1%82%E5%9C%B0%E5%9D%80
      *
      * @return array
+     *
      * @throws Exception
      */
     public function clearQuota()
@@ -31,10 +32,10 @@ class OpenApi extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/openApi/get_api_quota.html
      *
-     * @param string $cgi_path api的请求地址，例如"/cgi-bin/message/custom/send";不要前缀“https://api.weixin.qq.com”
-     *                         ，也不要漏了"/",否则都会76003的报错
-     *
+     * @param  string  $cgi_path  api的请求地址，例如"/cgi-bin/message/custom/send";不要前缀“https://api.weixin.qq.com”
+     *                            ，也不要漏了"/",否则都会76003的报错
      * @return mixed
+     *
      * @throws Exception
      */
     public function getQuota(string $cgi_path)
@@ -45,9 +46,9 @@ class OpenApi extends WeChatBase
     /**
      * 查询rid信息
      *
-     * @param string $rid 调用接口报错返回的rid
-     *
+     * @param  string  $rid  调用接口报错返回的rid
      * @return mixed
+     *
      * @throws Exception
      */
     public function getRid(string $rid)
@@ -62,6 +63,7 @@ class OpenApi extends WeChatBase
      * @Link https://developers.weixin.qq.com/doc/offiaccount/openApi/clearQuotaByAppSecret.html
      *
      * @return mixed
+     *
      * @throws Exception
      */
     public function clearQuotaByAppSecret()
@@ -74,10 +76,10 @@ class OpenApi extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/doc/offiaccount/Basic_Information/Network_Detection.html
      *
-     * @param string $action   执行的检测动作，允许的值：dns（做域名解析）、ping（做ping检测）、all（dns和ping都做）
-     * @param string $operator 指定平台从某个运营商进行检测，允许的值：CHINANET（电信出口）、UNICOM（联通出口）、CAP（腾讯自建出口）、DEFAULT（根据ip来选择运营商）
-     *
+     * @param  string  $action  执行的检测动作，允许的值：dns（做域名解析）、ping（做ping检测）、all（dns和ping都做）
+     * @param  string  $operator  指定平台从某个运营商进行检测，允许的值：CHINANET（电信出口）、UNICOM（联通出口）、CAP（腾讯自建出口）、DEFAULT（根据ip来选择运营商）
      * @return array
+     *
      * @throws Exception
      */
     public function ping(string $action = 'all', string $operator = 'DEFAULT')
@@ -91,6 +93,7 @@ class OpenApi extends WeChatBase
      * @link https://developers.weixin.qq.com/doc/offiaccount/Basic_Information/Get_the_WeChat_server_IP_address.html
      *
      * @return array
+     *
      * @throws Exception
      */
     public function getCallbackIp()

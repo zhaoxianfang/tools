@@ -26,7 +26,7 @@ class TypePostnet implements TypeInterface
         6 => [1, 2, 2, 1, 1],
         7 => [2, 1, 1, 1, 2],
         8 => [2, 1, 1, 2, 1],
-        9 => [2, 1, 2, 1, 1]
+        9 => [2, 1, 2, 1, 1],
     ];
 
     public function getBarcode(string $code): Barcode
@@ -38,7 +38,7 @@ class TypePostnet implements TypeInterface
 
         // calculate checksum
         $sum = 0;
-        for ($i = 0; $i < $len; ++$i) {
+        for ($i = 0; $i < $len; $i++) {
             $sum += intval($code[$i]);
         }
         $chkd = ($sum % 10);
@@ -52,11 +52,11 @@ class TypePostnet implements TypeInterface
         $barcode->addBar(new BarcodeBar(1, 2, true));
         $barcode->addBar(new BarcodeBar(1, 2, false));
 
-        for ($i = 0; $i < $len; ++$i) {
-            for ($j = 0; $j < 5; ++$j) {
+        for ($i = 0; $i < $len; $i++) {
+            for ($j = 0; $j < 5; $j++) {
                 $h = $this->barlen[$code[$i]][$j];
-                $p = (int)floor(1 / $h);
-                $barcode->addBar(new BarcodeBar(1, (int)$h, true, $p));
+                $p = (int) floor(1 / $h);
+                $barcode->addBar(new BarcodeBar(1, (int) $h, true, $p));
                 $barcode->addBar(new BarcodeBar(1, 2, false));
             }
         }

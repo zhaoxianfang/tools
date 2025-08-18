@@ -2,7 +2,7 @@
 
 namespace zxf\Office\Excel\Imports;
 
-use Maatwebsite\Excel\Concerns\WithHeadingRow; // 跳过表头（不读取第一行）
+// 跳过表头（不读取第一行）
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
@@ -10,7 +10,6 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 
 class ExcelToCollection implements ToCollection, WithBatchInserts, WithChunkReading
 {
-
     public function collection(Collection $collection)
     {
         return $collection;
@@ -22,9 +21,6 @@ class ExcelToCollection implements ToCollection, WithBatchInserts, WithChunkRead
         return 1000;
     }
 
-    /**
-     * @return int
-     */
     public function batchSize(): int
     {
         return 1000;

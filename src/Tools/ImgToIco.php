@@ -33,24 +33,25 @@ class ImgToIco
      */
     public static function instance()
     {
-        if (!isset(self::$instance) || is_null(self::$instance)) {
-            self::$instance = new static();
+        if (! isset(self::$instance) || is_null(self::$instance)) {
+            self::$instance = new static;
         }
+
         return self::$instance;
     }
 
     /**
      * 将PNG、JPEG或GIF图像转换为指定大小的ICO文件。
      *
-     * @param string $sourceImage 源图像路径
-     * @param int    $size        ICO图标像素大小（例如：16, 32, 64, 128等）
+     * @param  string  $sourceImage  源图像路径
+     * @param  int  $size  ICO图标像素大小（例如：16, 32, 64, 128等）
      *
      * @throws Exception 如果源图像不存在或不受支持。
      */
     public function set(string $sourceImage = '', int $size = 16)
     {
         // 检查源图像文件是否存在
-        if (!file_exists($sourceImage)) {
+        if (! file_exists($sourceImage)) {
             throw new Exception("源图像文件不存在：{$sourceImage}");
         }
         // 创建一个空的ICO图片
@@ -63,8 +64,8 @@ class ImgToIco
 
         // 获取输入图片信息
         $imageInfo = getimagesize($sourceImage);
-        $width     = $imageInfo[0];
-        $height    = $imageInfo[1];
+        $width = $imageInfo[0];
+        $height = $imageInfo[1];
 
         // 读取输入图片并复制到ICO图片中
         $inputImage = imagecreatefromstring(file_get_contents($sourceImage));
@@ -85,18 +86,19 @@ class ImgToIco
     /**
      * 处理 生成的ico图片
      *
-     * @param bool|string $savePath    如果需要保存到指定文件夹就填写保存路径，默认直接下载到浏览器
-     * @param int         $permissions 文件夹权限
+     * @param  bool|string  $savePath  如果需要保存到指定文件夹就填写保存路径，默认直接下载到浏览器
+     * @param  int  $permissions  文件夹权限
      */
     public function generate(bool|string $savePath = false, int $permissions = 0755)
     {
         if ($savePath) {
             // 将图像保存到文件
             create_dir($savePath, $permissions);
-            $path = $savePath . DIRECTORY_SEPARATOR . date("Ymdhis") . rand(1, 1000) . "_favicon.ico";
+            $path = $savePath.DIRECTORY_SEPARATOR.date('Ymdhis').rand(1, 1000).'_favicon.ico';
             imagepng($this->resizeIm, $path, 9);
             // 释放ICO图像资源内存
             imagedestroy($this->resizeIm);
+
             return $savePath;
         } else {
             // // 下载到浏览器
@@ -116,25 +118,24 @@ class ImgToIco
             imagedestroy($this->resizeIm);
 
             // 返回Base64编码的PNG图像字符串
-            return 'data:image/png;base64,' . base64_encode($pngString);
+            return 'data:image/png;base64,'.base64_encode($pngString);
         }
     }
 
     /**
      * 下载文件到浏览器
      *
-     * @param string $filename 文件路径
-     * @param array  $title    输出的文件名
-     *
+     * @param  string  $filename  文件路径
+     * @param  array  $title  输出的文件名
      * @return void
      */
     private function output_for_download($filename, $title)
     {
-        $file = fopen($filename, "rb");
-        Header("Content-type:  application/octet-stream ");
-        Header("Accept-Ranges:  bytes ");
-        Header("Content-Disposition:  attachment;  filename= $title");
-        while (!feof($file)) {
+        $file = fopen($filename, 'rb');
+        header('Content-type:  application/octet-stream ');
+        header('Accept-Ranges:  bytes ');
+        header("Content-Disposition:  attachment;  filename= $title");
+        while (! feof($file)) {
             echo fread($file, 8192);
             ob_flush();
             flush();
@@ -144,4 +145,3 @@ class ImgToIco
         exit;
     }
 }
-

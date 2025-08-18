@@ -6,11 +6,15 @@ namespace zxf\BarCode;
 class BarcodeBar
 {
     protected int $width;
+
     protected int $height;
+
     protected int $positionVertical;
+
     protected int $type;
 
     const TYPE_BAR = 1;
+
     const TYPE_SPACING = 0;
 
     public function __construct(int $width, int $height, bool $drawBar = true, int $positionVertical = 0)

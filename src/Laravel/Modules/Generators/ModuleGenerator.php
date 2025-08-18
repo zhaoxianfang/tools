@@ -431,9 +431,9 @@ class ModuleGenerator extends Generator
 
             // Api 控制器
             $this->console->call('module:make-controller', [
-               'controller' => 'Api/'.$this->getName().'Controller',
-               'module' => $this->getName(),
-           ] + ['--api' => true]);
+                'controller' => 'Api/'.$this->getName().'Controller',
+                'module' => $this->getName(),
+            ] + ['--api' => true]);
         }
     }
 

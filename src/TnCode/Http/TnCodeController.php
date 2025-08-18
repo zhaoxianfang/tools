@@ -12,7 +12,7 @@ class TnCodeController
      */
     public function getImg()
     {
-        $tnCode = new TnCode();
+        $tnCode = new TnCode;
         $tnCode->make();
     }
 
@@ -21,7 +21,7 @@ class TnCodeController
      */
     public function check(Request $request)
     {
-        $tncode = new TnCode();
+        $tncode = new TnCode;
         exit($tncode->check($request->tn_r) ? 'ok' : 'error');
     }
 }

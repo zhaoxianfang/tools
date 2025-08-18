@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class LuminanceSourceAbstract
  *
  * @created      24.01.2021
+ *
  * @author       ZXing Authors
  * @author       Ashot Khanamiryan
  * @author       Smiley <smiley@chillerlan.net>
@@ -13,10 +15,16 @@ declare(strict_types=1);
 
 namespace zxf\QrCode\Common;
 
-use zxf\QrCode\QROptions;
 use zxf\QrCode\Decoder\QRCodeDecoderException;
+use zxf\QrCode\QROptions;
 use zxf\QrCode\Settings\SettingsContainerInterface;
-use function array_slice, array_splice, file_exists, is_file, is_readable, realpath;
+
+use function array_slice;
+use function array_splice;
+use function file_exists;
+use function is_file;
+use function is_readable;
+use function realpath;
 
 /**
  * The purpose of this class hierarchy is to abstract different bitmap implementations across
@@ -24,72 +32,81 @@ use function array_slice, array_splice, file_exists, is_file, is_readable, realp
  *
  * @author dswitkin@google.com (Daniel Switkin)
  */
-abstract class LuminanceSourceAbstract implements LuminanceSourceInterface{
+abstract class LuminanceSourceAbstract implements LuminanceSourceInterface
+{
+    protected SettingsContainerInterface|QROptions $options;
 
-	protected SettingsContainerInterface|QROptions $options;
-	/** @var int[] */
-	protected array $luminances;
-	protected int   $width;
-	protected int   $height;
+    /** @var int[] */
+    protected array $luminances;
 
-	public function __construct(int $width, int $height, SettingsContainerInterface|QROptions $options = new QROptions){
-		$this->width   = $width;
-		$this->height  = $height;
-		$this->options = $options;
+    protected int $width;
 
-		$this->luminances = [];
-	}
+    protected int $height;
 
-	public function getLuminances():array{
-		return $this->luminances;
-	}
+    public function __construct(int $width, int $height, SettingsContainerInterface|QROptions $options = new QROptions)
+    {
+        $this->width = $width;
+        $this->height = $height;
+        $this->options = $options;
 
-	public function getWidth():int{
-		return $this->width;
-	}
+        $this->luminances = [];
+    }
 
-	public function getHeight():int{
-		return $this->height;
-	}
+    public function getLuminances(): array
+    {
+        return $this->luminances;
+    }
 
-	public function getRow(int $y):array{
+    public function getWidth(): int
+    {
+        return $this->width;
+    }
 
-		if($y < 0 || $y >= $this->getHeight()){
-			throw new QRCodeDecoderException('Requested row is outside the image: '.$y);
-		}
+    public function getHeight(): int
+    {
+        return $this->height;
+    }
 
-		$arr = [];
+    public function getRow(int $y): array
+    {
 
-		array_splice($arr, 0, $this->width, array_slice($this->luminances, ($y * $this->width), $this->width));
+        if ($y < 0 || $y >= $this->getHeight()) {
+            throw new QRCodeDecoderException('Requested row is outside the image: '.$y);
+        }
 
-		return $arr;
-	}
+        $arr = [];
 
-	protected function setLuminancePixel(int $r, int $g, int $b):void{
-		$this->luminances[] = ($r === $g && $g === $b)
-			// Image is already greyscale, so pick any channel.
-			? $r // (($r + 128) % 256) - 128;
-			// Calculate luminance cheaply, favoring green.
-			: (($r + 2 * $g + $b) / 4); // (((($r + 2 * $g + $b) / 4) + 128) % 256) - 128;
-	}
+        array_splice($arr, 0, $this->width, array_slice($this->luminances, ($y * $this->width), $this->width));
 
-	/**
-	 * @throws \zxf\QrCode\Decoder\QRCodeDecoderException
-	 */
-	protected static function checkFile(string $path):string{
-		$path = trim($path);
+        return $arr;
+    }
 
-		if(!file_exists($path) || !is_file($path) || !is_readable($path)){
-			throw new QRCodeDecoderException('invalid file: '.$path);
-		}
+    protected function setLuminancePixel(int $r, int $g, int $b): void
+    {
+        $this->luminances[] = ($r === $g && $g === $b)
+            // Image is already greyscale, so pick any channel.
+            ? $r // (($r + 128) % 256) - 128;
+            // Calculate luminance cheaply, favoring green.
+            : (($r + 2 * $g + $b) / 4); // (((($r + 2 * $g + $b) / 4) + 128) % 256) - 128;
+    }
 
-		$realpath = realpath($path);
+    /**
+     * @throws \zxf\QrCode\Decoder\QRCodeDecoderException
+     */
+    protected static function checkFile(string $path): string
+    {
+        $path = trim($path);
 
-		if($realpath === false){
-			throw new QRCodeDecoderException('unable to resolve path: '.$path);
-		}
+        if (! file_exists($path) || ! is_file($path) || ! is_readable($path)) {
+            throw new QRCodeDecoderException('invalid file: '.$path);
+        }
 
-		return $realpath;
-	}
+        $realpath = realpath($path);
 
+        if ($realpath === false) {
+            throw new QRCodeDecoderException('unable to resolve path: '.$path);
+        }
+
+        return $realpath;
+    }
 }

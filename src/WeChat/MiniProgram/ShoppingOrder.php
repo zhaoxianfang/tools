@@ -17,9 +17,8 @@ class ShoppingOrder extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/shopping-order/normal-shopping-detail/uploadShoppingInfo.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function uploadShoppingInfo(array $data)
@@ -32,9 +31,8 @@ class ShoppingOrder extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/shopping-order/normal-shopping-detail/uploadShippingInfo.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function uploadShippingInfo(array $data)
@@ -47,9 +45,8 @@ class ShoppingOrder extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/shopping-order/shopping-detail/uploadCombinedShoppingInfo.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function uploadCombinedShoppingInfo(array $data)
@@ -62,9 +59,8 @@ class ShoppingOrder extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/shopping-order/shopping-detail/uploadCombinedShippingInfo.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function uploadCombinedShippingInfo(array $data)
@@ -77,9 +73,8 @@ class ShoppingOrder extends WeChatBase
      *
      * @link https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/shopping-order/upload-result/ShoppingInfoVerifyUploadResult.html
      *
-     * @param array $data
-     *
      * @return array
+     *
      * @throws Exception
      */
     public function ShoppingInfoVerifyUploadResult(array $data)

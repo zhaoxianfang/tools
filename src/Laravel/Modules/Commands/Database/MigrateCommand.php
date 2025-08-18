@@ -4,8 +4,8 @@ namespace zxf\Laravel\Modules\Commands\Database;
 
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Collection;
-use zxf\Laravel\Modules\Commands\BaseCommand;
 use Symfony\Component\Console\Input\InputOption;
+use zxf\Laravel\Modules\Commands\BaseCommand;
 
 class MigrateCommand extends BaseCommand
 {

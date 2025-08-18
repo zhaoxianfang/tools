@@ -10,7 +10,7 @@ use Exception;
 class WeChatWorkBase extends WeChatBase
 {
     // 微信请求地址
-    protected $urlBase = "https://qyapi.weixin.qq.com/API_URL?ACCESS_TOKEN";
+    protected $urlBase = 'https://qyapi.weixin.qq.com/API_URL?ACCESS_TOKEN';
 
     /**
      * =======================================================================================
@@ -23,31 +23,30 @@ class WeChatWorkBase extends WeChatBase
      *
      * @link https://developer.work.weixin.qq.com/document/path/91039
      *
-     * @return void
      * @throws Exception
      */
     public function requestToken(): void
     {
         $this->useToken = false;
-        $url            = $this->parseUrl("cgi-bin/gettoken", [
-            "corpid"     => $this->config["corp_id"],
-            "corpsecret" => $this->config["secret"],
+        $url = $this->parseUrl('cgi-bin/gettoken', [
+            'corpid' => $this->config['corp_id'],
+            'corpsecret' => $this->config['secret'],
         ]);
         $this->useToken = true;
 
-        $res = $this->http->get($url, "json");
+        $res = $this->http->get($url, 'json');
 
-        if (isset($res["errcode"]) && $res["errcode"] > 0) {
-            $this->error($this->getMessage($res["errcode"]), $res["errcode"]);
+        if (isset($res['errcode']) && $res['errcode'] > 0) {
+            $this->error($this->getMessage($res['errcode']), $res['errcode']);
         }
 
-        if (!empty($res["access_token"])) {
-            $this->accessToken = $res["access_token"];
-            $expiresIn         = (!empty($res["expires_in"]) && $res["expires_in"] > 0) ? $res["expires_in"] : 7100;
+        if (! empty($res['access_token'])) {
+            $this->accessToken = $res['access_token'];
+            $expiresIn = (! empty($res['expires_in']) && $res['expires_in'] > 0) ? $res['expires_in'] : 7100;
             // 缓存token
-            $this->setAccessToken($res["access_token"], (int)$expiresIn);
+            $this->setAccessToken($res['access_token'], (int) $expiresIn);
         } else {
-            $this->accessToken = "";
+            $this->accessToken = '';
             $this->delAccessToken();
         }
     }

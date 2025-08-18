@@ -13,9 +13,7 @@ class SheetsExport
     /**
      * 导出多表
      *
-     * @param array  $sheetData
-     * @param string $filename 文件名 eg 'test.xlsx','test.csv'
-     * @param mixed  ...$args
+     * @param  string  $filename  文件名 eg 'test.xlsx','test.csv'
      */
     public static function download(array $sheetData, string $filename, mixed ...$args)
     {

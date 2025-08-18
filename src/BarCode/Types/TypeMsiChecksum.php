@@ -42,9 +42,9 @@ class TypeMsiChecksum implements TypeInterface
             $clen = strlen($code);
             $p = 2;
             $check = 0;
-            for ($i = ($clen - 1); $i >= 0; --$i) {
+            for ($i = ($clen - 1); $i >= 0; $i--) {
                 $check += (hexdec($code[$i]) * $p);
-                ++$p;
+                $p++;
                 if ($p > 7) {
                     $p = 2;
                 }
@@ -57,10 +57,10 @@ class TypeMsiChecksum implements TypeInterface
         }
         $seq = '110'; // left guard
         $clen = strlen($code);
-        for ($i = 0; $i < $clen; ++$i) {
+        for ($i = 0; $i < $clen; $i++) {
             $digit = $code[$i];
             if (! isset($chr[$digit])) {
-                throw new InvalidCharacterException('Char ' . $digit . ' is unsupported');
+                throw new InvalidCharacterException('Char '.$digit.' is unsupported');
             }
             $seq .= $chr[$digit];
         }

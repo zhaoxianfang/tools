@@ -13,7 +13,6 @@ use zxf\Login\Contracts\Gateway;
  *
  * TODO: 未验证
  */
-
 class Aliyun extends Gateway
 {
     const API_BASE = 'https://signin.aliyun.com/';

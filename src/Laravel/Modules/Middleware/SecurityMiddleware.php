@@ -41,52 +41,33 @@ class SecurityMiddleware
      */
     protected const MALICIOUS_BODY_PATTERNS = [
         // XSS攻击
-        '/<script\b[^>]*>(.*?)<\/script>/is',          // 基本脚本标签
-        '/javascript\s*:/i',                           // JavaScript伪协议
-        '/on\w+\s*=\s*["\'].*?["\']/i',                // 事件处理器
-        '/(data|vbscript):/i',                         // 其他危险协议
-        // '/(%3C|<).*script.*(%3E|>)/i',                 // XSS
+        '/(?:<script\b[^>]*>.*?<\/script>|' // 基本脚本标签
+        .'javascript\s*:|' // JavaScript伪协议
+        .'on\w+\s*=\s*["\'].*?["\']|' // 事件处理器
+        .'(data|vbscript):)/is', // 其他危险协议
 
         // SQL注入
-        '/\b(union\s+select|select\s+\*.*from)\b/is',  // 联合查询
-        '/\b(insert\s+into|update\s+\w+\s+set)\b/is',  // 数据修改
-        '/\b(drop\s+table|truncate\s+table)\b/is',     // 表删除
-        '/insert\s+into/i',                            // SQL 插入
-        '/\b(exec\s*\(|execute\s*\(|sp_executesql)/i', // SQL执行
-        '/(or\s+\d=\d|and\s+\d=\d)/i',                 // SQL 注入
-        '/delete\s+from/i',                            // SQL 删除
-        // '/(benchmark\(|sleep\(|load_file\(|xp_cmdshell)/i', // SQL 时间盲注与命令注入
-        '/(?:\'|"|%22|%27).*(or|and).*(=|>|<|>=|<=)/i', // 匹配更复杂的 SQL 注入模式
+        '/\b(?:union\s+select|select\s+\*.*from|' // 联合查询
+        .'insert\s+into|update\s+\w+\s+set|' // 数据修改
+        .'drop\s+table|truncate\s+table|' // 表删除
+        .'insert\s+into|'                            // SQL 插入
+        .'exec\s*\(|execute\s*\(|sp_executesql|delete\s+from)\b/is', // SQL执行
+        '/(?:\'|"|%22|%27).*(?:or|and).*(?:=|>|<|>=|<=)/i', // 匹配更复杂的 SQL 注入模式
 
         // 命令注入
-        '/\b(system|exec|shell_exec|passthru)\s*\(/i', // 系统命令执行
-        '/`.*`/',                                      // 反引号命令执行
-        // '/\|\s*\w+/',                                  // 管道符号
-        // '/\&\s*\w+/',                                  // 后台执行
+        '/\b(?:system|exec|shell_exec|passthru)\s*\(|`.*`/i',
 
         // 文件操作
-        '/\.\.\//',                                    // 目录遍历
-        '/(\.\.\/|\.\.\\\\)/',                         // 目录遍历
-        '/\b(file_get_contents|fopen|fwrite)\s*\(/i',  // 文件操作
-        '/php\s*:\/\/filter/i',                       // PHP过滤器
-        // '/\b(load_file|outfile|dumpfile)\b/i',              // 文件操作
+        '/(?:\.\.\/|\.\.\\\\)|\b(?:file_get_contents|fopen|fwrite|php\s*:\/\/filter)\s*\(/i',
 
-        // 已知漏洞文件
-        '/phpmyadmin/',              // 匹配 phpMyAdmin 目录
-        '/adminer\.php$/',           // 匹配 adminer.php 数据库管理文件
-        '/setup\.php$/',             // 匹配 setup.php 文件
-        '/install\.php$/',           // 匹配 install.php 文件
-        '/upgrade\.php$/',           // 匹配 upgrade.php 文件
-        '/info\.php$/',              // 匹配 info.php 文件，可能包含 phpinfo 信息
-        // '/test\.(php|html|js|asp)$/', // 匹配测试文件
+        // 敏感文件检测
+        '/(?:phpmyadmin|adminer\.php|setup\.php|install\.php|upgrade\.php|info\.php)$/i',
 
-        // 其他危险模式
-        '/<\?php/i',                                   // PHP代码
-        '/\%00/',                                      // NULL字节
-        '/\b(eval|assert)\s*\(/i',                     // 动态代码执行
-        '/\$(_(GET|POST|REQUEST|COOKIE|SERVER))\b/i',  // 超全局变量直接使用
-        '/\b(eval|assert|passthru|popen|proc_open|pcntl_exec)\b/i', // PHP 命令执行
-        '/(base64_encode\(|system\(|exec\(|shell_exec\()/i', // 代码注入
+        // PHP相关检测
+        '/<\?php|\b(?:eval|assert|passthru|popen|proc_open|pcntl_exec)\s*\(|\$(?:_(?:GET|POST|REQUEST|COOKIE|SERVER))\b/i',
+
+        // 特殊字符和编码检测
+        '/\%00|(?:base64_encode\(|system\(|exec\(|shell_exec\()/i',
     ];
 
     /**
@@ -94,36 +75,22 @@ class SecurityMiddleware
      * 用于检测试图访问敏感文件的请求
      */
     protected const ILLEGAL_URL_PATTERNS = [
-        // 配置文件
-        '~/(\.+[^/]*)(?=/|$)~',      // 匹配所有点(.)开头的文件或文件夹
-        '/\.config(\.php)?$/',       // 匹配 .config 和 .config.php 文件
-        '/composer\.(json|lock)$/',  // 匹配 composer.json 或 composer.lock 文件
-        '/package\.json$/',          // 匹配 package.json 文件
-
-        // 源代码文件
-        '/\.(php|jsp|asp|aspx|pl|py|rb|sh|cgi|cfm|bash|c|cpp|java|cfm|sql)$/i', // 脚本文件
-        '/\.(yaml|yml)$/i',   // 可解析文件
-
-        // 数据库文件
-        '/\.(sql|db|db3|mdb|accdb|sqlite|sqlite3|dbf)$/i',        // 数据库文件
-
-        // 备份和日志文件
-        '/\.(bak|old|save|backup|orig|temp|tmp|sdk|debug|sample|secret|private|log)$/i',   // 备份文件
-
-        // 系统文件
-        '/^(readme|license|changelog)\.(md|txt)$/i',   // 说明文件
-
-        // 压缩和归档文件
-        // '/\.(zip|rar|tar|gz|7z)$/',  // 匹配常见压缩文件格式
-
-        // 敏感目录
-        // '/(config|setup|install|backup|log|node_modules|vendor)/i', // 敏感目录
-        '/(backup|node_modules|vendor)/i', // 敏感目录
-        // 通用敏感路径
-        // '/uploads/',                 // 匹配上传目录，可能需要额外保护
-
-        // 其他临时和系统文件
-        '/System Volume Information/', // 匹配 Windows 系统信息目录
+        // 将正则表达式编译为一次匹配
+        '~/(?:'
+        . '(\.+[^/]*)(?=/|$)|'             // 点开头的文件/目录
+        . '\.config(\.php)?$|'             // .config 文件
+        . 'composer\.(json|lock)$|'        // composer 文件
+        . 'package\.json$|'               // package.json
+        . '\.(php|jsp|asp|aspx|pl|py|rb|sh|cgi|cfm|bash|c(pp)?|java|sql)$|' // 源代码文件
+        . '\.(ya?ml)$|'                   // yaml/yml
+        . '\.(sql|db3?|mdb|accdb|sqlite3?|dbf)$|' // 数据库
+        . '\.(bak|old|save|back?up|orig|temp|tmp|sdk|debug|sample|secret|private|log)$|' // 备份文件
+        // . '^(readme|license|changelog)\.(md|txt)$|' // 说明文件
+        // . '/\.(zip|rar|tar|gz|7z)$/'  // 匹配常见压缩文件格式
+        . '(backup|node_modules|vendor)|'  // 敏感目录
+        . 'System Volume Information'      // Windows 目录
+        . ')~i',                           // 不区分大小写
+        // 其他正则表达式
     ];
 
     /**
@@ -152,29 +119,32 @@ class SecurityMiddleware
      * 用于识别恶意爬虫和扫描工具
      */
     protected const SUSPICIOUS_USER_AGENTS = [
-        '/sqlmap/i',       // SQL注入工具
-        '/nikto/i',        // 漏洞扫描器
-        '/metasploit/i',   // 渗透测试框架
-        '/nessus/i',       // 漏洞扫描器
-        '/wpscan/i',       // WordPress扫描器
-        '/acunetix/i',     // Web漏洞扫描器
-        '/burp/i',         // 渗透测试工具
-        '/dirbuster/i',    // 目录爆破工具
-        '/hydra/i',        // 暴力破解工具
-        '/havij/i',        // SQL注入工具
-        '/zap/i',          // OWASP ZAP代理
-        '/arachni/i',      // Web应用扫描器
-        '/nmap/i',         // 端口扫描工具
-        '/netsparker/i',   // Web漏洞扫描器
-        '/w3af/i',         // Web应用攻击框架
-        '/fimap/i',        // 文件包含工具
-        '/skipfish/i',     // Web应用扫描器
-        '/webshag/i',      // 多线程扫描器
-        '/webinspect/i',   // Web应用扫描器
-        '/paros/i',        // Web代理扫描器
-        '/appscan/i',      // IBM安全扫描器
-        '/webscarab/i',    // OWASP WebScarab
-        '/beef/i',         // 浏览器攻击框架
+        '/'
+        . 'sqlmap|'         // SQL注入工具
+        . 'nikto|'          // 漏洞扫描器
+        . 'metasploit|'     // 渗透测试框架
+        . 'nessus|'         // 漏洞扫描器
+        . 'wpscan|'         // WordPress扫描器
+        . 'acunetix|'       // Web漏洞扫描器
+        . 'burp|'           // 渗透测试工具
+        . 'dirbuster|'      // 目录爆破工具
+        . 'hydra|'          // 暴力破解工具
+        . 'havij|'          // SQL注入工具
+        . 'zap|'            // OWASP ZAP代理
+        . 'arachni|'        // Web应用扫描器
+        . 'nmap|'           // 端口扫描工具
+        . 'netsparker|'     // Web漏洞扫描器
+        . 'w3af|'           // Web应用攻击框架
+        . 'fimap|'          // 文件包含工具
+        . 'skipfish|'       // Web应用扫描器
+        . 'webshag|'        // 多线程扫描器
+        . 'webinspect|'     // Web应用扫描器
+        . 'paros|'          // Web代理扫描器
+        . 'appscan|'        // IBM安全扫描器
+        . 'webscarab|'      // OWASP WebScarab
+        . 'beef'            // 浏览器攻击框架
+        . '/i',             // 不区分大小写匹配
+
         // '/curl/i',         // 可疑的curl请求
         // '/wget/i',         // 可疑的wget请求
         // '/libwww-perl/i',  // Perl LWP请求
@@ -197,13 +167,16 @@ class SecurityMiddleware
         // 预处理参数
         $this->handleSecurityParams($request, $encodedConfig);
 
-        // 1. 预处理检查：爬虫和IP黑名单
+        // 1、检查请求方式
+        $this->checkRequestMethod($request);
+
+        // 2. 预处理检查：爬虫和IP黑名单
         $this->preCheckSecurity($request);
 
-        // 2. 获取请求基本信息
+        // 3. 获取请求基本信息
         $ip = $this->getClientRealIp($request);
 
-        // 3. 深度安全检测
+        // 4. 深度安全检测
         $securityCheckResult = $this->performDeepSecurityCheck($request, $ip);
         if ($securityCheckResult['block']) {
             return $this->handleSecurityViolation(
@@ -215,17 +188,33 @@ class SecurityMiddleware
             );
         }
 
-        // 4. 检查黑名单
+        // 5. 检查黑名单
         $blackInfo = $this->checkBlacklist($request, $ip);
         if ($blackInfo['block']) {
             return $blackInfo['response'];
         }
 
-        // 5. 开发者自定义处理逻辑
+        // 6. 开发者自定义处理逻辑
         $this->handleCustomLogic($request);
 
-        // 6. 请求正常，继续处理
+        // 7. 请求正常，继续处理
         return $next($request);
+    }
+
+    // 检查请求方式
+    protected function checkRequestMethod(Request $request): void
+    {
+        $allowMethods = $this->getMiddlewareConfig($request, 'allow_methods');
+        if (! empty($allowMethods)) {
+            if (! in_array($request->method(), $allowMethods)) {
+                $this->handleSecurityViolation(
+                    $request,
+                    '请求方式拦截',
+                    '请求方式拦截',
+                    '不被允许的请求方式:' . $request->method()
+                );
+            }
+        }
     }
 
     // 开发者自定义处理逻辑
@@ -445,6 +434,17 @@ class SecurityMiddleware
     {
         $input = $request->input(); // 只对请求body参数 进行检查
 
+        // 获取uri
+        $path = $request->path(); // 仅路径
+
+        // 不进行验证的白名单地址
+        $whitelistPath = $this->getMiddlewareConfig($request, 'whitelist_path_of_not_verify_body');
+        if(is_array($whitelistPath) && ! empty($whitelistPath)){
+            if (in_array($path, $whitelistPath)) {
+                return false;
+            }
+        }
+
         $bodyRegExp = $this->getMiddlewareConfig($request, 'reg_exp_body');
 
         $regExp = is_array($bodyRegExp) && ! empty($bodyRegExp) ? $bodyRegExp : self::MALICIOUS_BODY_PATTERNS;
@@ -455,6 +455,9 @@ class SecurityMiddleware
             if (is_array($value)) {
                 $value = json_encode($value);
             }
+
+            // 移除不可见字符（保留常规空格）
+            $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $value);
 
             if (is_string($value) && ! $this->checkIsHtml($value)) {
                 // 判断提交内容是否为 markdown
@@ -645,15 +648,23 @@ class SecurityMiddleware
      */
     public function pruneMarkdownCode(string $content): string
     {
-        // 删除代码块（严格模式匹配）
-        $processed = preg_replace('/^```[a-z]*\s*[\s\S]+?^```$/m', '', $content);
-        // 删除行内代码（严格模式匹配）
-        $processed = preg_replace('/`[^`]+`/', '', $processed);
+        // 1. 移除所有Markdown格式内容
+        $content = preg_replace([
+            '/```[\s\S]*?```/',       // 代码块
+            '/~~~[\s\S]*?~~~/',       // 替代代码块
+            '/`[^`]+`/',             // 行内代码
+            '/\[.*?\]\(.*?\)/',      // 链接
+            '/\*\*.*?\*\*/',         // 加粗
+            '/\*.*?\*/',             // 斜体
+            '/<!--[\s\S]*?-->/',     // HTML注释
+            '/\/\*[\s\S]*?\*\//',   // CSS/JS注释
+            '/\/\/.*?(\n|$)/'        // 单行注释
+        ], '', $content);
 
         // 清理多余空行（保留最多两个连续换行）
-        // $processed = preg_replace("/\n{3,}/", "\n\n", $processed);
+        // $content = preg_replace("/\n{3,}/", "\n\n", $content);
 
-        return trim($processed);
+        return trim($content);
     }
 
     /**
@@ -766,6 +777,8 @@ class SecurityMiddleware
      */
     protected function isSafeUrl(Request $request, string $url): bool
     {
+        // 解码URL编码的字符
+        $url = urldecode($url);
         $urlRegExp = $this->getMiddlewareConfig($request, 'reg_exp_url');
 
         $regExp = is_array($urlRegExp) ? $urlRegExp : self::ILLEGAL_URL_PATTERNS;

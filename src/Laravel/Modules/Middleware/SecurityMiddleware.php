@@ -41,33 +41,52 @@ class SecurityMiddleware
      */
     protected const MALICIOUS_BODY_PATTERNS = [
         // XSS攻击
-        '/(?:<script\b[^>]*>.*?<\/script>|' // 基本脚本标签
-        .'javascript\s*:|' // JavaScript伪协议
-        .'on\w+\s*=\s*["\'].*?["\']|' // 事件处理器
-        .'(data|vbscript):)/is', // 其他危险协议
+        '/<script\b[^>]*>(.*?)<\/script>/is',          // 基本脚本标签
+        '/javascript\s*:/i',                           // JavaScript伪协议
+        '/on\w+\s*=\s*["\'].*?["\']/i',                // 事件处理器
+        '/(data|vbscript):/i',                         // 其他危险协议
+        // '/(%3C|<).*script.*(%3E|>)/i',                 // XSS
 
         // SQL注入
-        '/\b(?:union\s+select|select\s+\*.*from|' // 联合查询
-        .'insert\s+into|update\s+\w+\s+set|' // 数据修改
-        .'drop\s+table|truncate\s+table|' // 表删除
-        .'insert\s+into|'                            // SQL 插入
-        .'exec\s*\(|execute\s*\(|sp_executesql|delete\s+from)\b/is', // SQL执行
-        '/(?:\'|"|%22|%27).*(?:or|and).*(?:=|>|<|>=|<=)/i', // 匹配更复杂的 SQL 注入模式
+        '/\b(union\s+select|select\s+\*.*from)\b/is',  // 联合查询
+        '/\b(insert\s+into|update\s+\w+\s+set)\b/is',  // 数据修改
+        '/\b(drop\s+table|truncate\s+table)\b/is',     // 表删除
+        '/insert\s+into/i',                            // SQL 插入
+        '/\b(exec\s*\(|execute\s*\(|sp_executesql)/i', // SQL执行
+        '/(or\s+\d=\d|and\s+\d=\d)/i',                 // SQL 注入
+        '/delete\s+from/i',                            // SQL 删除
+        // '/(benchmark\(|sleep\(|load_file\(|xp_cmdshell)/i', // SQL 时间盲注与命令注入
+        '/(?:\'|"|%22|%27).*(or|and).*(=|>|<|>=|<=)/i', // 匹配更复杂的 SQL 注入模式
 
         // 命令注入
-        '/\b(?:system|exec|shell_exec|passthru)\s*\(|`.*`/i',
+        '/\b(system|exec|shell_exec|passthru)\s*\(/i', // 系统命令执行
+        '/`.*`/',                                      // 反引号命令执行
+        // '/\|\s*\w+/',                                  // 管道符号
+        // '/\&\s*\w+/',                                  // 后台执行
 
         // 文件操作
-        '/(?:\.\.\/|\.\.\\\\)|\b(?:file_get_contents|fopen|fwrite|php\s*:\/\/filter)\s*\(/i',
+        '/\.\.\//',                                    // 目录遍历
+        '/(\.\.\/|\.\.\\\\)/',                         // 目录遍历
+        '/\b(file_get_contents|fopen|fwrite)\s*\(/i',  // 文件操作
+        '/php\s*:\/\/filter/i',                       // PHP过滤器
+        // '/\b(load_file|outfile|dumpfile)\b/i',              // 文件操作
 
-        // 敏感文件检测
-        '/(?:phpmyadmin|adminer\.php|setup\.php|install\.php|upgrade\.php|info\.php)$/i',
+        // 已知漏洞文件
+        '/phpmyadmin/',              // 匹配 phpMyAdmin 目录
+        '/adminer\.php$/',           // 匹配 adminer.php 数据库管理文件
+        '/setup\.php$/',             // 匹配 setup.php 文件
+        '/install\.php$/',           // 匹配 install.php 文件
+        '/upgrade\.php$/',           // 匹配 upgrade.php 文件
+        '/info\.php$/',              // 匹配 info.php 文件，可能包含 phpinfo 信息
+        // '/test\.(php|html|js|asp)$/', // 匹配测试文件
 
-        // PHP相关检测
-        '/<\?php|\b(?:eval|assert|passthru|popen|proc_open|pcntl_exec)\s*\(|\$(?:_(?:GET|POST|REQUEST|COOKIE|SERVER))\b/i',
-
-        // 特殊字符和编码检测
-        '/\%00|(?:base64_encode\(|system\(|exec\(|shell_exec\()/i',
+        // 其他危险模式
+        '/<\?php/i',                                   // PHP代码
+        '/\%00/',                                      // NULL字节
+        '/\b(eval|assert)\s*\(/i',                     // 动态代码执行
+        '/\$(_(GET|POST|REQUEST|COOKIE|SERVER))\b/i',  // 超全局变量直接使用
+        '/\b(eval|assert|passthru|popen|proc_open|pcntl_exec)\b/i', // PHP 命令执行
+        '/(base64_encode\(|system\(|exec\(|shell_exec\()/i', // 代码注入
     ];
 
     /**
@@ -75,22 +94,33 @@ class SecurityMiddleware
      * 用于检测试图访问敏感文件的请求
      */
     protected const ILLEGAL_URL_PATTERNS = [
-        // 将正则表达式编译为一次匹配
-        '~/(?:'
-        .'(\.+[^/]*)(?=/|$)|'             // 点开头的文件/目录
-        .'\.config(\.php)?$|'             // .config 文件
-        .'composer\.(json|lock)$|'        // composer 文件
-        .'package\.json$|'               // package.json
-        .'\.(php|jsp|asp|aspx|pl|py|rb|sh|cgi|cfm|bash|c(pp)?|java|sql)$|' // 源代码文件
-        .'\.(ya?ml)$|'                   // yaml/yml
-        .'\.(sql|db3?|mdb|accdb|sqlite3?|dbf)$|' // 数据库
-        .'\.(bak|old|save|back?up|orig|temp|tmp|sdk|debug|sample|secret|private|log)$|' // 备份文件
-        // . '^(readme|license|changelog)\.(md|txt)$|' // 说明文件
-        // . '/\.(zip|rar|tar|gz|7z)$/'  // 匹配常见压缩文件格式
-        .'(backup|node_modules|vendor)|'  // 敏感目录
-        .'System Volume Information'      // Windows 目录
-        .')~i',                           // 不区分大小写
-        // 其他正则表达式
+        // 配置文件
+        '~/(\.+[^/]*)(?=/|$)~',      // 匹配所有点(.)开头的文件或文件夹
+        '/\.config(\.php)?$/',       // 匹配 .config 和 .config.php 文件
+        '/composer\.(json|lock)$/',  // 匹配 composer.json 或 composer.lock 文件
+        '/package\.json$/',          // 匹配 package.json 文件
+
+        // 源代码文件
+        '/\.(php|jsp|asp|aspx|pl|py|rb|sh|cgi|cfm|bash|c|cpp|java|cfm|sql)$/i', // 脚本文件
+        '/\.(yaml|yml)$/i',   // 可解析文件
+
+        // 数据库文件
+        '/\.(sql|db|db3|mdb|accdb|sqlite|sqlite3|dbf)$/i',        // 数据库文件
+
+        // 备份和日志文件
+        '/\.(bak|old|save|backup|orig|temp|tmp|sdk|debug|sample|secret|private|log)$/i',   // 备份文件
+
+        // 系统文件
+        '/^(readme|license|changelog)\.(md|txt)$/i',   // 说明文件
+
+        // 压缩和归档文件
+        // '/\.(zip|rar|tar|gz|7z)$/',  // 匹配常见压缩文件格式
+
+        // 敏感目录
+        // '/(config|setup|install|backup|log|node_modules|vendor)/i', // 敏感目录
+        '/(backup|node_modules|vendor)/i', // 敏感目录
+        // 通用敏感路径
+        // '/uploads/',                 // 匹配上传目录，可能需要额外保护
     ];
 
     /**
@@ -375,7 +405,7 @@ class SecurityMiddleware
         // 不允许包含的 User-Agent
         $banUserAgent = $this->getMiddlewareConfig($request, 'forbid_user_agent');
 
-        $banUserAgent = is_array($banUserAgent) ? $banUserAgent : self::SUSPICIOUS_USER_AGENTS;
+        $banUserAgent = is_array($banUserAgent) && ! empty($banUserAgent) ? $banUserAgent : self::SUSPICIOUS_USER_AGENTS;
         if (empty($banUserAgent)) {
             return;
         }
@@ -755,7 +785,7 @@ class SecurityMiddleware
         // 禁止上传的文件扩展名后缀
         $banFileExt = $this->getMiddlewareConfig($request, 'forbid_upload_file_ext');
 
-        $banExp = is_array($banFileExt) ? $banFileExt : self::DISALLOWED_EXTENSIONS;
+        $banExp = is_array($banFileExt) && ! empty($banFileExt) ? $banFileExt : self::DISALLOWED_EXTENSIONS;
         if (empty($banExp)) {
             return true;
         }
@@ -781,7 +811,8 @@ class SecurityMiddleware
         $url = urldecode($url);
         $urlRegExp = $this->getMiddlewareConfig($request, 'reg_exp_url');
 
-        $regExp = is_array($urlRegExp) ? $urlRegExp : self::ILLEGAL_URL_PATTERNS;
+        $regExp = is_array($urlRegExp) && ! empty($urlRegExp) ? $urlRegExp : self::ILLEGAL_URL_PATTERNS;
+
         if (empty($regExp)) {
             return true;
         }

@@ -5,7 +5,10 @@
  */
 
 use JetBrains\PhpStorm\NoReturn;
+use Random\RandomException;
 use zxf\Tools\Collection;
+use InvalidArgumentException;
+use RuntimeException;
 
 if (! function_exists('i_session')) {
     /**
@@ -16,7 +19,7 @@ if (! function_exists('i_session')) {
      * @param  int|null  $expiry  过期时间（秒）
      * @return mixed|null 返回值或者null
      *
-     * @throws \Random\RandomException
+     * @throws RandomException
      */
     function i_session(string|array|null $name = null, mixed $value = null, ?int $expiry = null): mixed
     {
@@ -160,20 +163,21 @@ if (! function_exists('zxf_substr')) {
         } elseif (function_exists('iconv_substr')) {
             $newstr = iconv_substr($string, $start, $length, 'UTF-8');
         } else {
+            $newStrings = [];
             for ($i = 0; $i < $length; $i++) {
-                $tempstring = substr($string, $start, 1);
-                if (ord($tempstring) > 127) {
+                $tempString = substr($string, $start, 1);
+                if (ord($tempString) > 127) {
                     $i++;
                     if ($i < $length) {
-                        $newstring[] = substr($string, $start, 3);
+                        $newStrings[] = substr($string, $start, 3);
                         $string = substr($string, 3);
                     }
                 } else {
-                    $newstring[] = substr($string, $start, 1);
+                    $newStrings[] = substr($string, $start, 1);
                     $string = substr($string, 1);
                 }
             }
-            $newstr = implode($newstring);
+            $newstr = implode($newStrings);
         }
 
         return $newstr;
@@ -1368,7 +1372,7 @@ if (! function_exists('base_convert_any')) {
      *
      * @throws Exception
      */
-    function base_convert_any(string $number, int $fromBase = 10, int $toBase = 62): string
+    function base_convert_any(string $number, int $fromBase = 10, int $toBase = 62): string|int
     {
         // 常量字符集
         static $digits = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -2278,6 +2282,7 @@ if (! function_exists('array_get')) {
      *                        - 数字键: users.1.name                                                => users 下下标为 1 的用户的名称
      * @param  mixed  $default  默认值，当路径不存在时返回
      * @param  string  $delimiter  路径分隔符，默认为点(.)
+     *
      * @return mixed 查询到的值或默认值
      *
      * @throws InvalidArgumentException 当输入参数无效时抛出
@@ -2291,7 +2296,7 @@ if (! function_exists('array_get')) {
 
         if (str_contains($delimiter, '*') || str_contains($delimiter, '?') ||
             str_contains($delimiter, '{') || str_contains($delimiter, '}')) {
-            throw new \InvalidArgumentException('Delimiter cannot contain special characters');
+            throw new InvalidArgumentException('Delimiter cannot contain special characters');
         }
 
         $parts = explode($delimiter, $path);

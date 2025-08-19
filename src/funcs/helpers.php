@@ -2260,3 +2260,235 @@ if (! function_exists('power_tower')) {
         return \zxf\Tools\BigNumberCalculator::tetration($a, $b);
     }
 }
+
+if (! function_exists('array_get')) {
+    /**
+     * 从数组中进行复杂查询模式查找值
+     *
+     * @param  array  $array  要查询的数组
+     * @param  string  $path  查询路径，支持以下形式：
+     *                        - 基本查询: a.b.c                                                    =>  通过点分隔符访问嵌套数组
+     *                        - 通配符: *.name, a.*.c                                              => 匹配当前层级所有元素的指定字段
+     *                        - 多级通配符: **.name, users.**.number (跨多级匹配)                     => 归匹配所有层级中的指定字段
+     *                        - 数组索引: a[0], a.b[1].name                                         => 访问数组指定索引的元素
+     *                        - 数组切片: a[start:length], a[1:3]                                   => 从start开始取length个元素
+     *                        - 属性存在检查: a.?b                                                   => 检查属性(字段b)是否存在，返回布尔值
+     *                        - 正则匹配: a./^name/, *.user./^email_/                               => 使用正则表达式匹配键名,匹配 name开头 或者 email_ 开头
+     *                        - 条件查询: a.{id>100}, users.{name=Alice}, user_list.*.{age>20}.name => 筛选满足条件的元素,用户年龄大于20的 名称
+     *                        - 数字键: users.1.name                                                => users 下下标为 1 的用户的名称
+     * @param  mixed  $default  默认值，当路径不存在时返回
+     * @param  string  $delimiter  路径分隔符，默认为点(.)
+     * @return mixed 查询到的值或默认值
+     *
+     * @throws InvalidArgumentException 当输入参数无效时抛出
+     * @throws RuntimeException 当查询语法错误时抛出
+     */
+    function array_get(array $array, string $path, mixed $default = null, string $delimiter = '.'): mixed
+    {
+        if ($path === '') {
+            return $default;
+        }
+
+        if (str_contains($delimiter, '*') || str_contains($delimiter, '?') ||
+            str_contains($delimiter, '{') || str_contains($delimiter, '}')) {
+            throw new \InvalidArgumentException('Delimiter cannot contain special characters');
+        }
+
+        $parts = explode($delimiter, $path);
+        $result = $array;
+
+        foreach ($parts as $i => $part) {
+            if ($part === '') {
+                continue;
+            }
+
+            // 处理条件查询 {field>value}
+            if (preg_match('/^{(.*?)(>=|<=|!=|=|>|<)(.*?)}$/', $part, $conditionMatches)) {
+                if (! is_array($result)) {
+                    return $default;
+                }
+
+                $field = trim($conditionMatches[1]);
+                $operator = $conditionMatches[2];
+                $value = trim($conditionMatches[3]);
+
+                $filteredResults = [];
+                foreach ($result as $item) {
+                    if (! is_array($item) || ! array_key_exists($field, $item)) {
+                        continue;
+                    }
+
+                    $itemValue = $item[$field];
+                    $match = false;
+
+                    switch ($operator) {
+                        case '>':
+                            $match = $itemValue > $value;
+                            break;
+                        case '>=':
+                            $match = $itemValue >= $value;
+                            break;
+                        case '<':
+                            $match = $itemValue < $value;
+                            break;
+                        case '<=':
+                            $match = $itemValue <= $value;
+                            break;
+                        case '=':
+                            $match = $itemValue == $value;
+                            break;
+                        case '!=':
+                            $match = $itemValue != $value;
+                            break;
+                    }
+
+                    if ($match) {
+                        $remainingPath = implode($delimiter, array_slice($parts, $i + 1));
+                        if ($remainingPath !== '') {
+                            $filteredValue = array_get($item, $remainingPath, $default, $delimiter);
+                            if ($filteredValue !== $default) {
+                                $filteredResults[] = $filteredValue;
+                            }
+                        } else {
+                            $filteredResults[] = $item;
+                        }
+                    }
+                }
+
+                return empty($filteredResults) ? $default :
+                    (count($filteredResults) === 1 ? $filteredResults[0] : $filteredResults);
+            }
+
+            // 处理属性存在检查 (?)
+            if (str_starts_with($part, '?')) {
+                $key = substr($part, 1);
+
+                return is_array($result) && (array_key_exists($key, $result) || in_array($key, $result, true));
+            }
+
+            // 处理数组索引或切片 [n], [n:length]
+            if (preg_match('/^(.+?)(\[(-?\d+)(?::(\d+)?)?\])$/', $part, $matches)) {
+                $part = $matches[1];
+                $sliceStart = $matches[3] !== '' ? (int) $matches[3] : null;
+                $sliceLength = $matches[4] ?? null;
+
+                if (! is_array($result) || ! array_key_exists($part, $result)) {
+                    return $default;
+                }
+
+                $arrayToSlice = $result[$part];
+                if (! is_array($arrayToSlice)) {
+                    return $default;
+                }
+
+                // 处理 [n] 情况，默认取1个元素
+                if ($sliceLength === null && $sliceStart !== null) {
+                    return $arrayToSlice[$sliceStart] ?? $default;
+                }
+
+                $sliceStart = $sliceStart ?? 0;
+                $sliceLength = $sliceLength !== null ? (int) $sliceLength : null;
+
+                $result = array_slice($arrayToSlice, $sliceStart, $sliceLength, true);
+
+                continue;
+            }
+
+            // 处理多级通配符 (**)
+            if ($part === '**') {
+                if (! is_array($result)) {
+                    return $default;
+                }
+
+                $remainingPath = implode($delimiter, array_slice($parts, $i + 1));
+                if ($remainingPath === '') {
+                    return $result;
+                }
+
+                $values = [];
+                $iterator = new \RecursiveIteratorIterator(
+                    new \RecursiveArrayIterator($result),
+                    \RecursiveIteratorIterator::SELF_FIRST
+                );
+
+                foreach ($iterator as $key => $value) {
+                    if ($iterator->getDepth() > 0 && is_array($value)) {
+                        $nestedValue = array_get($value, $remainingPath, $default, $delimiter);
+                        if ($nestedValue !== $default) {
+                            if (is_array($nestedValue)) {
+                                $values = array_merge($values, $nestedValue);
+                            } else {
+                                $values[] = $nestedValue;
+                            }
+                        }
+                    }
+                }
+
+                return empty($values) ? $default : (count($values) === 1 ? $values[0] : $values);
+            }
+
+            // 处理通配符 (*)
+            if ($part === '*') {
+                if (! is_array($result)) {
+                    return $default;
+                }
+
+                $remainingPath = implode($delimiter, array_slice($parts, $i + 1));
+                if ($remainingPath === '') {
+                    return array_values($result);
+                }
+
+                $values = [];
+                foreach ($result as $value) {
+                    if (is_array($value)) {
+                        $nestedValue = array_get($value, $remainingPath, $default, $delimiter);
+                        if ($nestedValue !== $default) {
+                            if (is_array($nestedValue)) {
+                                $values = array_merge($values, $nestedValue);
+                            } else {
+                                $values[] = $nestedValue;
+                            }
+                        }
+                    }
+                }
+
+                return empty($values) ? $default : (count($values) === 1 ? $values[0] : $values);
+            }
+
+            // 处理正则表达式匹配 (/pattern/)
+            if (preg_match('/^\/(.+?)\/$/', $part, $regexMatches)) {
+                if (! is_array($result)) {
+                    return $default;
+                }
+
+                $pattern = $regexMatches[1];
+                $matchedValues = [];
+
+                foreach ($result as $key => $value) {
+                    if (preg_match("/$pattern/", (string) $key)) {
+                        $remainingPath = implode($delimiter, array_slice($parts, $i + 1));
+                        if ($remainingPath !== '') {
+                            $nestedValue = is_array($value) ? array_get($value, $remainingPath, $default, $delimiter) : $default;
+                            if ($nestedValue !== $default) {
+                                $matchedValues[] = $nestedValue;
+                            }
+                        } else {
+                            $matchedValues[] = $value;
+                        }
+                    }
+                }
+
+                return empty($matchedValues) ? $default : (count($matchedValues) === 1 ? $matchedValues[0] : $matchedValues);
+            }
+
+            // 常规路径部分
+            if (! is_array($result) || ! array_key_exists($part, $result)) {
+                return $default;
+            }
+
+            $result = $result[$part];
+        }
+
+        return $result;
+    }
+}

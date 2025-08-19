@@ -194,16 +194,13 @@ class SecurityMiddleware
         // 预处理参数
         $this->handleSecurityParams($request, $encodedConfig);
 
-        // 1、检查请求方式
-        $this->checkRequestMethod($request);
-
-        // 2. 预处理检查：爬虫和IP黑名单
+        // 1. 预处理检查：爬虫和IP黑名单
         $this->preCheckSecurity($request);
 
-        // 3. 获取请求基本信息
+        // 2. 获取请求基本信息
         $ip = $this->getClientRealIp($request);
 
-        // 4. 深度安全检测
+        // 3. 深度安全检测
         $securityCheckResult = $this->performDeepSecurityCheck($request, $ip);
         if ($securityCheckResult['block']) {
             return $this->handleSecurityViolation(
@@ -226,22 +223,6 @@ class SecurityMiddleware
 
         // 7. 请求正常，继续处理
         return $next($request);
-    }
-
-    // 检查请求方式
-    protected function checkRequestMethod(Request $request): void
-    {
-        $allowMethods = $this->getMiddlewareConfig($request, 'allow_methods');
-        if (! empty($allowMethods)) {
-            if (! in_array($request->method(), $allowMethods)) {
-                $this->handleSecurityViolation(
-                    $request,
-                    '请求方式拦截',
-                    '请求方式拦截',
-                    '不被允许的请求方式:'.$request->method()
-                );
-            }
-        }
     }
 
     // 开发者自定义处理逻辑
@@ -428,11 +409,10 @@ class SecurityMiddleware
      */
     protected function isSuspiciousRequest(Request $request): bool
     {
-        // 1. 检查危险文件上传
-        if ($this->hasDangerousUploads($request)) {
+        // 1. 检查异常HTTP方法
+        if ($this->hasSuspiciousMethod($request)) {
             return true;
         }
-
         // 2. 检查危险URL
         if (! $this->isSafeUrl($request, urldecode($request->fullUrl()))) {
             return true;
@@ -443,8 +423,8 @@ class SecurityMiddleware
             return true;
         }
 
-        // 4. 检查异常HTTP方法
-        if ($this->hasSuspiciousMethod($request)) {
+        // 4. 检查危险文件上传
+        if ($this->hasDangerousUploads($request)) {
             return true;
         }
 
@@ -461,15 +441,9 @@ class SecurityMiddleware
     {
         $input = $request->input(); // 只对请求body参数 进行检查
 
-        // 获取uri
-        $path = $request->path(); // 仅路径
-
-        // 不进行验证的白名单地址
-        $whitelistPath = $this->getMiddlewareConfig($request, 'whitelist_path_of_not_verify_body');
-        if (is_array($whitelistPath) && ! empty($whitelistPath)) {
-            if (in_array($path, $whitelistPath)) {
-                return false;
-            }
+        // 不验证body的path 路径
+        if ($this->isWhitelistPath($request)) {
+            return false;
         }
 
         $bodyRegExp = $this->getMiddlewareConfig($request, 'reg_exp_body');
@@ -500,11 +474,35 @@ class SecurityMiddleware
                 foreach ($regExp as $pattern) {
                     // 排除某些特殊情况（如文章内容）
                     if (preg_match($pattern, $value) && ! $this->isFalsePositive($request, $key, $value)) {
-                        $this->errorCode = substr($value, 0, 100);
+                        $this->errorList[] = [
+                            'message' => '恶意请求拦截',
+                            'key' => $key,
+                            'value' => zxf_substr($value, 0, 100).'...',
+                            'pattern' => $pattern,
+                        ];
 
                         return true;
                     }
                 }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 是否为白名单路径（不验证body的path 路径）
+     */
+    protected function isWhitelistPath(Request $request): bool
+    {
+        // 获取path
+        $path = $request->path(); // 仅路径
+
+        // 不进行验证的白名单地址(排除某些特殊路由)
+        $whitelistPath = $this->getMiddlewareConfig($request, 'whitelist_path_of_not_verify_body');
+        if (is_array($whitelistPath) && ! empty($whitelistPath)) {
+            if (in_array($path, $whitelistPath)) {
+                return true;
             }
         }
 
@@ -821,6 +819,8 @@ class SecurityMiddleware
         foreach ($regExp as $pattern) {
             try {
                 if (preg_match($pattern, $url)) {
+                    $this->errorList['illegal_url'] = $url;
+
                     return false;
                 }
             } catch (\Exception $e) {
@@ -850,7 +850,10 @@ class SecurityMiddleware
      */
     protected function hasSuspiciousMethod(Request $request): bool
     {
-        $normalMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
+        $normalMethods = $this->getMiddlewareConfig($request, 'allow_methods');
+        if (empty($normalMethods)) {
+            $normalMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
+        }
         $method = strtoupper($request->method());
 
         // 非常规方法
@@ -873,17 +876,11 @@ class SecurityMiddleware
      */
     protected function isFalsePositive(Request $request, string $key, string $value): bool
     {
-        // 排除某些特殊路由
-        // $excludedRoutes = ['api/comments', 'api/posts', 'api/articles'];
-        // if (in_array($request->path(), $excludedRoutes)) {
+        // 排除某些参数名
+        // $excludedKeys = ['content', 'body', 'description', 'markdown'];
+        // if (in_array($key, $excludedKeys)) {
         //     return true;
         // }
-
-        // 排除某些参数名
-        $excludedKeys = ['content', 'body', 'description', 'markdown'];
-        if (in_array($key, $excludedKeys)) {
-            return true;
-        }
 
         // 排除某些内容类型
         // $excludedContentTypes = ['application/json', 'text/markdown'];

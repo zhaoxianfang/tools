@@ -142,6 +142,6 @@ class LaravelCommonException // extends Handler
             ],
         ];
 
-        return $this->outputDebugHtml($content, self::$code.':'.(self::$isSysErr ? $e->getMessage() : self::$message));
+        return $this->outputDebugHtml($content, self::$code.':'.(self::$isSysErr ? $e->getMessage() : self::$message), self::$code);
     }
 }

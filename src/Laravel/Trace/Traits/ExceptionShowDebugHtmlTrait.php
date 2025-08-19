@@ -2,12 +2,14 @@
 
 namespace zxf\Laravel\Trace\Traits;
 
+use zxf\Laravel\Trace\Handle;
+
 /**
  * 调试输出html异常信息 Trait
  */
 trait ExceptionShowDebugHtmlTrait
 {
-    public function outputDebugHtml(array $list = [], string $title = '')
+    public function outputDebugHtml(array $list = [], string $title = '', int $statusCode = 500)
     {
         $title = ! empty($title) ? $title : '系统错误/调试';
 
@@ -181,7 +183,12 @@ trait ExceptionShowDebugHtmlTrait
 </html>
 HTML;
 
-        return response($html, 500)->header('Content-Type', 'text/html')->send();
+        $resp = response($html, $statusCode)->header('Content-Type', 'text/html');
+
+        /** @var Handle $trace */
+        $trace = app('trace');
+
+        return $trace->renderTraceStyleAndScript(request(), $resp)->send();
     }
 
     private function isValidMultiDimensionalArray(array $array): bool

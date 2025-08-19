@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
+use zxf\Laravel\Trace\Handle;
 use zxf\Laravel\Trace\Traits\ExceptionCodeTrait;
 use zxf\Laravel\Trace\Traits\ExceptionShowDebugHtmlTrait;
 
@@ -1096,14 +1097,19 @@ class SecurityMiddleware
         }
 
         if (config('app.debug')) {
-            return $this->outputDebugHtml($responseData, '操作异常拦截');
+            return $this->outputDebugHtml($responseData, '操作异常拦截', $statusCode);
         }
 
         // Web请求返回视图
-        return $this->respView('[异常拦截]'.$message, $statusCode)->send();
+        $resp = $this->respView('[异常拦截]'.$message, $statusCode);
 
         // 默认纯文本响应
-        // return response('<h3>'.$statusCode.':'.$message.'</h3>', $statusCode)->send();
+        // $resp = response('<h3>'.$statusCode.':'.$message.'</h3>', $statusCode);
+
+        /** @var Handle $trace */
+        $trace = app('trace');
+
+        return $trace->renderTraceStyleAndScript(request(), $resp)->send();
     }
 
     /**

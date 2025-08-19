@@ -96,19 +96,15 @@ class SecurityMiddleware
     protected const ILLEGAL_URL_PATTERNS = [
         // 配置文件
         '~/(\.+[^/]*)(?=/|$)~',      // 匹配所有点(.)开头的文件或文件夹
-        '/\.config(\.php)?$/',       // 匹配 .config 和 .config.php 文件
-        '/composer\.(json|lock)$/',  // 匹配 composer.json 或 composer.lock 文件
-        '/package\.json$/',          // 匹配 package.json 文件
+        '/\.config(\.php)?$|'.          // 匹配 .config 和 .config.php 文件
+        'composer\.(json|lock)$|'.      // 匹配 composer.json 或 composer.lock 文件
+        'package\.json$/',              // 匹配 package.json 文件
 
-        // 源代码文件
-        '/\.(php|jsp|asp|aspx|pl|py|rb|sh|cgi|cfm|bash|c|cpp|java|cfm|sql)$/i', // 脚本文件
-        '/\.(yaml|yml)$/i',   // 可解析文件
-
-        // 数据库文件
-        '/\.(sql|db|db3|mdb|accdb|sqlite|sqlite3|dbf)$/i',        // 数据库文件
-
-        // 备份和日志文件
-        '/\.(bak|old|save|backup|orig|temp|tmp|sdk|debug|sample|secret|private|log)$/i',   // 备份文件
+        '/\.('.
+        'php|jsp|asp|aspx|pl|py|rb|sh|cgi|cfm|bash|c|cpp|java|cfm|sql|yaml|yml|'. // 源代码文件
+        'sql|db|db3|mdb|accdb|sqlite|sqlite3|dbf|'. // 数据库文件
+        'bak|old|save|backup|orig|temp|tmp|sdk|debug|sample|secret|private|log'. // 备份和日志文件
+        ')$/i',
 
         // 系统文件
         '/^(readme|license|changelog)\.(md|txt)$/i',   // 说明文件
@@ -149,31 +145,31 @@ class SecurityMiddleware
      * 用于识别恶意爬虫和扫描工具
      */
     protected const SUSPICIOUS_USER_AGENTS = [
-        '/'
-        .'sqlmap|'         // SQL注入工具
-        .'nikto|'          // 漏洞扫描器
-        .'metasploit|'     // 渗透测试框架
-        .'nessus|'         // 漏洞扫描器
-        .'wpscan|'         // WordPress扫描器
-        .'acunetix|'       // Web漏洞扫描器
-        .'burp|'           // 渗透测试工具
-        .'dirbuster|'      // 目录爆破工具
-        .'hydra|'          // 暴力破解工具
-        .'havij|'          // SQL注入工具
-        .'zap|'            // OWASP ZAP代理
-        .'arachni|'        // Web应用扫描器
-        .'nmap|'           // 端口扫描工具
-        .'netsparker|'     // Web漏洞扫描器
-        .'w3af|'           // Web应用攻击框架
-        .'fimap|'          // 文件包含工具
-        .'skipfish|'       // Web应用扫描器
-        .'webshag|'        // 多线程扫描器
-        .'webinspect|'     // Web应用扫描器
-        .'paros|'          // Web代理扫描器
-        .'appscan|'        // IBM安全扫描器
-        .'webscarab|'      // OWASP WebScarab
-        .'beef'            // 浏览器攻击框架
-        .'/i',             // 不区分大小写匹配
+        '/('.
+        'sqlmap|'.       // SQL注入工具
+        'nikto|'.        // 漏洞扫描器
+        'metasploit|'.   // 渗透测试框架
+        'nessus|'.       // 漏洞扫描器
+        'wpscan|'.       // WordPress扫描器
+        'acunetix|'.     // Web漏洞扫描器
+        'burp|'.         // 渗透测试工具
+        'dirbuster|'.    // 目录爆破工具
+        'hydra|'.        // 暴力破解工具
+        'havij|'.        // SQL注入工具
+        'zap|'.          // OWASP ZAP代理
+        'arachni|'.      // Web应用扫描器
+        'nmap|'.         // 端口扫描工具
+        'netsparker|'.   // Web漏洞扫描器
+        'w3af|'.         // Web应用攻击框架
+        'fimap|'.        // 文件包含工具
+        'skipfish|'.     // Web应用扫描器
+        'webshag|'.      // 多线程扫描器
+        'webinspect|'.   // Web应用扫描器
+        'paros|'.        // Web代理扫描器
+        'appscan|'.      // IBM安全扫描器
+        'webscarab|'.    // OWASP WebScarab
+        'beef'.          // 浏览器攻击框架
+        ')/i',           // 不区分大小写匹配
 
         // '/curl/i',         // 可疑的curl请求
         // '/wget/i',         // 可疑的wget请求
@@ -494,9 +490,12 @@ class SecurityMiddleware
                 if ($this->checkIsMarkdown($value)) {
                     // 1. 移除代码块内容（代码块中的内容不进行安全检测）
                     $value = $this->pruneMarkdownCode($value);
+                } else {
+                    // 2. 移除 HTML 标签
+                    $value = detach_html($value);
                 }
 
-                // 2. 对剩余内容进行正则安全检测
+                // 3. 对剩余内容进行正则安全检测
                 foreach ($regExp as $pattern) {
                     // 排除某些特殊情况（如文章内容）
                     if (preg_match($pattern, $value) && ! $this->isFalsePositive($request, $key, $value)) {

@@ -4,6 +4,7 @@ namespace zxf\Laravel\Trace;
 
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
@@ -12,8 +13,8 @@ use Throwable;
 class ToolsParseExceptionHandler implements ExceptionHandler
 {
     protected ExceptionHandler $handler;
-
-    protected $e;
+    protected ?Throwable $lastException = null;
+    protected bool $rendering = false;
 
     public function __construct(ExceptionHandler $handler)
     {
@@ -22,50 +23,54 @@ class ToolsParseExceptionHandler implements ExceptionHandler
 
     /**
      * 增强异常报告逻辑
-     *
-     *
-     * @throws Throwable
      */
     public function report(Throwable $e): void
     {
-        // 记录异常前的处理逻辑
-        $this->e = $e;
+        $this->lastException = $e;
 
-        /** @var $handle Handle */
+        /** @var Handle $handle */
         app('trace')->registerShutdownHandle(Request::instance());
-
         // 调用原始 report 方法
         $this->handler->report($e);
     }
 
     /**
      * 增强异常渲染逻辑
-     *
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
-     *
-     * @throws Throwable
      */
-    public function render($request, Throwable $e)
+    public function render($request, Throwable $e): Response
     {
-        $this->e = $e;
+        // 防止递归调用
+        if ($this->rendering) {
+            return $this->handler->render($request, $e);
+        }
 
-        // 开发环境下显示详细错误
-        // if (app()->isLocal()) {
-        // }
+        $this->rendering = true;
+        $this->lastException = $e;
 
-        return $this->handler->render($request, $e);
+        try {
+            $response = $this->handler->render($request, $e);
+
+            // 只在最终渲染时处理跟踪信息
+            return $this->pringTrace($request, $response);
+        } finally {
+            $this->rendering = false;
+        }
     }
 
-    public function pringTrace($request, $response)
+    /**
+     * 处理跟踪信息
+     */
+    protected function pringTrace($request, Response $response): Response
     {
-        // 如果是语法错误在此处理（其他类型的错误在中间件中能捕捉到）
-        if ($this->e instanceof \ParseError) {
-            set_protected_value($response, 'exception', $this->e);
+        if ($this->lastException instanceof \ParseError) {
+            // 使用反射设置 protected 属性
+            $reflection = new \ReflectionClass($response);
+            $property = $reflection->getProperty('exception');
+            $property->setAccessible(true);
+            $property->setValue($response, $this->lastException);
 
-            /** @var $trace Handle */
+            /** @var Handle $trace */
             $trace = app('trace');
-
             return $trace->renderTraceStyleAndScript($request, $response);
         }
 
@@ -77,7 +82,7 @@ class ToolsParseExceptionHandler implements ExceptionHandler
         return $this->handler->shouldReport($e);
     }
 
-    public function renderForConsole($output, Throwable $e)
+    public function renderForConsole($output, Throwable $e): void
     {
         $this->handler->renderForConsole($output, $e);
     }

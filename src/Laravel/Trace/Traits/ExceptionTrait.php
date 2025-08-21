@@ -240,7 +240,7 @@ trait ExceptionTrait
     }
 
     // 显示错误信息
-    public function debug(Throwable $e, bool $showTrace = true): Response|JsonResponse
+    public function debug(Throwable $e): Response|JsonResponse
     {
         $content = [
             [
@@ -267,7 +267,8 @@ trait ExceptionTrait
                 'value' => str_replace(base_path(), '', $e->getTraceAsString()),
             ],
         ];
-
+        // 如果是语法错误，$showTrace 为 true 就会陷入死循环
+        $showTrace = ! $e instanceof \ParseError;
         return $this->outputDebugHtml($content, self::$code.':'.(self::$isSysErr ? $e->getMessage() : self::$message), self::$code, $showTrace);
     }
 }

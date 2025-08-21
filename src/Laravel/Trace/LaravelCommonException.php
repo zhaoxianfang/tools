@@ -103,9 +103,7 @@ class LaravelCommonException // extends Handler
 
         // 调试模式
         if (config('app.debug')) {
-            // 如果是语法错误，$showTrace 为 true 就会陷入死循环
-            $showTrace = ! $e instanceof \ParseError;
-            return $this->debug($e, $showTrace);
+            return $this->debug($e);
         }
 
         // 判断路径 : 不是get的api 或 json 请求

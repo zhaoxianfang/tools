@@ -54,10 +54,7 @@ class ToolsParseExceptionHandler implements ExceptionHandler
         // if (app()->isLocal()) {
         // }
 
-        // 获取当前响应对象
-        $response = $this->handler->render($request, $e);
-
-        return $this->pringTrace($request, $response);
+        return $this->handler->render($request, $e);
     }
 
     public function pringTrace($request, $response)

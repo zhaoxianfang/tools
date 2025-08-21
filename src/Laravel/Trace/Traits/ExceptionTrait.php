@@ -2,6 +2,8 @@
 
 namespace zxf\Laravel\Trace\Traits;
 
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -235,5 +237,37 @@ trait ExceptionTrait
 
         // 返回结果数组
         return $exceptionCode;
+    }
+
+    // 显示错误信息
+    public function debug(Throwable $e, bool $showTrace = true): Response|JsonResponse
+    {
+        $content = [
+            [
+                'label' => '异常信息',
+                'type' => 'text',
+                'value' => self::$isSysErr ? $e->getMessage() : self::$message,
+            ], [
+                'label' => '状态码',
+                'type' => 'text',
+                'value' => self::$code,
+            ], [
+                'label' => '异常文件',
+                'type' => 'debug_file',
+                'value' => str_replace(base_path(), '', $e->getFile()).':'.$e->getLine().' (行)',
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], [
+                'label' => '异常代码',
+                'type' => 'code',
+                'value' => $this->getExceptionContent($e),
+            ], [
+                'label' => '异常堆栈',
+                'type' => 'code',
+                'value' => str_replace(base_path(), '', $e->getTraceAsString()),
+            ],
+        ];
+
+        return $this->outputDebugHtml($content, self::$code.':'.(self::$isSysErr ? $e->getMessage() : self::$message), self::$code, $showTrace);
     }
 }

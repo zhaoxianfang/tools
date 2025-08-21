@@ -103,7 +103,9 @@ class LaravelCommonException // extends Handler
 
         // 调试模式
         if (config('app.debug')) {
-            return $this->debug($e);
+            // 如果是语法错误，$showTrace 为 true 就会陷入死循环
+            $showTrace = ! $e instanceof \ParseError;
+            return $this->debug($e, $showTrace);
         }
 
         // 判断路径 : 不是get的api 或 json 请求
@@ -112,36 +114,5 @@ class LaravelCommonException // extends Handler
         } else {
             return $this->respView(self::$message, self::$code)->send();
         }
-    }
-
-    private function debug(Throwable $e): Response|JsonResponse
-    {
-        $content = [
-            [
-                'label' => '异常信息',
-                'type' => 'text',
-                'value' => self::$isSysErr ? $e->getMessage() : self::$message,
-            ], [
-                'label' => '状态码',
-                'type' => 'text',
-                'value' => self::$code,
-            ], [
-                'label' => '异常文件',
-                'type' => 'debug_file',
-                'value' => str_replace(base_path(), '', $e->getFile()).':'.$e->getLine().' (行)',
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ], [
-                'label' => '异常代码',
-                'type' => 'code',
-                'value' => $this->getExceptionContent($e),
-            ], [
-                'label' => '异常堆栈',
-                'type' => 'code',
-                'value' => str_replace(base_path(), '', $e->getTraceAsString()),
-            ],
-        ];
-
-        return $this->outputDebugHtml($content, self::$code.':'.(self::$isSysErr ? $e->getMessage() : self::$message), self::$code);
     }
 }

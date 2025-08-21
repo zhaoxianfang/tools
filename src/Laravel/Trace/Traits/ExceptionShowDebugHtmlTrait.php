@@ -9,7 +9,7 @@ use zxf\Laravel\Trace\Handle;
  */
 trait ExceptionShowDebugHtmlTrait
 {
-    public function outputDebugHtml(array $list = [], string $title = '', int $statusCode = 500)
+    public function outputDebugHtml(array $list = [], string $title = '', int $statusCode = 500, bool $showTrace = true)
     {
         $title = ! empty($title) ? $title : '系统错误/调试';
 
@@ -185,6 +185,9 @@ HTML;
 
         $resp = response($html, $statusCode)->header('Content-Type', 'text/html');
 
+        if (! $showTrace) {
+            return $resp->send();
+        }
         /** @var Handle $trace */
         $trace = app('trace');
 

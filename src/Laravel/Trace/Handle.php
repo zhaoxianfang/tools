@@ -265,7 +265,7 @@ class Handle
      *
      * @return array|false
      */
-    private function getExceptionContent($e)
+    public function getExceptionContent($e)
     {
         $startLine = $e->getLine() - 5;
         $endLine = $e->getLine() + 5;
@@ -591,7 +591,7 @@ class Handle
 
     }
 
-    private function getFilePath($file = '')
+    public function getFilePath($file = '')
     {
         return substr($file, strlen(base_path()) + 1);
     }

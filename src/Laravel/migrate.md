@@ -229,14 +229,22 @@ $this->loadRoutesFrom(__DIR__.'/Trace/routes/debugger.php');
 // 加载tncode 路由
 $this->loadRoutesFrom(__DIR__.'/../TnCode/routes.php');
 
-// 处理异常
-// 获取 Laravel 的异常处理器实例
-$handler = app(ExceptionHandler::class);
+// 处理 Laravel 异常
+// 方式一：单次注册
+$this->app->singleton(ExceptionHandler::class, function ($app) {
+    // 获取原始处理器
+    $originalHandler = $app->make(\Illuminate\Foundation\Exceptions\Handler::class);
 
-// 自定义的异常处理
-app()->bind(ExceptionHandler::class, function () use ($handler) {
-    return new ToolsParseExceptionHandler($handler);
+    return new ToolsExceptionHandler($originalHandler);
 });
+
+// 方式二：会重复注册
+// 获取 Laravel 的异常处理器实例
+// $handler = app(ExceptionHandler::class);
+// 自定义的异常处理
+// app()->bind(ExceptionHandler::class, function () use ($handler) {
+//     return new ToolsExceptionHandler($handler);
+// });
 
 // 设置数据分页模板
 $this->setPaginationView();

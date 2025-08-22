@@ -4,11 +4,11 @@
  * 常用的一些函数归纳
  */
 
+use InvalidArgumentException;
 use JetBrains\PhpStorm\NoReturn;
 use Random\RandomException;
-use zxf\Tools\Collection;
-use InvalidArgumentException;
 use RuntimeException;
+use zxf\Tools\Collection;
 
 if (! function_exists('i_session')) {
     /**
@@ -2282,7 +2282,6 @@ if (! function_exists('array_get')) {
      *                        - 数字键: users.1.name                                                => users 下下标为 1 的用户的名称
      * @param  mixed  $default  默认值，当路径不存在时返回
      * @param  string  $delimiter  路径分隔符，默认为点(.)
-     *
      * @return mixed 查询到的值或默认值
      *
      * @throws InvalidArgumentException 当输入参数无效时抛出

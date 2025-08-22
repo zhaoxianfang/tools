@@ -13,7 +13,7 @@ use zxf\Laravel\Modules\Middleware\ToolsMiddleware;
 use zxf\Laravel\Modules\ModulesServiceProvider;
 use zxf\Laravel\Modules\Support\Stub;
 use zxf\Laravel\Trace\Handle;
-use zxf\Laravel\Trace\ToolsParseExceptionHandler;
+use zxf\Laravel\Trace\ToolsExceptionHandler;
 
 class LaravelModulesServiceProvider extends ModulesServiceProvider
 {
@@ -73,23 +73,6 @@ class LaravelModulesServiceProvider extends ModulesServiceProvider
 
         $this->mergeConfigFrom(__DIR__.'/../../config/modules.php', 'modules');
 
-
-        // 处理 Laravel 异常
-        // 方式一：单次注册
-        $this->app->singleton(ExceptionHandler::class, function ($app) {
-            // 获取原始处理器
-            $originalHandler = $app->make(\Illuminate\Foundation\Exceptions\Handler::class);
-            return new ToolsParseExceptionHandler($originalHandler);
-        });
-
-        // 方式二：会重复注册
-        // 获取 Laravel 的异常处理器实例
-        // $handler = app(ExceptionHandler::class);
-        // 自定义的异常处理
-        // app()->bind(ExceptionHandler::class, function () use ($handler) {
-        //     return new ToolsParseExceptionHandler($handler);
-        // });
-
         // 注册 whereHasIn 的几个查询方式来替换 whereHas 查询全表扫描的问题
         WhereHasInBuilder::register($this);
     }
@@ -124,5 +107,23 @@ class LaravelModulesServiceProvider extends ModulesServiceProvider
             return new Handle($app);
         });
         $this->app->alias(Handle::class, 'trace');
+
+        // 处理 Laravel 异常
+
+        // 方式一：单次注册
+        $this->app->singleton(ExceptionHandler::class, function ($app) {
+            // 获取原始处理器
+            $originalHandler = $app->make(\Illuminate\Foundation\Exceptions\Handler::class);
+
+            return new ToolsExceptionHandler($originalHandler);
+        });
+
+        // 方式二：会重复注册
+        // 获取 Laravel 的异常处理器实例
+        // $handler = app(ExceptionHandler::class);
+        // 自定义的异常处理
+        // app()->bind(ExceptionHandler::class, function () use ($handler) {
+        //     return new ToolsExceptionHandler($handler);
+        // });
     }
 }

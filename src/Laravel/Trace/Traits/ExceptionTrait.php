@@ -148,7 +148,7 @@ trait ExceptionTrait
     }
 
     // 是否自定义模块异常接管类
-    private function hasModuleCustomException(): bool
+    public function hasModuleCustomException(): bool
     {
         $modulesExceptions = config('modules.namespace').'\\'.$this->getModuleName().'\Exceptions\Handler';
 
@@ -156,7 +156,7 @@ trait ExceptionTrait
     }
 
     // 模块下自定义的异常接管类
-    private function handleModulesCustomException(Throwable $e, $request)
+    public function handleModulesCustomException(Throwable $e, $request)
     {
         // 如果模块下定义了自定义的异常接管类 Handler，则交由模块下的异常类自己处理
         $modulesExceptions = config('modules.namespace').'\\'.$this->getModuleName().'\Exceptions\Handler';
@@ -254,7 +254,7 @@ trait ExceptionTrait
             ], [
                 'label' => '异常文件',
                 'type' => 'debug_file',
-                'value' => str_replace(base_path(), '', $e->getFile()).':'.$e->getLine().' (行)',
+                'value' => str_replace(base_path(), '', $e->getFile()).':'.$e->getLine().' (行附近)',
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ], [
@@ -269,6 +269,7 @@ trait ExceptionTrait
         ];
         // 如果是语法错误，$showTrace 为 true 就会陷入死循环
         $showTrace = ! $e instanceof \ParseError;
+
         return $this->outputDebugHtml($content, self::$code.':'.(self::$isSysErr ? $e->getMessage() : self::$message), self::$code, $showTrace);
     }
 }

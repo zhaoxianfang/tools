@@ -8,14 +8,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use zxf\Laravel\Trace\Traits\AppEndTrait;
 use zxf\Laravel\Trace\Traits\ExceptionCodeTrait;
+use zxf\Laravel\Trace\Traits\ExceptionCustomCallbackTrait;
 use zxf\Laravel\Trace\Traits\ExceptionShowDebugHtmlTrait;
+use zxf\Laravel\Trace\Traits\ExceptionTrait;
 use zxf\Laravel\Trace\Traits\TraceResponseTrait;
 
 class Handle
 {
     use AppEndTrait;
     use ExceptionCodeTrait;
+    use ExceptionCustomCallbackTrait;
     use ExceptionShowDebugHtmlTrait;
+    use ExceptionTrait;
     use TraceResponseTrait;
 
     /**
@@ -257,52 +261,6 @@ class Handle
         }
 
         return '';
-    }
-
-    /**
-     * 获取异常代码片段
-     *
-     *
-     * @return array|false
-     */
-    public function getExceptionContent($e)
-    {
-        $startLine = $e->getLine() - 5;
-        $endLine = $e->getLine() + 5;
-        $filePath = $e->getFile();
-
-        // 检查行号是否合理
-        if (! is_int($startLine) || ! is_int($endLine) || $startLine <= 0 || $endLine < $startLine) {
-            return false;
-        }
-
-        // 初始化结果数组和当前行计数器
-        $exceptionCode = '';
-        $currentLine = 0;
-
-        // 打开文件
-        $file = fopen($filePath, 'r');
-        if ($file === false) {
-            return false;
-        }
-
-        // 循环读取每一行直到到达指定行范围或文件结束
-        while (($line = fgets($file)) !== false) {
-            $currentLine++;
-            if ($currentLine >= $startLine && $currentLine <= $endLine) {
-                // 去除行尾的换行符，并将该行添加到结果数组中
-                $exceptionCode .= $currentLine.'|'.$line;
-            }
-            if ($currentLine > $endLine) {
-                break; // 如果已经超过了所需的最后一行，则停止读取
-            }
-        }
-
-        // 关闭文件
-        fclose($file);
-
-        // 返回结果数组
-        return $exceptionCode;
     }
 
     private function getModelList()

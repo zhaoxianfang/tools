@@ -4,10 +4,7 @@
  * 常用的一些函数归纳
  */
 
-use InvalidArgumentException;
 use JetBrains\PhpStorm\NoReturn;
-use Random\RandomException;
-use RuntimeException;
 use zxf\Tools\Collection;
 
 if (! function_exists('i_session')) {
@@ -19,7 +16,7 @@ if (! function_exists('i_session')) {
      * @param  int|null  $expiry  过期时间（秒）
      * @return mixed|null 返回值或者null
      *
-     * @throws RandomException
+     * @throws \Random\RandomException
      */
     function i_session(string|array|null $name = null, mixed $value = null, ?int $expiry = null): mixed
     {
@@ -1379,7 +1376,7 @@ if (! function_exists('base_convert_any')) {
 
         // 校验进制合法性
         if ($fromBase < 2 || $fromBase > 62 || $toBase < 2 || $toBase > 62) {
-            throw new InvalidArgumentException('Bases must be in range 2–62.');
+            throw new \InvalidArgumentException('Bases must be in range 2–62.');
         }
 
         // 快速路径（相同进制）
@@ -1426,7 +1423,7 @@ if (! function_exists('base_convert_any')) {
             $char = $number[$i];
             $value = $charMap[$char] ?? null;
             if ($value === null || $value >= $fromBase) {
-                throw new InvalidArgumentException("Invalid character '$char' for base $fromBase.");
+                throw new \InvalidArgumentException("Invalid character '$char' for base $fromBase.");
             }
             $decimal = bcadd(bcmul($decimal, $baseStr), (string) $value, 0);
         }
@@ -2282,10 +2279,11 @@ if (! function_exists('array_get')) {
      *                        - 数字键: users.1.name                                                => users 下下标为 1 的用户的名称
      * @param  mixed  $default  默认值，当路径不存在时返回
      * @param  string  $delimiter  路径分隔符，默认为点(.)
+     *
      * @return mixed 查询到的值或默认值
      *
-     * @throws InvalidArgumentException 当输入参数无效时抛出
-     * @throws RuntimeException 当查询语法错误时抛出
+     * @throws \InvalidArgumentException 当输入参数无效时抛出
+     * @throws \RuntimeException 当查询语法错误时抛出
      */
     function array_get(array $array, string $path, mixed $default = null, string $delimiter = '.'): mixed
     {
@@ -2295,7 +2293,7 @@ if (! function_exists('array_get')) {
 
         if (str_contains($delimiter, '*') || str_contains($delimiter, '?') ||
             str_contains($delimiter, '{') || str_contains($delimiter, '}')) {
-            throw new InvalidArgumentException('Delimiter cannot contain special characters');
+            throw new \InvalidArgumentException('Delimiter cannot contain special characters');
         }
 
         $parts = explode($delimiter, $path);

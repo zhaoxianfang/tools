@@ -17,16 +17,18 @@ class CustomExceptionHandler
      */
     public static function handle(Exceptions $exceptions, ?Closure $customHandleCallback = null, array $customHandleCode = [], array $dontReport = []): void
     {
-        /** @var $trace Handle */
-        $trace = app('trace');
+        // 检查 trace 服务是否已定义
+        if (app()->bound('trace')) {
+            /** @var $trace Handle */
+            $trace = app('trace');
 
-        // 去重复报告的异常,确保单个实例的异常只被报告一次
-        $exceptions->dontReportDuplicates();
+            // 去重复报告的异常,确保单个实例的异常只被报告一次
+            $exceptions->dontReportDuplicates();
 
-        // 自定义自定义状态码的异常闭包回调处理
-        $trace->setCustomCallbackHandel($customHandleCallback, $customHandleCode);
-        // 定义不需要被报告的异常
-        ! empty($dontReport) && $trace->setDontReport($dontReport);
-
+            // 自定义自定义状态码的异常闭包回调处理
+            $trace->setCustomCallbackHandel($customHandleCallback, $customHandleCode);
+            // 定义不需要被报告的异常
+            ! empty($dontReport) && $trace->setDontReport($dontReport);
+        }
     }
 }

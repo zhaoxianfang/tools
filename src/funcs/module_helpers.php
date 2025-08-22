@@ -139,6 +139,9 @@ if (! function_exists('get_user_info')) {
     function get_user_info(?string $field = null)
     {
         $user = null;
+        if (app()->runningInConsole()) {
+            return null;
+        }
         $authList = config('auth.guards');
         foreach ($authList as $authName => $val) {
             if (auth($authName)->check()) {

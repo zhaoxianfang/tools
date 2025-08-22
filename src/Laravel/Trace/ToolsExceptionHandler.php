@@ -107,19 +107,19 @@ class ToolsExceptionHandler implements ExceptionHandler
 
         // 调试模式
         if (config('app.debug') || app()->runningInConsole()) {
-            // return $this->trace->debug($e);
+            return $this->trace->debug($e);
 
-            try {
-                $response = $this->handler->render($request, $e);
-                if (app()->runningInConsole() || app()->runningUnitTests()) {
-                    return $response;
-                }
+            // try {
+            //     $response = $this->handler->render($request, $e);
+            //     if (app()->runningInConsole()) {
+            //         return $response;
+            //     }
 
-                // 只在最终渲染时处理跟踪信息
-                return $this->pringTrace($request, $response);
-            } finally {
-                $this->rendering = false;
-            }
+            //     // 只在最终渲染时处理跟踪信息
+            //     return $this->pringTrace($request, $response);
+            // } finally {
+            //     $this->rendering = false;
+            // }
         }
 
         // 判断路径 : 不是get的api 或 json 请求

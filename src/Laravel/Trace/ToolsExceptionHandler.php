@@ -106,7 +106,7 @@ class ToolsExceptionHandler implements ExceptionHandler
         }
 
         // 调试模式
-        if (config('app.debug') || app()->runningInConsole() || app()->runningUnitTests()) {
+        if (config('app.debug') || app()->runningInConsole()) {
             // return $this->trace->debug($e);
 
             try {

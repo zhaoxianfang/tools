@@ -39,7 +39,8 @@ trait ExceptionTrait
     public function writeLog(Throwable $e): void
     {
         $message = self::$isSysErr ? $e->getMessage() : self::$message;
-
+        // 标记日志已经被记录过了
+        request()->merge(['log_already_recorded' => true]);
         // 标记日志
         try {
             Log::error('[异常]:'.$message, self::$content);

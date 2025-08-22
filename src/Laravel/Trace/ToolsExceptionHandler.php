@@ -94,7 +94,9 @@ class ToolsExceptionHandler implements ExceptionHandler
         }
 
         // 运行自定义闭包回调
-        $this->trace->runCallbackHandle();
+        if (! empty($callRes = $this->trace->runCallbackHandle()) && $callRes instanceof Response) {
+            return $callRes;
+        }
 
         try {
             // 如果模块下定义了自定义的异常接管类 Handler，则交由模块下的异常类自己处理

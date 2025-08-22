@@ -51,5 +51,6 @@ trait ExceptionCustomCallbackTrait
                 return call_user_func($this->customHandleCallback, self::$code, self::$message);
             }
         }
+        return null;
     }
 }

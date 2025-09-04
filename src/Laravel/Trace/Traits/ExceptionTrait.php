@@ -24,11 +24,15 @@ trait ExceptionTrait
     // 是否为系统错误
     public static bool $isSysErr = false;
 
+    // 是否初始化过异常信息
+    public static bool $initErr = false;
+
     // 错误信息
     public static array $content = [];
 
     public function initError(Throwable $e): void
     {
+        self::$initErr = true;
         self::$isSysErr = self::isSystemException($e);
         $this->setStatusCode($e);
         $this->setErrorMessage($e);
@@ -38,6 +42,9 @@ trait ExceptionTrait
     // 写入错误日志
     public function writeLog(Throwable $e): void
     {
+        if (! self::$initErr) {
+            $this->initError($e);
+        }
         $message = self::$isSysErr ? $e->getMessage() : self::$message;
         // 标记日志已经被记录过了
         request()->merge(['log_already_recorded' => true]);
@@ -55,6 +62,9 @@ trait ExceptionTrait
      */
     protected function setStatusCode(Throwable $e): int
     {
+        if (! self::$initErr) {
+            $this->initError($e);
+        }
         // 特定异常的状态码映射
         self::$code = match (true) {
             $e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface => $e->getStatusCode(),// 如果是 HTTP 异常，使用其状态码
@@ -74,11 +84,15 @@ trait ExceptionTrait
      */
     protected function setErrorMessage(Throwable $e): string
     {
-        if (App::environment('production') || ! config('app.debug') || self::$isSysErr) {
+        // if (App::environment('production') || ! config('app.debug') || self::$isSysErr) {
+        if (App::environment('production') || self::$isSysErr) {
             // 生产环境 || 关闭调试 || 系统错误 => 返回错误码对应的提示信息
             self::$message = $this->getCodeMeg(self::$code);
         } else {
             self::$message = $e->getMessage();
+        }
+        if (empty(self::$message)) {
+            self::$message = $this->getCodeMeg(self::$code);
         }
 
         return self::$message;
@@ -86,6 +100,9 @@ trait ExceptionTrait
 
     protected function setError(Throwable $e): array
     {
+        if (! self::$initErr) {
+            $this->initError($e);
+        }
         self::$content = [
             'message:' => self::$message,   // 返回用户自定义的异常信息
             'code:' => self::$code,      // 返回用户自定义的异常代码
@@ -115,8 +132,13 @@ trait ExceptionTrait
             return true;
         }
 
+        // 空消息 || 包含中文 的错误通常是人为提示或客户端错误，不算系统错误
+        if (empty($message = $exception->getMessage()) || (bool) preg_match('/[\x{4e00}-\x{9fa5}]/u', $message)) {
+            // 很可能是人为的 abort() 调用
+            return false;
+        }
+
         return match (true) {
-            $exception instanceof \Modules\Core\Exceptions\UserException => false, // 自定义错误
             $exception instanceof \ErrorException => true, // 运行时错误
             $exception instanceof \Illuminate\Database\QueryException => true, // 数据库查询错误
             $exception instanceof \Illuminate\Database\Eloquent\ModelNotFoundException => true, // 模型未找到
@@ -243,11 +265,15 @@ trait ExceptionTrait
     // 显示错误信息
     public function debug(Throwable $e): Response|JsonResponse
     {
+        if (! self::$initErr) {
+            $this->initError($e);
+        }
+
         $content = [
             [
                 'label' => '异常信息',
                 'type' => 'text',
-                'value' => self::$isSysErr ? $e->getMessage() : self::$message,
+                'value' => self::$message,
             ], [
                 'label' => '状态码',
                 'type' => 'text',
@@ -255,7 +281,7 @@ trait ExceptionTrait
             ], [
                 'label' => '异常文件',
                 'type' => 'debug_file',
-                'value' => str_replace(base_path(), '', $e->getFile()).':'.$e->getLine().' (行附近)',
+                'value' => str_replace(base_path(), '', $e->getFile()).':'.$e->getLine().' (行)',
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ], [
@@ -271,6 +297,6 @@ trait ExceptionTrait
         // 如果是语法错误，$showTrace 为 true 就会陷入死循环
         $showTrace = ! $e instanceof \ParseError;
 
-        return $this->outputDebugHtml($content, self::$code.':'.(self::$isSysErr ? $e->getMessage() : self::$message), self::$code, $showTrace);
+        return $this->outputDebugHtml($content, self::$code.':'.self::$message, self::$code, $showTrace);
     }
 }

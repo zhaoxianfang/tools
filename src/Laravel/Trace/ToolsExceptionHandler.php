@@ -37,6 +37,9 @@ class ToolsExceptionHandler implements ExceptionHandler
      */
     public function report(Throwable $e): void
     {
+        // 初始化错误信息
+        $this->trace->initError($e);
+
         $exceptionHash = $this->getExceptionHash($e);
 
         // 定义为不需要被报告的异常 || 检查是否已经报告过
@@ -56,8 +59,6 @@ class ToolsExceptionHandler implements ExceptionHandler
             // 执行跟踪相关的预处理
             $this->beforeReport($e);
 
-            // 初始化错误信息
-            $this->trace->initError($e);
             // 记录日志
             $this->trace->writeLog($e);
 
@@ -87,7 +88,7 @@ class ToolsExceptionHandler implements ExceptionHandler
         $this->rendering = true;
         $this->lastException = $e;
 
-        if ($this->trace::$message == '出错啦!') {
+        if (! $this->trace::$initErr) {
             // 可能部分异常不会走 report，例如：abort(401,'...');
             // 手动重新调用  report报告
             $this->trace->initError($e);
@@ -205,8 +206,8 @@ class ToolsExceptionHandler implements ExceptionHandler
             get_class($e).
             $e->getFile().
             $e->getLine().
-            $e->getMessage().
-            $e->getCode()
+            $this->trace::$message.
+            $this->trace::$code
         );
     }
 

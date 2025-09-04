@@ -19,7 +19,7 @@ trait ExceptionNotifyTrait
 
         if (config('app.debug')) {
 
-            $errFile = str_replace(base_path(), '', $e->getFile()).':'.$e->getLine().' (行附近)';
+            $errFile = str_replace(base_path(), '', $e->getFile()).':'.$e->getLine().' (行)';
             $extendedMessage .= "<p style='font-size: 10px;'>[异常提示]:</p>";
             $extendedMessage .= "<p style='font-size: 10px;'>➤ [异常文件]:{$errFile}</p>";
 

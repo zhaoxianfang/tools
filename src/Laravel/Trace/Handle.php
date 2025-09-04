@@ -250,7 +250,7 @@ class Handle
             $showTips = in_array($name, ['messages', 'sql', 'models']) && ! empty($result) ? ' ('.count($result).')' : '';
             $showTips = in_array($name, ['exception']) && ! empty($result) ? ' ◉' : $showTips;
 
-            $trace[$title.$showTips] = ! empty($result) ? $result : ['暂无内容'.($name == 'messages' ? ': 使用 trace(mixed ...$args) 进行调试' : '')];
+            $trace[$title.$showTips] = ! empty($result) ? $result : ['暂无内容'.($name == 'messages' ? '<span style="font-size: 9px;color: #aaa;">tips: 使用 trace(mixed ...$args) 进行打印输出调试</span>' : '')];
         }
 
         $this->traceEndHandle($trace);

@@ -262,12 +262,6 @@
                 } catch (err) {
                 }
 
-                // 获取指定元素并添加类名
-                let obj = document.getElementById("tncode_div");
-                addClass(obj, "dd");
-                setTimeout(function () {
-                    removeClass(obj, "dd");
-                }, 200);
                 tncode._result = false;
                 tncode._showmsg(err_msg);
                 tncode._err_c ++;
@@ -278,10 +272,8 @@
                 if (tncode._onFail) {
                     tncode._onFail();
                 }
-                // 添加水波纹
-                if (!tnHandleDom.classList.contains("tn_ripple")) {
-                    tnHandleDom.classList.add("tn_ripple");
-                }
+
+                tncode.resetBtn();
             }
         },
         // 验证失败的回调函数（目前为空，可根据实际需求扩展）
@@ -557,6 +549,23 @@
                 }
             }
             return tncode;
+        },
+        // 重置验证按钮
+        resetBtn: function () {
+            var tnHandleDom = document.querySelector(tncode._options.handleDom);
+            tncode._tncode.innerHTML = "点击按钮进行验证";
+            // 获取指定元素并添加类名
+            let obj = document.getElementById("tncode_div");
+            addClass(obj, "dd");
+            setTimeout(function () {
+                removeClass(obj, "dd");
+            }, 200);
+            tncode._result = false;
+
+            // 添加水波纹
+            if (!tnHandleDom.classList.contains("tn_ripple")) {
+                tnHandleDom.classList.add("tn_ripple");
+            }
         },
         // 获取验证结果的方法
         result: function () {

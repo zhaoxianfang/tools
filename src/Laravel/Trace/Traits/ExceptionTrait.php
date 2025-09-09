@@ -24,6 +24,9 @@ trait ExceptionTrait
     // 是否为系统错误
     public static bool $isSysErr = false;
 
+    // 是否为用户错误
+    public static bool $isUserErr = false;
+
     // 是否初始化过异常信息
     public static bool $initErr = false;
 
@@ -85,7 +88,7 @@ trait ExceptionTrait
     protected function setErrorMessage(Throwable $e): string
     {
         // if (App::environment('production') || ! config('app.debug') || self::$isSysErr) {
-        if (App::environment('production') || self::$isSysErr) {
+        if (! self::$isUserErr && (App::environment('production') || self::$isSysErr)) {
             // 生产环境 || 关闭调试 || 系统错误 => 返回错误码对应的提示信息
             self::$message = $this->getCodeMeg(self::$code);
         } else {
@@ -126,16 +129,19 @@ trait ExceptionTrait
             return false;
         }
 
+        // 空消息 || 包含中文 || 4xx 的错误通常是人为提示或客户端错误，不算系统错误
+        if (empty($message = $exception->getMessage()) || (bool) preg_match('/[\x{4e00}-\x{9fa5}]/u', $message) || ($exception->getCode() >= 400 && $exception->getCode() < 500)) {
+            // 4xx 状态码 (客户端错误) -> 通常是用户/调用方错误
+            // 很可能是人为的 abort() 调用 或者用户提交的数据错误等
+            self::$isUserErr = true;
+
+            return false;
+        }
+
         // 致命错误
         if (self::isFatalError($exception)) {
             // 判断是否为致命错误
             return true;
-        }
-
-        // 空消息 || 包含中文 的错误通常是人为提示或客户端错误，不算系统错误
-        if (empty($message = $exception->getMessage()) || (bool) preg_match('/[\x{4e00}-\x{9fa5}]/u', $message)) {
-            // 很可能是人为的 abort() 调用
-            return false;
         }
 
         return match (true) {

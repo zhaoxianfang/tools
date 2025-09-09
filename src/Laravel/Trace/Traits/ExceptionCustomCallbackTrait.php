@@ -3,6 +3,7 @@
 namespace zxf\Laravel\Trace\Traits;
 
 use Closure;
+use Throwable;
 
 /**
  * 开发者自定义异常回调处理Trait
@@ -38,19 +39,20 @@ trait ExceptionCustomCallbackTrait
     /**
      * 运行自定义闭包回调处理
      */
-    public function runCallbackHandle()
+    public function runCallbackHandle(Throwable $e)
     {
         if (! empty($this->customHandleCallback) && $this->customHandleCallback instanceof Closure) {
             if (! empty($this->customHandleCode)) {
                 if (in_array(self::$code, $this->customHandleCode)) {
                     // 调用自定义处理闭包函数
-                    return call_user_func($this->customHandleCallback, self::$code, self::$message);
+                    return call_user_func($this->customHandleCallback, self::$code, self::$message, $e);
                 }
             } else {
                 // 调用自定义处理闭包函数
-                return call_user_func($this->customHandleCallback, self::$code, self::$message);
+                return call_user_func($this->customHandleCallback, self::$code, self::$message, $e);
             }
         }
+
         return null;
     }
 }

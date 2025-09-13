@@ -34,6 +34,11 @@ class SecurityMiddleware
      */
     protected string $errorCode = '';
 
+    /**
+     * 传入进来的配置文件
+     */
+    protected static array $securityConfig = [];
+
     // ==================== 安全模式定义 ====================
 
     /**
@@ -261,8 +266,7 @@ class SecurityMiddleware
             try {
                 $config = json_decode(base64_decode($encodedConfig), true, 512, JSON_THROW_ON_ERROR);
                 // 将配置存入请求对象以便后续使用
-                // $request->attributes->set('security_middleware_config', $config);
-                $request->merge(['security_middleware_config' => $config]);
+                self::$securityConfig = (array) $config;
             } catch (\Exception $e) {
             }
         }
@@ -552,12 +556,10 @@ class SecurityMiddleware
      */
     protected function getMiddlewareConfig(Request $request, string $name): mixed
     {
-        if (! $request->has('security_middleware_config')) {
+        if (empty(self::$securityConfig)) {
             return null;
         }
-        $config = $request->input('security_middleware_config');
-
-        return $config[$name] ?? null;
+        return self::$securityConfig[$name] ?: null;
     }
 
     /**

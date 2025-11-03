@@ -304,19 +304,6 @@ class ImagickTool
     ];
 
     /**
-     * 默认字体映射表
-     * @var array
-     */
-    private static array $fontMap = [
-        'Arial' => 'arial',
-        'Times' => 'times',
-        'Courier' => 'courier',
-        'Verdana' => 'verdana',
-        'Impact' => 'impact',
-        'pmzdxx' => 'pmzdxx' // 默认字体
-    ];
-
-    /**
      * 构造函数
      *
      * 初始化 Imagick 实例，检查扩展是否加载
@@ -2189,16 +2176,11 @@ class ImagickTool
             return $fontName;
         }
 
-        // 检查字体映射
-        if (isset(self::$fontMap[$fontName])) {
-            $fontName = self::$fontMap[$fontName];
-        }
-
         // 构建字体路径
-        $fontPath = dirname(__FILE__, 2).'/resource/font/'.$fontName.'.ttf';
+        $fontPath = dirname(__DIR__, 1).'/resource/font/'.$fontName.'.ttf';
         // 如果字体文件不存在，使用默认字体
         if (!is_file($fontPath)) {
-            $fontPath =  dirname(__FILE__, 2).'/resource/font/pmzdxx.ttf';
+            $fontPath = dirname(__DIR__, 1).'/resource/font/pmzdxx.ttf';
         }
 
         return $fontPath;

@@ -87,13 +87,19 @@ trait ExceptionTrait
      */
     protected function setErrorMessage(Throwable $e): string
     {
+        if (str_contains(strtoupper($e->getMessage()) , 'SQLSTATE')) {
+            // 通过错误消息中是否包含 SQLSTATE 字符串来判断是否为 数据库相关异常
+            self::$isSysErr = true;
+            self::$code = 500; // 设置为 500 系统错误
+        }
         // if (App::environment('production') || ! config('app.debug') || self::$isSysErr) {
-        if (! self::$isUserErr && (App::environment('production') || self::$isSysErr)) {
+        if (! self::$isUserErr && (App::environment('production') || self::$isSysErr) && ! config('app.debug')) {
             // 生产环境 || 关闭调试 || 系统错误 => 返回错误码对应的提示信息
             self::$message = $this->getCodeMeg(self::$code);
         } else {
             self::$message = $e->getMessage();
         }
+
         if (empty(self::$message)) {
             self::$message = $this->getCodeMeg(self::$code);
         }

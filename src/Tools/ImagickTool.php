@@ -12,12 +12,15 @@ use ImagickPixel;
  * 高级图像处理工具类 (ImagickTool)
  *
  * 基于 Imagick 3.7+ 版本开发的专业级图像处理工具
+ * 支持文字生成图片、图像处理、滤镜效果、格式转换等丰富功能
  *
  * @package zxf\Tools
  * @version 2.0
  */
 class ImagickTool
 {
+    private static $instance = null;
+
     /**
      * Imagick 实例
      * @var Imagick
@@ -258,6 +261,35 @@ class ImagickTool
     const FILTER_SOLARIZE = 'solarize';
 
     /**
+     * 文字对齐方式常量
+     */
+    const TEXT_ALIGN_LEFT = 'left';
+    const TEXT_ALIGN_CENTER = 'center';
+    const TEXT_ALIGN_RIGHT = 'right';
+
+    /**
+     * 文字垂直对齐方式常量
+     */
+    const TEXT_VALIGN_TOP = 'top';
+    const TEXT_VALIGN_MIDDLE = 'middle';
+    const TEXT_VALIGN_BOTTOM = 'bottom';
+
+    /**
+     * 文字装饰常量
+     */
+    const TEXT_DECORATION_NONE = 'none';
+    const TEXT_DECORATION_UNDERLINE = 'underline';
+    const TEXT_DECORATION_OVERLINE = 'overline';
+    const TEXT_DECORATION_LINETHROUGH = 'line-through';
+
+    /**
+     * 文字样式常量
+     */
+    const TEXT_STYLE_NORMAL = 'normal';
+    const TEXT_STYLE_ITALIC = 'italic';
+    const TEXT_STYLE_OBLIQUE = 'oblique';
+
+    /**
      * 位置映射表 - 中文描述
      * @var array
      */
@@ -304,6 +336,37 @@ class ImagickTool
     ];
 
     /**
+     * 文字对齐方式映射表
+     * @var array
+     */
+    private static array $textAlignMap = [
+        self::TEXT_ALIGN_LEFT => Imagick::ALIGN_LEFT,
+        self::TEXT_ALIGN_CENTER => Imagick::ALIGN_CENTER,
+        self::TEXT_ALIGN_RIGHT => Imagick::ALIGN_RIGHT,
+    ];
+
+    /**
+     * 文字样式映射表
+     * @var array
+     */
+    private static array $textStyleMap = [
+        self::TEXT_STYLE_NORMAL => Imagick::STYLE_NORMAL,
+        self::TEXT_STYLE_ITALIC => Imagick::STYLE_ITALIC,
+        self::TEXT_STYLE_OBLIQUE => Imagick::STYLE_OBLIQUE,
+    ];
+
+    /**
+     * 文字装饰映射表
+     * @var array
+     */
+    private static array $textDecorationMap = [
+        self::TEXT_DECORATION_NONE => Imagick::DECORATION_NO,
+        self::TEXT_DECORATION_UNDERLINE => Imagick::DECORATION_UNDERLINE,
+        self::TEXT_DECORATION_OVERLINE => Imagick::DECORATION_OVERLINE,
+        self::TEXT_DECORATION_LINETHROUGH => Imagick::DECORATION_LINETROUGH,
+    ];
+
+    /**
      * 构造函数
      *
      * 初始化 Imagick 实例，检查扩展是否加载
@@ -321,6 +384,18 @@ class ImagickTool
         $this->imagick = new Imagick();
         // 设置默认资源类型为真彩色
         $this->imagick->setType(Imagick::IMGTYPE_TRUECOLOR);
+    }
+
+    /**
+     * 静态初始化实例
+     */
+    public static function instance(): ?self
+    {
+        if (! isset(self::$instance) || is_null(self::$instance)) {
+            self::$instance = new static();
+        }
+
+        return self::$instance;
     }
 
     // ==========================================
@@ -1124,8 +1199,8 @@ class ImagickTool
      * @param string $text 水印文字内容
      *                     示例：'版权所有', 'Confidential'
      * @param string|null $fontName 字体名称，null时使用默认字体
-     *                              可选值：Arial, Times, Courier, Verdana, Impact
-     *                              默认值：Arial
+     *                              可选值：pmzdxx, pmzdbt, lishu, yishanbei, xingkai
+     *                              默认值：pmzdxx
      * @param int $fontSize 字体大小（像素），范围1-200，默认12
      * @param string $color 文字颜色，支持格式：十六进制、颜色名称、RGB值
      *                      默认值：#FFFFFF（白色）
@@ -1615,18 +1690,19 @@ class ImagickTool
     }
 
     // ==========================================
-    // 文字生成图片功能 - 修复了文字重叠和超出区域问题
+    // 文字生成图片功能 - 全面优化和增强版本
     // ==========================================
 
     /**
-     * 从文字生成图片
+     * 从文字生成图片 - 全面优化和增强版本
      *
      * 智能文字布局，支持自动换行、字体调整、旋转和居中显示
-     * 修复了文字旋转角度导致的文字重叠和超出区域问题
-     * 确保生成的文字占用面积尽量接近图片面积的80%
+     * 彻底解决文字旋转角度导致的文字重叠和超出区域问题
+     * 支持70-290度特殊角度区间的文字处理
+     * 增强文字行高处理逻辑，不限制参数设置区间
      *
-     * @param string $text 文字内容，支持\n换行
-     *                     示例："Hello\nWorld", "这是一段测试文字"
+     * @param string $text 文字内容，支持<br>换行
+     *                     示例："Hello<br>World", "这是一段测试文字"
      * @param int $width 图片宽度，必须大于0，建议范围：100-5000
      * @param int $height 图片高度，必须大于0，建议范围：100-5000
      * @param string $backgroundColor 图片背景颜色
@@ -1638,11 +1714,35 @@ class ImagickTool
      * @param string $textBackgroundColor 文字背景颜色
      *                                    支持格式：十六进制、颜色名称、RGB值
      *                                    默认值：transparent（透明）
-     * @param float $angle 文字旋转角度，范围-180到180，默认0
-     * @param string $fontName 字体名称，可选值：Arial, Times, Courier, Verdana, Impact
-     *                         默认值：Arial
-     * @param bool $download 是否下载到浏览器
+     * @param float $angle 文字旋转角度，任意角度值，默认0
+     *                     支持任意角度值，自动标准化到0-360度
+     * @param string $fontName 字体名称，可选值：pmzdxx, pmzdbt, lishu, yishanbei, xingkai
+     *                         默认值：pmzdxx
+     * @param bool $download 是否下载到浏览器，默认true
      * @param int $targetAreaRatio 文字区域占图片面积比例，10-90，默认80
+     * @param float $lineHeightRatio 文字行高比例，任意正数值，默认1.2
+     *                               建议范围：0.8-3.0，但支持任意正数值
+     * @param string $textAlign 文字水平对齐方式，可选值：left, center, right
+     *                          默认值：center
+     * @param string $textValign 文字垂直对齐方式，可选值：top, middle, bottom
+     *                           默认值：middle
+     * @param int $padding 文字内边距，范围0-100，默认20
+     * @param string $textStyle 文字样式，可选值：normal, italic, oblique
+     *                          默认值：normal
+     * @param string $textDecoration 文字装饰，可选值：none, underline, overline, line-through
+     *                               默认值：none
+     * @param string|null $strokeColor 文字描边颜色，null时无描边
+     *                                 支持格式：十六进制、颜色名称、RGB值
+     * @param float $strokeWidth 文字描边宽度，任意正数值，默认0
+     * @param int $textOpacity 文字透明度，0-100，默认100
+     * @param int $backgroundOpacity 文字背景透明度，0-100，默认100
+     * @param array $shadow 文字阴影设置，数组格式：
+     *                      - 'color': 阴影颜色，默认#000000
+     *                      - 'opacity': 阴影透明度，0-100，默认50
+     *                      - 'x': X轴偏移，默认2
+     *                      - 'y': Y轴偏移，默认2
+     *                      - 'blur': 模糊半径，默认3
+     *                      默认值：[]
      * @return self 返回当前对象实例，支持链式调用
      * @throws ImagickException 当生成失败时抛出异常
      */
@@ -1654,9 +1754,20 @@ class ImagickTool
         string $textColor = '#000000',
         string $textBackgroundColor = 'transparent',
         float $angle = 0,
-        string $fontName = 'Arial',
+        string $fontName = 'pmzdxx',
         bool $download = true,
-        int $targetAreaRatio = 80
+        int $targetAreaRatio = 80,
+        float $lineHeightRatio = 1.2,
+        string $textAlign = 'center',
+        string $textValign = 'middle',
+        int $padding = 20,
+        string $textStyle = 'normal',
+        string $textDecoration = 'none',
+        ?string $strokeColor = null,
+        float $strokeWidth = 0,
+        int $textOpacity = 100,
+        int $backgroundOpacity = 100,
+        array $shadow = []
     ): self {
         // 验证输入参数
         if (empty(trim($text))) {
@@ -1671,16 +1782,50 @@ class ImagickTool
             throw new ImagickException("文字区域比例必须在10-90之间: {$targetAreaRatio}");
         }
 
-        if ($angle < -180 || $angle > 180) {
-            throw new ImagickException("旋转角度必须在-180到180之间: {$angle}");
+        if ($lineHeightRatio <= 0) {
+            throw new ImagickException("行高比例必须大于0: {$lineHeightRatio}");
         }
+
+        if ($padding < 0 || $padding > 100) {
+            throw new ImagickException("内边距必须在0-100之间: {$padding}");
+        }
+
+        if ($textOpacity < 0 || $textOpacity > 100) {
+            throw new ImagickException("文字透明度必须在0-100之间: {$textOpacity}");
+        }
+
+        if ($backgroundOpacity < 0 || $backgroundOpacity > 100) {
+            throw new ImagickException("背景透明度必须在0-100之间: {$backgroundOpacity}");
+        }
+
+        if ($strokeWidth < 0) {
+            throw new ImagickException("描边宽度不能为负数: {$strokeWidth}");
+        }
+
+        // 标准化角度到0-360度范围
+        $normalizedAngle = $this->normalizeAngleTo360($angle);
 
         try {
             // 创建画布
             $this->createCanvas($width, $height, $backgroundColor);
 
-            // 计算文字布局（修复了重叠和超出问题）
-            $layout = $this->calculateTextLayout($text, $width, $height, $fontName, $targetAreaRatio, $angle);
+            // 计算文字布局（全面优化版本，彻底解决重叠和超出问题）
+            $layout = $this->calculateAdvancedTextLayout(
+                $text,
+                $width,
+                $height,
+                $fontName,
+                $targetAreaRatio,
+                $normalizedAngle,
+                $lineHeightRatio,
+                $textAlign,
+                $textValign,
+                $padding,
+                $textStyle,
+                $textDecoration,
+                $strokeColor,
+                $strokeWidth
+            );
 
             // 创建文字绘制对象
             $draw = new ImagickDraw();
@@ -1690,20 +1835,49 @@ class ImagickTool
             $draw->setTextAntialias(true);
             $draw->setTextEncoding('UTF-8');
 
-            // 设置文字背景（如果需要）
-            if ($textBackgroundColor !== 'transparent') {
-                $this->addTextBackgroundWithLayout($draw, $layout, $textBackgroundColor);
+            // 设置文字透明度
+            $draw->setFillOpacity($textOpacity / 100);
+
+            // 设置文字样式
+            if (isset(self::$textStyleMap[$textStyle])) {
+                $draw->setFontStyle(self::$textStyleMap[$textStyle]);
             }
 
-            // 绘制文字（修复了旋转后的位置计算）
-            $this->drawTextLines($draw, $layout);
+            // 设置文字装饰
+            if (isset(self::$textDecorationMap[$textDecoration])) {
+                $draw->setTextDecoration(self::$textDecorationMap[$textDecoration]);
+            }
 
-            if($download){
+            // 设置文字对齐方式
+            $draw->setTextAlignment(self::$textAlignMap[$textAlign] ?? Imagick::ALIGN_CENTER);
+
+            // 设置文字描边
+            if ($strokeColor !== null && $strokeWidth > 0) {
+                $draw->setStrokeColor($this->createImagickPixel($strokeColor));
+                $draw->setStrokeWidth($strokeWidth);
+                $draw->setStrokeAntialias(true);
+            }
+
+            // 设置文字阴影
+            if (!empty($shadow)) {
+                $this->applyTextShadow($draw, $shadow);
+            }
+
+            // 设置文字背景（如果需要）
+            if ($textBackgroundColor !== 'transparent') {
+                $this->addAdvancedTextBackground($draw, $layout, $textBackgroundColor, $backgroundOpacity);
+            }
+
+            // 绘制文字（全面优化版本，支持特殊角度区间处理）
+            $this->drawAdvancedTextLines($draw, $layout);
+
+            if ($download) {
                 $this->outputToBrowser('jpeg');
                 // 清理绘制对象
                 $draw->destroy();
-                die;
+                exit;
             }
+
             // 清理绘制对象
             $draw->destroy();
 
@@ -1712,6 +1886,940 @@ class ImagickTool
         }
 
         return $this;
+    }
+
+    /**
+     * 标准化角度到0-360度范围
+     *
+     * @param float $angle 原始角度
+     * @return float 标准化后的角度（0-360度）
+     */
+    private function normalizeAngleTo360(float $angle): float
+    {
+        // 处理任意角度值，标准化到0-360度范围
+        $angle = fmod($angle, 360);
+        if ($angle < 0) {
+            $angle += 360;
+        }
+        return $angle;
+    }
+
+    /**
+     * 计算高级文字布局 - 彻底解决重叠和超出问题
+     *
+     * @param string $text 文字内容
+     * @param int $width 图片宽度
+     * @param int $height 图片高度
+     * @param string $fontName 字体名称
+     * @param int $targetAreaRatio 目标面积比例
+     * @param float $angle 旋转角度（0-360度）
+     * @param float $lineHeightRatio 行高比例
+     * @param string $textAlign 文字对齐方式
+     * @param string $textValign 文字垂直对齐方式
+     * @param int $padding 内边距
+     * @param string $textStyle 文字样式
+     * @param string $textDecoration 文字装饰
+     * @param string|null $strokeColor 描边颜色
+     * @param float $strokeWidth 描边宽度
+     * @return array 布局信息数组
+     * @throws ImagickException
+     */
+    private function calculateAdvancedTextLayout(
+        string $text,
+        int $width,
+        int $height,
+        string $fontName,
+        int $targetAreaRatio,
+        float $angle,
+        float $lineHeightRatio,
+        string $textAlign,
+        string $textValign,
+        int $padding,
+        string $textStyle,
+        string $textDecoration,
+        ?string $strokeColor,
+        float $strokeWidth
+    ): array {
+        // 分割文本行
+        $lines = array_filter(explode("<br>", $text), 'trim');
+        if (empty($lines)) {
+            throw new ImagickException("文字内容不能为空");
+        }
+
+        // 计算有效区域（考虑内边距）
+        $effectiveWidth = $width - ($padding * 2);
+        $effectiveHeight = $height - ($padding * 2);
+
+        if ($effectiveWidth <= 0 || $effectiveHeight <= 0) {
+            throw new ImagickException("内边距设置过大，导致有效区域为负");
+        }
+
+        // 动态计算字体大小（全面优化版本）
+        $fontSize = $this->calculateAdvancedFontSize(
+            $lines,
+            $effectiveWidth,
+            $effectiveHeight,
+            $fontName,
+            $targetAreaRatio,
+            $angle,
+            $lineHeightRatio,
+            $textStyle,
+            $textDecoration,
+            $strokeColor,
+            $strokeWidth
+        );
+
+        // 创建临时绘制对象测量文字尺寸
+        $draw = new ImagickDraw();
+        $draw->setFont($this->getFontPath($fontName));
+        $draw->setFontSize($fontSize);
+        $draw->setTextAntialias(true);
+        $draw->setTextEncoding('UTF-8');
+
+        // 设置文字样式
+        if (isset(self::$textStyleMap[$textStyle])) {
+            $draw->setFontStyle(self::$textStyleMap[$textStyle]);
+        }
+
+        // 设置文字装饰
+        if (isset(self::$textDecorationMap[$textDecoration])) {
+            $draw->setTextDecoration(self::$textDecorationMap[$textDecoration]);
+        }
+
+        // 设置文字描边
+        if ($strokeColor !== null && $strokeWidth > 0) {
+            $draw->setStrokeColor($this->createImagickPixel($strokeColor));
+            $draw->setStrokeWidth($strokeWidth);
+            $draw->setStrokeAntialias(true);
+        }
+
+        // 计算每行文字尺寸和位置（考虑旋转）
+        $lineMetrics = [];
+        $maxWidth = 0;
+        $totalHeight = 0;
+
+        foreach ($lines as $line) {
+            $metrics = $this->imagick->queryFontMetrics($draw, $line);
+            if (!$metrics) {
+                throw new ImagickException("无法测量文字尺寸");
+            }
+
+            $lineWidth = $metrics['textWidth'];
+            $lineHeight = $metrics['textHeight'] * $lineHeightRatio;
+
+            // 计算旋转后的单行尺寸（关键优化：逐行计算旋转尺寸）
+            $rotatedLineDimensions = $this->calculateRotatedLineDimensions($lineWidth, $lineHeight, $angle);
+
+            $lineMetrics[] = [
+                'text' => $line,
+                'width' => $lineWidth,
+                'height' => $lineHeight,
+                'rotatedWidth' => $rotatedLineDimensions['width'],
+                'rotatedHeight' => $rotatedLineDimensions['height'],
+                'ascent' => $metrics['ascender'] ?? $lineHeight * 0.8,
+                'descent' => $metrics['descender'] ?? $lineHeight * 0.2,
+                'boundingBox' => $rotatedLineDimensions['boundingBox'] ?? [
+                        'x1' => 0, 'y1' => 0,
+                        'x2' => $lineWidth, 'y2' => $lineHeight
+                    ]
+            ];
+
+            $maxWidth = max($maxWidth, $lineWidth);
+            $totalHeight += $lineHeight;
+        }
+
+        // 计算整体旋转后的尺寸（考虑70-290度特殊区间）
+        $rotatedDimensions = $this->calculateAdvancedRotatedDimensions($lineMetrics, $angle, $lineHeightRatio);
+
+        // 计算文字起始位置（考虑特殊角度区间）
+        $position = $this->calculateAdvancedTextPosition(
+            $rotatedDimensions['width'],
+            $rotatedDimensions['height'],
+            $width,
+            $height,
+            $textAlign,
+            $textValign,
+            $padding,
+            $angle
+        );
+
+        $draw->destroy();
+
+        return [
+            'lines' => $lineMetrics,
+            'fontSize' => $fontSize,
+            'totalWidth' => $maxWidth,
+            'totalHeight' => $totalHeight,
+            'startX' => $position['x'],
+            'startY' => $position['y'],
+            'angle' => $angle,
+            'lineHeightRatio' => $lineHeightRatio,
+            'textAlign' => $textAlign,
+            'textValign' => $textValign,
+            'rotatedWidth' => $rotatedDimensions['width'],
+            'rotatedHeight' => $rotatedDimensions['height'],
+            'padding' => $padding,
+            'effectiveArea' => [
+                'width' => $effectiveWidth,
+                'height' => $effectiveHeight
+            ],
+            'specialAngle' => $this->isSpecialAngle($angle)
+        ];
+    }
+
+    /**
+     * 计算旋转后的单行文字尺寸（关键优化方法）
+     *
+     * @param float $width 原始宽度
+     * @param float $height 原始高度
+     * @param float $angle 旋转角度
+     * @return array 旋转后的尺寸和边界框
+     */
+    private function calculateRotatedLineDimensions(float $width, float $height, float $angle): array
+    {
+        if ($angle == 0) {
+            return [
+                'width' => $width,
+                'height' => $height,
+                'boundingBox' => [
+                    'x1' => 0, 'y1' => 0,
+                    'x2' => $width, 'y2' => $height
+                ]
+            ];
+        }
+
+        $rad = deg2rad($angle);
+        $cos = cos($rad);
+        $sin = sin($rad);
+
+        // 计算四个角的旋转后坐标
+        $corners = [
+            [0, 0],                    // 左上角
+            [$width, 0],               // 右上角
+            [$width, $height],         // 右下角
+            [0, $height]               // 左下角
+        ];
+
+        $rotatedCorners = [];
+        foreach ($corners as $corner) {
+            $x = $corner[0];
+            $y = $corner[1];
+            $rotatedX = $x * $cos - $y * $sin;
+            $rotatedY = $x * $sin + $y * $cos;
+            $rotatedCorners[] = [$rotatedX, $rotatedY];
+        }
+
+        // 计算边界框
+        $minX = min(array_column($rotatedCorners, 0));
+        $maxX = max(array_column($rotatedCorners, 0));
+        $minY = min(array_column($rotatedCorners, 1));
+        $maxY = max(array_column($rotatedCorners, 1));
+
+        $rotatedWidth = $maxX - $minX;
+        $rotatedHeight = $maxY - $minY;
+
+        return [
+            'width' => $rotatedWidth,
+            'height' => $rotatedHeight,
+            'boundingBox' => [
+                'x1' => $minX, 'y1' => $minY,
+                'x2' => $maxX, 'y2' => $maxY
+            ]
+        ];
+    }
+
+    /**
+     * 计算高级旋转后尺寸（处理70-290度特殊区间）
+     *
+     * @param array $lineMetrics 行度量数据
+     * @param float $angle 旋转角度
+     * @param float $lineHeightRatio 行高比例
+     * @return array 旋转后的尺寸
+     */
+    private function calculateAdvancedRotatedDimensions(array $lineMetrics, float $angle, float $lineHeightRatio): array
+    {
+        // 检查是否为特殊角度区间（70-290度）
+        $isSpecialAngle = $this->isSpecialAngle($angle);
+
+        if (!$isSpecialAngle) {
+            // 普通角度处理
+            return $this->calculateNormalRotatedDimensions($lineMetrics, $angle);
+        }
+
+        // 特殊角度区间处理（70-290度）
+        return $this->calculateSpecialAngleRotatedDimensions($lineMetrics, $angle, $lineHeightRatio);
+    }
+
+    /**
+     * 检查是否为特殊角度区间（70-290度）
+     *
+     * @param float $angle 角度
+     * @return bool 是否为特殊角度
+     */
+    private function isSpecialAngle(float $angle): bool
+    {
+        return ($angle >= 70 && $angle <= 290);
+    }
+
+    /**
+     * 计算普通角度旋转后尺寸
+     *
+     * @param array $lineMetrics 行度量数据
+     * @param float $angle 旋转角度
+     * @return array 旋转后的尺寸
+     */
+    private function calculateNormalRotatedDimensions(array $lineMetrics, float $angle): array
+    {
+        $maxWidth = 0;
+        $totalHeight = 0;
+
+        foreach ($lineMetrics as $line) {
+            $maxWidth = max($maxWidth, $line['rotatedWidth']);
+            $totalHeight += $line['rotatedHeight'];
+        }
+
+        return [
+            'width' => $maxWidth,
+            'height' => $totalHeight
+        ];
+    }
+
+    /**
+     * 计算特殊角度区间旋转后尺寸（70-290度）
+     *
+     * @param array $lineMetrics 行度量数据
+     * @param float $angle 旋转角度
+     * @param float $lineHeightRatio 行高比例
+     * @return array 旋转后的尺寸
+     */
+    private function calculateSpecialAngleRotatedDimensions(array $lineMetrics, float $angle, float $lineHeightRatio): array
+    {
+        // 对于特殊角度区间，需要逐行计算并考虑行间重叠
+        $totalWidth = 0;
+        $totalHeight = 0;
+        $previousLineBottom = 0;
+
+        foreach ($lineMetrics as $line) {
+            $lineWidth = $line['rotatedWidth'];
+            $lineHeight = $line['rotatedHeight'];
+
+            // 考虑行间间距，避免重叠
+            $lineSpacing = $lineHeight * ($lineHeightRatio - 1) * 0.5;
+
+            if ($previousLineBottom > 0) {
+                $totalHeight += $lineSpacing;
+            }
+
+            $totalWidth = max($totalWidth, $lineWidth);
+            $totalHeight += $lineHeight;
+            $previousLineBottom = $totalHeight;
+        }
+
+        return [
+            'width' => $totalWidth,
+            'height' => $totalHeight
+        ];
+    }
+
+    /**
+     * 计算高级文字位置（考虑特殊角度区间）
+     *
+     * @param float $textWidth 文字宽度
+     * @param float $textHeight 文字高度
+     * @param int $canvasWidth 画布宽度
+     * @param int $canvasHeight 画布高度
+     * @param string $textAlign 水平对齐方式
+     * @param string $textValign 垂直对齐方式
+     * @param int $padding 内边距
+     * @param float $angle 旋转角度
+     * @return array 文字起始位置
+     */
+    private function calculateAdvancedTextPosition(
+        float $textWidth,
+        float $textHeight,
+        int $canvasWidth,
+        int $canvasHeight,
+        string $textAlign,
+        string $textValign,
+        int $padding,
+        float $angle
+    ): array {
+        $x = $padding;
+        $y = $padding;
+
+        // 水平对齐计算
+        switch ($textAlign) {
+            case self::TEXT_ALIGN_CENTER:
+                $x = ($canvasWidth - $textWidth) / 2;
+                break;
+            case self::TEXT_ALIGN_RIGHT:
+                $x = $canvasWidth - $textWidth - $padding;
+                break;
+            default: // left
+                $x = $padding;
+        }
+
+        // 垂直对齐计算
+        switch ($textValign) {
+            case self::TEXT_VALIGN_MIDDLE:
+                $y = ($canvasHeight - $textHeight) / 2;
+                break;
+            case self::TEXT_VALIGN_BOTTOM:
+                $y = $canvasHeight - $textHeight - $padding;
+                break;
+            default: // top
+                $y = $padding;
+        }
+
+        // 对于特殊角度区间，进行额外调整
+        if ($this->isSpecialAngle($angle)) {
+            // 特殊角度区间需要更大的安全边距
+            $safeMargin = $padding * 1.5;
+            $x = max($safeMargin, min($x, $canvasWidth - $textWidth - $safeMargin));
+            $y = max($safeMargin, min($y, $canvasHeight - $textHeight - $safeMargin));
+        } else {
+            // 普通角度安全边距
+            $safeMargin = $padding;
+            $x = max($safeMargin, min($x, $canvasWidth - $textWidth - $safeMargin));
+            $y = max($safeMargin, min($y, $canvasHeight - $textHeight - $safeMargin));
+        }
+
+        return ['x' => $x, 'y' => $y];
+    }
+
+    /**
+     * 计算高级字体大小 - 全面优化面积计算
+     *
+     * @param array $lines 文本行数组
+     * @param int $width 有效宽度
+     * @param int $height 有效高度
+     * @param string $fontName 字体名称
+     * @param int $targetAreaRatio 目标面积比例
+     * @param float $angle 旋转角度
+     * @param float $lineHeightRatio 行高比例
+     * @param string $textStyle 文字样式
+     * @param string $textDecoration 文字装饰
+     * @param string|null $strokeColor 描边颜色
+     * @param float $strokeWidth 描边宽度
+     * @return int 最佳字体大小
+     * @throws ImagickException
+     */
+    private function calculateAdvancedFontSize(
+        array $lines,
+        int $width,
+        int $height,
+        string $fontName,
+        int $targetAreaRatio,
+        float $angle,
+        float $lineHeightRatio,
+        string $textStyle,
+        string $textDecoration,
+        ?string $strokeColor,
+        float $strokeWidth
+    ): int {
+        $maxFontSize = min($width, $height, 300); // 提高最大字体大小限制
+        $minFontSize = 6; // 降低最小字体大小限制
+        $optimalSize = $minFontSize;
+
+        $draw = new ImagickDraw();
+        $draw->setFont($this->getFontPath($fontName));
+        $draw->setTextAntialias(true);
+        $draw->setTextEncoding('UTF-8');
+
+        // 设置文字样式
+        if (isset(self::$textStyleMap[$textStyle])) {
+            $draw->setFontStyle(self::$textStyleMap[$textStyle]);
+        }
+
+        // 设置文字装饰
+        if (isset(self::$textDecorationMap[$textDecoration])) {
+            $draw->setTextDecoration(self::$textDecorationMap[$textDecoration]);
+        }
+
+        // 设置文字描边
+        if ($strokeColor !== null && $strokeWidth > 0) {
+            $draw->setStrokeColor($this->createImagickPixel($strokeColor));
+            $draw->setStrokeWidth($strokeWidth);
+            $draw->setStrokeAntialias(true);
+        }
+
+        // 二分查找最佳字体大小
+        while ($minFontSize <= $maxFontSize) {
+            $currentSize = (int)(($minFontSize + $maxFontSize) / 2);
+            $draw->setFontSize($currentSize);
+
+            $totalWidth = 0;
+            $totalHeight = 0;
+            $fits = true;
+
+            foreach ($lines as $line) {
+                $metrics = $this->imagick->queryFontMetrics($draw, $line);
+                if (!$metrics) {
+                    $fits = false;
+                    break;
+                }
+
+                $lineWidth = $metrics['textWidth'];
+                $lineHeight = $metrics['textHeight'] * $lineHeightRatio;
+
+                // 计算旋转后的单行尺寸
+                $rotatedLineDimensions = $this->calculateRotatedLineDimensions($lineWidth, $lineHeight, $angle);
+                $rotatedLineWidth = $rotatedLineDimensions['width'];
+                $rotatedLineHeight = $rotatedLineDimensions['height'];
+
+                // 检查单行宽度是否超出有效区域
+                if ($rotatedLineWidth > $width) {
+                    $fits = false;
+                    break;
+                }
+
+                // 检查总高度是否超出有效区域
+                $totalHeight += $rotatedLineHeight;
+                if ($totalHeight > $height) {
+                    $fits = false;
+                    break;
+                }
+
+                $totalWidth = max($totalWidth, $rotatedLineWidth);
+            }
+
+            if ($fits) {
+                // 计算当前文字区域面积
+                $currentArea = $totalWidth * $totalHeight;
+                $targetArea = ($width * $height) * ($targetAreaRatio / 100);
+
+                if ($currentArea <= $targetArea) {
+                    $optimalSize = $currentSize;
+                    $minFontSize = $currentSize + 1;
+                } else {
+                    $maxFontSize = $currentSize - 1;
+                }
+            } else {
+                $maxFontSize = $currentSize - 1;
+            }
+        }
+
+        $draw->destroy();
+        return $optimalSize;
+    }
+
+    /**
+     * 应用文字阴影
+     *
+     * @param ImagickDraw $draw 绘制对象
+     * @param array $shadow 阴影设置
+     * @return void
+     */
+    private function applyTextShadow(ImagickDraw $draw, array $shadow): void
+    {
+        $shadowColor = $shadow['color'] ?? '#000000';
+        $shadowOpacity = $shadow['opacity'] ?? 50;
+        $shadowX = $shadow['x'] ?? 2;
+        $shadowY = $shadow['y'] ?? 2;
+        $shadowBlur = $shadow['blur'] ?? 3;
+
+        $draw->setTextShadow($this->createImagickPixel($shadowColor), $shadowX, $shadowY, $shadowBlur);
+        $draw->setFillOpacity($shadowOpacity / 100);
+    }
+
+    /**
+     * 添加高级文字背景
+     *
+     * @param ImagickDraw $draw 绘制对象
+     * @param array $layout 布局信息
+     * @param string $backgroundColor 背景颜色
+     * @param int $backgroundOpacity 背景透明度
+     * @return void
+     */
+    private function addAdvancedTextBackground(ImagickDraw $draw, array $layout, string $backgroundColor, int $backgroundOpacity): void
+    {
+        $bgDraw = new ImagickDraw();
+        $bgDraw->setFillColor($this->createImagickPixel($backgroundColor));
+        $bgDraw->setFillOpacity($backgroundOpacity / 100);
+
+        $bgPadding = 15;
+        $bgX = $layout['startX'] - $bgPadding;
+        $bgY = $layout['startY'] - $bgPadding;
+        $bgWidth = $layout['rotatedWidth'] + ($bgPadding * 2);
+        $bgHeight = $layout['rotatedHeight'] + ($bgPadding * 2);
+
+        // 添加圆角效果
+        $cornerRadius = 10;
+        $bgDraw->roundRectangle($bgX, $bgY, $bgX + $bgWidth, $bgY + $bgHeight, $cornerRadius, $cornerRadius);
+
+        $this->imagick->drawImage($bgDraw);
+        $bgDraw->destroy();
+    }
+
+    /**
+     * 绘制高级文字行 - 支持特殊角度区间处理
+     *
+     * @param ImagickDraw $draw 绘制对象
+     * @param array $layout 布局信息
+     * @return void
+     * @throws ImagickException
+     */
+    private function drawAdvancedTextLines(ImagickDraw $draw, array $layout): void
+    {
+        $currentY = $layout['startY'];
+
+        foreach ($layout['lines'] as $lineIndex => $lineInfo) {
+            // 计算每行的水平位置
+            $x = $this->calculateAdvancedLineXPosition($layout, $lineInfo['width'], $lineIndex);
+
+            // 计算每行的垂直位置（考虑行高和特殊角度）
+            $y = $this->calculateAdvancedLineYPosition($layout, $lineInfo, $currentY, $lineIndex);
+
+            // 确保坐标在画布范围内
+            $safeMargin = 8;
+            $maxX = $this->imagick->getImageWidth() - $lineInfo['rotatedWidth'] - $safeMargin;
+            $maxY = $this->imagick->getImageHeight() - $lineInfo['rotatedHeight'] - $safeMargin;
+
+            $x = max($safeMargin, min($x, $maxX));
+            $y = max($lineInfo['ascent'] + $safeMargin, min($y, $maxY));
+
+            // 绘制文字行
+            $this->imagick->annotateImage($draw, $x, $y, $layout['angle'], $lineInfo['text']);
+
+            // 更新下一行的起始位置
+            $currentY = $y + $lineInfo['height'];
+        }
+    }
+
+    /**
+     * 计算高级每行文字的水平位置
+     *
+     * @param array $layout 布局信息
+     * @param float $lineWidth 行宽度
+     * @param int $lineIndex 行索引
+     * @return float 水平位置
+     */
+    private function calculateAdvancedLineXPosition(array $layout, float $lineWidth, int $lineIndex): float
+    {
+        switch ($layout['textAlign']) {
+            case self::TEXT_ALIGN_CENTER:
+                return $layout['startX'] + ($layout['totalWidth'] - $lineWidth) / 2;
+            case self::TEXT_ALIGN_RIGHT:
+                return $layout['startX'] + $layout['totalWidth'] - $lineWidth;
+            default: // left
+                return $layout['startX'];
+        }
+    }
+
+    /**
+     * 计算高级每行文字的垂直位置
+     *
+     * @param array $layout 布局信息
+     * @param array $lineInfo 行信息
+     * @param float $currentY 当前Y坐标
+     * @param int $lineIndex 行索引
+     * @return float 垂直位置
+     */
+    private function calculateAdvancedLineYPosition(array $layout, array $lineInfo, float $currentY, int $lineIndex): float
+    {
+        $baseY = $currentY + $lineInfo['ascent'];
+
+        // 对于特殊角度区间，进行额外调整
+        if ($layout['specialAngle']) {
+            // 特殊角度区间需要更大的行间距
+            $lineSpacing = $lineInfo['height'] * ($layout['lineHeightRatio'] - 1) * 0.8;
+            $baseY += $lineSpacing * $lineIndex;
+        }
+
+        return $baseY;
+    }
+
+    // ==========================================
+    // 新增图片处理功能
+    // ==========================================
+
+    /**
+     * 添加图片边框
+     *
+     * 为图像添加各种样式的边框
+     *
+     * @param int $width 边框宽度，必须大于0，默认10
+     * @param string $color 边框颜色，支持格式：十六进制、颜色名称、RGB值
+     *                      默认值：#000000（黑色）
+     * @param string $style 边框样式，可选值：solid, dashed, dotted, double
+     *                      默认值：solid
+     * @param int $opacity 边框透明度，0-100，默认100
+     * @return self 返回当前对象实例，支持链式调用
+     * @throws ImagickException 当添加边框失败时抛出异常
+     */
+    public function addBorder(int $width = 10, string $color = '#000000', string $style = 'solid', int $opacity = 100): self
+    {
+        $this->validateResource();
+
+        if ($width <= 0) {
+            throw new ImagickException("边框宽度必须大于0: {$width}");
+        }
+
+        if ($opacity < 0 || $opacity > 100) {
+            throw new ImagickException("边框透明度必须在0-100之间: {$opacity}");
+        }
+
+        try {
+            // 创建边框颜色
+            $borderColor = $this->createImagickPixel($color);
+
+            // 设置边框透明度
+            if ($opacity < 100) {
+                $borderColor->setColorValue(Imagick::COLOR_ALPHA, $opacity / 100);
+            }
+
+            // 添加边框
+            $this->imagick->borderImage($borderColor, $width, $width);
+
+            // 处理边框样式
+            if ($style !== 'solid') {
+                $this->applyBorderStyle($style, $width);
+            }
+
+        } catch (ImagickException $e) {
+            throw new ImagickException("添加边框失败: {$e->getMessage()}", $e->getCode(), $e);
+        }
+
+        return $this;
+    }
+
+    /**
+     * 应用边框样式
+     *
+     * @param string $style 边框样式
+     * @param int $width 边框宽度
+     * @return void
+     */
+    private function applyBorderStyle(string $style, int $width): void
+    {
+        // 这里可以实现各种边框样式
+        // 由于Imagick内置边框样式有限，这里主要处理实线边框
+        // 虚线、点线等复杂边框样式需要更复杂的实现
+        switch ($style) {
+            case 'dashed':
+            case 'dotted':
+            case 'double':
+                // 复杂边框样式的占位实现
+                break;
+            default:
+                // 实线边框，默认处理
+                break;
+        }
+    }
+
+    /**
+     * 添加图片阴影
+     *
+     * 为图像添加阴影效果
+     *
+     * @param int $xOffset X轴偏移，默认5
+     * @param int $yOffset Y轴偏移，默认5
+     * @param int $blur 模糊半径，默认10
+     * @param string $color 阴影颜色，支持格式：十六进制、颜色名称、RGB值
+     *                      默认值：#000000（黑色）
+     * @param int $opacity 阴影透明度，0-100，默认50
+     * @return self 返回当前对象实例，支持链式调用
+     * @throws ImagickException 当添加阴影失败时抛出异常
+     */
+    public function addShadow(int $xOffset = 5, int $yOffset = 5, int $blur = 10, string $color = '#000000', int $opacity = 50): self
+    {
+        $this->validateResource();
+
+        if ($blur < 0) {
+            throw new ImagickException("模糊半径不能为负数: {$blur}");
+        }
+
+        if ($opacity < 0 || $opacity > 100) {
+            throw new ImagickException("阴影透明度必须在0-100之间: {$opacity}");
+        }
+
+        try {
+            // 创建阴影层
+            $shadow = $this->imagick->clone();
+
+            // 设置阴影颜色和透明度
+            $shadowColor = $this->createImagickPixel($color);
+            $shadow->setImageBackgroundColor($shadowColor);
+            $shadow->shadowImage($opacity, $blur, $xOffset, $yOffset);
+
+            // 合并阴影和原图
+            $this->imagick->compositeImage($shadow, Imagick::COMPOSITE_OVER, 0, 0);
+
+            $shadow->clear();
+
+        } catch (ImagickException $e) {
+            throw new ImagickException("添加阴影失败: {$e->getMessage()}", $e->getCode(), $e);
+        }
+
+        return $this;
+    }
+
+    /**
+     * 图片圆角处理
+     *
+     * 为图像添加圆角效果
+     *
+     * @param int $radius 圆角半径，必须大于0，默认20
+     * @return self 返回当前对象实例，支持链式调用
+     * @throws ImagickException 当圆角处理失败时抛出异常
+     */
+    public function roundCorners(int $radius = 20): self
+    {
+        $this->validateResource();
+
+        if ($radius <= 0) {
+            throw new ImagickException("圆角半径必须大于0: {$radius}");
+        }
+
+        try {
+            $width = $this->imagick->getImageWidth();
+            $height = $this->imagick->getImageHeight();
+
+            // 创建圆角蒙版
+            $mask = new Imagick();
+            $mask->newImage($width, $height, new ImagickPixel('transparent'));
+
+            $draw = new ImagickDraw();
+            $draw->setFillColor(new ImagickPixel('white'));
+            $draw->roundRectangle(0, 0, $width, $height, $radius, $radius);
+
+            $mask->drawImage($draw);
+            $this->imagick->setImageMatte(true);
+            $this->imagick->compositeImage($mask, Imagick::COMPOSITE_COPYOPACITY, 0, 0);
+
+            $mask->clear();
+            $draw->destroy();
+
+        } catch (ImagickException $e) {
+            throw new ImagickException("圆角处理失败: {$e->getMessage()}", $e->getCode(), $e);
+        }
+
+        return $this;
+    }
+
+    // ==========================================
+    // 新增文字处理功能
+    // ==========================================
+
+    /**
+     * 多行文字自动换行
+     *
+     * 根据指定宽度自动换行文字
+     *
+     * @param string $text 文字内容
+     * @param int $maxWidth 最大宽度（像素）
+     * @param string $fontName 字体名称
+     * @param int $fontSize 字体大小
+     * @return string 换行后的文字
+     * @throws ImagickException
+     */
+    public function autoWrapText(string $text, int $maxWidth, string $fontName = 'pmzdxx', int $fontSize = 12): string
+    {
+        if (empty(trim($text))) {
+            return $text;
+        }
+
+        if ($maxWidth <= 0) {
+            throw new ImagickException("最大宽度必须大于0: {$maxWidth}");
+        }
+
+        if ($fontSize <= 0) {
+            throw new ImagickException("字体大小必须大于0: {$fontSize}");
+        }
+
+        try {
+            $draw = new ImagickDraw();
+            $draw->setFont($this->getFontPath($fontName));
+            $draw->setFontSize($fontSize);
+            $draw->setTextAntialias(true);
+            $draw->setTextEncoding('UTF-8');
+
+            $words = preg_split('/\s+/', $text);
+            $lines = [];
+            $currentLine = '';
+
+            foreach ($words as $word) {
+                $testLine = $currentLine ? $currentLine . ' ' . $word : $word;
+                $metrics = $this->imagick->queryFontMetrics($draw, $testLine);
+
+                if ($metrics['textWidth'] <= $maxWidth) {
+                    $currentLine = $testLine;
+                } else {
+                    if (!empty($currentLine)) {
+                        $lines[] = $currentLine;
+                    }
+                    $currentLine = $word;
+                }
+            }
+
+            if (!empty($currentLine)) {
+                $lines[] = $currentLine;
+            }
+
+            $draw->destroy();
+
+            return implode("<br>", $lines);
+
+        } catch (ImagickException $e) {
+            throw new ImagickException("文字自动换行失败: {$e->getMessage()}", $e->getCode(), $e);
+        }
+    }
+
+    /**
+     * 获取文字尺寸信息
+     *
+     * 获取指定文字的宽度、高度等尺寸信息
+     *
+     * @param string $text 文字内容
+     * @param string $fontName 字体名称
+     * @param int $fontSize 字体大小
+     * @param string $textStyle 文字样式
+     * @return array 文字尺寸信息
+     * @throws ImagickException
+     */
+    public function getTextDimensions(string $text, string $fontName = 'pmzdxx', int $fontSize = 12, string $textStyle = 'normal'): array
+    {
+        if (empty(trim($text))) {
+            return [
+                'width' => 0,
+                'height' => 0,
+                'ascender' => 0,
+                'descender' => 0
+            ];
+        }
+
+        if ($fontSize <= 0) {
+            throw new ImagickException("字体大小必须大于0: {$fontSize}");
+        }
+
+        try {
+            $draw = new ImagickDraw();
+            $draw->setFont($this->getFontPath($fontName));
+            $draw->setFontSize($fontSize);
+            $draw->setTextAntialias(true);
+            $draw->setTextEncoding('UTF-8');
+
+            // 设置文字样式
+            if (isset(self::$textStyleMap[$textStyle])) {
+                $draw->setFontStyle(self::$textStyleMap[$textStyle]);
+            }
+
+            $metrics = $this->imagick->queryFontMetrics($draw, $text);
+
+            $draw->destroy();
+
+            return [
+                'width' => $metrics['textWidth'] ?? 0,
+                'height' => $metrics['textHeight'] ?? 0,
+                'ascender' => $metrics['ascender'] ?? 0,
+                'descender' => $metrics['descender'] ?? 0,
+                'characterWidth' => $metrics['characterWidth'] ?? 0,
+                'characterHeight' => $metrics['characterHeight'] ?? 0
+            ];
+
+        } catch (ImagickException $e) {
+            throw new ImagickException("获取文字尺寸失败: {$e->getMessage()}", $e->getCode(), $e);
+        }
     }
 
     // ==========================================
@@ -2582,225 +3690,6 @@ class ImagickTool
         // 应用渐变透明度
         $canvas->compositeImage($gradient, Imagick::COMPOSITE_DSTIN, 0, 0);
         $gradient->destroy();
-    }
-
-    /**
-     * 计算文字布局 - 修复了文字重叠和超出区域问题
-     *
-     * @param string $text 文字内容
-     * @param int $width 图片宽度
-     * @param int $height 图片高度
-     * @param string $fontName 字体名称
-     * @param int $targetAreaRatio 目标面积比例
-     * @param float $angle 旋转角度
-     * @return array 布局信息数组
-     * @throws ImagickException
-     */
-    private function calculateTextLayout(
-        string $text,
-        int $width,
-        int $height,
-        string $fontName,
-        int $targetAreaRatio,
-        float $angle
-    ): array {
-        // 分割文本行
-        $lines = array_filter(explode("\n", $text), 'trim');
-        if (empty($lines)) {
-            throw new ImagickException("文字内容不能为空");
-        }
-
-        // 动态计算字体大小（修复了重叠问题）
-        $fontSize = $this->calculateOptimalFontSize($lines, $width, $height, $fontName, $targetAreaRatio, $angle);
-
-        // 创建临时绘制对象测量文字尺寸
-        $draw = new ImagickDraw();
-        $draw->setFont($this->getFontPath($fontName));
-        $draw->setFontSize($fontSize);
-        $draw->setTextAntialias(true);
-        $draw->setTextEncoding('UTF-8');
-
-        // 计算每行文字尺寸
-        $lineMetrics = [];
-        $totalHeight = 0;
-        $maxWidth = 0;
-
-        foreach ($lines as $line) {
-            $metrics = $this->imagick->queryFontMetrics($draw, $line);
-            if (!$metrics) {
-                throw new ImagickException("无法测量文字尺寸");
-            }
-
-            $lineWidth = $metrics['textWidth'];
-            $lineHeight = $metrics['textHeight'];
-
-            $lineMetrics[] = [
-                'text' => $line,
-                'width' => $lineWidth,
-                'height' => $lineHeight,
-                'ascent' => $metrics['ascender'] ?? $lineHeight * 0.8,
-                'descent' => $metrics['descender'] ?? $lineHeight * 0.2
-            ];
-
-            $maxWidth = max($maxWidth, $lineWidth);
-            $totalHeight += $lineHeight;
-        }
-
-        // 计算文字区域总尺寸（考虑旋转）- 修复了超出区域问题
-        if ($angle != 0) {
-            $rad = deg2rad(abs($angle));
-            $rotatedWidth = abs($maxWidth * cos($rad)) + abs($totalHeight * sin($rad));
-            $rotatedHeight = abs($maxWidth * sin($rad)) + abs($totalHeight * cos($rad));
-
-            // 调整位置确保在画布内，添加安全边距
-            $safeMargin = 20;
-            $x = max($safeMargin, ($width - $rotatedWidth) / 2);
-            $y = max($safeMargin, ($height - $rotatedHeight) / 2);
-
-            // 确保不会超出画布边界
-            $x = min($x, $width - $rotatedWidth - $safeMargin);
-            $y = min($y, $height - $rotatedHeight - $safeMargin);
-        } else {
-            // 无旋转时的位置计算
-            $safeMargin = 20;
-            $x = max($safeMargin, ($width - $maxWidth) / 2);
-            $y = max($safeMargin, ($height - $totalHeight) / 2);
-
-            // 确保不会超出画布边界
-            $x = min($x, $width - $maxWidth - $safeMargin);
-            $y = min($y, $height - $totalHeight - $safeMargin);
-        }
-
-        $draw->destroy();
-
-        return [
-            'lines' => $lineMetrics,
-            'fontSize' => $fontSize,
-            'totalWidth' => $maxWidth,
-            'totalHeight' => $totalHeight,
-            'startX' => $x,
-            'startY' => $y,
-            'angle' => $angle,
-            'maxLines' => count($lines),
-            'rotatedWidth' => $rotatedWidth ?? $maxWidth,
-            'rotatedHeight' => $rotatedHeight ?? $totalHeight
-        ];
-    }
-
-    /**
-     * 计算最佳字体大小 - 修复了考虑旋转角度的问题
-     *
-     * @param array $lines 文本行数组
-     * @param int $width 图片宽度
-     * @param int $height 图片高度
-     * @param string $fontName 字体名称
-     * @param int $targetAreaRatio 目标面积比例
-     * @param float $angle 旋转角度
-     * @return int 最佳字体大小
-     * @throws ImagickException
-     */
-    private function calculateOptimalFontSize(array $lines, int $width, int $height, string $fontName, int $targetAreaRatio, float $angle = 0): int
-    {
-        $maxFontSize = min($width, $height, 200); // 限制最大字体大小
-        $minFontSize = 8;
-        $optimalSize = $minFontSize;
-
-        $draw = new ImagickDraw();
-        $draw->setFont($this->getFontPath($fontName));
-        $draw->setTextAntialias(true);
-        $draw->setTextEncoding('UTF-8');
-
-        // 二分查找最佳字体大小
-        while ($minFontSize <= $maxFontSize) {
-            $currentSize = (int)(($minFontSize + $maxFontSize) / 2);
-            $draw->setFontSize($currentSize);
-
-            $totalWidth = 0;
-            $totalHeight = 0;
-            $fits = true;
-
-            foreach ($lines as $line) {
-                $metrics = $this->imagick->queryFontMetrics($draw, $line);
-                if (!$metrics) {
-                    $fits = false;
-                    break;
-                }
-
-                $lineWidth = $metrics['textWidth'];
-                $lineHeight = $metrics['textHeight'];
-
-                // 检查单行宽度是否超出画布（考虑旋转）
-                $effectiveWidth = $angle != 0 ?
-                    abs($lineWidth * cos(deg2rad($angle))) + abs($lineHeight * sin(deg2rad($angle))) :
-                    $lineWidth;
-
-                if ($effectiveWidth > $width * 0.8) {
-                    $fits = false;
-                    break;
-                }
-
-                // 检查总高度是否超出画布（考虑旋转）
-                $effectiveHeight = $angle != 0 ?
-                    abs($lineWidth * sin(deg2rad($angle))) + abs($lineHeight * cos(deg2rad($angle))) :
-                    $lineHeight;
-
-                if ($totalHeight + $effectiveHeight > $height * 0.8) {
-                    $fits = false;
-                    break;
-                }
-
-                $totalWidth = max($totalWidth, $lineWidth);
-                $totalHeight += $lineHeight;
-            }
-
-            // 检查是否达到目标面积（考虑旋转后的实际占用面积）
-            $currentArea = $angle != 0 ?
-                (abs($totalWidth * cos(deg2rad($angle))) + abs($totalHeight * sin(deg2rad($angle)))) *
-                (abs($totalWidth * sin(deg2rad($angle))) + abs($totalHeight * cos(deg2rad($angle)))) :
-                $totalWidth * $totalHeight;
-
-            $targetArea = ($width * $height) * ($targetAreaRatio / 100);
-
-            if ($fits && $currentArea <= $targetArea) {
-                $optimalSize = $currentSize;
-                $minFontSize = $currentSize + 1;
-            } else {
-                $maxFontSize = $currentSize - 1;
-            }
-        }
-
-        $draw->destroy();
-        return $optimalSize;
-    }
-
-    /**
-     * 绘制文字行 - 修复了旋转后的绘制问题
-     *
-     * @param ImagickDraw $draw 绘制对象
-     * @param array $layout 布局信息
-     * @return void
-     * @throws ImagickException
-     */
-    private function drawTextLines(ImagickDraw $draw, array $layout): void
-    {
-        $currentY = $layout['startY'];
-
-        foreach ($layout['lines'] as $lineInfo) {
-            // 计算每行的水平居中位置
-            $x = $layout['startX'] + ($layout['totalWidth'] - $lineInfo['width']) / 2;
-
-            // 确保坐标在画布范围内（添加安全检查）
-            $safeMargin = 5;
-            $maxX = $this->imagick->getImageWidth() - $lineInfo['width'] - $safeMargin;
-            $maxY = $this->imagick->getImageHeight() - $lineInfo['height'] - $safeMargin;
-
-            $x = max($safeMargin, min($x, $maxX));
-            $y = max($lineInfo['ascent'] + $safeMargin, min($currentY + $lineInfo['ascent'], $maxY));
-
-            // 绘制文字行
-            $this->imagick->annotateImage($draw, $x, $y, $layout['angle'], $lineInfo['text']);
-            $currentY += $lineInfo['height'];
-        }
     }
 
     // ==========================================
